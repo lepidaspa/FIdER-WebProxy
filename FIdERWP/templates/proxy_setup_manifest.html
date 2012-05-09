@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+    <title>FIdER - Creazione proxy - WIP</title>
+
+    <link rel="stylesheet" href="{{ STATIC_URL }}fider.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}proxy_setup.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}smoothness/jquery-ui-1.8.20.custom.css">
+
+
+    <script language="JavaScript" src="{{ STATIC_URL }}jquery-1.7.2.js"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}proxy_setup_manifest.js"></script>
+
+    <!-- maps initialisation -->
+    <script src="http://code.jquerygeo.com/jquery.geo-1.0a4.min.js"></script>
+
+</head>
+<body>
+
+
+<div id="creationmask">
+
+Temporary proxy creation form - Positioning test
+
+        <div id="proxy_domain">
+            <h4>VALIDITÀ</h4>
+
+            <table id="proxy_core_data">
+                <tr>
+                    <td rowspan=2><div id="proxy_bb"></div></td>
+                    <td>INIZIO VALIDITÀ<br>
+                        <input type="text" id="datepicker_main_from" size="10"/></td>
+                </tr>
+                <tr>
+                    <td>
+                        TERMINE VALIDITÀ <br>
+                        <input type="text" id="datepicker_main_to" size="10"/><input type="checkbox" id="disable_main_date_to" onclick="switchField('#datepicker_main_to','Permanente')">
+
+                    </td>
+                </tr>
+
+
+            </table>
+
+
+
+
+        </div>
+
+
+
+    <div id="proxy_operations">
+        <h4>TIPOLOGIA</h4>
+
+        Push <input type="radio" name="proxy_ops_type" value="write" id="proxy_ops_write"> Pull <input type="radio" name="proxy_ops_type" value="read" id="proxy_ops_read"> Query <input type="radio" name="proxy_ops_type" value="query" id="proxy_ops_query">
+
+            <div id="proxy_ops_details">
+
+            </div>
+
+        </div>
+
+        <div id="proxy_metadata">
+
+
+
+            <h4>METADATI</h4>
+            <table id="metadata_table">
+                <thead>
+                    <tr><th>Nome</th><th colspan=2>Validità</th><th>Bounding box</th><td></td></tr>
+                </thead>
+                <tbody id="metadata_submitted">
+
+
+
+
+                </tbody>
+
+            </table>
+
+
+            <table id="metadata_new_submission">
+                <tr>
+                    <td>
+                        NOME<br>
+                        <input type="text" id="name_meta_new" size="20" onkeyup="checkMetaName(this)"/>
+                    </td>
+                    <td rowspan=3>BBOX <input type="checkbox" id="enable_meta_bbox" checked><br>
+                        <div id="proxy_meta_new_bb"></div>
+                    </td>
+
+                    <td rowspan=3>
+                        <input type="button" id="button_add_meta" value="+">
+
+
+                        <!--<a href="#" id="button_add_meta">[ADD]</a>-->
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="disable_meta_date_from" checked onclick="switchField('#datepicker_meta_new_from', 'Predefinita')">INIZIO VALIDITÀ
+                        <br><input type="text" id="datepicker_meta_new_from" size="20"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox" id="disable_meta_date_to" checked onclick="switchField('#datepicker_meta_new_to', 'Predefinita')">TERMINE VALIDITÀ
+                        <br><input type="text" id="datepicker_meta_new_to" size="20"/>
+                    </td>
+                </tr>
+
+
+
+            </table>
+
+
+
+        </div>
+
+    <div id="submission">
+        <h4>CONVALIDA E INSERIMENTO</h4>
+
+        <div id="submission_checklist">
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+
+<script>
+    page_init();
+</script>
+
+</div>
+
+</body>
+</html>

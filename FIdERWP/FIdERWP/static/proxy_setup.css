@@ -1,0 +1,59 @@
+body {
+    margin-left:   20%;
+    margin-right:  20%;
+    width:  60%;
+}
+
+h4 {
+    text-align: center;
+}
+
+#proxy_bb {
+    /*float: left;
+    margin-right: 1em;*/
+    width:  320px;
+    height: 160px;
+}
+
+#proxy_meta_new_bb {
+    width:  320px;
+    height: 160px;
+}
+
+#proxy_operations {
+    text-align: center;
+    clear:  both;
+}
+
+#metadata_table {
+    width:      100%;
+}
+
+
+#button_add_meta{}
+
+
+
+#metadata_table{
+    border: 1px solid black;
+}
+
+#metadata_new_submission
+{
+    border: 1px solid black;
+
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1em;
+}
+
+#proxy_core_data {
+    border: 1px solid black;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+tr, td {
+    vertical-align: middle;
+}
