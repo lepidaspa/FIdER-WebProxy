@@ -37,7 +37,7 @@ Temporary proxy creation form - Positioning test
                 <tr>
                     <td>
                         TERMINE VALIDITÀ <br>
-                        <input type="text" id="datepicker_main_to" size="10"/><input type="checkbox" id="disable_main_date_to" onclick="switchField('#datepicker_main_to','Permanente')">
+                        <input type="text" id="datepicker_main_to" size="10"/><input type="checkbox" id="disable_main_date_to" onclick="switchMainDateTo()">
 
                     </td>
                 </tr>
@@ -55,13 +55,27 @@ Temporary proxy creation form - Positioning test
     <div id="proxy_operations">
         <h4>TIPOLOGIA</h4>
 
-        Push <input type="radio" name="proxy_ops_type" value="write" id="proxy_ops_write"> Pull <input type="radio" name="proxy_ops_type" value="read" id="proxy_ops_read"> Query <input type="radio" name="proxy_ops_type" value="query" id="proxy_ops_query">
+        <table id="proxy_ops_table">
 
-            <div id="proxy_ops_details">
+            <tr id="proxy_ops_mode">
+                <td align="left"><input type="radio" name="proxy_ops_type" value="write" id="proxy_ops_write"> Scrittura<br><input type="radio" name="proxy_ops_type" value="read" id="proxy_ops_read"> Lettura<br><input type="radio" name="proxy_ops_type" value="query" id="proxy_ops_query"> Query
 
-            </div>
+                </td>
+                <td class="proxy_ops_details">
 
-        </div>
+                </td>
+
+
+
+            </tr>
+
+
+
+
+        </table>
+
+
+    </div>
 
         <div id="proxy_metadata">
 
@@ -124,7 +138,11 @@ Temporary proxy creation form - Positioning test
 
         <div id="submission_checklist">
 
+        </div>
 
+
+        <div id="controls_send">
+            <input type="button" id="button_proxy_create" value="Crea proxy">
         </div>
 
 

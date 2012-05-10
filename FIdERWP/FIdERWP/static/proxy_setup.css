@@ -32,10 +32,17 @@ h4 {
 
 #button_add_meta{}
 
-
+tr, td {
+    vertical-align: top;
+}
 
 #metadata_table{
     border: 1px solid black;
+    font-size: small;
+}
+
+#metadata_table tr, #metadata_table td {
+    vertical-align: middle;
 }
 
 #metadata_new_submission
@@ -54,6 +61,27 @@ h4 {
     margin-right: auto;
 }
 
-tr, td {
-    vertical-align: middle;
+
+
+.pm_text_bbox {
+    font-size: smaller;
 }
+
+.pm_cell_name {
+    min-width:      10em;
+}
+
+.pm_cell_date {
+    min-width:  10em;
+}
+
+.pm_cell_bbox {
+    max-width: 200px;
+}
+
+#proxy_ops_table {
+    margin-left:    auto;
+    margin-right:   auto;
+
+}
+
