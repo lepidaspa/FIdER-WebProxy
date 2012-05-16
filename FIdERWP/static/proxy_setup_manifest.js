@@ -19,12 +19,15 @@ var main_bb;
 var main_date_from;
 var main_date_to;
 
+var main_ops_mode;
+
 function page_init ()
 {
 
     // numberf of metadata added to the manifest
     meta_added = 0;
     meta_total = 0;
+
     meta_names = [];
     meta_ids = [];
     meta_bbs = [];
@@ -59,11 +62,23 @@ function page_init ()
     // TODO: refine, reworks too much stuff each time; we should separate the warnings and the issues in the submission checklist area
     $("#proxy_bb").bind( "geomapbboxchange", checkSendable );
 
-    $('#proxy_ops_read').trigger('click');
 
+    $('#button_proxy_create').click(postManifest);
+
+
+    $('.proxy_ops_type').click(setOpsMode);
+
+
+    $('#proxy_ops_read').trigger('click');
 
     checkSendable();
 
+}
+
+function setOpsMode()
+{
+    //alert ("Setting ops to "+this.value);
+    main_ops_mode = this.value;
 }
 
 function checkMainTimespan ()
@@ -156,6 +171,10 @@ function conf_ops_query()
     var query_time_full = makeRadio ('proxy_query_time_mode', 'full', 'proxy_query_time_full', 'Complete', true);
     var query_time_none = makeRadio ('proxy_query_time_mode', 'none', 'proxy_query_time_none', 'N/D');
 
+    var query_bi_full = makeRadio ('proxy_query_bi_mode', 'full', 'proxy_query_bi_full', 'Completa', true);
+    var query_bi_simple = makeRadio ('proxy_query_bi_mode', 'simple', 'proxy_query_bi_simple', 'Semplice');
+    var query_bi_none = makeRadio ('proxy_query_bi_mode', 'none', 'proxy_query_bi_none', 'N/D');
+
     var query_signed_true = makeRadio ('proxy_query_sign', 'true', 'proxy_query_sign_true', 'Sì', true);
     var query_signed_false = makeRadio ('proxy_query_sign', 'false', 'proxy_query_sign_false', 'No');
 
@@ -168,6 +187,7 @@ function conf_ops_query()
     var fullhtml = '<td class="proxy_ops_details">Query geografiche<br>'+query_geo_full+'<br>'+query_geo_bb+'<br>'+query_geo_none+'</td>' +
         '<td class="proxy_ops_details">Query inventariali<br>'+query_inv_full+'<br>'+query_inv_simple+'<br>'+query_inv_none+'</td>' +
         '<td class="proxy_ops_details">Query temporali<br>'+query_time_full+'<br>'+query_time_none+'<br></td>' +
+        '<td class="proxy_ops_details">Business intelligence<br>'+query_bi_full+'<br>'+query_bi_simple+'<br>'+query_bi_none+'</td>' +
         '<td class="proxy_ops_details">Firma<br>'+query_signed_true+'<br>'+query_signed_false+'</td>';
 
     $("#proxy_ops_mode").append(fullhtml);
@@ -229,7 +249,6 @@ function validateBboxReference (referencebb, candidate)
             (candidate[3] <= referencebb[3])
             );
     }
-
 }
 
 function addMeta()
@@ -260,7 +279,6 @@ function addMeta()
     var datefrom = dateToInt($("#datepicker_meta_new_from").val());
     if ($("#datepicker_meta_new_from").prop("disabled") || isNaN(datefrom))
     {
-
         replacement = "N/A";
     }
     else
@@ -289,8 +307,8 @@ function addMeta()
     var bbstring;
     if ($("#enable_meta_bbox").prop("checked"))
     {
-        var bboxarray = $("#proxy_meta_new_bb").geomap("option", "bbox");
 
+        var bboxarray = $("#proxy_meta_new_bb").geomap("option", "bbox");
 
         replacement = "";
 
@@ -317,10 +335,7 @@ function addMeta()
     replacement = $("#name_meta_new").val();
     tr_template = tr_template.replace(/%METANAME%/g, replacement);
 
-
     $("#metadata_submitted").append(tr_template);
-    //var buttonselector = "#pm_"+meta_added+"_remove";
-    //$(buttonselector).click(removeMeta, meta_added);
 
     meta_names.push($("#name_meta_new").val());
     meta_ids.push(meta_added);
@@ -331,27 +346,15 @@ function addMeta()
     meta_added++;
     meta_total++;
 
-
     $("#name_meta_new").val("");
     $("#button_add_meta").prop("disabled", true);
 
-
     checkSendable();
-
-    //return false;
-
-
 
 }
 
 function createMapWidget (pagenode)
 {
-
-/*    if (navigator.geolocation)
-    {
-        navigator.geolocation.getCurrentPosition(setPos,unsetPos,element);
-    }
-*/
 
     // hardcoded, replace with geolocation
     var cpos = [11.1, 44.5];
@@ -582,7 +585,7 @@ function checkSendable ()
     var wrongdates = validateProxyTimespans();
     for (i = 0; i < wrongdates.length; i++)
     {
-        issues.push("Intervallo non valido per il metadato "+wrongdates[i]+".");
+        warnings.push("L'intervallo del metadato "+wrongdates[i]+" verrà normalizzato.");
     }
 
     // TODO: add remaining checks
@@ -625,10 +628,128 @@ function checkSendable ()
 
 }
 
+function intdateToISO (intdate)
+{
+    var sdate = String(intdate);
+    var dsep = "-";
+
+    if (isNaN(intdate))
+    {
+        return '';
+    }
+    else
+    {
+        return sdate.substr(6,2) + dsep + sdate.substr(4,2) + dsep + sdate.substr(0,4) + "T00:00Z";
+    }
+
+
+}
+
 function postManifest ()
 {
     /*
     Assembles the manifest JSON and starts the communication process with the main server (through a separate django page)
      */
     //TODO: implement
+
+    var manifest_pre = {};
+
+    manifest_pre ['area'] = main_bb;
+    manifest_pre ['time'] = [];
+
+    // corret for NaN as '' and switch correct dates to ISO8601
+    manifest_pre['time'].push(intdateToISO(main_date_from));
+    manifest_pre['time'].push(intdateToISO(main_date_to));
+
+    manifest_pre['operations'] = {};
+
+    //alert(main_ops_mode);
+
+    if (main_ops_mode == 'read')
+    {
+        // read proxy
+        manifest_pre['operations'][main_ops_mode] = $("input[name=proxy_"+main_ops_mode+"_mode]:checked").val();
+        manifest_pre['operations']['write'] = 'none';
+        manifest_pre['operations']['query'] = {
+            'inventory': 'none', 'geographic': 'none',
+            'time': 'none', 'bi':'none', 'sign': false
+        };
+    }
+    else if (main_ops_mode == 'write')
+    {
+        // write proxy
+        manifest_pre['operations'][main_ops_mode] = $("input[name=proxy_"+main_ops_mode+"_mode]:checked").val();
+        manifest_pre['operations']['read'] = 'none';
+        manifest_pre['operations']['query'] = {
+            'inventory': 'none', 'geographic': 'none',
+            'time': 'none', 'bi':'none', 'sign': false
+        };
+    }
+    else
+    {
+        // query proxy
+        manifest_pre['operations'][main_ops_mode] = {};
+        manifest_pre['operations'][main_ops_mode]['inventory'] = $("input[name=proxy_query_inv_mode]:checked").val();
+        manifest_pre['operations'][main_ops_mode]['geographic'] = $("input[name=proxy_query_geo_mode]:checked").val();
+        manifest_pre['operations'][main_ops_mode]['time'] = $("input[name=proxy_query_time_mode]:checked").val();
+        manifest_pre['operations'][main_ops_mode]['bi'] = $("input[name=proxy_query_bi_mode]:checked").val();
+        manifest_pre['operations'][main_ops_mode]['sign'] = $("input[name=proxy_query_sign]:checked").val();
+
+        manifest_pre['operations']['read'] = 'none';
+        manifest_pre['operations']['write'] = 'none';
+
+    }
+
+
+    manifest_pre['metadata'] = [];
+    var cmeta;
+
+    for (var i = 0; i < meta_total; i++)
+    {
+        cmeta = {};
+
+        cmeta['name'] = meta_names[i];
+
+        // normalise boundingbox according to main bounding box
+        if (meta_bbs[i][0] < main_bb[0]) { meta_bbs[i][0] = main_bb[0]};
+        if (meta_bbs[i][1] < main_bb[1]) { meta_bbs[i][1] = main_bb[1]};
+        if (meta_bbs[i][2] > main_bb[2]) { meta_bbs[i][2] = main_bb[2]};
+        if (meta_bbs[i][3] > main_bb[3]) { meta_bbs[i][3] = main_bb[3]};
+
+        cmeta['area'] = meta_bbs[i];
+
+
+        // corret for NaN as '' and switch correct dates to ISO8601
+
+        // normalise intervals according to main time interval
+
+
+        if (!isNaN(meta_dates_from[i]) && !isNaN(main_date_from))
+        {
+            if ( meta_dates_from[i] < main_date_from)
+            {
+                meta_dates_from[i] = main_date_from;
+            }
+        }
+        if (!isNaN(meta_dates_to[i]) && !isNaN(main_date_to))
+        {
+            if ( meta_dates_to[i] > main_date_to)
+            {
+                meta_dates_to[i] = main_date_to;
+            }
+        }
+
+
+
+        cmeta['time'] = [ intdateToISO(meta_dates_from[i]), intdateToISO(meta_dates_to[i]) ];
+
+        manifest_pre['metadata'].push(cmeta);
+    }
+
+    alert(JSON.stringify(manifest_pre));
+
+    $("#form_jsondata").val(JSON.stringify(manifest_pre));
+
 }
+
+

@@ -58,7 +58,7 @@ Temporary proxy creation form - Positioning test
         <table id="proxy_ops_table">
 
             <tr id="proxy_ops_mode">
-                <td align="left"><input type="radio" name="proxy_ops_type" value="write" id="proxy_ops_write"> Scrittura<br><input type="radio" name="proxy_ops_type" value="read" id="proxy_ops_read"> Lettura<br><input type="radio" name="proxy_ops_type" value="query" id="proxy_ops_query"> Query
+                <td align="left"><input type="radio" class="proxy_ops_type" name="proxy_ops_type" value="write" id="proxy_ops_write"> Scrittura<br><input type="radio" class="proxy_ops_type" name="proxy_ops_type" value="read" id="proxy_ops_read"> Lettura<br><input type="radio" class="proxy_ops_type" name="proxy_ops_type" value="query" id="proxy_ops_query"> Query
 
                 </td>
                 <td class="proxy_ops_details">
@@ -142,7 +142,11 @@ Temporary proxy creation form - Positioning test
 
 
         <div id="controls_send">
-            <input type="button" id="button_proxy_create" value="Crea proxy">
+
+            <form action="/proxy/create" method="post">{% csrf_token %}
+                <input type="hidden" name="jsondata" id="form_jsondata" value="DEFAULT">
+                <input type="submit" id="button_proxy_create" value="Crea proxy">
+            </form>
         </div>
 
 

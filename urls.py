@@ -22,6 +22,9 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
 
-	url(r'^proxy/setup/manifest', views.softproxy_create_manifest),
+	url(r'^proxy/setup', views.softproxy_create_manifest),
+	url(r'^proxy/create', views.softproxy_create_make),
+	url(r'^proxy/conversion', views.softproxy_conversion_setup)
+
 )
 
