@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from Common import MessageTemplates
+from Common import TemplatesModels
 from MessageValidator import validateJsonToTemplate
 
 __author__ = 'Antonio Vaccarino'
@@ -14,7 +14,7 @@ def validateMessageResponseCapabilities (jsonmessage):
 	:return: tuple (bool, error list/json dict)
 	"""
 
-	return validateJsonToTemplate(jsonmessage, MessageTemplates.model_response_capabilities, MessageTemplates.process_response_capabilities)
+	return validateJsonToTemplate(jsonmessage, TemplatesModels.model_response_capabilities, TemplatesModels.process_response_capabilities)
 
 
 def validateMessageResponseWelcome (jsonmessage):
@@ -24,7 +24,7 @@ def validateMessageResponseWelcome (jsonmessage):
 	:return: tuple (bool, error message/json dict)
 	"""
 
-	return validateJsonToTemplate(jsonmessage, MessageTemplates.model_response_welcome)
+	return validateJsonToTemplate(jsonmessage, TemplatesModels.model_response_welcome)
 
 
 def validateMessageResponseRead (jsonmessage):
@@ -34,7 +34,7 @@ def validateMessageResponseRead (jsonmessage):
 	:return: tuple (bool, error list/json dict)
 	"""
 
-	return validateJsonToTemplate(jsonmessage, MessageTemplates.model_response_read, MessageTemplates.process_response_read)
+	return validateJsonToTemplate(jsonmessage, TemplatesModels.model_response_read, TemplatesModels.process_response_read)
 
 def validateMessageRequestWrite (jsonmessage):
 	"""
@@ -43,7 +43,7 @@ def validateMessageRequestWrite (jsonmessage):
 	:return: tuple (bool, error list/json dict)
 	"""
 
-	return validateJsonToTemplate(jsonmessage, MessageTemplates.model_request_write, MessageTemplates.process_request_write)
+	return validateJsonToTemplate(jsonmessage, TemplatesModels.model_request_write, TemplatesModels.process_request_write)
 
 
 def validateMessageRequestQuery (jsonmessage):
@@ -53,7 +53,7 @@ def validateMessageRequestQuery (jsonmessage):
 	:return: tuple (bool, error list/json dict)
 	"""
 
-	return validateJsonToTemplate(jsonmessage, MessageTemplates.model_request_query, MessageTemplates.process_request_query)
+	return validateJsonToTemplate(jsonmessage, TemplatesModels.model_request_query, TemplatesModels.process_request_query)
 
 def validateMessageResponseWrite (jsonmessage):
 	"""
@@ -62,7 +62,7 @@ def validateMessageResponseWrite (jsonmessage):
 	:return: tuple (bool, error list/json dict)
 	"""
 
-	return validateJsonToTemplate(jsonmessage, MessageTemplates.model_response_write, MessageTemplates.process_response_write)
+	return validateJsonToTemplate(jsonmessage, TemplatesModels.model_response_write, TemplatesModels.process_response_write)
 
 def validateMessageErrorAnomaly (jsonmessage):
 	"""
@@ -71,7 +71,7 @@ def validateMessageErrorAnomaly (jsonmessage):
 	:return: tuple (bool, error list/json dict)
 	"""
 
-	return validateJsonToTemplate(jsonmessage, MessageTemplates.model_error_anomaly, MessageTemplates.process_error_anomaly)
+	return validateJsonToTemplate(jsonmessage, TemplatesModels.model_error_anomaly, TemplatesModels.process_error_anomaly)
 
 def validateMessageErrorError (jsonmessage):
 	"""
@@ -80,7 +80,7 @@ def validateMessageErrorError (jsonmessage):
 	:return: tuple (bool, error list/json dict)
 	"""
 
-	return validateJsonToTemplate (jsonmessage, MessageTemplates.model_error_error)
+	return validateJsonToTemplate (jsonmessage, TemplatesModels.model_error_error)
 
 def validateMessageRequestApi (jsonmessage):
 	"""
@@ -89,7 +89,7 @@ def validateMessageRequestApi (jsonmessage):
 	:return: tuple (bool, error list/json dict)
 	"""
 
-	return validateJsonToTemplate (jsonmessage, MessageTemplates.model_request_api, MessageTemplates.process_request_api)
+	return validateJsonToTemplate (jsonmessage, TemplatesModels.model_request_api, TemplatesModels.process_request_api)
 
 
 

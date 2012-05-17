@@ -417,3 +417,20 @@ def validateGeoJsonObject (jsondata, bbox=None, sequence=0):
 
 	# All checks passed
 	return True, jsondata
+
+
+def validateFieldAsGJListing (fielddata):
+	"""
+	Validates the field as a list of geojson objects
+	:param fielddata:
+	:return: bool
+	"""
+
+	if not isinstance (fielddata, (list, tuple)):
+		return False
+
+	for element in fielddata:
+		if not validate_geojson.validateGeoJsonObject(element):
+			return False
+
+	return True

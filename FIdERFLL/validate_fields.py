@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from Common import MessageTemplates
-from MessageValidator import validateDictToTemplate
-import validate_geojson
 
 
 __author__ = 'Antonio Vaccarino'
@@ -219,21 +216,7 @@ def validateFieldAsBoundingBox (fielddata):
 	#All checks passed
 	return True
 
-def validateFieldAsGJListing (fielddata):
-	"""
-	Validates the field as a list of geojson objects
-	:param fielddata:
-	:return: bool
-	"""
 
-	if not isinstance (fielddata, (list, tuple)):
-		return False
-
-	for element in fielddata:
-		if not validate_geojson.validateGeoJsonObject(element):
-			return False
-
-	return True
 
 
 
@@ -278,10 +261,11 @@ def validateFieldAsMetadataListing (fielddata):
 	return True
 
 def validateFieldAsDataIds (fielddata):
-	#This function verifies if the data provided by the field is realistic as a series of ID for our database
+	"""
+	This function verifies if the data provided by the field is realistic as a series of ID for our database
+	:param fielddata:
+	:return:
+	"""
 	#TODO: check if IDs are numeric only or alphanumeric and implement?
 	return isinstance(fielddata, str)
 
-def validateFieldAsAnomaly (fielddata):
-
-	return validateDictToTemplate(fielddata, MessageTemplates.model_field_anomaly, MessageTemplates.process_field_anomaly, withlog=False)

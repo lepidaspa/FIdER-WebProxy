@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from Common import MessageTemplates
+import shutil
+from Common import TemplatesModels
+from FIdERProxyFS.proxy_core import createMessageFromTemplate
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -17,7 +19,7 @@ import urllib2
 
 from Common.errors import *
 import proxy_config_core as conf
-import proxy_core
+#import proxy_core
 import MarconiLabsTools.ArDiVa
 
 """
@@ -169,14 +171,29 @@ def handleFileEvent (eventpath):
 
 
 
-def gatherUpdatesForSend (proxy_id):
+def rebuildFullShapesList (proxy_id):
 	"""
 	Creates the upserts for a specific soft proxy and returns them as dict for integration in a send message (request_write or response_read). Upserts are organized in a dict of metadata with meta_id as keys and lists of feature collections as values
 	:param proxy_id:
 	:return: dict
 	"""
 
-	#TODO: placeholder; note that right now it does too little to make it worth separating it from sendUpdatesToMain (~4 lines of code)
+	# get the full meta list in the upload directory
+	metalist = os.listdir(os.path.join(conf.baseuploadpath, proxy_id))
+
+	# for each meta we clean the $mirror directory (i.e. we DELETE everything)
+	for meta_id in metalist:
+
+		meta_mirrordir = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id)
+		for shape_mirrordir in os.listdir(meta_mirrordir):
+			shutil.rmtree(os.path.join(meta_mirrordir, shape_mirrordir))
+
+	#we launch the upsert process for each shape in each meta (AFTER the FULL cleanup)
+	for meta_id in metalist:
+		shapeslist = os.listdir(os.path.join(conf.baseuploadpath, proxy_id, meta_id))
+		for shape_id in shapeslist:
+			handleFileEvent (os.path.join (conf.baseuploadpath, proxy_id, meta_id, shape_id))
+
 
 
 def sendMessageToServer (jsonmessage, url, method, successreturns=None, failreturns=None):
@@ -223,24 +240,7 @@ def sendMessageToServer (jsonmessage, url, method, successreturns=None, failretu
 
 
 
-def createMessageFromTemplate (template, **customfields):
-	"""
-	Sends a json message to the main server and returns success if the response code is correct
-	:param template: the model, must be ArDiVa.Model compliant
-	:param customfields: a dict with all the custom data to be added to the model
-	:return: dictionary message ready for json.dumps, exception if the modified messge fails validation on the template
-	"""
 
-	#NOTE: should we keep proxy_id explicit in the message creation (for the purpose of logging)?
-
-	messagemodel = MarconiLabsTools.ArDiVa.Model(template)
-
-	filledok, requestmsg = messagemodel.fillSafely(**customfields)
-
-	if filledok is True:
-		return requestmsg
-	else:
-		raise RuntimeProxyException ("Failed to create valid %s %s message for proxy %s" % (template['message_type'], template['message_format'], customfields['token']))
 
 
 
@@ -272,7 +272,7 @@ def createMessageUpdatesRead (proxy_id, timestamp):
 	for meta_id in updatestosend:
 		meta_dict [meta_id] = locker.performLocked(proxy_core.assembleMetaJson, proxy_id, meta_id)
 
-	template = MessageTemplates.model_response_read
+	template = TemplatesModels.model_response_read
 	customfields = {
 		"data": {
 			"upserts" : meta_dict,
@@ -305,7 +305,7 @@ def sendUpdatesWrite (proxy_id):
 	for meta_id, timestamp in updateslist:
 		meta_dict [meta_id] = locker.performLocked(proxy_core.assembleMetaJson, proxy_id, meta_id)
 
-	template = MessageTemplates.model_request_write
+	template = TemplatesModels.model_request_write
 	customfields = {
 		"data": {
 			"upserts" : meta_dict,
@@ -316,7 +316,7 @@ def sendUpdatesWrite (proxy_id):
 	requestmsg = createMessageFromTemplate(template, token=proxy_id, **customfields)
 
 	#TODO: actual implementation of message transmission handling, right now we only have an empty function call
-	send_success = sendMessageToServer(json.dumps(requestmsg), conf.URL_WRITEREQUEST, 'POST', MessageTemplates.model_response_write, MessageTemplates.model_error_error)
+	send_success = sendMessageToServer(json.dumps(requestmsg), conf.URL_WRITEREQUEST, 'POST', TemplatesModels.model_response_write, TemplatesModels.model_error_error)
 
 	if send_success:
 		#proceed to clean up the /next directory from meta that has not received other modifications, log the success with the list of metas sent

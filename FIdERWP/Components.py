@@ -6,7 +6,7 @@ from FIdERProxyFS import proxy_config_core as conf
 from FIdERProxyFS import proxy_core
 from MarconiLabsTools import ArDiVa
 from Common.errors import *
-from Common import MessageTemplates
+from Common import TemplatesModels
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -69,7 +69,7 @@ def sendProxyManifest (proxy_id):
 	#we only do a simple http request since we only need the 200??
 
 	try:
-		return sendMessageToServer(proxy_core.getManifest(proxy_id), mainserver_discovery, MessageTemplates.model_response_manifest_success, MessageTemplates.model_response_manifest_fail)
+		return sendMessageToServer(proxy_core.getManifest(proxy_id), mainserver_discovery, TemplatesModels.model_response_manifest_success, TemplatesModels.model_response_manifest_fail)
 	except Exception as ex:
 		return False, ex.message
 

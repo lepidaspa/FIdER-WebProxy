@@ -24,7 +24,7 @@ urlpatterns = patterns('',
 
 	url(r'^proxy/setup', views.softproxy_create_manifest),
 	url(r'^proxy/create', views.softproxy_create_make),
-	url(r'^proxy/conversion', views.softproxy_conversion_setup)
-
+	url(r'^proxy/conversion', views.softproxy_conversion_setup),
+	url(r'^proxy/shapetable/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', views.component_shapefile_table)
 )
 

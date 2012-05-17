@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import json
-from error_handlers import ValidationError
-from errors_msg import ERROR_JSON_PARSING
+import sys
+sys.path.append("../")
 
 __author__ = 'Antonio Vaccarino'
-__docformat__ = 'restructuredtext en' 
+__docformat__ = 'restructuredtext en'
 
 
+from error_handlers import ValidationError
+from errors_msg import ERROR_JSON_PARSING
 from MarconiLabsTools import ArDiVa
 
 

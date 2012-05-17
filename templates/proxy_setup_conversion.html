@@ -5,16 +5,17 @@
     <title></title>
 
 
-    <title>FIdER - COnfigurazione tabella di conversione - WIP</title>
+    <title>FIdER - Configurazione tabelle di conversione - WIP</title>
 
     <link rel="stylesheet" href="{{ STATIC_URL }}fider.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}proxy_conversion.css">
 
     <link rel="stylesheet" href="{{ STATIC_URL }}smoothness/jquery-ui-1.8.20.custom.css">
 
 
     <script language="JavaScript" src="{{ STATIC_URL }}jquery-1.7.2.js"></script>
     <script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
-    <script language="JavaScript" src="{{ STATIC_URL }}proxy_setup_manifest.js"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}proxy_setup_conversion.js"></script>
 
     <!-- maps initialisation -->
 
@@ -22,15 +23,62 @@
 </head>
 <body>
 
-{{ uploadedfile }}
+<table>
+<tr>
+    <th><label for="sel_proxy">Proxy</label></th>
+    <th><label for="sel_meta">Metadata</label></th>
+    <th><label for="sel_shape">Shapefile</label></th>
+</tr>
+<tr>
+    <td>
+        <select id="sel_proxy">
+            <option class="nullopt" value=""></option>
+            {% for proxy_id in proxies %}
+                <option value="{{ proxy_id }}">{{ proxy_id }}</option>
+            {% endfor %}
+        </select>
 
+    </td>
 
+    <td>
+        <select id="sel_meta">
+            <option class="nullopt" value=""></option>
 
+            {% for proxy_id, metalist in metadata.items %}
+                <optgroup label="{{ proxy_id }}">
+                    {% for meta_id in metalist %}
+                        <option value="{{ meta_id }}">{{ meta_id }}</option>
+                    {% endfor %}
+                </optgroup>
+            {% endfor %}
+        </select>
+    </td>
+    <td>
+        <select id="sel_shape">
+            <option class="nullopt" value=""></option>
 
+            {% for proxy_id, metalist in shapefile.items %}
+                    {% for meta_id, shapelist in metalist.items %}
+                        <optgroup label="{{ proxy_id }}/{{ meta_id }}">
+                        {% for shape_id in shapelist %}
+                            <option value="{{ shape_id }}">{{ shape_id }}</option>
+                        {% endfor %}
+                        </optgroup>
+                    {% endfor %}
+            {% endfor %}
+        </select>
+    </td>
+</tr>
+</table>
 
+<br><br>
+<div id="widget_conversion">
 
-
+</div>
 
 
 </body>
+<script>
+    pageInit();
+</script>
 </html>

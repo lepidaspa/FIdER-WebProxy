@@ -6,10 +6,9 @@ from osgeo import ogr
 import shutil
 import zipfile
 import time
-from Common import MessageTemplates
-from FIdERProxyFS import proxy_lock
-from FIdERProxyFS.ProxyFS import createMessageFromTemplate
-from MarconiLabsTools import ArDiVa
+from Common.errors import RuntimeProxyException
+import MarconiLabsTools.ArDiVa
+
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -17,6 +16,13 @@ __docformat__ = 'restructuredtext en'
 import os.path
 import os
 
+import sys
+sys.path.append("../")
+
+from Common import TemplatesModels
+from FIdERProxyFS import proxy_lock
+#from FIdERProxyFS.ProxyFS import createMessageFromTemplate
+from MarconiLabsTools import ArDiVa
 import proxy_config_core as conf
 
 from Common.errors import *
@@ -196,7 +202,7 @@ def handleRead (proxy_id, datestring):
 	else:
 		returnstamp = time.strftime("%Y-%m-%dT%H:%M:%SZ",timestamp)
 
-	template = MessageTemplates.model_response_read
+	template = TemplatesModels.model_response_read
 	customfields = {
 		"token" : proxy_id,
 		"time" : returnstamp,
@@ -275,7 +281,22 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 	zipfp.extractall(path_mirror)
 
 
-def convertShapefileToJson (path_shape):
+
+def convertShapeFileToJson (proxy_id, meta_id, shape_id, normalise=True):
+	"""
+	Converts a shapefile to GeoJSON data and returns it.
+	:param proxy_id:
+	:param meta_id:
+	:param shape_id:
+	:param normalise: boolean, if we want to normalise the file
+	:return:
+	"""
+	shapepath = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
+
+	return convertShapePathToJson(shapepath, normalise)
+
+
+def convertShapePathToJson (path_shape, normalise=True):
 	"""
 	Converts a shapefile to GeoJSON data and returns it.
 	:param path_shape: path of the shape file to be converted
@@ -309,7 +330,9 @@ def convertShapefileToJson (path_shape):
 			feature = layer.GetFeature(f)
 			jsondata = feature.ExportToJson()
 
-			jsondata = adaptGeoJson(jsondata, getConversionTable(proxy_id, meta_id, shape_id))
+			# we may want to keep to original "properties" elements
+			if normalise:
+				jsondata = adaptGeoJson(jsondata, getConversionTable(proxy_id, meta_id, shape_id))
 
 			collection['features'].append(jsondata)
 
@@ -418,7 +441,7 @@ def rebuildShape (proxy_id, meta_id, shape_id, modified=True):
 	if modified:
 		path_shape = os.path.join(path_shape, ".tmp")
 
-	shape_gj = convertShapefileToJson (path_shape)
+	shape_gj = convertShapPatheToJson (path_shape)
 
 	return shape_gj
 
@@ -493,10 +516,21 @@ def queueForSend (proxy_id, meta_id):
 	open(nextfilepath, 'w').close()
 
 
+def createMessageFromTemplate (template, **customfields):
+	"""
+	Sends a json message to the main server and returns success if the response code is correct
+	:param template: the model, must be ArDiVa.Model compliant
+	:param customfields: a dict with all the custom data to be added to the model
+	:return: dictionary message ready for json.dumps, exception if the modified messge fails validation on the template
+	"""
 
+	#NOTE: should we keep proxy_id explicit in the message creation (for the purpose of logging)?
 
+	messagemodel = MarconiLabsTools.ArDiVa.Model(template)
 
+	filledok, requestmsg = messagemodel.fillSafely(**customfields)
 
-
-
-
+	if filledok is True:
+		return requestmsg
+	else:
+		raise RuntimeProxyException ("Failed to create valid %s %s message for proxy %s" % (template['message_type'], template['message_format'], customfields['token']))
