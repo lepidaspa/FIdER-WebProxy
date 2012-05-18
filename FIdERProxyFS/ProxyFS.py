@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import shutil
+import traceback
 from Common import TemplatesModels
+from FIdERProxyFS import proxy_core
 from FIdERProxyFS.proxy_core import createMessageFromTemplate
 
 __author__ = 'Antonio Vaccarino'
@@ -11,16 +13,15 @@ __docformat__ = 'restructuredtext en'
 #from time import sleep
 import zipfile
 import time
-import proxy_lock
 import sys
 import os
 import json
-import urllib2
 
 from Common.errors import *
 import proxy_config_core as conf
-#import proxy_core
-import MarconiLabsTools.ArDiVa
+import proxy_lock
+
+from FIdERWP.Components import sendMessageToServer
 
 """
 This module is called when a change happens in the filesystem (specifically in the upload directory, but the proxy checks anyway in case the fs monitor cannot filter before informing the proxy)
@@ -82,7 +83,8 @@ def createSoftProxy (proxy_id, manifest):
 	try:
 		proxy_core.createSoftProxy(proxy_id, manifest)
 	except Exception as ex:
-		return False, "Failed to create proxy %s, cause: %s" % (proxy_id, ex.message)
+		traceback.print_exc()
+		return False, "Failed to create proxy %s. Cause: %s" % (proxy_id, ex.message)
 
 	return True, manifest
 
@@ -194,18 +196,17 @@ def rebuildFullShapesList (proxy_id):
 		for shape_id in shapeslist:
 			handleFileEvent (os.path.join (conf.baseuploadpath, proxy_id, meta_id, shape_id))
 
+"""REPLACED IN FIdERWP.Components
 
-
-def sendMessageToServer (jsonmessage, url, method, successreturns=None, failreturns=None):
-	"""
+def sendMessageToServer (jsonmessage, url, successreturns=None, failreturns=None):
+	""" """
 	Sends a json message to the main server and returns success if the response code is correct
 	:param jsonmessage: data to be sent to the server, already in json format (json.dumps())
 	:param url:
-	:param method:
 	:param successreturns: dict template for successful use of data by the main server
 	:param failreturns: dict template for failed use of data by the main server
 	:return: tuple, True/False on success/failure and server json response
-	"""
+	""" """
 
 	#TODO: placeholder, implement, note that cannot be async if we want to keep the full comm cycle in this one only; should we also keep the full response from the other server?
 
@@ -238,7 +239,7 @@ def sendMessageToServer (jsonmessage, url, method, successreturns=None, failretu
 	return succeeded, jsonresponse
 
 
-
+"""
 
 
 
@@ -336,36 +337,6 @@ def sendUpdatesWrite (proxy_id):
 	else:
 		#leave the /next listing as is and log the failure as issue
 		logEvent ("Failed to send updates for proxy %s (meta/timestamp list: %s)" % (proxy_id, updateslist), True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":

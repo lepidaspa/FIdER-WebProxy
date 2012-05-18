@@ -52,6 +52,8 @@ function page_init ()
     $('#button_add_meta').click(addMeta);
 
     createMapWidget("#proxy_bb");
+    main_bb = $("#proxy_bb").geomap("option", "bbox");
+
     createMapWidget("#proxy_meta_new_bb");
 
     $("#disable_meta_date_from").trigger('click');
@@ -572,6 +574,8 @@ function checkSendable ()
     We have selected one MODE of operation
     We have the parameters for that mode of operations set (must be coded specifically for each mode as the number and exclusivity of fields changes)
      */
+
+    main_bb = $("#proxy_bb").geomap("option", "bbox");
 
     var issues = [];
     var warnings = [];

@@ -282,9 +282,15 @@ class Model (dict):
 
 	VAL_CODES = (VAL_STRICT, VAL_SUPERSET, VAL_SUBSET, VAL_LOOSE)
 
-	def __init__ (self, defaultrule=None):
-		dict.__init__ (self)
+	def __init__ (self, generator, *args, **kwargs):
+		print "ARGS for dict: "+str(generator)
+		dict.__init__ (self, generator)
+		if not kwargs.has_key("defaultrule"):
+			defaultrule = None
+		else:
+			defaultrule = kwargs["defaultrule"]
 		self.setDefaultRule(defaultrule)
+		print "Creating new model with dict\n%s\nfrom\n%s " % (str(self), generator)
 
 	def setDefaultRule (self, newdefault):
 		if newdefault in self.VAL_CODES:
@@ -456,7 +462,7 @@ class Model (dict):
 		RE_TYPE = type(re.compile(""))
 
 		unpacked = {}
-		for key in self.keys:
+		for key in self.keys():
 			if not isinstance(key, (tuple, RE_TYPE)):
 				unpacked[key] = self[key]
 			elif isinstance (key, tuple):
@@ -468,9 +474,9 @@ class Model (dict):
 
 
 
-	def fillSafely (self, **kwargs):
+	def fillSafely (self, kwargs):
 		"""
-		Fills a the Model dictionary with values for the specified keys. Note that this allows only for top-level insertions. There is no way to specify a multi-level key at the moment. Also, keys that allow a single possible value are auto-filled.
+		Fills a the Model dictionary with values for the specified keys. Note that this allows only for top-level insertions. There is no way to specify a multi-level key at the moment; a first-level key with a dict-type value will be filled with the content of the kwarg key if it also is a value. Also, keys that allow a single possible value are auto-filled.
 		A partially compiled dict can be passed by putting it as **varname after all the named parameters
 		:param kwargs: key/value pairs
 		:return: tuple, True/False (new dictionary is compliant), content of generated dictionary
@@ -484,7 +490,12 @@ class Model (dict):
 			# fill with proposed value if possible
 			if kwargs.has_key (key):
 				#if not compliant we do NOT add it to the generated dict, all common key values must ALWAYS be compliant
-				if self.evaluateCompliance (kwargs[key], unpacked[key], self.default):
+				if isinstance(kwargs[key], dict) and (isinstance(unpacked[key], dict) or unpacked[key] == dict):
+					#ugly hack to make dictionaries work
+					generated[key] = kwargs[key]
+
+				#TODO: verify functionality
+				elif self.evaluateCompliance (kwargs[key], unpacked[key], self.default):
 					generated[key] = kwargs[key]
 				else:
 					#try to see if it's a "solvable" type issue
@@ -494,7 +505,7 @@ class Model (dict):
 							generated[key] = adapted
 			#autofill if there's only one alternative, but NOT if there was a proposed value; the caller should be aware the proposed value was wrong
 			elif isinstance(self[key], (tuple,list)) and len(self[key]) == 1:
-				generated[key] = self[key]
+				generated[key] = self[key][0]
 			#else NOTHING, we do not add the key at all and will sort it out during self-validation. If the Model is validated as subset this will not be a problem
 
 		for key in kwargs.keys():

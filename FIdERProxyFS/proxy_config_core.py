@@ -4,9 +4,30 @@
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
+
+def loadConfFile(filepath):
+	confdata = {}
+	fp = open(filepath)
+	for line in fp:
+		key, value = line.strip().split("=",1)
+		try:
+			if line[0] != "#":
+				confdata[key]=value
+		except:
+			pass
+	return confdata
+
+
+
+
 #IMPORTING FROM CONFIG TESTING
 #TODO: REPLACE WITH ACTUAL CONFIG DATA
 import config_testing
+
+#TODO: make conf file more complete and place it out (problems with Django?)
+#conf_core = loadConfFile(os.path.join("..","proxy_core.conf"))
+conf_core = loadConfFile("proxy_core.conf")
+
 
 
 
@@ -21,9 +42,10 @@ mail_admin = config_testing.PROXYADMIN_MAIL
 log_folder = "./tests/logs/"
 
 # general data path for the HARD proxy
-baseproxypath = config_testing.HARDPROXY_DATAPATH
-baseuploadpath = config_testing.UPLOADPATH
-
+#baseproxypath = config_testing.HARDPROXY_DATAPATH
+#baseuploadpath = config_testing.UPLOADPATH
+baseproxypath = conf_core["PROXY_ROOT_MAIN"]
+baseuploadpath = conf_core["PROXY_ROOT_UPLOAD"]
 
 mainserver_ref_location = config_testing.MAINSERVER_CONF_FILE
 
@@ -37,6 +59,12 @@ wait_for_connection = 10
 wait_for_unlock = 3
 
 
-URL_WRITEREQUEST = config_testing.URL_WRITE_REQUEST
-URL_DISCOVERY = config_testing.URL_DISCOVERY
+#URL_WRITEREQUEST = config_testing.URL_WRITE_REQUEST
+#URL_DISCOVERY = config_testing.URL_DISCOVERY
+
+MAINSERVER_LOC = "http://"+conf_core["FIDER_ADDRESS"]+":"+conf_core["FIDER_PORT"]
+
+URL_DISCOVERY = MAINSERVER_LOC+conf_core["URL_FIDER_WELCOME"]
+URL_WRITEREQUEST = MAINSERVER_LOC+conf_core["URL_FIDER_SUBMIT_WRITE"]
+URL_WRITEMANIFEST = MAINSERVER_LOC+conf_core["URL_FIDER_SUBMIT_MANIFEST"]
 

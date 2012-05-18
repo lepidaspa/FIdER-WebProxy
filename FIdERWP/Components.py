@@ -42,37 +42,55 @@ def sendMessageToServer (jsonmessage, url, method, successreturns=None, failretu
 		jsonresponse = json.loads(response)
 
 	#TODO: consider moving the model creation out of the function so we can set the strictness more accurately
-	successmodel = ArDiVa.Model(successreturns)
-	failmodel = ArDiVa.Model(failreturns)
+	succeeded = None
+	canverify = False
+	if successreturns is not None:
+		successmodel = ArDiVa.Model(successreturns)
+		canverify = True
+		print "Comparing %s to success model %s " % (jsonresponse, successmodel)
 
-	if successmodel.validateCandidate(jsonresponse):
-		succeeded = True
-	elif failmodel.validateCandidate(jsonresponse):
-		succeeded = False
-	else:
+		if successmodel.validateCandidate(jsonresponse):
+			succeeded = True
+	if failreturns is not None:
+		failmodel = ArDiVa.Model(failreturns)
+		canverify = True
+		print "Comparing %s to fail model %s " % (jsonresponse, failmodel)
+
+	if failmodel.validateCandidate(jsonresponse):
+			succeeded = False
+
+
+
+
+	if canverify is True and succeeded is None:
 		raise CommunicationFailure ("Unexpected message from server: %s" % jsonresponse)
+	else:
+		return succeeded, jsonresponse
 
-	return succeeded, jsonresponse
+def sendProxyManifestRaw (jsonmanifest):
+	"""
+	Sends the manifest of a given soft proxy to the main server and returns the response
+	:param jsonmanifest:
+	:return:
+	"""
 
-def sendProxyManifest (proxy_id):
+	print "Expected replies for manifest send:\n%s\n%s" % (TemplatesModels.model_response_manifest_success, TemplatesModels.model_response_manifest_fail)
+
+
+
+	try:
+		return sendMessageToServer(jsonmanifest, conf.URL_WRITEMANIFEST, 'POST',  TemplatesModels.model_response_manifest_success, TemplatesModels.model_response_manifest_fail)
+	except Exception as ex:
+		return False, "Error while sending manifest to %s: %s" % (conf.URL_WRITEMANIFEST, str(ex))
+
+
+def sendProxyManifestFromFile (proxy_id):
 	"""
 	Sends the manifest of a given soft proxy to the main server and returns the response
 	:param proxy_id:
 	:return:
 	"""
-
-
-	# PLACEHOLDER
-	mainserver_discovery = conf.URL_DISCOVERY
-
-
-	#we only do a simple http request since we only need the 200??
-
-	try:
-		return sendMessageToServer(proxy_core.getManifest(proxy_id), mainserver_discovery, TemplatesModels.model_response_manifest_success, TemplatesModels.model_response_manifest_fail)
-	except Exception as ex:
-		return False, ex.message
-
+	return sendProxyManifestRaw(proxy_core.getManifest(proxy_id))
 
 
 def getWelcomeFromServer ():
@@ -81,21 +99,20 @@ def getWelcomeFromServer ():
 	:return:
 	"""
 
-	#TODO: move to a constants file
-	#NOTE: find the domain/IP of the proxy itself for DISCOVERYURL
-	DISCOVERYURL = "/proxy/discovery"
-
-	#TODO: FIX ADDRESS OF THE MAIN SERVER
-	MAINSERVERDOMAIN = ""
-	MAINSERVERPATH = "/federation/new/helo"
-
 	try:
 
-		jsonresponse = urllib2.urlopen(MAINSERVERDOMAIN+MAINSERVERPATH)
-		welcomedata = json.loads(jsonresponse)
+		jsonresponse = urllib2.urlopen(conf.URL_DISCOVERY)
+		welcomedata = json.load(jsonresponse)
+		print welcomedata
 
-	except Exception, ex:
-		return False, ex.message
+	except Exception as ex:
+		if isinstance(ex, urllib2.HTTPError):
+			errormess = ex.code
+		elif isinstance(ex, urllib2.URLError):
+			errormess = ex.reason
+		else:
+			errormess = ex.message
+		return False, "Error when requesting welcome from %s: %s" % (conf.URL_DISCOVERY, errormess)
 
 	return True, welcomedata
 

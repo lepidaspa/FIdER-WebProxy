@@ -58,7 +58,9 @@ def createSoftProxy (proxy_id, manifest):
 	os.makedirs(os.path.join(basepath, conf.path_geojson))
 	os.makedirs(os.path.join(basepath, conf.path_mirror))
 
-	json.dump(manifest, os.path.join(basepath,conf.path_manifest))
+	fp_manifest = open(os.path.join(basepath,conf.path_manifest),'w+')
+	json.dump(manifest, fp_manifest)
+	fp_manifest.close()
 
 	for cmeta in manifest['metadata']:
 		meta_id = cmeta['name']
@@ -441,7 +443,7 @@ def rebuildShape (proxy_id, meta_id, shape_id, modified=True):
 	if modified:
 		path_shape = os.path.join(path_shape, ".tmp")
 
-	shape_gj = convertShapPatheToJson (path_shape)
+	shape_gj = convertShapePathToJson (path_shape)
 
 	return shape_gj
 

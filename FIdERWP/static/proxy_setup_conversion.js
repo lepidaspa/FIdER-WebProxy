@@ -122,7 +122,7 @@ function openConversionTable ()
     var shape_id = $("#sel_shape").val();
 
     //TODO: placeholder, implement
-    alert("Selecting "+proxy_id+"."+meta_id+"."+shape_id);
+    //alert("Selecting "+proxy_id+"."+meta_id+"."+shape_id);
 
     $("#widget_conversion").load("/proxy/shapetable/"+proxy_id+"/"+meta_id+"/"+shape_id);
 

@@ -52,7 +52,7 @@ def softproxy_create_make (request):
 
 	# creating the pre-manifest
 	jsonmessage = json.loads(request.POST['jsondata'])
-	manifest = ArDiVa.Model(MessageTemplates.model_response_capabilities)
+	premanifest = ArDiVa.Model(MessageTemplates.model_response_capabilities)
 
 
 	# Getting the token from the main  server
@@ -63,10 +63,12 @@ def softproxy_create_make (request):
 
 		proxy_id = message['token']
 		jsonmessage['token'] = proxy_id
-		manifest.fillSafely(jsonmessage)
+		filledok, manifest = premanifest.fillSafely(jsonmessage)
 
+		print "*****JSONMESS: \n"+str(jsonmessage)+"*****"
+		print "*****MANIFEST: "+str(filledok)+"\n"+str(manifest)+"*****"
 
-		approved, response = Components.sendProxyManifest (proxy_id)
+		approved, response = Components.sendProxyManifestRaw (json.dumps(manifest))
 
 		if approved:
 
@@ -75,7 +77,7 @@ def softproxy_create_make (request):
 			if created:
 				feedback = "Creato proxy %s con il seguente manifesto %s" % (proxy_id, str(manifest))
 			else:
-				feedback = "Errore nella creazione locale del proxy %s con il seguente manifesto<br>%s;<br>Errore %s" % (proxy_id, str(manifest), str(message))
+				feedback = "Errore nella creazione locale del proxy %s con il seguente manifesto<br>%s<br>Errore %s" % (proxy_id, str(manifest), str(message))
 
 		else:
 			feedback = "Errore dal federatore nella creazione del proxy %s con il seguente manifesto<br> %s;<br>Errore %s" % (proxy_id, str(manifest), str(response))
@@ -97,16 +99,6 @@ def softproxy_conversion_setup (request):
 	Allows to setup a conversion table for a any proxy/meta/shape combination, according to what has already been uploaded
 	:param request:
 	:return:
-	"""
-
-
-	"""
-	if request.FILE is not None:
-		context = RequestContext(request)
-		context ["uploadedfile"] = request.FILE
-		return render_to_response ('proxy_setup_conversion.html', context)
-	else:
-		return render_to_response ('proxy_setup_conversion.html',context_instance=RequestContext(request))
 	"""
 
 	list_proxy = []
@@ -145,9 +137,18 @@ context_instance=RequestContext(request))
 
 
 def component_shapefile_table (request, **kwargs):
+	"""
 
-	shapedata = proxy_core.convertShapeFileToJson(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"], False)
-	shapetable = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	#shapedata = proxy_core.convertShapeFileToJson(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"], False)
+	#shapetable = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
+
+	shapedata = None
+	shapetable = None
 
 	args = {
 		"proxy_id" : kwargs["proxy_id"],
@@ -157,6 +158,9 @@ def component_shapefile_table (request, **kwargs):
 		"conversion" : shapetable
 
 	}
+
+	print args
+
 
 	return render_to_response ('component_proxy_retrieve_conversion.html', args,
 		context_instance=RequestContext(request))
