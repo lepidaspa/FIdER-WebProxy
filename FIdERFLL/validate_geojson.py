@@ -430,7 +430,7 @@ def validateFieldAsGJListing (fielddata):
 		return False
 
 	for element in fielddata:
-		if not validate_geojson.validateGeoJsonObject(element):
+		if not validateGeoJsonObject(element):
 			return False
 
 	return True

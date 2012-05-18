@@ -50,8 +50,9 @@ def createSoftProxy (proxy_id, manifest):
 	os.makedirs (basepath)
 	os.makedirs (uploadpath)
 
-	#creating config directory
+	#creating config directory, log directory, locks directory
 	os.makedirs(os.path.join(basepath, "conf"))
+
 
 	#creating directories for data
 	os.makedirs(os.path.join(basepath, "next"))

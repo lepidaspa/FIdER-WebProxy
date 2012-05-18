@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from FIdERProxyFS import proxy_config_core
+
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
@@ -14,7 +16,7 @@ model_response_capabilities = {
 	"token": unicode,
 	"message_type": (u'response',),
 	"message_format": (u'capabilities',),
-	"base_url": unicode,
+	"base_url": (proxy_config_core.HARDPROXY_LOC,),
 	"area": list,
 	"time": list,
 	"operations": {
@@ -27,9 +29,8 @@ model_response_capabilities = {
 			"bi": (u"full", u"simple", u"none"),
 			"signs": bool,
 		},
-
-		"metadata": list
-	}
+	},
+	"metadata": list
 }
 
 

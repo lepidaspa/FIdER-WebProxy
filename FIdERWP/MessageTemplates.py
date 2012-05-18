@@ -21,11 +21,12 @@ model_response_capabilities = {
 			"inventory": (u"full", u"simple", u"none"),
 			"geographic": (u"full", u"BB", u"none"),
 			"time": (u"full", u"none"),
-			"bi": (u"full", u"simple", u"none")
-		},
-		"signs": bool,
-		"metadata": list
-	}
+			"bi": (u"full", u"simple", u"none"),
+			"signs": bool,
+
+			},
+	},
+	"metadata": list
 }
 
 model_response_welcome = {

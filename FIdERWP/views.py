@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import os
 
 
 __author__ = 'Antonio Vaccarino'
@@ -15,9 +15,9 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse
 
 from MarconiLabsTools import ArDiVa
-from FIdERProxyFS import ProxyFS, proxy_core
+from FIdERProxyFS import ProxyFS
 from FIdERWP import MessageTemplates, Components
-
+from FIdERProxyFS import proxy_config_core as conf
 
 def error404test (request):
 
@@ -65,8 +65,8 @@ def softproxy_create_make (request):
 		jsonmessage['token'] = proxy_id
 		filledok, manifest = premanifest.fillSafely(jsonmessage)
 
-		print "*****JSONMESS: \n"+str(jsonmessage)+"*****"
-		print "*****MANIFEST: "+str(filledok)+"\n"+str(manifest)+"*****"
+		#print "*****JSONMESS: \n"+str(jsonmessage)+"*****"
+		#print "*****MANIFEST: "+str(filledok)+"\n"+str(manifest)+"*****"
 
 		approved, response = Components.sendProxyManifestRaw (json.dumps(manifest))
 
@@ -108,28 +108,41 @@ def softproxy_conversion_setup (request):
 	#TODO: Replace debug tests with actual data
 
 	#get list of all proxies
-	#list_proxy = os.listdir(os.path.join(conf.baseuploadpath))
+	list_proxy = os.listdir(os.path.join(conf.baseuploadpath))
 	#DEBUG ONLY
-	list_proxy = ['42g2424g42g24g', 'gg248j42', 'fg4g4224']
+	#list_proxy = ['42g2424g42g24g', 'gg248j42', 'fg4g4224']
 
 	#get list of all metas (for proxy); note: only those for which we have files uploaded
 	#DEBUG ONLY
+	"""
 	list_meta_byproxy = {
 		'42g2424g42g24g' : ["A","B", "C", "D"],
 		'gg248j42' : ["E","F","G","H"],
 		'fg4g4224': ["I","J","K", "L"]
 	}
+	"""
+
+	list_meta_byproxy = {}
+	for proxy in list_proxy:
+		list_meta_byproxy [proxy] = os.listdir(os.path.join(conf.baseuploadpath,proxy))
 
 	#get list of all shapes (for meta, for proxy)
 	#DEBUG ONLY
+	"""
 	list_shape_bymeta_byproxy = {
 		'42g2424g42g24g' : {"A": [1,2,3],"B": [4,5,6], "C":[6,7,8], "D":[9,10,11]},
 		'gg248j42' : {"E":[12,13,14,15],"F":[16,17,18],"G":[19,20,21],"H":[19,20,21]},
 		'fg4g4224': {"I":[22,23,24,25],"J":[26,27,28,29],"K":[30,31,32], "L":[33,34,35,36,37]}
 	}
+	"""
 
-
-
+	list_shape_bymeta_byproxy = {}
+	for proxy in list_proxy:
+		list_shape_bymeta_byproxy[proxy] = {}
+		for meta in list_meta_byproxy[proxy]:
+			list_shape_bymeta_byproxy[proxy][meta] = []
+			for shape in os.listdir(os.path.join(conf.baseuploadpath,proxy,meta)):
+				list_shape_bymeta_byproxy[proxy][meta].append(shape[:-4])
 
 	return render_to_response ('proxy_setup_conversion.html', {"proxies":list_proxy, "metadata":list_meta_byproxy, "shapefile":list_shape_bymeta_byproxy},
 context_instance=RequestContext(request))
