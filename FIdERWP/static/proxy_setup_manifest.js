@@ -750,7 +750,7 @@ function postManifest ()
         manifest_pre['metadata'].push(cmeta);
     }
 
-    alert(JSON.stringify(manifest_pre));
+    //alert(JSON.stringify(manifest_pre));
 
     $("#form_jsondata").val(JSON.stringify(manifest_pre));
 

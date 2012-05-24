@@ -12,12 +12,13 @@ var list_proxy;
 var list_meta;
 // multi-level associative array: key proxy: value array: key meta: value shape
 var list_shape;
+var conversions;
+var conversion_types;
 
 function pageInit()
 {
     rebuildFilters();
 }
-
 
 function rebuildFilters()
 {
@@ -73,6 +74,7 @@ function rebuildFilters()
     $("#sel_meta").hide();
     $("#sel_shape").hide();
 
+
 }
 
 
@@ -83,9 +85,8 @@ function updateFiltersFromProxy ()
     var meta_id;
 
     $("#sel_meta :[class!=nullopt]").remove();
-
     var proxy_id = $("#sel_proxy").val();
-    for (i in list_meta[proxy_id])
+    for (var i in list_meta[proxy_id])
     {
         meta_id = list_meta[proxy_id][i];
         $("#sel_meta").append('<option value="'+meta_id+'">'+meta_id+'</option>');
@@ -117,13 +118,257 @@ function updateFiltersFromMeta ()
 
 function openConversionTable ()
 {
+
+    $("#mapped_type").unbind();
+
     var proxy_id = $("#sel_proxy").val();
     var meta_id = $("#sel_meta").val();
     var shape_id = $("#sel_shape").val();
 
     //TODO: placeholder, implement
-    //alert("Selecting "+proxy_id+"."+meta_id+"."+shape_id);
+    //alert("Loading table for "+proxy_id+"."+meta_id+"."+shape_id);
 
-    $("#widget_conversion").load("/proxy/shapetable/"+proxy_id+"/"+meta_id+"/"+shape_id);
+
+    $.ajax({
+        url: "/proxy/shapetable/"+proxy_id+"/"+meta_id+"/"+shape_id,
+        async: false
+    }).done(function( tabledata ) {
+            $("#widget_conversion").empty();
+            $("#widget_conversion").append(tabledata);
+        });
+
+
+    //conversion_init();
+
+    focusConversionSelect();
+    $("#mapped_type").unbind();
+    $("#mapped_type").change(focusConversionSelect);
+    //alert("Rebound mapped_type");
+
+    $("#button_conversion_create").unbind();
+    $("#button_conversion_create_meta").unbind();
+    $("#button_conversion_create").click(setConversionTable);
+    $("#button_conversion_create_meta").click(setConversionTableForMeta);
+
+    $(".mapped_field").unbind();
+    $(".mapped_field").change(checkSendable);
+
+    //TODO: TEMPORARY ONLY, FIX
+    $("#button_conversion_create_meta").attr("disabled", true);
+
+
 
 }
+
+
+function focusConversionSelect ()
+{
+
+    var typeselection = $("#mapped_type").val();
+
+    //var typeselection = $("#mapped_type").find(":selected").val();
+
+    //alert ("Filtering options  on "+typeselection);
+    //$(".mapped_field optgroup").each(filterOptgroup);
+
+    // removing ALL optgroups
+    $(".mapped_field").empty();
+
+    //building optgroup for specified type
+    var optgroup = "";
+    var selects = $(".mapped_field");
+
+
+    selects.each (function (index, value)
+        {
+            $(this).append('<option value="">(non utilizzato)</option>');
+
+            for (var fieldname in conversions[typeselection])
+            {
+                $(this).append("<option value='"+fieldname+"'>"+fieldname+" ("+conversions[typeselection][fieldname]+")</option>");
+            }
+        }
+    );
+
+}
+
+
+
+function fillConversionTable ()
+{
+    var convtable = {};
+    $(".conversion_item").each ( function (index,value)
+        {
+
+            var itemname = $(this).find(".item_name").text();
+            var itemtype = $("#mapped_type").val();
+            var itemdest = $(this).find(".mapped_field").val();
+
+            if (itemdest != '')
+            {
+                convtable[itemname] = [itemtype, itemdest];
+            }
+        }
+    );
+    return convtable;
+}
+
+function checkSendable()
+{
+    // Verifies if all the parameters are set correctly and enables/disables sending buttons as needed. Also, it rewrites the notification area.
+
+
+    //TODO: proper handling of enable-disable: ATM we use an empty form to erase all keys from an existing table
+
+
+    $("#notifications_area").empty();
+
+    var usedkeys = [];
+    var warnings = [];
+
+    $(".conversion_item").each ( function (index,value)
+        {
+
+            var itemdest = $(this).find(".mapped_field").val();
+
+            if (itemdest != '')
+            {
+                usedkeys.push(itemdest);
+            }
+        }
+    );
+
+    var repeated = [];
+    var warned = [];
+    for (var i = 0; i < usedkeys.length; i++)
+    {
+        if ($.inArray(usedkeys[i], repeated) == -1)
+        {
+            repeated.push(usedkeys[i]);
+        }
+        else
+        {
+            if ($.inArray(usedkeys[i], warned) == -1)
+            {
+                warned.push(usedkeys[i]);
+                warnings.push("La chiave "+usedkeys[i]+" è usata per più di una proprietà.<br>");
+            }
+
+        }
+    }
+
+    for (i = 0; i < warnings.length; i++)
+    {
+        $("#notifications_area").append(warnings[i]+"<br>");
+    }
+
+
+
+}
+
+
+function setConversionTableForMeta()
+{
+
+    var jsondata = {};
+    jsondata['convtable'] = fillConversionTable();
+    //alert(JSON.stringify(jsondata['convtable']));
+
+    jsondata ['proxy_id']  = $("#sel_proxy").val();
+    jsondata ['meta_id'] = $("#sel_meta").val();
+    jsondata ['shape_id'] = null;
+
+    postConversionTable(jsondata);
+
+    return false;
+
+
+}
+function setConversionTable()
+{
+
+    var jsondata = {};
+    jsondata['convtable'] = fillConversionTable();
+    //alert(JSON.stringify(jsondata['convtable']));
+
+    jsondata ['proxy_id']  = $("#sel_proxy").val();
+    jsondata ['meta_id'] = $("#sel_meta").val();
+    jsondata ['shape_id'] = $("#sel_shape").val();
+
+    postConversionTable(jsondata);
+
+    return false;
+}
+
+
+function postConversionTable(jsondata)
+{
+
+    //alert(JSON.stringify(jsondata));
+
+    var conversion_success;
+
+    $.ajax({
+            url: "/proxy/maketable/",
+            async: false,
+            data: {jsonmessage: JSON.stringify(jsondata)},
+            type: 'POST',
+            success: function(data) {
+                conversion_success = data;
+            }
+        }
+
+    );
+
+
+    /*
+    alert("Operation success status: "+conversion_success['completed']+"\n"+
+        "Updated shapes: "+conversion_success['ok']+"\n"+
+        "Errors on: "+conversion_success['failed']
+    );
+    */
+
+    var i;
+    var success_string = "";
+    if (conversion_success['completed'] == true)
+    {
+        success_string += "Aggiornamento tabella di conversione effettuato con successo. Elementi aggiornati: ";
+        for (i in conversion_success['ok'])
+        {
+            if (i > 0)
+            {
+                success_string += ", ";
+            }
+            success_string += conversion_success['ok'][i];
+        }
+    }
+    else
+    {
+        success_string += "Aggiornamento tabella di conversione non completato.<br>";
+        success_string += "Elementi aggiornati: ";
+        for (i in conversion_success['ok'])
+        {
+            if (i > 0)
+            {
+                success_string += ", ";
+            }
+            success_string += conversion_success['ok'][i];
+        }
+        success_string += "<br>Elementi non aggiornati: ";
+        for (i in conversion_success['failed'])
+        {
+            if (i > 0)
+            {
+                success_string += ", ";
+            }
+            success_string += conversion_success['failed'][i];
+        }
+
+    }
+    $("#notifications_area").append(success_string);
+
+
+
+    return false;
+}
+

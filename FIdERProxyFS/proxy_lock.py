@@ -52,14 +52,18 @@ def setFSLock (proxy_id, meta_id, shape_id = None):
 	else:
 		lockname = meta_id
 
-	lockdir = os.path.join (conf.baseproxypath, proxy_id)
+	print "CreatING lock file on %s/%s" % (proxy_id, lockname)
+
+	lockdir = os.path.join (conf.baseproxypath, proxy_id, "locks")
 	lockpath = os.path.join (lockdir, lockname)
 
 	locklist = os.listdir(lockdir)
+	#print "Lock list for proxy %s: %s" % (proxy_id, locklist)
 
 	#first we check to see if there is a lock on the whole meta
-	if (lockfile.startswith(meta_id) for lockfile in locklist):
-		raise ResourceLockedException ("Meta %s is currently locked" % meta_id)
+	for lockfile in locklist:
+		if lockfile.startswith(meta_id):
+			raise ResourceLockedException ("Meta %s is currently locked" % meta_id)
 
 	#if not, we check to see if there is a lock on the specific shape file, or on ANY file in case we are locking the whole meta
 	if shape_id is not None:
@@ -72,9 +76,12 @@ def setFSLock (proxy_id, meta_id, shape_id = None):
 			raise ResourceLockedException ("At least one resource of meta %s is currently locked" % meta_id)
 
 	try:
-		os.open(lockpath, 'w').close()
-	except:
+		open(lockpath, 'w+').close()
+	except Exception as ex:
+
 		raise InternalProxyException ("Could not create lockfile %s" % lockpath)
+
+	print "CreatED lock file on %s/%s/%s" % (proxy_id, meta_id, shape_id)
 
 
 	return True
@@ -88,7 +95,9 @@ def releaseFSLock (proxy_id, meta_id, shape_id = None):
 	else:
 		lockname = meta_id
 
-	lockdir = os.path.join (conf.baseproxypath, proxy_id)
+	print "RemovING lock file for %s/%s/%s" % (proxy_id, meta_id, shape_id)
+
+	lockdir = os.path.join (conf.baseproxypath, proxy_id, "locks")
 	lockpath = os.path.join (lockdir, lockname)
 
 	locklist = os.listdir(lockdir)
@@ -97,7 +106,8 @@ def releaseFSLock (proxy_id, meta_id, shape_id = None):
 
 	try:
 		os.remove(lockpath)
-	except:
+	except Exception as ex:
+		print "fslockReleaseError: %s " % ex
 		if os.path.exists(lockpath):
 			# lock exists but we cannot remove it
 			raise InternalProxyException ("Could not delete existing file %s" % lockpath)
@@ -107,6 +117,8 @@ def releaseFSLock (proxy_id, meta_id, shape_id = None):
 		else:
 			# the lock directory itself does not exist any more
 			raise InternalProxyException ("Could not find lock directory for %s/%s" % (proxy_id, meta_id))
+
+	print "RemovED lock file for %s/%s/%s" % (proxy_id, meta_id, shape_id)
 
 
 	return True
@@ -148,6 +160,8 @@ class ProxyLocker ():
 		:return: whatever returns the original function
 		"""
 
+
+		print "Performing locked action %s on %s" % (action, args)
 		# we get the custom information on what really needs to be locked
 		# first we extract everything with inspection
 
@@ -173,19 +187,23 @@ class ProxyLocker ():
 		if proxy_id is None or meta_id is None:
 			raise RuntimeProxyException ("Cannot create lock file for unknown proxy or  meta")
 
+		print "Performing locked function %s on %s/%s/%s" % (action, proxy_id, meta_id, shape_id)
 
 		# 1. CREATING THE LOCK FILE
 
 		attempt = 0
 		issue = None
 		success = False
-		while attempt < self.tries:
+		while (attempt < self.tries and success is False):
 			try:
 				success = setFSLock (proxy_id, meta_id, shape_id)
 			except Exception as ex:
+				print "FSLock issue: "+str(ex)
+
 				issue = ex
 				#wait before retrying
 				time.sleep(self.wait)
+			attempt += 1
 
 		if success is not True:
 			#NOTE: check Python docs, a generic raise may be enough
@@ -195,6 +213,7 @@ class ProxyLocker ():
 		# 2. Perform the required operation
 
 		try:
+			print "Action: %s with Args %s and KWArgs %s" % (action, args, kwargs)
 			output = action(*args, **kwargs)
 		except Exception as ex:
 			issue = ex
@@ -202,10 +221,11 @@ class ProxyLocker ():
 			# we try to release the lockfile and THEN we send the core exception up
 			try:
 				releaseFSLock(proxy_id, meta_id, shape_id)
-			except Exception as ex:
-				raise InternalProxyException ("Failed to release lockfile for %s/%s.%s \n(%s)\n while closing after the following error:\n%s", (proxy_id, meta_id, shape_id, ex.message, issue.message))
+			except Exception as exb:
+				print "Error: "+str(ex)
+				raise InternalProxyException ("Failed to release lockfile for %s/%s.%s \n(%s)\n while closing after the following error:\n%s" % (proxy_id, meta_id, shape_id, exb.message, issue.message))
 
-
+			print "fslockrelease issue: "+str(issue)
 			raise issue
 
 

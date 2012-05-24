@@ -233,13 +233,19 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 	:return:
 	"""
 
+
+	print "Handling upsert on %s %s %s" % (proxy_id, meta_id, shape_id)
 	# first we check if the directory already exists
 	# in case we remove it and write the new data so we ensure we use a clean environment
 
 	try:
-		zipfilename = os.path.join(conf.baseuploadpath, proxy_id, meta_id, shape_id, ".zip")
+		zipfilename = os.path.join(conf.baseuploadpath, proxy_id, meta_id, shape_id+".zip")
+
+		print "Unpacking file %s" % zipfilename
+
 		zipfp = zipfile.ZipFile(zipfilename, mode='r')
 	except:
+		print "Issue when opening zip file %s " % zipfilename
 		#leaving as placeholder in case we want to add a more specific handling
 		raise
 
@@ -254,6 +260,8 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 	ext_accept = [
 		".shp", ".shx", ".dbf", ".prj", ".sbn", ".sbx", ".fbn", ".fbx", ".ain", ".aih", ".ixs", ".mxs", ".atx", ".cpg", ".shp.xml"
 	]
+
+	print "Working on unpacked data"
 
 	for candidatepath in zipfp.namelist():
 		#checking that no file unpacks to a different directory
@@ -271,7 +279,7 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 			if cext is None:
 				raise InvalidShapeArchiveException ("Shape archive %s contains unrelated data in file %s " % (shape_id, candidatepath))
 
-	if not all(ext_mandatory.values):
+	if not all(ext_mandatory.values()):
 		raise InvalidShapeArchiveException ("Mandatory file missing in shape archive %s (should contain .shp, .shx and .dbf)" % shape_id)
 
 	#creating the path after opening the zip so there is a smaller risk of leaving trash behind if we get an error
@@ -303,8 +311,11 @@ def convertShapePathToJson (path_shape, normalise=True):
 	"""
 	Converts a shapefile to GeoJSON data and returns it.
 	:param path_shape: path of the shape file to be converted
+	:param normalise: defines if we want to remove or modify elements in the  'properties' section according to the server's settings
 	:return: geojson feature data
 	"""
+
+	print "Shape conversion to JSON format"
 
 	basepath, shape_id = os.path.split(path_shape)
 	basepath, meta_id = os.path.split(basepath)
@@ -323,6 +334,7 @@ def convertShapePathToJson (path_shape, normalise=True):
 	try:
 		datasource = ogr.Open(path_shape)
 	except:
+		#TODO: better debug
 		return False
 
 	jsonlist = []
@@ -331,7 +343,11 @@ def convertShapePathToJson (path_shape, normalise=True):
 		layer = datasource.GetLayer(i)
 		for f in range (0, layer.GetFeatureCount()):
 			feature = layer.GetFeature(f)
-			jsondata = feature.ExportToJson()
+
+			# fixed to output actual dict
+			jsondata = json.loads(feature.ExportToJson())
+
+			#print "feature.exportToJson outputs "+str(type(jsondata))
 
 			# we may want to keep to original "properties" elements
 			if normalise:
@@ -364,7 +380,15 @@ def getConversionTable (proxy_id, meta_id, shape_id):
 			raise ConversionTableAccessException ("Error while accessing conversion table for %s.%s.%s: %s" % (proxy_id, meta_id, shape_id, ex.message))
 
 
-
+def createConversionTable (conversiontable, proxy_id, meta_id, shape_id=None):
+	"""
+	Dumps a conversion table to the location required. If shape_id is none, we save to ALL shapes in the meta. Does not check if the table already exists
+	:param conversiontable:
+	:param proxy_id:
+	:param meta_id:
+	:param shape_id:
+	:return:
+	"""
 
 def adaptGeoJson (jsondata, conversiontable=None):
 	"""
@@ -373,6 +397,10 @@ def adaptGeoJson (jsondata, conversiontable=None):
 	:param conversiontable: single level dictionary:
 	:return:
 	"""
+
+	#in case the function is called with a str/unicode
+	if isinstance(jsondata, (str, unicode)):
+		jsondata = json.loads(jsondata)
 
 	if conversiontable is None:
 		conversiontable = {}
@@ -459,7 +487,7 @@ def replicateShapeData (shapedata, proxy_id, meta_id, shape_id, modified=True):
 	"""
 
 	try:
-		shape_fp = open (os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id))
+		shape_fp = open (os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id), 'w+')
 		json.dump(shapedata, shape_fp)
 		shape_fp.close()
 	except:

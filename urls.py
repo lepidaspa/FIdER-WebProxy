@@ -25,6 +25,12 @@ urlpatterns = patterns('',
 	url(r'^proxy/setup', views.softproxy_create_manifest),
 	url(r'^proxy/create', views.softproxy_create_make),
 	url(r'^proxy/conversion', views.softproxy_conversion_setup),
-	url(r'^proxy/shapetable/(?P<proxy_id>[\w\.]*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', views.component_shapefile_table)
+	url(r'^proxy/shapetable/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', views.component_shapefile_table),
+	url(r'^proxy/refresh/(?P<proxy_id>\w*)', views.hardproxy_refresh),
+	url(r'proxy/debug', views.showfeatures),
+	url(r'proxy/maketable/', views.proxy_create_conversion),
+	url(r'proxy/upload/', views.proxy_uploadmap),
+
+
 )
 

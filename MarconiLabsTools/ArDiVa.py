@@ -167,9 +167,9 @@ def getKeysWithPath (candidate, targets, breadcrumb=[]):
 
 	for ckey in candidate.keys():
 		if ckey in targets:
-			paths.append(breadcrumb+ckey)
+			paths.append(breadcrumb+[ckey,])
 		if isinstance(candidate[ckey], dict):
-			paths.extend(getKeysWithPath(candidate[ckey], targets, breadcrumb+ckey))
+			paths.extend(getKeysWithPath(candidate[ckey], targets, breadcrumb+[ckey,]))
 			#paths += geteysWithPath(candidate[ckey], targets, breadcrumb+ckey)
 
 	return paths

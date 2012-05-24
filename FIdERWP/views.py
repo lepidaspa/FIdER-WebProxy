@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
-
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
+import os
 import json
 import sys
+import traceback
 
-
+from django.views.decorators.csrf import csrf_exempt
 from django.template.context import RequestContext
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 
 from MarconiLabsTools import ArDiVa
-from FIdERProxyFS import ProxyFS
+from FIdERProxyFS import ProxyFS, proxy_core
 from FIdERWP import MessageTemplates, Components
 from FIdERProxyFS import proxy_config_core as conf
 
@@ -101,40 +101,26 @@ def softproxy_conversion_setup (request):
 	:return:
 	"""
 
-	list_proxy = []
-	list_meta_byproxy = {}
-	list_shape_bymeta_byproxy = {}
+
 
 	#TODO: Replace debug tests with actual data
 
 	#get list of all proxies
 	list_proxy = os.listdir(os.path.join(conf.baseuploadpath))
-	#DEBUG ONLY
-	#list_proxy = ['42g2424g42g24g', 'gg248j42', 'fg4g4224']
+
 
 	#get list of all metas (for proxy); note: only those for which we have files uploaded
-	#DEBUG ONLY
-	"""
-	list_meta_byproxy = {
-		'42g2424g42g24g' : ["A","B", "C", "D"],
-		'gg248j42' : ["E","F","G","H"],
-		'fg4g4224': ["I","J","K", "L"]
-	}
-	"""
+
 
 	list_meta_byproxy = {}
 	for proxy in list_proxy:
 		list_meta_byproxy [proxy] = os.listdir(os.path.join(conf.baseuploadpath,proxy))
 
 	#get list of all shapes (for meta, for proxy)
-	#DEBUG ONLY
-	"""
-	list_shape_bymeta_byproxy = {
-		'42g2424g42g24g' : {"A": [1,2,3],"B": [4,5,6], "C":[6,7,8], "D":[9,10,11]},
-		'gg248j42' : {"E":[12,13,14,15],"F":[16,17,18],"G":[19,20,21],"H":[19,20,21]},
-		'fg4g4224': {"I":[22,23,24,25],"J":[26,27,28,29],"K":[30,31,32], "L":[33,34,35,36,37]}
-	}
-	"""
+
+
+
+	#TODO: use getProxyFullListing from ProxyFS
 
 	list_shape_bymeta_byproxy = {}
 	for proxy in list_proxy:
@@ -156,24 +142,204 @@ def component_shapefile_table (request, **kwargs):
 	:param kwargs:
 	:return:
 	"""
-
-	#shapedata = proxy_core.convertShapeFileToJson(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"], False)
-	#shapetable = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
-
 	shapedata = None
 	shapetable = None
+
+	if kwargs.has_key('proxy_id') and kwargs.has_key('meta_id') and kwargs.has_key('shape_id'):
+		shapedata = proxy_core.convertShapeFileToJson(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"], False)
+	#shapetable = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
+
+	#DEBUG ONLY
+	#TODO: get these from the main server
+	shapetable = {
+		'Node' : {
+			'LocationNote' : 'str',
+			'Tipologia': 'str',
+			'Address' : 'str',
+			'Neighborhood': 'str',
+			},
+		'Well' : {
+			'Name' : 'str',
+			'RETE' : 'str',
+			'Address' : 'str',
+			'Closure' : 'str',
+			'Width' : 'int',
+			'Length' : 'int'
+		},
+		'Duct' : {
+			'Length': 'int',
+			'Tube': 'str',
+			'CODICE': 'str',
+			'RETE': 'str',
+			'Infrastructure': 'str'
+		}
+
+	}
+
+	#print "PARSING SHAPE DATA from %s" % type(shapedata)
+	#print shapedata
+	conversionfrom = {}
+	for feature in shapedata['features']:
+		#print "Feature: %s *** (%s)" % (feature, type(feature))
+		#print "Properties: %s " % feature['properties']
+		for key in feature['properties'].keys():
+			if not conversionfrom.has_key (key):
+				conversionfrom[key] = str(type(feature['properties'][key])).split("'")[1]
 
 	args = {
 		"proxy_id" : kwargs["proxy_id"],
 		"meta_id" : kwargs["meta_id"],
 		"shape_id" : kwargs["shape_id"],
-		"shapedata" : shapedata,
+		"shapedata" : conversionfrom,
 		"conversion" : shapetable
-
 	}
 
-	print args
+	#print args
+
+
 
 
 	return render_to_response ('component_proxy_retrieve_conversion.html', args,
 		context_instance=RequestContext(request))
+
+def hardproxy_refresh (request, **kwargs):
+
+	try:
+		proxy_id = kwargs['proxy_id']
+	except:
+		proxy_id = None
+
+	if proxy_id is not None and proxy_id != "":
+		#print "UPDATING PROXY! (%s)" % proxy_id
+		ProxyFS.rebuildFullShapesList(proxy_id)
+		preselect = proxy_id
+	else:
+		preselect = ""
+
+
+	proxy_data_listing = ProxyFS.getFullProxyListing(False)
+
+	proxy_data_listing.keys()
+
+	#getting the timestamp for the last refresh of
+	list_meta_stamped = ProxyFS.getProxyStamps(True, True)
+	#print "META DATES: "+str(list_meta_stamped)
+
+
+
+	return render_to_response ('proxy_refresh_json.html', {"proxies": proxy_data_listing.keys(), "metadata": list_meta_stamped, "shapes": proxy_data_listing, "preselect": preselect}, context_instance=RequestContext(request))
+
+def showfeatures (request):
+	"""
+	Summarises the sections available on this proxy, only for debug?
+	:param request:
+	:return:
+	"""
+
+
+
+	return render_to_response ('featurelist.html', context_instance=RequestContext(request))
+
+def proxy_uploadmap (request):
+	"""
+	Allows the user to upload a single shapefile archive on the proxy. For now the system only handles archives with a number of zipped shapefiles
+	:param request:
+	:return:
+	"""
+
+	# creating the args for the select fields so the user chan specify WHERE the files are to be sent
+
+	list_proxy = os.listdir(os.path.join(conf.baseuploadpath))
+	list_meta_byproxy = {}
+	for proxy in list_proxy:
+		list_meta_byproxy [proxy] = os.listdir(os.path.join(conf.baseuploadpath,proxy))
+
+	list_shape_bymeta_byproxy = {}
+	for proxy in list_proxy:
+		list_shape_bymeta_byproxy[proxy] = {}
+		for meta in list_meta_byproxy[proxy]:
+			list_shape_bymeta_byproxy[proxy][meta] = []
+			for shape in os.listdir(os.path.join(conf.baseuploadpath,proxy,meta)):
+				list_shape_bymeta_byproxy[proxy][meta].append(shape[:-4])
+
+	return render_to_response ('uploadmask.html', {"proxies":list_proxy, "metadata":list_meta_byproxy, "shapefile":list_shape_bymeta_byproxy},
+		context_instance=RequestContext(request))
+
+
+
+@csrf_exempt
+def proxy_create_conversion (request):
+	"""
+	Receives a json dict describing the meta or shape to which the conversion is applied to and saves it. If to a meta, it saves it to ALL metas independently.
+	:param request: request.POST has the arguments passed from the conversion table creation form. Contains 'convtable' with the full conversion table as a dict with key the source property name and value a list with object type and property name in the anfov model.
+	:return:
+	"""
+
+
+	#print "Proxy create conversion"
+
+	#print "Running at "+str(time.ctime())
+	#print "PARAMS: "+str(request.POST)
+
+	response_table_update = {
+		'completed': False,
+		'ok' : [],
+		'failed': []
+	}
+
+
+	try:
+
+		args = json.loads(request.POST['jsonmessage'])
+
+		convtable =  args['convtable']
+		proxy_id =  args['proxy_id']
+		meta_id =  args['meta_id']
+		shape_id = args['shape_id']
+
+		#print "CONVERSION TABLE for PROXY: %s - META: %s - SHAPE: %s\nCONVTABLE: %s\n" % (proxy_id, meta_id, shape_id, convtable)
+
+		#TODO: placeholder, implement
+
+		#make union of MIRROR and MAPPINGS
+
+		if shape_id is None:
+			mapped_shapes = os.listdir(os.path.join(conf.baseproxypath, proxy_id, "conf/mappings", meta_id))
+			mirrored_shapes = os.listdir(os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id))
+
+			for cshape in mirrored_shapes:
+				if cshape not in mapped_shapes:
+					mapped_shapes.append(cshape)
+
+		else:
+			mapped_shapes = [shape_id,]
+
+		#print "Writing mappings for %s.%s" % (meta_id, mapped_shapes)
+
+		for shape_id in mapped_shapes:
+
+			shape_path = os.path.join (conf.baseproxypath, proxy_id, "conf/mappings", meta_id, shape_id)
+
+			try:
+				#TODO: add lock file support (really needed?)
+				fp = open(shape_path, 'w+')
+				json.dump(convtable, fp)
+				fp.close()
+				response_table_update['ok'].append(shape_id)
+			except Exception as ex:
+				# if we cannot update the conversion table, we set it on the failed updates
+				print "File update issue %s" % ex
+				response_table_update['failed'].append(shape_id)
+
+		if len(response_table_update['failed']) == 0:
+			response_table_update['completed'] = True
+	except:
+		print traceback.format_exc()
+
+
+	#print "TABLE: %s" % response_table_update
+
+	return HttpResponse(json.dumps(response_table_update), mimetype="application/json")
+
+
+

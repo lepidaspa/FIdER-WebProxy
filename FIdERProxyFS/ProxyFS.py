@@ -125,7 +125,13 @@ def handleFileEvent (eventpath):
 	# we detect what has actually changed.
 	# It MUST be a zip file or somebody is messing with the dir structure and we must exit and warn about it
 
+
+
 	proxy_id, meta_id, shape_id = proxy_core.verifyUpdateStructure(eventpath)
+
+
+	print "Working on file event @ %s/%s/%s" % (proxy_id, meta_id, shape_id)
+	print "w.eventpath %s" % eventpath
 
 	locker = proxy_lock.ProxyLocker (retries=3, wait=5)
 
@@ -134,14 +140,17 @@ def handleFileEvent (eventpath):
 	if not os.path.exists(eventpath):
 		# delete
 		#proxy_core.handleDelete (proxy_id, meta_id, shape_id)
+		print "Deleting %s/%s/%s" % (proxy_id, meta_id, shape_id)
 		locker.performLocked(proxy_core.handleDelete, proxy_id, meta_id, shape_id)
 	elif zipfile.is_zipfile(eventpath):
 		# upsert
 		#proxy_core.handleUpsert (proxy_id, meta_id, shape_id)
+		print "Updating/Adding %s/%s/%s" % (proxy_id, meta_id, shape_id)
 		locker.performLocked(proxy_core.handleUpsert, proxy_id, meta_id, shape_id)
-		upsert = (shape_id,)
+		upsert = shape_id
 	else:
 		# wrong file type or directory creation
+		print "Unexpected file type or operation on path %s" % eventpath
 		raise InvalidFSOperationException ("Unexpected file type or operation on path %s" % eventpath)
 
 	if upsert is not None:
@@ -183,6 +192,9 @@ def rebuildFullShapesList (proxy_id):
 	# get the full meta list in the upload directory
 	metalist = os.listdir(os.path.join(conf.baseuploadpath, proxy_id))
 
+	print ("Rebuilding proxy %s with meta %s ") % (proxy_id, metalist)
+
+
 	# for each meta we clean the $mirror directory (i.e. we DELETE everything)
 	for meta_id in metalist:
 
@@ -194,54 +206,10 @@ def rebuildFullShapesList (proxy_id):
 	for meta_id in metalist:
 		shapeslist = os.listdir(os.path.join(conf.baseuploadpath, proxy_id, meta_id))
 		for shape_id in shapeslist:
+			print ("Rebuilding proxy/meta/shape %s %s %s") % (proxy_id, meta_id, shape_id)
+			print ("-> event path: "+os.path.join (conf.baseuploadpath, proxy_id, meta_id, shape_id))
+
 			handleFileEvent (os.path.join (conf.baseuploadpath, proxy_id, meta_id, shape_id))
-
-"""REPLACED IN FIdERWP.Components
-
-def sendMessageToServer (jsonmessage, url, successreturns=None, failreturns=None):
-	""" """
-	Sends a json message to the main server and returns success if the response code is correct
-	:param jsonmessage: data to be sent to the server, already in json format (json.dumps())
-	:param url:
-	:param successreturns: dict template for successful use of data by the main server
-	:param failreturns: dict template for failed use of data by the main server
-	:return: tuple, True/False on success/failure and server json response
-	""" """
-
-	#TODO: placeholder, implement, note that cannot be async if we want to keep the full comm cycle in this one only; should we also keep the full response from the other server?
-
-	datalen = len(jsonmessage)
-	headers = {'Content-Type': 'application/json', 'Content-Length': datalen}
-
-	req = urllib2.Request(url, jsonmessage, headers)
-	try:
-		conn = urllib2.urlopen(req)
-	except urllib2.HTTPError, e:
-		raise CommunicationFailure, ("Communications failed with code %s" % e.code)
-	except urllib2.URLError, e:
-		raise CommunicationFailure, ("Communications failed with reason %s" % e.reason)
-	else:
-		response = conn.read()
-		conn.close()
-		jsonresponse = json.loads(response)
-
-	#TODO: consider moving the model creation out of the function so we can set the strictness more accurately
-	successmodel = MarconiLabsTools.ArDiVa.Model(successreturns)
-	failmodel = MarconiLabsTools.ArDiVa.Model(failreturns)
-
-	if successmodel.validateCandidate(jsonresponse):
-		succeeded = True
-	elif failmodel.validateCandidate(jsonresponse):
-		succeeded = False
-	else:
-		raise CommunicationFailure ("Unexpected message from server: %s" % jsonresponse)
-
-	return succeeded, jsonresponse
-
-
-"""
-
-
 
 
 
@@ -337,6 +305,99 @@ def sendUpdatesWrite (proxy_id):
 	else:
 		#leave the /next listing as is and log the failure as issue
 		logEvent ("Failed to send updates for proxy %s (meta/timestamp list: %s)" % (proxy_id, updateslist), True)
+
+def getProxyList ():
+
+	listing = os.listdir(os.path.join(conf.baseproxypath))
+	excludepath = ["log", "next", "locks"]
+
+	for excluded in excludepath:
+		try:
+			listing.remove(excluded)
+		except:
+			pass
+
+	return listing
+
+def getFullProxyListing (precompiled=True):
+	"""
+	Complete list of shape data that have already been loaded (and compiled, partially or entirely) on the hardproxy by meta and by softproxy.
+	:param precompiled: boolean, if true we use the data in the JSON directories, if false we check the MIRROR directory
+	:return:
+	"""
+
+	branch = ""
+	if precompiled:
+		branch = "maps/json"
+	else:
+		branch = "maps/mirror"
+
+	list_proxy = getProxyList()
+
+	list_meta_byproxy = {}
+	for proxy in list_proxy:
+		list_meta_byproxy [proxy] = os.listdir(os.path.join(conf.baseproxypath,proxy, branch))
+
+	list_shape_bymeta_byproxy = {}
+	for proxy in list_proxy:
+		list_shape_bymeta_byproxy[proxy] = {}
+		for meta in list_meta_byproxy[proxy]:
+			list_shape_bymeta_byproxy[proxy][meta] = []
+			for shape in os.listdir(os.path.join(conf.baseproxypath,proxy,branch, meta)):
+				if precompiled:
+					list_shape_bymeta_byproxy[proxy][meta].append(shape)
+				else:
+					list_shape_bymeta_byproxy[proxy][meta].append(shape[:-4])
+
+	return list_shape_bymeta_byproxy
+
+
+
+
+def getProxyStamps (precompiled=True, dated=False):
+	"""
+	List of update times for all meta on the HARDproxy, by softproxy.
+	:param precompiled: boolean, if true we use the data in the JSON directories, if false we check the MIRROR directory
+	:param dated: boolean, if we want to receive the data in date or timestamp form
+	:return:
+	"""
+
+	if precompiled:
+		branch = conf.path_geojson
+	else:
+		branch = conf.path_mirror
+
+	list_proxy = getProxyList()
+
+
+	list_meta_byproxy = {}
+	for proxy in list_proxy:
+		list_meta_byproxy [proxy] = os.listdir(os.path.join(conf.baseproxypath, proxy, branch))
+
+
+	meta_stamped = {}
+	#note: for precompiled we can simply check the timestamp of the parent dir, not so on the mirror dir as it contains a subdir for each shapefile
+	for proxy in list_proxy:
+		meta_stamped [proxy] = {}
+		for meta in list_meta_byproxy[proxy]:
+			stamps = []
+			for shapepath in os.listdir(os.path.join(conf.baseproxypath, proxy, branch, meta)):
+				#note: this is the timestamp of the shapedata DIR for shapefiles, or of the json files for the json dir
+				stamps.append (os.path.getmtime(os.path.join(conf.baseproxypath, proxy, branch, meta, shapepath)))
+
+			#the most recent file has the highest timestap, so element -1 in a sorted list
+			if len(stamps) > 0:
+
+				stamps.sort()
+				if dated is False:
+					meta_stamped[proxy][meta] = stamps[-1]
+				else:
+					meta_stamped[proxy][meta] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(stamps[-1]))
+			else:
+				#TODO: better output on missing data
+				meta_stamped[proxy][meta] = ""
+
+	return meta_stamped
 
 
 if __name__ == "__main__":

@@ -1,0 +1,17 @@
+body
+{
+    margin-left:   20%;
+    margin-right:  20%;
+    width:  60%;
+}
+
+#proxy_display
+{
+    margin-left:           auto;
+    margin-right:          auto;
+}
+
+tr th
+{
+    display: none;
+}
