@@ -355,9 +355,10 @@ class Model (dict):
 			pass
 
 		#verify the validation level
-		if validateas > self.VAL_SUBSET:
+		if validateas < self.VAL_SUBSET:
 			allkeys = digDictKeys (self)
-			if any(map(isinstance, allkeys, RE_TYPE)):
+			#if any(map(isinstance, allkeys, RE_TYPE)):
+			if any ([isinstance(key, RE_TYPE) for key in allkeys ]):
 				print "WARNING: reducing strictness to SUBSET due to REGEXP keys in the model"
 				validateas = self.VAL_SUBSET
 
@@ -513,7 +514,8 @@ class Model (dict):
 			if key not in modelkeys:
 				generated[key] = kwargs[key]
 
-		return self.validateCandidate(generated), generated
+		#TODO: val_loose (and the override to subtemplates) is a temporary fix for multilevel dicts that are described in their lower levels in the original template, should work also in val_strict
+		return self.validateCandidate(generated, self.VAL_LOOSE, True), generated
 
 
 class Check:

@@ -343,3 +343,21 @@ def proxy_create_conversion (request):
 
 
 
+def proxy_read_full (request, **kwargs):
+	"""
+	returns all the data for a specific proxy
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	read_result = {}
+
+	proxy_id = kwargs['proxy_id']
+
+	print "DJANGO: performing full read of proxy %s " % proxy_id
+
+	read_result = proxy_core.handleReadFull(proxy_id)
+
+	return HttpResponse(read_result, mimetype="application/json")
+

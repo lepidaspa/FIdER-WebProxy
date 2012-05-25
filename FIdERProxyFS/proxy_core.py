@@ -52,6 +52,7 @@ def createSoftProxy (proxy_id, manifest):
 
 	#creating config directory, log directory, locks directory
 	os.makedirs(os.path.join(basepath, "conf"))
+	os.makedirs(os.path.join(basepath, "locks"))
 
 
 	#creating directories for data
@@ -152,7 +153,7 @@ def replicateDelete (proxy_id, meta_id, shape_id):
 		shutil.rmtree(path_gj)
 
 
-def buildReadList (proxy_id, timestamp):
+def buildReadList (proxy_id, timestamp=None):
 	"""
 	Check which metadata have been updated after the timestamp
 	:param proxy_id:
@@ -161,10 +162,12 @@ def buildReadList (proxy_id, timestamp):
 	"""
 
 	metalist = []
+	print "PROXY READ LIST FOR REQUEST on %s at %s" % (proxy_id, timestamp)
 
 	if timestamp == None:
 		#total read, all meta used
-		return os.listdir(os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson))
+
+		metalist = os.listdir(os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson))
 	else:
 		#making a list of the meta that have actually been upgraded
 		prelist = os.listdir(os.path.join(conf.baseproxypath, proxy_id, "next"))
@@ -174,14 +177,49 @@ def buildReadList (proxy_id, timestamp):
 				metalist.append(meta_id)
 
 
+	print "PROXY READ LIST IS %s " % metalist
 
 
 	return metalist
 
-
-def handleRead (proxy_id, datestring):
+def handleReadFull (proxy_id):
 	"""
-	Reads the metadata updated after timestamp and returns them in json format
+	Reads everything in the specified proxy and returns it as a json message
+	:param proxy_id:
+	:return:
+	"""
+
+	#note: just a modified version of handleReadTimed
+
+	#TODO: handle validation and exceptions
+
+	locker = proxy_lock.ProxyLocker (retries=3, wait=5)
+
+	meta_dict = {}
+	for meta_id in buildReadList(proxy_id):
+		meta_dict [meta_id] = locker.performLocked(assembleMetaJson, proxy_id, meta_id)
+
+
+	template = TemplatesModels.model_response_read_full
+	customfields = {
+		"token" : proxy_id,
+		"data": {
+			"upserts" : meta_dict,
+			"delete" : []
+		}
+	}
+
+	responsemsg = createMessageFromTemplate(template, **customfields)
+
+	#NOTE that the read happens as a HTTPResponse, so we only return the json for Django to send back, rather than handling the HTTPConnection ourselves
+
+	return json.dumps(responsemsg)
+
+
+
+def handleReadTimed (proxy_id, datestring):
+	"""
+	Reads all metadata updated after timestamp and returns them in json format
 	:param proxy_id:
 	:param datestring: ISO8601 datestring
 	:return:
@@ -254,11 +292,12 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 	ext_mandatory = {
 		".shp": False,
 		".shx": False,
-		".dbf": False
+		".dbf": False,
+		".prj": False
 	}
 
 	ext_accept = [
-		".shp", ".shx", ".dbf", ".prj", ".sbn", ".sbx", ".fbn", ".fbx", ".ain", ".aih", ".ixs", ".mxs", ".atx", ".cpg", ".shp.xml"
+		".shp", ".shx", ".dbf", ".prj", ".sbn", ".sbx", ".fbn", ".fbx", ".ain", ".aih", ".ixs", ".mxs", ".atx", ".cpg", ".shp.xml", ".qix", ".fix"
 	]
 
 	print "Working on unpacked data"
@@ -280,7 +319,7 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 				raise InvalidShapeArchiveException ("Shape archive %s contains unrelated data in file %s " % (shape_id, candidatepath))
 
 	if not all(ext_mandatory.values()):
-		raise InvalidShapeArchiveException ("Mandatory file missing in shape archive %s (should contain .shp, .shx and .dbf)" % shape_id)
+		raise InvalidShapeArchiveException ("Mandatory file missing in shape archive %s (should contain .shp, .shx, .dbf and .prj)" % shape_id)
 
 	#creating the path after opening the zip so there is a smaller risk of leaving trash behind if we get an error
 	path_mirror = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id, ".tmp")
@@ -307,17 +346,24 @@ def convertShapeFileToJson (proxy_id, meta_id, shape_id, normalise=True):
 	return convertShapePathToJson(shapepath, normalise)
 
 
-def convertShapePathToJson (path_shape, normalise=True):
+def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	"""
 	Converts a shapefile to GeoJSON data and returns it.
 	:param path_shape: path of the shape file to be converted
 	:param normalise: defines if we want to remove or modify elements in the  'properties' section according to the server's settings
+	:param temp: if we are working on the .tmp directory
 	:return: geojson feature data
 	"""
 
+	EPSG_WGS84 = 4326
+
 	print "Shape conversion to JSON format"
 
-	basepath, shape_id = os.path.split(path_shape)
+	if temp is True:
+		basepath, temp_holder = os.path.split(path_shape)
+		basepath, shape_id = os.path.split(basepath)
+	else:
+		basepath, shape_id = os.path.split(path_shape)
 	basepath, meta_id = os.path.split(basepath)
 	basepath, proxy_id = os.path.split(basepath)
 
@@ -332,15 +378,34 @@ def convertShapePathToJson (path_shape, normalise=True):
 
 
 	try:
+
 		datasource = ogr.Open(path_shape)
-	except:
-		#TODO: better debug
+		print "EXTRACTING DATASOURCE SRS DATA:"
+		print "****>"+str(dir(datasource))
+	except Exception as ex:
+		print "ERROR during OGR parse on %s: %s" % (path_shape, ex)
+		#TODO: better/proper debug
 		return False
+
+
+	#SRS CONVERSION CODE
+
+	tSRS=ogr.osr.SpatialReference()
+	tSRS.ImportFromEPSG(EPSG_WGS84)
+
+
+
+
+	#SRS CONVERSION CODE
+
 
 	jsonlist = []
 
 	for i in range (0, datasource.GetLayerCount()):
 		layer = datasource.GetLayer(i)
+		print "EXTRACTING LAYER SRS DATA:"
+		print "****>"+str(dir(layer))
+
 		for f in range (0, layer.GetFeatureCount()):
 			feature = layer.GetFeature(f)
 
@@ -389,6 +454,10 @@ def createConversionTable (conversiontable, proxy_id, meta_id, shape_id=None):
 	:param shape_id:
 	:return:
 	"""
+
+	#placeholder, it's done through a Django view
+
+	pass
 
 def adaptGeoJson (jsondata, conversiontable=None):
 	"""
@@ -440,11 +509,13 @@ def assembleMetaJson (proxy_id, meta_id):
 
 	meta_json = []
 
-	filelist = os.listdir(os.path.join (conf.baseproxypath, proxy_id, conf.path_geojson, meta_id))
+	metadir = os.path.join (conf.baseproxypath, proxy_id, conf.path_geojson, meta_id)
+
+	filelist = os.listdir(metadir)
 
 	for filename in filelist:
 		try:
-			fp = open(filename, 'r')
+			fp = open(os.path.join(metadir, filename), 'r')
 			try:
 				meta_json.append(json.load(fp))
 			except:
@@ -472,7 +543,7 @@ def rebuildShape (proxy_id, meta_id, shape_id, modified=True):
 	if modified:
 		path_shape = os.path.join(path_shape, ".tmp")
 
-	shape_gj = convertShapePathToJson (path_shape)
+	shape_gj = convertShapePathToJson (path_shape, temp=True)
 
 	return shape_gj
 
@@ -559,9 +630,10 @@ def createMessageFromTemplate (template, **customfields):
 
 	messagemodel = MarconiLabsTools.ArDiVa.Model(template)
 
-	filledok, requestmsg = messagemodel.fillSafely(**customfields)
+	filledok, requestmsg = messagemodel.fillSafely(customfields)
 
 	if filledok is True:
 		return requestmsg
 	else:
+		print messagemodel.log
 		raise RuntimeProxyException ("Failed to create valid %s %s message for proxy %s" % (template['message_type'], template['message_format'], customfields['token']))

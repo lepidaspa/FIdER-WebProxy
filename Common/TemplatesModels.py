@@ -47,16 +47,25 @@ model_response_welcome = {
 
 
 model_response_read = {
-	"token": unicode,
-	"message_type": (u'response',),
-	"message_format": (u'read',),
-	"time": unicode,
-	"data": {
-		"upsert": dict,
-		"delete": list
+	u"token": unicode,
+	u"message_type": (u'response',),
+	u"message_format": (u'read',),
+	u"time": unicode,
+	u"data": {
+		u"upsert": dict,
+		u"delete": list
 	}
 }
 
+model_response_read_full = {
+	u"token": unicode,
+	u"message_type": (u'response',),
+	u"message_format": (u'read',),
+	u"data": {
+		u"upsert": dict,
+		u"delete": list
+	}
+}
 
 
 model_request_write = {
