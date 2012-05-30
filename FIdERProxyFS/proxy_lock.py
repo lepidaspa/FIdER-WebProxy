@@ -161,7 +161,7 @@ class ProxyLocker ():
 		"""
 
 
-		print "Performing locked action %s on %s" % (action, args)
+		#print "Performing locked action %s on %s" % (action, args)
 		# we get the custom information on what really needs to be locked
 		# first we extract everything with inspection
 
@@ -213,7 +213,7 @@ class ProxyLocker ():
 		# 2. Perform the required operation
 
 		try:
-			print "Action: %s with Args %s and KWArgs %s" % (action, args, kwargs)
+			#print "Action: %s with Args %s and KWArgs %s" % (action, args, kwargs)
 			output = action(*args, **kwargs)
 		except Exception as ex:
 			issue = ex

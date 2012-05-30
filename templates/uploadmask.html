@@ -1,11 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-    <title>File uploader</title>
-</head>
-<body>
+{% with "FIdER - File upload WIP" as titletag %}
+    {% with "proxy_upload.js" as specificjs %}
+        {% with "proxy_upload.css" as specificcss %}
+            {% include "layout_header.html" %}
+        {% endwith %}
+    {%  endwith %}
+{% endwith %}
 
+<form action="/proxy/upload/" enctype="multipart/form-data" method="POST">{% csrf_token %}
 
 <table id="data_select">
     <tr>
@@ -14,7 +15,7 @@
     </tr>
     <tr>
         <td>
-            <select id="sel_proxy">
+            <select name="sel_proxy" id="sel_proxy">
                 <option class="nullopt" value=""></option>
                 {% for proxy_id in proxies %}
                     <option value="{{ proxy_id }}">{{ proxy_id }}</option>
@@ -24,7 +25,7 @@
         </td>
 
         <td>
-            <select id="sel_meta">
+            <select id="sel_meta" name="sel_meta">
                 <option class="nullopt" value=""></option>
 
                 {% for proxy_id, metalist in metadata.items %}
@@ -41,28 +42,43 @@
     <tr>
         <td colspan="2">
             Elementi caricati per il metadato:
-            <table>
                 {% for proxy_id, metalist in shapefile.items %}
+                    <table style="display: none" class="group_proxydata" id="proxydata-{{ proxy_id }}">
                     {% for meta_id, shapelist in metalist.items %}
+                        <tbody class="group_metadata" id="metadata-{{ meta_id }}">
                         {% for shape_id in shapelist %}
-                            <tr><td>
-                            {{ shape_id }}</td><td><input type="button" value="Elimina" id="erase_{{ proxy_id }}-{{ meta_id }}-{{ shape_id }}"><br>
+                            <tr><td class="shaperef" id="shaperef-{{ proxy_id }}-{{ meta_id }}-{{ shape_id }}">{{ shape_id }}</td>
+                                <td><input type="checkbox" class="check_removal" name="removal" value="{{ proxy_id }}-{{ meta_id }}-{{ shape_id }}"> Elimina
                             </td></tr>
                         {% endfor %}
+                        </tbody>
                     {%  endfor %}
+                    </table>
                 {% endfor %}
-            </table>
+
 
         </td>
     </tr>
 </table>
 
-File: <input type="file">
-<input type="submit" value="Invia">
+File: <input type="file" id="mapsub" name="mapsub"><br>
+Inserisci come: <select name="sel_saveas" id="sel_saveas">
+<option class="nullopt" value="">Nuova mappa</option>
+</select>
+    <input type="submit" value="Applica" id="confirmsend">
+</form>
+
 
 <div id="activity_status">
-
+    {% autoescape off %}
+{{ uploads }}
+    {% endautoescape %}
 </div>
+
+
+<script>
+    pageInit();
+</script>
 
 
 </body>

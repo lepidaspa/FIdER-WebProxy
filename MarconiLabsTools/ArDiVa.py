@@ -176,15 +176,6 @@ def getKeysWithPath (candidate, targets, breadcrumb=[]):
 
 
 
-
-
-
-
-
-
-
-
-
 def applyKeydesc (keydesc, candidate):
 	"""
 	parses a key descriptor and compares it to the structure of the candidate dictionary to return a tuple of the values to be used as candidates for a validation step. If keydesc is None, the whole candidate is returned.

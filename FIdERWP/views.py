@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import urllib2
+import zipfile
+from django.core.files.base import  File
+from django.core.files.storage import FileSystemStorage
+
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -147,10 +152,34 @@ def component_shapefile_table (request, **kwargs):
 
 	if kwargs.has_key('proxy_id') and kwargs.has_key('meta_id') and kwargs.has_key('shape_id'):
 		shapedata = proxy_core.convertShapeFileToJson(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"], False)
-	#shapetable = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
+
+	try:
+		shapetable = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
+	except Exception as ex:
+		print "Error when loading shape conversion table: %s" % ex
+		shapetable = None
+
+
+
+	try:
+
+		jsonresponse = urllib2.urlopen(conf.URL_CONVERSIONS)
+		convtable = json.load(jsonresponse)
+		print convtable
+
+	except Exception as ex:
+		if isinstance(ex, urllib2.HTTPError):
+			errormess = ex.code
+		elif isinstance(ex, urllib2.URLError):
+			errormess = ex.reason
+		else:
+			errormess = ex.message
+		print "Error when requesting conversion table from %s: %s" % (conf.URL_CONVERSIONS, errormess)
+		raise
 
 	#DEBUG ONLY
 	#TODO: get these from the main server
+	"""
 	shapetable = {
 		'Node' : {
 			'LocationNote' : 'str',
@@ -175,6 +204,7 @@ def component_shapefile_table (request, **kwargs):
 		}
 
 	}
+	"""
 
 	#print "PARSING SHAPE DATA from %s" % type(shapedata)
 	#print shapedata
@@ -191,7 +221,8 @@ def component_shapefile_table (request, **kwargs):
 		"meta_id" : kwargs["meta_id"],
 		"shape_id" : kwargs["shape_id"],
 		"shapedata" : conversionfrom,
-		"conversion" : shapetable
+		"conversion" : convtable,
+		"shapetable": shapetable
 	}
 
 	#print args
@@ -247,6 +278,59 @@ def proxy_uploadmap (request):
 	:return:
 	"""
 
+
+
+	#checking if a file has just been uploaded
+	filestuff = ""
+	if request.method == 'POST':
+
+
+		try:
+			upload = request.FILES['mapsub']
+		except:
+			upload = None
+
+		# now we check for delete requests, BEFORE the upload to avoid a replace and delete condition
+		try:
+			removals = request.POST.getlist("removal")
+		except:
+			removals = None
+		#print "Removing "+str(removals)
+
+		for removal in removals:
+			proxy_id, meta_id, shape_id = removal.split("-",2)
+			if proxy_id == request.POST['sel_proxy'] and meta_id == request.POST['sel_meta']:
+				try:
+					filestuff+="Mappa %s/%s/%s cancellata<br>" % (proxy_id, meta_id, shape_id)
+					os.remove(os.path.join(conf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
+					proxy_core.handleDelete(proxy_id, meta_id, shape_id)
+				except Exception as ex:
+					filestuff+="Cancellazione della mappa %s/%s/%s fallita (%s)<br>"  % (proxy_id, meta_id, shape_id, ex)
+
+
+
+
+
+		# then we perform the upload
+
+		if upload is not None:
+
+
+			proxy_id = request.POST['sel_proxy']
+			meta_id = request.POST['sel_meta']
+			shape_id = request.POST['sel_saveas']
+			print "FORM: Uploading file to %s/%s/%s" % (proxy_id, meta_id, shape_id)
+			if shape_id == "":
+				shape_id = None
+			success, output = saveMapFile(upload, proxy_id, meta_id, shape_id)
+			if success:
+				filestuff += "Upload del file %s su %s completato.<br>" % (upload.name, output)
+			else:
+				filestuff += "Upload del file %s fallito. Causa: %s <br>" % (upload.name, output)
+
+
+	#working form
+
 	# creating the args for the select fields so the user chan specify WHERE the files are to be sent
 
 	list_proxy = os.listdir(os.path.join(conf.baseuploadpath))
@@ -262,9 +346,59 @@ def proxy_uploadmap (request):
 			for shape in os.listdir(os.path.join(conf.baseuploadpath,proxy,meta)):
 				list_shape_bymeta_byproxy[proxy][meta].append(shape[:-4])
 
-	return render_to_response ('uploadmask.html', {"proxies":list_proxy, "metadata":list_meta_byproxy, "shapefile":list_shape_bymeta_byproxy},
+
+	if filestuff != "":
+		filestuff += '<a href="/proxy/refresh/'+proxy_id+'">Conferma modifiche</a>'
+
+
+	return render_to_response ('uploadmask.html', {"proxies":list_proxy, "metadata":list_meta_byproxy, "shapefile":list_shape_bymeta_byproxy, "uploads": filestuff},
 		context_instance=RequestContext(request))
 
+
+def saveMapFile (uploaded, proxy_id, meta_id, shape_id=None):
+	"""
+	Takes an uploaded file (usually InMemoryUploadedFile) and saves it to the proxy/meta/shape destination, if needed after normalising the names inside
+	:param uploaded:
+	:param proxy_id:
+	:param meta_id:
+	:param shape_id:
+	:return:
+	"""
+
+	print "Uploading file %s, size %s " % (uploaded.name, uploaded.size)
+	#print "Data: %s " % (str(uploaded.read()))
+
+	isvalid = proxy_core.verifyShapeArchiveStructure(uploaded)
+	if not isvalid:
+		return False, "Struttura dell'archivio non valida"
+
+	if shape_id is None:
+		shape_id = uploaded.name[:-4]
+		if os.path.exists(os.path.join(conf.baseuploadpath, proxy_id, meta_id, uploaded.name)):
+			os.remove(os.path.join(conf.baseuploadpath, proxy_id, meta_id, uploaded.name))
+		fs = FileSystemStorage(location=os.path.join(conf.baseuploadpath))
+		savepath = fs.save(os.path.join(proxy_id, meta_id, shape_id+".zip"), File(uploaded))
+		return True, savepath
+	else:
+		try:
+			if os.path.exists(os.path.join(conf.baseuploadpath, proxy_id, meta_id, shape_id+".zip")):
+				os.remove(os.path.join(conf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
+
+			zipfrom = zipfile.ZipFile(uploaded)
+			zipdata = zipfrom.infolist()
+			try:
+				zipto = zipfile.ZipFile(os.path.join(conf.baseuploadpath,proxy_id, meta_id, shape_id+".zip"), 'w', zipfile.ZIP_DEFLATED)
+			except:
+				zipto = zipfile.ZipFile(os.path.join(conf.baseuploadpath,proxy_id, meta_id, shape_id+".zip"), 'w', zipfile.ZIP_STORED)
+			for element in zipdata:
+				filename = element.filename.replace(element.filename.split(".")[0], shape_id)
+				zipto.writestr(filename, zipfrom.read(element))
+			zipto.close()
+			return True, shape_id
+
+		except Exception as ex:
+			#print ex.message
+			return False, "Eccezione: %s" % ex
 
 
 @csrf_exempt

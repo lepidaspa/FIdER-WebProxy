@@ -115,9 +115,6 @@ model_error_anomaly = {
 }
 
 
-
-
-
 model_error_error = {
 	"token": unicode,
 	"message_type": [u'error',],

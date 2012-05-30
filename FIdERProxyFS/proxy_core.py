@@ -260,6 +260,48 @@ def handleReadTimed (proxy_id, datestring):
 	return json.dumps(responsemsg)
 
 
+def verifyShapeArchiveStructure (filedata, filename=None):
+
+
+	print "Verifying archived shape %s" % (filename)
+
+	try:
+		zipfp = zipfile.ZipFile(filedata)
+	except Exception as ex:
+		return False
+
+	ext_mandatory_shape = {
+		"shp": False,
+		"shx": False,
+		"dbf": False,
+		"prj": False
+	}
+
+	ext_mandatory_minfo = {
+		"mif": False,
+		"mid": False
+	}
+
+	for candidatepath in zipfp.namelist():
+		#checking that no file unpacks to a different directory
+		if "/" in candidatepath:
+			return False
+		else:
+			cext = candidatepath.split(".")[-1]
+			if ext_mandatory_shape.has_key(cext):
+				ext_mandatory_shape[cext] = True
+			if ext_mandatory_minfo.has_key(cext):
+				ext_mandatory_minfo[cext] = True
+
+		if filename!=None:
+			if candidatepath.split(".")[0] != filename:
+				return False
+
+	if not (all(ext_mandatory_shape.values() or all(ext_mandatory_minfo.values()))):
+		return False
+
+
+	return True
 
 
 def handleUpsert (proxy_id, meta_id, shape_id):
@@ -289,15 +331,20 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 
 	# Inspecting zip file to ensure it does NOT contain path data in the filenames, which is forbidden in our use, and that the files in it have the proper naming for a SINGLE shapefile structure
 
-	ext_mandatory = {
-		".shp": False,
-		".shx": False,
-		".dbf": False,
-		".prj": False
+	ext_mandatory_shape = {
+		"shp": False,
+		"shx": False,
+		"dbf": False,
+		"prj": False
+	}
+
+	ext_mandatory_minfo = {
+		"mif": False,
+		"mid": False
 	}
 
 	ext_accept = [
-		".shp", ".shx", ".dbf", ".prj", ".sbn", ".sbx", ".fbn", ".fbx", ".ain", ".aih", ".ixs", ".mxs", ".atx", ".cpg", ".shp.xml", ".qix", ".fix"
+		".shp", ".shx", ".dbf", ".prj", ".sbn", ".sbx", ".fbn", ".fbx", ".ain", ".aih", ".ixs", ".mxs", ".atx", ".cpg", ".shp.xml", ".qix", ".fix", ".qpj"
 	]
 
 	print "Working on unpacked data"
@@ -307,6 +354,7 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 		if "/" in candidatepath:
 			raise InvalidShapeArchiveException ("Shapefile archives should not contain names with path data")
 		else:
+			"""
 			#checking that the names of the file are correct
 			cext = None
 			for valid in ext_accept:
@@ -317,9 +365,18 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 					break
 			if cext is None:
 				raise InvalidShapeArchiveException ("Shape archive %s contains unrelated data in file %s " % (shape_id, candidatepath))
+			"""
+			cext = candidatepath.split(".")[-1]
+			print candidatepath, cext
+			if ext_mandatory_shape.has_key(cext):
+				ext_mandatory_shape[cext] = True
+			if ext_mandatory_minfo.has_key(cext):
+				ext_mandatory_minfo[cext] = True
+			#removed strict check on accepted fie types
 
-	if not all(ext_mandatory.values()):
-		raise InvalidShapeArchiveException ("Mandatory file missing in shape archive %s (should contain .shp, .shx, .dbf and .prj)" % shape_id)
+	print ext_mandatory_shape, ext_mandatory_minfo
+	if not (all(ext_mandatory_shape.values() or all(ext_mandatory_minfo.values()))):
+		raise InvalidShapeArchiveException ("Mandatory file missing in shape archive %s (should contain .shp, .shx, .dbf and .prj for shape file OR .mif and .mid for mapinfo)" % shape_id)
 
 	#creating the path after opening the zip so there is a smaller risk of leaving trash behind if we get an error
 	path_mirror = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id, ".tmp")
@@ -355,6 +412,9 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	:return: geojson feature data
 	"""
 
+	#TODO: debug only, remove if not needed (error 1 on empty geoms)
+	ogr.UseExceptions()
+
 	EPSG_WGS84 = 4326
 
 	print "Shape conversion to JSON format"
@@ -380,8 +440,8 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	try:
 
 		datasource = ogr.Open(path_shape)
-		print "EXTRACTING DATASOURCE SRS DATA:"
-		print "****>"+str(dir(datasource))
+		#print "EXTRACTING DATASOURCE SRS DATA:"
+		#print "****>"+str(dir(datasource))
 	except Exception as ex:
 		print "ERROR during OGR parse on %s: %s" % (path_shape, ex)
 		#TODO: better/proper debug
@@ -389,12 +449,10 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 
 	#SRS CONVERSION CODE
-
+	print "Setting SRS conversion"
 	tSRS=ogr.osr.SpatialReference()
 	tSRS.ImportFromEPSG(EPSG_WGS84)
-
-
-
+	print "Converting to %s " % tSRS
 
 	#SRS CONVERSION CODE
 
@@ -403,13 +461,36 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 	for i in range (0, datasource.GetLayerCount()):
 		layer = datasource.GetLayer(i)
-		print "EXTRACTING LAYER SRS DATA:"
-		print "****>"+str(dir(layer))
+		#print "EXTRACTING LAYER SRS DATA:"
+		#print "****>"+str(dir(layer))
+
+		sSRS=layer.GetSpatialRef()
+		print "Layer has spatial ref %s" % sSRS
+
 
 		for f in range (0, layer.GetFeatureCount()):
 			feature = layer.GetFeature(f)
 
-			# fixed to output actual dict
+			#if f==0:
+			#	print "EXTRACTING FEATURE SRS DATA:"
+			#	print "****>"+str(dir(feature))
+
+			geom = feature.GetGeometryRef()
+
+			#print "Feature %s geometry from %s into..." % (feature, geom)
+			try:
+				#geom.AssignSpatialReference(sSRS)
+
+				geom.TransformTo(tSRS)
+				geom.AssignSpatialReference(tSRS)
+				#print "Feature %s geometry to   %s" % (feature, geom)
+			except Exception as ex:
+				print "Transformation error on %s: %s" % (feature ,ex)
+				#print "Error on feature %s geometry %s: %s " % (feature, f, geom)
+				pass
+
+		# fixed to output actual dict
+
 			jsondata = json.loads(feature.ExportToJson())
 
 			#print "feature.exportToJson outputs "+str(type(jsondata))

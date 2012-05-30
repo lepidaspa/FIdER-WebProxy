@@ -1,23 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
 
-    <title>FIdER - Aggiornamento forzato shapefile - WIP</title>
+{% with "FIdER - Aggiornamento forzato shapefile - WIP2" as titletag %}
+    {% with "proxy_refresh.js" as specificjs %}
+        {% with "proxy_refresh.css" as specificcss %}
+            {% include "layout_header.html" %}
+        {% endwith %}
+    {%  endwith %}
+{% endwith %}
 
-    <link rel="stylesheet" href="{{ STATIC_URL }}fider.css">
-    <link rel="stylesheet" href="{{ STATIC_URL }}proxy_refresh.css">
-
-    <link rel="stylesheet" href="{{ STATIC_URL }}smoothness/jquery-ui-1.8.20.custom.css">
-
-
-    <script language="JavaScript" src="{{ STATIC_URL }}jquery-1.7.2.js"></script>
-    <script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
-    <script language="JavaScript" src="{{ STATIC_URL }}proxy_refresh.js"></script>
-
-
-</head>
-<body>
 
 <label for="sel_proxy">Proxy</label>
 <select id="sel_proxy">
