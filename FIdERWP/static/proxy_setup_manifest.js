@@ -131,9 +131,9 @@ function conf_ops_write ()
     var write_sync = makeRadio ('proxy_write_mode', 'sync', 'proxy_write_mode_sync', 'Periodica');
 
 
-    $(".proxy_ops_details").remove();
+    $("#proxy_ops_select").empty();
 
-    $("#proxy_ops_mode").append('<td class="proxy_ops_details">Modalità scrittura<br>'+write_full+'<br>'+write_sync+'</td>');
+    $("#proxy_ops_select").append('<td class="proxy_ops_details">Modalità scrittura<br>'+write_full+'<br>'+write_sync+'</td>');
 
 
 
@@ -148,9 +148,9 @@ function conf_ops_read()
     var read_diff = makeRadio ('proxy_read_mode', 'diff', 'proxy_read_mode_diff', 'Aggiornamento');
 
 
-    $(".proxy_ops_details").remove();
+    $("#proxy_ops_select").empty();
 
-    $("#proxy_ops_mode").append('<td class="proxy_ops_details">Modalità lettura<br>'+read_full+'<br>'+read_diff+'</td>');
+    $("#proxy_ops_select").append('<td class="proxy_ops_details">Modalità lettura<br>'+read_full+'<br>'+read_diff+'</td>');
 
 }
 
@@ -182,8 +182,9 @@ function conf_ops_query()
 
 
 
+    $("#proxy_ops_select").empty();
 
-    $(".proxy_ops_details").remove();
+    //$(".proxy_ops_details").remove();
 
 
     var fullhtml = '<td class="proxy_ops_details">Query geografiche<br>'+query_geo_full+'<br>'+query_geo_bb+'<br>'+query_geo_none+'</td>' +
@@ -192,7 +193,7 @@ function conf_ops_query()
         '<td class="proxy_ops_details">Business intelligence<br>'+query_bi_full+'<br>'+query_bi_simple+'<br>'+query_bi_none+'</td>' +
         '<td class="proxy_ops_details">Firma<br>'+query_signed_true+'<br>'+query_signed_false+'</td>';
 
-    $("#proxy_ops_mode").append(fullhtml);
+    $("#proxy_ops_select").append(fullhtml);
 }
 
 function makeRadio (name, value, id, label, isset)
@@ -223,7 +224,7 @@ function makeRadio (name, value, id, label, isset)
         labelhtml = '<label for="'+id+'">'+label+'</label>';
     }
 
-    return ""+labelhtml+radiobutton;
+    return ""+radiobutton+labelhtml;
 }
 
 

@@ -117,5 +117,21 @@ def getWelcomeFromServer ():
 	return True, welcomedata
 
 
+#not used, currently it is handled by the shape table component
+def getConversionsFromServer ():
 
 
+	try:
+		jsonresponse = urllib2.urlopen(conf.URL_CONVERSIONS)
+		conversiontable = json.load(jsonresponse)
+
+	except Exception as ex:
+		if isinstance(ex, urllib2.HTTPError):
+			errormess = ex.code
+		elif isinstance(ex, urllib2.URLError):
+			errormess = ex.reason
+		else:
+			errormess = ex.message
+		return False, "Error when requesting tables from %s: %s" % (conf.URL_DISCOVERY, errormess)
+
+	return True, conversiontable

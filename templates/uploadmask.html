@@ -41,7 +41,7 @@
 
     <tr>
         <td colspan="2">
-            Elementi caricati per il metadato:
+            Elementi presenti per il metadato:
                 {% for proxy_id, metalist in shapefile.items %}
                     <table style="display: none" class="group_proxydata" id="proxydata-{{ proxy_id }}">
                     {% for meta_id, shapelist in metalist.items %}
@@ -80,6 +80,4 @@ Inserisci come: <select name="sel_saveas" id="sel_saveas">
     pageInit();
 </script>
 
-
-</body>
-</html>
+{% include "layout_footer.html" %}

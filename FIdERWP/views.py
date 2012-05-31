@@ -106,10 +106,6 @@ def softproxy_conversion_setup (request):
 	:return:
 	"""
 
-
-
-	#TODO: Replace debug tests with actual data
-
 	#get list of all proxies
 	list_proxy = os.listdir(os.path.join(conf.baseuploadpath))
 
@@ -282,6 +278,7 @@ def proxy_uploadmap (request):
 
 	#checking if a file has just been uploaded
 	filestuff = ""
+	changestoconfirm = 0
 	if request.method == 'POST':
 
 
@@ -302,6 +299,7 @@ def proxy_uploadmap (request):
 			if proxy_id == request.POST['sel_proxy'] and meta_id == request.POST['sel_meta']:
 				try:
 					filestuff+="Mappa %s/%s/%s cancellata<br>" % (proxy_id, meta_id, shape_id)
+					changestoconfirm+=1
 					os.remove(os.path.join(conf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
 					proxy_core.handleDelete(proxy_id, meta_id, shape_id)
 				except Exception as ex:
@@ -325,6 +323,7 @@ def proxy_uploadmap (request):
 			success, output = saveMapFile(upload, proxy_id, meta_id, shape_id)
 			if success:
 				filestuff += "Upload del file %s su %s completato.<br>" % (upload.name, output)
+				changestoconfirm+=1
 			else:
 				filestuff += "Upload del file %s fallito. Causa: %s <br>" % (upload.name, output)
 
@@ -347,7 +346,7 @@ def proxy_uploadmap (request):
 				list_shape_bymeta_byproxy[proxy][meta].append(shape[:-4])
 
 
-	if filestuff != "":
+	if filestuff != "" and changestoconfirm>0:
 		filestuff += '<a href="/proxy/refresh/'+proxy_id+'">Conferma modifiche</a>'
 
 

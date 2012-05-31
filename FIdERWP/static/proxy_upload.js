@@ -104,11 +104,6 @@ function updateMetaSel()
 
     }
 
-
-
-
-
-
     readyToUpload();
 
 }

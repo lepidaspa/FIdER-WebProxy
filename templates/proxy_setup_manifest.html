@@ -1,36 +1,22 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-
-    <title>FIdER - Creazione proxy - WIP</title>
-
-    <link rel="stylesheet" href="{{ STATIC_URL }}fider.css">
-    <link rel="stylesheet" href="{{ STATIC_URL }}proxy_setup.css">
-    <link rel="stylesheet" href="{{ STATIC_URL }}smoothness/jquery-ui-1.8.20.custom.css">
-
-
-    <script language="JavaScript" src="{{ STATIC_URL }}jquery-1.7.2.js"></script>
-    <script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
-    <script language="JavaScript" src="{{ STATIC_URL }}proxy_setup_manifest.js"></script>
+{% with "FIdER - Creazione proxy WIP" as titletag %}
+    {% with "proxy_setup_manifest.js" as specificjs %}
+        {% with "proxy_setup.css" as specificcss %}
+            {% include "layout_header.html" %}
+        {% endwith %}
+    {%  endwith %}
+{% endwith %}
 
     <!-- maps initialisation -->
     <script src="http://code.jquerygeo.com/jquery.geo-1.0a4.min.js"></script>
 
-</head>
-<body>
-
-
 <div id="creationmask">
-
-Temporary proxy creation form - Positioning test
 
         <div id="proxy_domain">
             <h4>VALIDITÀ</h4>
 
             <table id="proxy_core_data">
                 <tr>
-                    <td rowspan=2><div id="proxy_bb"></div></td>
+                    <td rowspan=2 id="td_proxy_bb"><div id="proxy_bb"></div></td>
                     <td>INIZIO VALIDITÀ<br>
                         <input type="text" id="datepicker_main_from" size="10"/></td>
                 </tr>
@@ -58,16 +44,23 @@ Temporary proxy creation form - Positioning test
         <table id="proxy_ops_table">
 
             <tr id="proxy_ops_mode">
-                <td align="left"><input type="radio" class="proxy_ops_type" name="proxy_ops_type" value="write" id="proxy_ops_write"> Scrittura<br><input type="radio" class="proxy_ops_type" name="proxy_ops_type" value="read" id="proxy_ops_read"> Lettura<br><input type="radio" class="proxy_ops_type" name="proxy_ops_type" value="query" id="proxy_ops_query"> Query
-
+                <td style="text-align: center">
+                    Scrittura<br><input type="radio" class="proxy_ops_type" name="proxy_ops_type" value="write" id="proxy_ops_write">
                 </td>
-                <td class="proxy_ops_details">
-
+                <td style="text-align: center">
+                    Lettura<br><input type="radio" class="proxy_ops_type" name="proxy_ops_type" value="read" id="proxy_ops_read">
                 </td>
+                <td style="text-align: center">
+                    Query<br><input type="radio" class="proxy_ops_type" name="proxy_ops_type" value="query" id="proxy_ops_query">
+                </td>
+            </tr>
+         </table>
 
-
+        <table id="proxy_ops_select_table">
+            <tr id="proxy_ops_select">
 
             </tr>
+        </table>
 
 
 
@@ -84,7 +77,7 @@ Temporary proxy creation form - Positioning test
             <h4>METADATI</h4>
             <table id="metadata_table">
                 <thead>
-                    <tr><th>Nome</th><th colspan=2>Validità</th><th>Bounding box</th><td></td></tr>
+                    <tr><th>Nome</th><th colspan=2>Validità</th><th>Bounding box</th><th>Canc.</th></tr>
                 </thead>
                 <tbody id="metadata_submitted">
 
@@ -92,6 +85,7 @@ Temporary proxy creation form - Positioning test
 
 
                 </tbody>
+
 
             </table>
 
@@ -102,16 +96,11 @@ Temporary proxy creation form - Positioning test
                         NOME<br>
                         <input type="text" id="name_meta_new" size="20" onkeyup="checkMetaName(this)"/>
                     </td>
-                    <td rowspan=3>BBOX <input type="checkbox" id="enable_meta_bbox" checked><br>
+                    <td rowspan=3 class="mask_define_bb">BBOX <input type="checkbox" id="enable_meta_bbox" checked><br>
                         <div id="proxy_meta_new_bb"></div>
                     </td>
 
-                    <td rowspan=3>
-                        <input type="button" id="button_add_meta" value="+">
 
-
-                        <!--<a href="#" id="button_add_meta">[ADD]</a>-->
-                    </td>
                 </tr>
                 <tr>
                     <td><input type="checkbox" id="disable_meta_date_from" checked onclick="switchField('#datepicker_meta_new_from', 'Predefinita')">INIZIO VALIDITÀ
@@ -124,6 +113,7 @@ Temporary proxy creation form - Positioning test
                         <br><input type="text" id="datepicker_meta_new_to" size="20"/>
                     </td>
                 </tr>
+                <tr><td colspan=2 class="mask_addbutton"><input type="button" id="button_add_meta" value="Aggiungi metadato"></td></tr>
 
 
 
@@ -161,6 +151,4 @@ Temporary proxy creation form - Positioning test
 </script>
 
 </div>
-
-</body>
-</html>
+{% include "layout_footer.html" %}

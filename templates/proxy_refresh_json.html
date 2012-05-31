@@ -1,5 +1,5 @@
 
-{% with "FIdER - Aggiornamento forzato shapefile - WIP2" as titletag %}
+{% with "FIdER - Aggiornamento shapefile - WIP2" as titletag %}
     {% with "proxy_refresh.js" as specificjs %}
         {% with "proxy_refresh.css" as specificcss %}
             {% include "layout_header.html" %}
@@ -18,7 +18,6 @@
 
 
 <table id="proxy_display">
-
 
     {% for proxy_id, metalist in metadata.items %}
         <tbody class="info_proxy" id="proxy_{{ proxy_id }}">
@@ -46,9 +45,11 @@
 <input type="button" id="button_rebuild_proxy" value="Ricostruisci dati">
 
 
-</body>
 <script>
     pageInit();
     autoselect("{{ preselect }}");
 </script>
-</html>
+
+
+{% include "layout_footer.html" %}
+

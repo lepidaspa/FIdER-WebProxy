@@ -1,32 +1,42 @@
-body {
-    margin-left:   20%;
-    margin-right:  20%;
-    width:  60%;
+#creationmask
+{
+    width:          100%;
 }
 
-h4 {
+table
+{
+    margin-left:        auto;
+    margin-right:       auto;
+}
+
+h4
+{
     text-align: center;
 }
 
-#proxy_bb {
-    /*float: left;
-    margin-right: 1em;*/
+#proxy_bb
+{
     width:  320px;
     height: 160px;
 }
 
-#proxy_meta_new_bb {
+#proxy_meta_new_bb
+{
     width:  320px;
     height: 160px;
+
 }
 
-#proxy_operations {
-    text-align: center;
-    clear:  both;
+#proxy_operations
+{
+
 }
 
-#metadata_table {
+#metadata_table
+{
     width:      100%;
+    font-size:  small;
+    border-collapse:    collapse;
 }
 
 
@@ -34,33 +44,90 @@ h4 {
 
 tr, td {
     vertical-align: top;
+
 }
 
-#metadata_table{
-    border: 1px solid black;
-    font-size: small;
+#proxy_ops_mode td
+{
+    margin-left:    1em;
+    margin-right:   1em;
+}
+
+td.mask_define_bb
+{
+    border-left:        1px solid #000000;
+    padding-left:       4px;
+    padding-right:      4px;
+}
+
+td.mask_addbutton
+{
+    text-align:         center;
+}
+
+
+#metadata_table
+{
+    margin-bottom:      1em;
+    border-bottom:      1px solid #000000;
+    border-collapse:    collapse;
+}
+
+#metadata_table td, #metadata_table th
+{
+    border-left:        1px solid #000000;
+    border-right:       1px solid #000000;
+}
+
+#metadata_table td:first-child, #metadata_table th:first-child
+{
+    border-left:        none;
+}
+
+#metadata_table td:last-child, #metadata_table th:last-child
+{
+    border-right:       none;
 }
 
 #metadata_table tr, #metadata_table td {
     vertical-align: middle;
 }
 
+#metadata_table td
+{
+    padding:        4px;
+}
+
+
 #metadata_new_submission
 {
-    border: 1px solid black;
+    border-collapse:    collapse;
+    margin-top:         1em;
 
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 1em;
 }
+
+#metadata_new_submission td
+{
+    padding-left:       8px;
+    padding-right:      8px;
+}
+
 
 #proxy_core_data {
-    border: 1px solid black;
-    margin-left: auto;
-    margin-right: auto;
+    border-collapse:    collapse;
 }
 
+#proxy_core_data td
+{
+    padding-left:       8px;
+    padding-right:      8px;
+}
+
+#submission_checklist
+{
+    text-align:     center;
+
+}
 
 
 .pm_text_bbox {
@@ -80,11 +147,51 @@ tr, td {
 }
 
 #proxy_ops_table {
-    margin-left:    auto;
-    margin-right:   auto;
+
+
 
 }
 
+
+
+#proxy_ops_select_table
+{
+    padding:            0;
+    border-collapse:    collapse;
+
+}
+
+#proxy_ops_select td
+{
+
+    border-left:        1px solid #000000;
+    border-right:        1px solid #000000;
+    padding-left:        4px;
+    padding-right:      4px;
+
+}
+
+#proxy_ops_select td:first-child
+{
+    border-left:        none;
+}
+
+#proxy_ops_select td:last-child
+{
+    border-right:        none;
+}
+
 #controls_send {
-    text-align: center;
+    text-align:     center;
+}
+
+#td_proxy_bb
+{
+    border-right:        1px solid #000000;
+
+}
+
+#button_proxy_create
+{
+    margin-top:         1em;
 }

@@ -1,11 +1,10 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-    <title></title>
-</head>
-<body>
+{% with "FIdER - Creazione proxy WIP" as titletag %}
+    {% with "proxy_setup_manifest.js" as specificjs %}
+        {% with "proxy_setup.css" as specificcss %}
+            {% include "layout_header.html" %}
+        {% endwith %}
+    {%  endwith %}
+{% endwith %}
 FORM SUBMITTED.
 
-</body>
-</html>
+{% include "layout_footer.html" %}

@@ -1,8 +1,145 @@
-body {
-
+body
+{
     font-family: sans-serif;
-    background-color: #e6e6e6;
+    background-color: #ffffff;
+    /*text-align: center; */
+}
 
+input
+{
+    border:             1px solid #1cc500;
+
+}
+
+#servicebar
+{
+    position:           absolute;
+    top:                0;
+    left:               0;
+    right:              0;
+    height:             1.5em;
+
+    padding-left:       4px;
+    padding-top:        4px;
+
+    background-color:   #1cc500;
+    color:              #ffffff;
+    font-weight:        bold;
+
+    border-top:            1px solid #ffffff;
+    border-bottom:         1px solid #ffffff;
+}
+
+#functionality
+{
+    position:           absolute;
+    top:                2.5em;
+    left:               96px;
+    right:              20%;
+    bottom:             0;
+
+    overflow:           auto;
+
+    padding:            0.5em;
+
+    border-left:        1px solid #1cc500;
+    border-right:        1px solid #1cc500;
+
+
+    /*
+    border-top:         1px solid #1cc500;
+    -webkit-border-top-left-radius: 0.4em;
+    -khtml-border-top-left-radius:  0.4em;
+    -moz-border-top-left-radius:    0.4em;
+    border-top-left-radius:         0.4em;
+    */
+
+
+}
+
+#infoslab
+{
+    position:           absolute;
+    left:               80%;
+    right:              0;
+    top:                2.5em;
+    bottom:             0;
+
+
+    /*border-left:        1px solid #1cc500; */
+    /*
+    border-top:        1px solid #1cc500;
+    */
+
+
+}
+
+#launcherbar
+{
+    position:           absolute;
+    top:                3em;
+    left:               0;
+    width:              96px;
+    bottom:             0;
+    text-align:         right;
+}
+
+div.launcher
+{
+
+    width: 72px;
+    margin-left: 8px;
+    margin-top: 16px;
+    padding-top: 42px;
     text-align: center;
+    font-size: small;
+    font-weight:    bold;
+
+    background-repeat: no-repeat;
+    background-position: 20px 4px;
+}
+
+
+.icn_proxycreate
+{
+    background-image: url("/static/resource/proxy-new.png");
+}
+
+.icn_proxyrefresh
+{
+    background-image: url("/static/resource/proxy-refresh.png");
+}
+
+.icn_proxyupload
+{
+    background-image: url("/static/resource/proxy-upload.png");
+}
+
+.icn_proxyconvert
+{
+    background-image: url("/static/resource/proxy-convert.png");
+}
+
+a
+{
+    text-decoration: none;
+    color:          #1cc500;
+}
+
+.launcher:hover
+{
+    color:          #0000ff;
+}
+
+.launched
+{
+    /*
+    border-left:           1px solid #1cc500;
+    border-right:          1px solid white;
+    */
+
+    border-top:            1px solid #1cc500;
+    border-bottom:         1px solid #1cc500;
+
 
 }
