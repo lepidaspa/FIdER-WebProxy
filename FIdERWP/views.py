@@ -4,6 +4,8 @@ import urllib2
 import zipfile
 from django.core.files.base import  File
 from django.core.files.storage import FileSystemStorage
+from django.utils.safestring import SafeString
+from FIdERProxyFS.proxy_core import readSingleShape
 
 
 __author__ = 'Antonio Vaccarino'
@@ -263,8 +265,6 @@ def showfeatures (request):
 	:return:
 	"""
 
-
-
 	return render_to_response ('featurelist.html', context_instance=RequestContext(request))
 
 def proxy_uploadmap (request):
@@ -494,3 +494,66 @@ def proxy_read_full (request, **kwargs):
 
 	return HttpResponse(read_result, mimetype="application/json")
 
+def proxy_visual (request, **kwargs):
+	"""
+	Visualization interface for data that has been both uploaded and refreshed
+	:param request:
+	:param kwargs: [proxy_id], [meta_id], [shape_id]
+	:return:
+	"""
+
+	#TODO: handle pre-selected visual range
+
+	list_proxy = ProxyFS.getProxyList()
+
+	list_meta_byproxy = {}
+	for proxy in list_proxy:
+		list_meta_byproxy [proxy] = os.listdir(os.path.join(conf.baseproxypath,proxy, conf.path_geojson))
+
+	list_shape_bymeta_byproxy = {}
+	for proxy in list_proxy:
+		list_shape_bymeta_byproxy[proxy] = {}
+		for meta in list_meta_byproxy[proxy]:
+			list_shape_bymeta_byproxy[proxy][meta] = []
+			for shape in os.listdir(os.path.join(conf.baseproxypath,proxy, conf.path_geojson, meta)):
+				list_shape_bymeta_byproxy[proxy][meta].append(shape)
+
+	proxyboxes = {}
+	metaboxes = {}
+
+	for proxy_id in list_proxy:
+		fp_manifest = open(os.path.join(conf.baseproxypath, proxy_id, conf.path_manifest), 'r')
+		manifest = json.load (fp_manifest)
+		proxyboxes[proxy_id] = []
+		for coord in manifest['area']:
+			proxyboxes[proxy_id].append(float(coord))
+		metaboxes[proxy_id] = {}
+		for meta in manifest['metadata']:
+			metaboxes[proxy_id][meta['name']] = []
+			for coord in meta['area']:
+				metaboxes[proxy_id][meta['name']].append(float(coord))
+		fp_manifest.close()
+
+	print proxyboxes
+	print metaboxes
+
+	return render_to_response ('proxy_visual.html', {"proxies":list_proxy, "metadata":list_meta_byproxy, "shapefile":list_shape_bymeta_byproxy, "proxyboxes": SafeString(json.dumps(proxyboxes)), "metaboxes":SafeString (json.dumps(metaboxes)) },
+		context_instance=RequestContext(request))
+
+def proxy_loadmap (request, **kwargs):
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	shape_id = kwargs['shape_id']
+
+	print "Loading map data for map %s/%s/%s" % (proxy_id, meta_id, shape_id)
+
+	jsondata = readSingleShape (proxy_id, meta_id, shape_id)
+
+
+	return HttpResponse(jsondata, mimetype="application/json")
+
+
+def proxy_features (request):
+
+	return render_to_response ('welcome.html', context_instance=RequestContext(request))

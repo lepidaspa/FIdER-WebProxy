@@ -30,9 +30,14 @@ urlpatterns = patterns('',
 	url(r'^proxy/debug', views.showfeatures),
 	url(r'^proxy/maketable/', views.proxy_create_conversion),
 	url(r'^proxy/upload/', views.proxy_uploadmap),
+	url(r'^proxy/vis/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', views.proxy_visual),
+	url(r'^proxy/maps/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', views.proxy_loadmap),
+	url(r'^proxy/vis/', views.proxy_visual),
 
 	# urls for "passive" operations, called by the main server
 	url(r'^data/(?P<proxy_id>\w*)/', views.proxy_read_full),
+
+	url(r'^proxy/$', views.proxy_features ),
 
 )
 

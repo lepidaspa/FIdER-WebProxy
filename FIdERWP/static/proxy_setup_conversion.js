@@ -71,8 +71,8 @@ function rebuildFilters()
     $("#sel_meta").change(updateFiltersFromMeta);
     $("#sel_shape").change(openConversionTable);
 
-    $("#sel_meta").hide();
-    $("#sel_shape").hide();
+    $("#sel_meta").attr("disabled", true);
+    $("#sel_shape").attr("disabled", true);
 
 
 }
@@ -92,8 +92,8 @@ function updateFiltersFromProxy ()
         $("#sel_meta").append('<option value="'+meta_id+'">'+meta_id+'</option>');
     }
 
-    $("#sel_meta").show();
-    $("#sel_shape").hide();
+    $("#sel_meta").removeAttr("disabled");
+    $("#sel_shape").attr("disabled", true);
 
 }
 
@@ -112,7 +112,7 @@ function updateFiltersFromMeta ()
         shape_id = list_shape[proxy_id][meta_id][i];
         $("#sel_shape").append('<option value="'+shape_id+'">'+shape_id+'</option>');
     }
-    $("#sel_shape").show();
+    $("#sel_shape").removeAttr("disabled");
 
 }
 

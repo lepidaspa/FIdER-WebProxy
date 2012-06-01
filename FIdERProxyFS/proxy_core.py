@@ -153,6 +153,24 @@ def replicateDelete (proxy_id, meta_id, shape_id):
 		shutil.rmtree(path_gj)
 
 
+def readSingleShape (proxy_id, meta_id, shape_id):
+	"""
+	returns the json data of a specific shape from the geojson directory
+	:param proxy_id:
+	:param meta_id:
+	:param shape_id:
+	:return:
+	"""
+
+	path_gj = os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id)
+
+	fp_json = open(path_gj, 'r')
+	gjdata = json.load(fp_json)
+	fp_json.close()
+
+	return json.dumps(gjdata)
+
+
 def buildReadList (proxy_id, timestamp=None):
 	"""
 	Check which metadata have been updated after the timestamp

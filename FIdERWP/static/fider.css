@@ -5,11 +5,19 @@ body
     /*text-align: center; */
 }
 
-input
+input, select
 {
-    border:             1px solid #1cc500;
+    border:             1px solid #ff8800;
+    background-color:   #ffffff;
 
 }
+
+input:disabled, select:disabled
+{
+    background-color: #EFFF82;
+
+}
+
 
 #servicebar
 {
@@ -22,7 +30,8 @@ input
     padding-left:       4px;
     padding-top:        4px;
 
-    background-color:   #1cc500;
+    /*background-color:   #1cc500; */
+    background-color:   #ff8800;
     color:              #ffffff;
     font-weight:        bold;
 
@@ -42,12 +51,12 @@ input
 
     padding:            0.5em;
 
-    border-left:        1px solid #1cc500;
-    border-right:        1px solid #1cc500;
+    border-left:        1px solid #ff8800;
+    border-right:        1px solid #ff8800;
 
 
     /*
-    border-top:         1px solid #1cc500;
+    border-top:         1px solid #ff8800;
     -webkit-border-top-left-radius: 0.4em;
     -khtml-border-top-left-radius:  0.4em;
     -moz-border-top-left-radius:    0.4em;
@@ -66,9 +75,9 @@ input
     bottom:             0;
 
 
-    /*border-left:        1px solid #1cc500; */
+    /*border-left:        1px solid #ff8800; */
     /*
-    border-top:        1px solid #1cc500;
+    border-top:        1px solid #ff8800;
     */
 
 
@@ -120,10 +129,15 @@ div.launcher
     background-image: url("/static/resource/proxy-convert.png");
 }
 
+.icn_proxyview
+{
+    background-image: url("/static/resource/proxy-vis.png");
+}
+
 a
 {
     text-decoration: none;
-    color:          #1cc500;
+    color:          #ff8800;
 }
 
 .launcher:hover
@@ -134,12 +148,12 @@ a
 .launched
 {
     /*
-    border-left:           1px solid #1cc500;
+    border-left:           1px solid #ff8800;
     border-right:          1px solid white;
     */
 
-    border-top:            1px solid #1cc500;
-    border-bottom:         1px solid #1cc500;
+    border-top:            1px solid #ff8800;
+    border-bottom:         1px solid #ff8800;
 
 
 }

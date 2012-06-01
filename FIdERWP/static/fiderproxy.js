@@ -38,5 +38,8 @@ function highlightSection ()
 
             break;
 
+        case "vis":
+            $("#launcher_proxyview").addClass ("launched");
+
     }
 }
