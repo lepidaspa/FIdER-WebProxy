@@ -27,7 +27,7 @@ function pageInit()
     //TODO: import theme to local and replace this after DEMO (or before?)
     OpenLayers.ImgPath = "https://github.com/sirmmo/openlayers_themes/raw/master/dark/";
 
-    mapvis = new OpenLayers.Map('proxymap');
+    mapvis = new OpenLayers.Map('proxymap', {controls: []});
 
     var layer = new OpenLayers.Layer.OSM();
 
@@ -131,6 +131,7 @@ function updateMapWithProxy ()
 
     //TODO: reset bounding box on map according to selection
     resetMapBB(bb_proxy[proxy_id]);
+    resetMapControls();
 
 }
 
@@ -154,7 +155,16 @@ function updateMapWithMeta ()
 
     //TODO: reset bounding box on map according to selection
     resetMapBB(bb_meta[proxy_id][meta_id]);
+    resetMapControls();
+}
 
+
+function resetMapControls()
+{
+    while (mapvis.controls.length > 0)
+    {
+        mapvis.removeControl(mapvis.controls[0]);
+    }
 }
 
 function updateMapWithShape ()
@@ -199,7 +209,27 @@ function drawToMap (mapjson)
     mapvislayer.addFeatures(formatmap);
 
 
+    mapvis.addControl(new OpenLayers.Control.OverviewMap());
+    mapvis.addControl(new OpenLayers.Control.Navigation());
+    mapvis.addControl(new OpenLayers.Control.PanZoomBar());
 
+/*
+    var featureinfo = new OpenLayers.Control.SelectFeature(mapvislayer);
+    featureinfo.events.register("featureselected", this, function(e) {
+        getFeatureProperties(e.feature);
+    });
+    mapvis.addControl(featureinfo);
+    mapvis.controls[mapvis.controls.length-1].activate();
+*/
+
+}
+
+function getFeatureProperties (feature)
+{
+
+    //TODO: placeholder, implement
+
+    alert("Checking feature "+feature);
 
 }
 

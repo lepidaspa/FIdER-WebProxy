@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import json
+import urllib
 import urllib2
 from FIdERProxyFS import proxy_config_core as conf
 from FIdERProxyFS import proxy_core
@@ -100,8 +101,8 @@ def getWelcomeFromServer ():
 	"""
 
 	try:
-
-		jsonresponse = urllib2.urlopen(conf.URL_DISCOVERY)
+		addressquery = urllib.urlencode({'from': conf.HARDPROXY_LOC})
+		jsonresponse = urllib2.urlopen(conf.URL_DISCOVERY+"?%s" % addressquery)
 		welcomedata = json.load(jsonresponse)
 		print welcomedata
 

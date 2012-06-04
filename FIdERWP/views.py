@@ -163,7 +163,7 @@ def component_shapefile_table (request, **kwargs):
 
 		jsonresponse = urllib2.urlopen(conf.URL_CONVERSIONS)
 		convtable = json.load(jsonresponse)
-		print convtable
+		print "Received conversion table from server: %s" % convtable
 
 	except Exception as ex:
 		if isinstance(ex, urllib2.HTTPError):
@@ -173,36 +173,32 @@ def component_shapefile_table (request, **kwargs):
 		else:
 			errormess = ex.message
 		print "Error when requesting conversion table from %s: %s" % (conf.URL_CONVERSIONS, errormess)
-		raise
 
-	#DEBUG ONLY
-	#TODO: get these from the main server
-	"""
-	shapetable = {
-		'Node' : {
-			'LocationNote' : 'str',
-			'Tipologia': 'str',
-			'Address' : 'str',
-			'Neighborhood': 'str',
-			},
-		'Well' : {
-			'Name' : 'str',
-			'RETE' : 'str',
-			'Address' : 'str',
-			'Closure' : 'str',
-			'Width' : 'int',
-			'Length' : 'int'
-		},
-		'Duct' : {
-			'Length': 'int',
-			'Tube': 'str',
-			'CODICE': 'str',
-			'RETE': 'str',
-			'Infrastructure': 'str'
+		convtable = {
+			'Duct' : {
+				'ID' : 'str',
+				'Owner': 'str',
+				'OwnerID' : 'str',
+				'StartID': 'str',
+				'EndID': 'str',
+				'Length': 'str',
+				'Type': 'str',
+				'Availability': 'str',
+				'CreationDate': 'str',
+				'LastUpdate': 'str',
+				},
+			'Well' : {
+				'ID': 'int',
+				'Owner': 'str',
+				'OwnerID': 'str',
+				'Address': 'str',
+				'Type': 'str',
+				'CreationDate': 'str',
+				'LastUpdate': 'str',
+				}
 		}
 
-	}
-	"""
+
 
 	#print "PARSING SHAPE DATA from %s" % type(shapedata)
 	#print shapedata
@@ -213,6 +209,8 @@ def component_shapefile_table (request, **kwargs):
 		for key in feature['properties'].keys():
 			if not conversionfrom.has_key (key):
 				conversionfrom[key] = str(type(feature['properties'][key])).split("'")[1]
+
+
 
 	args = {
 		"proxy_id" : kwargs["proxy_id"],
@@ -476,24 +474,6 @@ def proxy_create_conversion (request):
 
 
 
-def proxy_read_full (request, **kwargs):
-	"""
-	returns all the data for a specific proxy
-	:param request:
-	:param kwargs:
-	:return:
-	"""
-
-	read_result = {}
-
-	proxy_id = kwargs['proxy_id']
-
-	print "DJANGO: performing full read of proxy %s " % proxy_id
-
-	read_result = proxy_core.handleReadFull(proxy_id)
-
-	return HttpResponse(read_result, mimetype="application/json")
-
 def proxy_visual (request, **kwargs):
 	"""
 	Visualization interface for data that has been both uploaded and refreshed
@@ -557,3 +537,64 @@ def proxy_loadmap (request, **kwargs):
 def proxy_features (request):
 
 	return render_to_response ('welcome.html', context_instance=RequestContext(request))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def set_access_control_headers(response):
+	response['Access-Control-Allow-Origin'] = '*'
+	response['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
+	response['Access-Control-Max-Age'] = 1000
+	response['Access-Control-Allow-Headers'] = '*'
+
+class HttpOptionsDecorator(object):
+	def __init__(self, f):
+		self.f = f
+
+	def __call__(self, *args):
+		#logging.info("Call decorator")
+		request = args[0]
+		if request.method == "OPTIONS":
+			response = HttpResponse()
+			set_access_control_headers(response)
+			return response
+		else:
+			response = self.f(*args)
+			set_access_control_headers(response)
+			return response
+
+
+
+
+
+
+@HttpOptionsDecorator
+def proxy_read_full (request, **kwargs):
+	"""
+	returns all the data for a specific proxy
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	read_result = {}
+
+	proxy_id = kwargs['proxy_id']
+
+	print "DJANGO: performing full read of proxy %s " % proxy_id
+
+	read_result = proxy_core.handleReadFull(proxy_id)
+
+	return HttpResponse(read_result, mimetype="application/json")
+
