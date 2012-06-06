@@ -58,7 +58,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = '/home/drake/PycharmProjects/FIdER/FIdER-WebProxy/static/'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -102,7 +102,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-ROOT_URLCONF = 'ProxyWeb.urls'
+ROOT_URLCONF = 'FIdER-WebProxy.urls'
 
 SETTINGS_PATH = os.getcwd()
 TEMPLATE_DIRS = (
@@ -123,7 +123,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
-    'ProxyWeb.FIdERWP',
+    'FIdER-WebProxy.FIdERWP',
 )
 
 # A sample logging configuration. The only tangible logging

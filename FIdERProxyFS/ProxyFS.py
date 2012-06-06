@@ -144,7 +144,7 @@ def handleFileEvent (eventpath):
 		locker.performLocked(proxy_core.handleDelete, proxy_id, meta_id, shape_id)
 	elif zipfile.is_zipfile(eventpath):
 		# upsert
-		#proxy_core.handleUpsert (proxy_id, meta_id, shape_id)
+		# proxy_core.handleUpsert (proxy_id, meta_id, shape_id)
 		print "Updating/Adding %s/%s/%s" % (proxy_id, meta_id, shape_id)
 		locker.performLocked(proxy_core.handleUpsert, proxy_id, meta_id, shape_id)
 		upsert = shape_id
@@ -183,11 +183,13 @@ def handleFileEvent (eventpath):
 
 
 def rebuildFullShapesList (proxy_id):
+
 	"""
-	Creates the upserts for a specific soft proxy and returns them as dict for integration in a send message (request_write or response_read). Upserts are organized in a dict of metadata with meta_id as keys and lists of feature collections as values
-	:param proxy_id:
-	:return: dict
-	"""
+	 Rebuilds the json data for all the metadata in a specific proxy, starting from the upload directory and clearing any pre-existent data. As such, i
+	 :param proxy_id:
+	 :return:
+	 """
+
 
 	# get the full meta list in the upload directory
 	metalist = os.listdir(os.path.join(conf.baseuploadpath, proxy_id))

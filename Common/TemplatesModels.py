@@ -169,18 +169,18 @@ model_request_read = {
 	"time": unicode
 }
 
-process_error_anomaly = {
+process_error_anomaly = (
 	(("anomalies",),((validateFieldIteratively,True,validateFieldAsAnomaly,None),)),
-}
+)
 
 process_request_api = (
 	((["query", "BB"],),((validateFieldAsBoundingBox,True, None, None),)),
 	((["query", "time"],),((validateFieldAsIsoDateTime,True, None, None),)),
 )
 
-process_request_read = [
+process_request_read = (
 	(("time",),((validateFieldAsIsoDateTime, True, None, None),)),
-]
+)
 
 
 
@@ -200,12 +200,12 @@ process_response_read = (
 )
 
 
-process_response_capabilities = [
+process_response_capabilities = (
 	(("area",),((validateFieldAsBoundingBox,True, None, None),)),
 	(("time",),((validateFieldAsTimeSpan, True, None, None),)),
 	(("base_url",), ((validateFieldAsActiveUrl, True, None, None),)),
 	(("metadata"), ((validateFieldAsMetadataListing, True, None, None),))
-]
+)
 
 #removed temporarily since now we don't have a list but a dict of lists
 #	((["data", "upsert"],),((validateFieldIteratively,True, validateGeoJsonObject, None),)),
