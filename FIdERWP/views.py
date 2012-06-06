@@ -562,7 +562,7 @@ class HttpOptionsDecorator(object):
 	def __init__(self, f):
 		self.f = f
 
-	def __call__(self, *args):
+	def __call__(self, *args, **kwargs):
 		#logging.info("Call decorator")
 		request = args[0]
 		if request.method == "OPTIONS":
@@ -570,7 +570,7 @@ class HttpOptionsDecorator(object):
 			set_access_control_headers(response)
 			return response
 		else:
-			response = self.f(*args)
+			response = self.f(*args, **kwargs)
 			set_access_control_headers(response)
 			return response
 
