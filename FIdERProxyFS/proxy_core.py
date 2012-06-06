@@ -443,6 +443,16 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	else:
 		basepath, shape_id = os.path.split(path_shape)
 	basepath, meta_id = os.path.split(basepath)
+
+
+	"""
+	if basepath.endswith(conf.path_mirror):
+		basepath = basepath[:len(conf.path_mirror)]
+	"""
+	basepath = basepath.partition(conf.path_mirror)[0]
+	if basepath.endswith("/"):
+		basepath = basepath[:-1]
+
 	basepath, proxy_id = os.path.split(basepath)
 
 
@@ -463,7 +473,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	except Exception as ex:
 		print "ERROR during OGR parse on %s: %s" % (path_shape, ex)
 		#TODO: better/proper debug
-		return False
+		raise
 
 
 	#SRS CONVERSION CODE
@@ -636,7 +646,6 @@ def rebuildShape (proxy_id, meta_id, shape_id, modified=True):
 	:param modified:
 	:return: dict, geojson data
 	"""
-
 
 	path_shape = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
 	if modified:

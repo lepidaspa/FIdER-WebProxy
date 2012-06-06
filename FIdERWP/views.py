@@ -575,10 +575,6 @@ class HttpOptionsDecorator(object):
 			return response
 
 
-
-
-
-
 @HttpOptionsDecorator
 def proxy_read_full (request, **kwargs):
 	"""
