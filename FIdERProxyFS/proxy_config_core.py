@@ -49,8 +49,8 @@ baseuploadpath = conf_core["PROXY_ROOT_UPLOAD"]
 
 mainserver_ref_location = config_testing.MAINSERVER_CONF_FILE
 
-path_mirror = 'maps/mirror/'
-path_geojson = 'maps/geojson/'
+path_mirror = 'maps/mirror'
+path_geojson = 'maps/geojson'
 path_manifest = 'conf/manifest.json'
 
 tries_for_connection = 3

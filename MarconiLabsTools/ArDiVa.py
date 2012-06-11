@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with SANET. If not, see <http://www.gnu.org/licenses/>.
 
-
 # CHANGELOG
 #
 # 1.01 Added fillSafely to make easier to fill a new dict in compliance with a Model instance
@@ -154,7 +153,7 @@ def digDictKeys (candidate):
 	return keylist
 
 
-def getKeysWithPath (candidate, targets, breadcrumb=[]):
+def getKeysWithPath (candidate, targets, breadcrumb=None):
 	"""
 	Finds all the child keys of specific parent keys in a multi-level dictionary and return their full paths
 	:param candidate:
@@ -162,6 +161,10 @@ def getKeysWithPath (candidate, targets, breadcrumb=[]):
 	:param breadcrumb: list of the keys from root to current
 	:return: list of keysequences as [level1key, level2key, level3key]
 	"""
+
+	if breadcrumb is None:
+		breadcrumb = []
+
 
 	paths = []
 
@@ -505,8 +508,8 @@ class Model (dict):
 			if key not in modelkeys:
 				generated[key] = kwargs[key]
 
-		#TODO: val_loose (and the override to subtemplates) is a temporary fix for multilevel dicts that are described in their lower levels in the original template, should work also in val_strict
-		return self.validateCandidate(generated, self.VAL_LOOSE, True), generated
+		#TODO: val_loose (and the override to subtemplates) is a temporary fix for multilevel dicts that are described in their lower levels in the original template, should work also in val_strict; NOTE 2012-06-07: removed, issue probably fixed, leaving the TODO for checking
+		return self.validateCandidate(generated, self.VAL_STRICT, True), generated
 
 
 class Check:

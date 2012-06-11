@@ -1,32 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import copy
-import json
-from osgeo import ogr
-import shutil
-import zipfile
-import time
-from Common.errors import RuntimeProxyException
-import MarconiLabsTools.ArDiVa
-
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
+
 import os.path
 import os
-
 import sys
+import shutil
+import zipfile
+import time
+import json
+
+from osgeo import ogr
+
+from Common.errors import RuntimeProxyException
+import MarconiLabsTools.ArDiVa
+
 sys.path.append("../")
 
 from Common import TemplatesModels
 from FIdERProxyFS import proxy_lock
-#from FIdERProxyFS.ProxyFS import createMessageFromTemplate
-from MarconiLabsTools import ArDiVa
 import proxy_config_core as conf
-
 from Common.errors import *
 from FIdERFLL import validate_fields
+
+
 
 def getManifest (proxy_id):
 
@@ -93,7 +93,7 @@ def verifyUpdateStructure (eventpath):
 	try:
 		shape_id = zipfilename[:-4]
 	except:
-		raise InvalidShapeIdException ("Could not extract a valid shapeid from the shape file archive name" % zipfilename)
+		raise InvalidShapeIdException ("Could not extract a valid shapeid from the shape file archive name %s" % zipfilename)
 
 	# getting manifest data for verification
 
@@ -372,18 +372,7 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 		if "/" in candidatepath:
 			raise InvalidShapeArchiveException ("Shapefile archives should not contain names with path data")
 		else:
-			"""
-			#checking that the names of the file are correct
-			cext = None
-			for valid in ext_accept:
-				if candidatepath.endswith(valid):
-					cext = valid
-					if cext in ext_mandatory:
-						ext_mandatory[cext] = True
-					break
-			if cext is None:
-				raise InvalidShapeArchiveException ("Shape archive %s contains unrelated data in file %s " % (shape_id, candidatepath))
-			"""
+
 			cext = candidatepath.split(".")[-1]
 			print candidatepath, cext
 			if ext_mandatory_shape.has_key(cext):
@@ -450,6 +439,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		basepath = basepath[:len(conf.path_mirror)]
 	"""
 	basepath = basepath.partition(conf.path_mirror)[0]
+
 	if basepath.endswith("/"):
 		basepath = basepath[:-1]
 
@@ -486,6 +476,12 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 
 	jsonlist = []
+
+	if normalise:
+		convtable = getConversionTable(proxy_id, meta_id, shape_id)
+		print "Data will be normalised with convtable %s" % (convtable,)
+
+
 
 	for i in range (0, datasource.GetLayerCount()):
 		layer = datasource.GetLayer(i)
@@ -525,7 +521,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 			# we may want to keep to original "properties" elements
 			if normalise:
-				jsondata = adaptGeoJson(jsondata, getConversionTable(proxy_id, meta_id, shape_id))
+				jsondata = adaptGeoJson(jsondata, convtable)
 
 			collection['features'].append(jsondata)
 
@@ -543,7 +539,8 @@ def getConversionTable (proxy_id, meta_id, shape_id):
 	:return:
 	"""
 
-	tablepath = os.path.join(conf.baseproxypath, proxy_id, "conf", "mappings", meta_id, shape_id+".json")
+	tablepath = os.path.join(conf.baseproxypath, proxy_id, "conf", "mappings", meta_id, shape_id)
+	print "Requesting conversion table from %s " % (tablepath,)
 
 	if not os.path.exists (tablepath):
 		return None
@@ -570,7 +567,7 @@ def createConversionTable (conversiontable, proxy_id, meta_id, shape_id=None):
 
 def adaptGeoJson (jsondata, conversiontable=None):
 	"""
-	Takes a GeoJson dict and removes all non-compliant keys in "FEATURE" elements, field 'PROPERTIES'; non compliant keys are those keys that are not defined specifically by the geojson specifications AND do not appear in the conversion table. The conversion table is used to change the name of the keys matched by its keys()
+	Takes a GeoJson dict and removes all non-compliant keys in PROPERTIES element; non compliant keys are those keys that are not defined specifically by the geojson specifications AND do not appear in the conversion table. The conversion table is used to change the name of the keys matched by its keys()
 	:param jsondata:
 	:param conversiontable: single level dictionary:
 	:return:
@@ -583,21 +580,17 @@ def adaptGeoJson (jsondata, conversiontable=None):
 	if conversiontable is None:
 		conversiontable = {}
 
-	keysequences =  ArDiVa.getKeysWithPath(jsondata, [u'feature',])
+	newdict = {}
+	landing = jsondata[u'properties']
+	for keyfrom in landing:
+		if keyfrom in conversiontable:
+			# the first element in a conversion table entry is always the type of object, which is NOT needed here since we only want the name of the resulting new key
+			keyto = conversiontable[keyfrom][1]
+			newdict[keyto] = landing[keyfrom]
 
-	for keyseq in keysequences:
-		newdict = {}
-		landing = ArDiVa.digDictVals(keyseq+u'properties')
-		for keyfrom in landing:
-			if keyfrom in conversiontable:
-				keyto = conversiontable[keyfrom]
-				newdict[keyto] = landing[keyfrom]
 
-		path = copy.copy(keyseq)
-		target = jsondata
-		while len(path)>0:
-			target = target[path.pop()]
-		target['properties'] = newdict
+
+	jsondata['properties'] = newdict
 
 
 	return jsondata
