@@ -1,0 +1,48 @@
+{% extends "fwpcore.html" %}
+
+
+{% block title %}
+    Gestione metadato e mappe
+{% endblock %}
+
+
+{% block headers %}
+
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_proxypage.css">
+    <script language="JavaScript" src="{{ STATIC_URL }}fwp_metapage.js"></script>
+
+
+{% endblock %}
+
+{% block navigation %}
+
+    <div id="metainfo"><a href="/fwp/proxy/{{ proxy_id }}" class="backtrack">«</a>{{ proxy_id }}: {{ meta_id }}</div>
+
+    <div id="minimap"></div>
+
+    <div class="button wide" id="proxy_configure"><a href="/fwp/proxy/config/{{ proxy_id }}">Caricamento dati</a></div>
+
+    <div class="button wide" id="proxy_configure"><a href="/fwp/proxy/config/{{ proxy_id }}">Conversioni</a></div>
+
+    <div id="metalisting"></div>
+
+{% endblock %}
+
+{% block functionality %}
+
+    <div id="proxymap"></div>
+
+
+    <div id="loadingstate">Caricamento mappe</div>
+
+
+
+{% endblock %}
+
+
+{% block starterscript %}
+    <script>
+        pageInit('{{ proxy_id }}', '{{ meta_id }}', '{{ proxy_type }}', {{ manifest }});
+    </script>
+{% endblock %}

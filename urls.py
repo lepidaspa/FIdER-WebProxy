@@ -2,14 +2,14 @@ from django.conf.urls.defaults import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
-from FIdERWP import views
+from FIdERWP import views as wpviews
+from FIdERWeb import views as fwpviews
 import settings
 
 admin.autodiscover()
 
-
-handler404 = 'FIdERWP.views.error404test'
-handler500 = 'FIdERWP.views.error500test'
+handler404 = 'wpviews.error404test'
+handler500 = 'wpviews.error500test'
 
 urlpatterns = patterns('',
     # Examples:
@@ -23,22 +23,30 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
 	# urls for active operations, proxy-side
-	url(r'^proxy/setup', views.softproxy_create_manifest),
-	url(r'^proxy/create', views.softproxy_create_make),
-	url(r'^proxy/conversion', views.softproxy_conversion_setup),
-	url(r'^proxy/shapetable/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', views.component_shapefile_table),
-	url(r'^proxy/refresh/(?P<proxy_id>\w*)', views.hardproxy_refresh),
-	url(r'^proxy/debug', views.showfeatures),
-	url(r'^proxy/maketable/', views.proxy_create_conversion),
-	url(r'^proxy/upload/', views.proxy_uploadmap),
-	url(r'^proxy/vis/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', views.proxy_visual),
-	url(r'^proxy/maps/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', views.proxy_loadmap),
-	url(r'^proxy/vis/', views.proxy_visual),
+	url(r'^proxy/setup', wpviews.softproxy_create_manifest),
+	url(r'^proxy/create', wpviews.softproxy_create_make),
+	url(r'^proxy/conversion', wpviews.softproxy_conversion_setup),
+	url(r'^proxy/shapetable/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', wpviews.component_shapefile_table),
+	url(r'^proxy/refresh/(?P<proxy_id>\w*)', wpviews.hardproxy_refresh),
+	url(r'^proxy/debug', wpviews.showfeatures),
+	url(r'^proxy/maketable/', wpviews.proxy_create_conversion),
+	url(r'^proxy/upload/', wpviews.proxy_uploadmap),
+	url(r'^proxy/vis/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', wpviews.proxy_visual),
+	url(r'^proxy/maps/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', wpviews.proxy_loadmap),
+	url(r'^proxy/vis/', wpviews.proxy_visual),
 
 	# urls for "passive" operations, called by the main server
-	url(r'^data/(?P<proxy_id>\w*)/', views.proxy_read_full),
+	url(r'^data/(?P<proxy_id>\w*)/', wpviews.proxy_read_full),
 
-	url(r'^proxy/$', views.proxy_features ),
+	url(r'^proxy/$', wpviews.proxy_features),
+
+
+
+	url(r'^fwp/$', fwpviews.proxysel),
+	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
+	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
+
+
 
 )
 

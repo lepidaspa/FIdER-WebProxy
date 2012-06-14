@@ -27,6 +27,7 @@ function pageInit()
     //TODO: import theme to local and replace this after DEMO (or before?)
     OpenLayers.ImgPath = "https://github.com/sirmmo/openlayers_themes/raw/master/dark/";
 
+
     mapvis = new OpenLayers.Map('proxymap', {controls: []});
 
     var layer = new OpenLayers.Layer.OSM();
@@ -62,7 +63,6 @@ function rebuildFilters()
     var group;
     var i;
 
-    //TODO: extract proxy, meta, shapes from selection fields
     list_proxy = [];
     options = $("#sel_proxy option:[class!=nullopt]");
     for (i = 0; i < options.length; i++)
@@ -114,7 +114,6 @@ function rebuildFilters()
 
 function updateMapWithProxy ()
 {
-    //TODO: placeholder, implement
     var i;
     var meta_id;
 
@@ -137,7 +136,7 @@ function updateMapWithProxy ()
 
 function updateMapWithMeta ()
 {
-    //TODO: placeholder, implement
+
     var i;
     var shape_id;
 
@@ -169,7 +168,6 @@ function resetMapControls()
 
 function updateMapWithShape ()
 {
-    //TODO: placeholder, implement
 
     //TODO: reset bounding box on meta/proxy and draw map elements
 
@@ -235,7 +233,6 @@ function getFeatureProperties (feature)
 
 function resetMapBB (bb_array)
 {
-    //TODO: placeholder, implement
 
     //alert("Reboxing to "+bb_array[0]+", "+bb_array[1]+", "+bb_array[2]+", "+bb_array[3]);
 

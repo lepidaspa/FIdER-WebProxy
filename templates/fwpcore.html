@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Catasto Federato - {% block title %}{% endblock %}</title>
+
+
+    <link rel="stylesheet" href="{{ STATIC_URL }}fwpcore.css">
+
+
+
+    <link rel="stylesheet" href="{{ STATIC_URL }}smoothness/jquery-ui-1.8.20.custom.css">
+
+    <script language="JavaScript" src="{{ STATIC_URL }}jquery-1.7.2.js"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}OpenLayers/OpenLayers.js"></script>
+
+
+    {#  custom javascript and css for this specific page #}
+    {% block headers %}{% endblock %}
+
+</head>
+<body>
+
+<div id="servicebar">
+    {%  block servicebar %}utente FGfgh47 @ Catasto federato{% endblock %}
+</div>
+
+<div id="functionality">
+    {% block functionality %}{% endblock %}
+</div>
+
+<div id="navigation">
+    {% block navigation %}{% endblock %}
+</div>
+
+<div id="contextguide">
+    {% block contextguide %}{% endblock %}
+</div>
+
+
+
+
+
+
+</body>
+{% block starterscript %}{% endblock %}
+</html>

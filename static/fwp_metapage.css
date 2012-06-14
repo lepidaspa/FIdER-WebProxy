@@ -1,0 +1,26 @@
+#loadingstate
+{
+
+    font-size:  medium;
+    position:   fixed;
+
+    width:      40em;
+    height:     5em;
+
+    left:       auto;
+    right:      auto;
+    top:        auto;
+    bottom:     auto;
+
+    vertical-align: middle;
+    text-align: center;
+
+    background-color:      #ffffff;
+    border:             1px solid #000000;
+
+
+}
+
+#proxymap
+{
+}

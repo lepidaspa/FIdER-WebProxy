@@ -1,0 +1,16 @@
+#proxymap
+{
+    position:       absolute;
+    top:            0;
+    bottom:         0;
+    left:           0;
+    right:          0;
+
+    padding:        0 8px 8px 8px;
+}
+
+#proxylisting
+{
+    margin-top:     1em;
+}
+

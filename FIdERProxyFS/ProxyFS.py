@@ -310,8 +310,10 @@ def sendUpdatesWrite (proxy_id):
 
 def getProxyList ():
 
+
+	#TODO: update to new system with centralised manifests
 	listing = os.listdir(os.path.join(conf.baseproxypath))
-	excludepath = ["log", "next", "locks"]
+	excludepath = ["log", "next", "locks", "proxies"]
 
 	for excluded in excludepath:
 		try:

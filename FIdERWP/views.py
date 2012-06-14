@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import urllib2
-import zipfile
-from django.core.files.base import  File
-from django.core.files.storage import FileSystemStorage
-from django.utils.safestring import SafeString
-from FIdERProxyFS.proxy_core import readSingleShape
-
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -15,12 +8,19 @@ import os
 import json
 import sys
 import traceback
+import urllib2
+import zipfile
 
+
+from django.core.files.base import  File
+from django.core.files.storage import FileSystemStorage
+from django.utils.safestring import SafeString
 from django.views.decorators.csrf import csrf_exempt
 from django.template.context import RequestContext
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 
+from FIdERProxyFS.proxy_core import readSingleShape
 from MarconiLabsTools import ArDiVa
 from FIdERProxyFS import ProxyFS, proxy_core
 from FIdERWP import MessageTemplates, Components
@@ -222,9 +222,6 @@ def component_shapefile_table (request, **kwargs):
 	}
 
 	#print args
-
-
-
 
 	return render_to_response ('component_proxy_retrieve_conversion.html', args,
 		context_instance=RequestContext(request))
@@ -529,8 +526,6 @@ def proxy_loadmap (request, **kwargs):
 	print "Loading map data for map %s/%s/%s" % (proxy_id, meta_id, shape_id)
 
 	jsondata = readSingleShape (proxy_id, meta_id, shape_id)
-
-
 	return HttpResponse(jsondata, mimetype="application/json")
 
 

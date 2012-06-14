@@ -1,0 +1,126 @@
+body
+{
+    font-family: sans-serif;
+    background-color: #ffffff;
+}
+
+
+
+.button
+{
+    color:              #ffffff;
+    background-color:   #ff8800;
+    border: 1px solid #ff8800;
+    text-align:         center;
+
+}
+
+a.backtrack
+{
+    color:   #ff8800;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.button:focus
+{
+    color:              #000000;
+    border: 1px solid #ff8800;
+    background-color: #ffffff;
+}
+
+.button.wide
+{
+    width:      100%;
+    margin-bottom:  4px;
+}
+
+.button a
+{
+    text-decoration: none;
+    color:           #ffffff;
+}
+
+#servicebar
+{
+    position:           absolute;
+    top:                0;
+    left:               8px;
+    right:              8px;
+    height:             1.5em;
+
+    padding-left:       4px;
+    padding-top:        4px;
+
+    color:              #000000;
+    font-weight:        bold;
+
+    border-bottom:         1px solid #ff8800;
+}
+
+
+#navigation
+{
+    position:           absolute;
+    top:                2.5em;
+    left:               0;
+    right:              80%;
+    bottom:             0;
+    overflow:           auto;
+    padding-left:       8px;
+    padding-right:       8px;
+}
+
+#navigation > *
+{
+    font-size:          small;
+
+}
+
+
+#functionality
+{
+    position:           absolute;
+    top:                2.5em;
+    left:               20%;
+    right:              20%;
+    bottom:             0;
+
+    overflow:           auto;
+
+    padding:            0.5em;
+
+    border-left:        1px solid #ff8800;
+    border-right:        1px solid #ff8800;
+}
+
+.nav_entry a
+{
+    text-decoration:    none;
+    color:              #ff8800;
+}
+
+.nav_entry
+{
+    width:              100%;
+}
+
+.nav_entry.offmap
+{
+    color:              #cccccc;
+}
+
+.nav_entry.offmap a
+{
+    text-decoration:   none;
+    color:             #aaaaaa;
+}
+
+.nav_entry.offmap a:hover
+{
+    color:               #ff8800;
+}
+
+#contextguide
+{
+}

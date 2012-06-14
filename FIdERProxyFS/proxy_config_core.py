@@ -46,6 +46,7 @@ log_folder = "./tests/logs/"
 #baseuploadpath = config_testing.UPLOADPATH
 baseproxypath = conf_core["PROXY_ROOT_MAIN"]
 baseuploadpath = conf_core["PROXY_ROOT_UPLOAD"]
+basemanifestpath = conf_core["PROXY_LIST"]
 
 mainserver_ref_location = config_testing.MAINSERVER_CONF_FILE
 

@@ -1,0 +1,46 @@
+{% extends "fwpcore.html" %}
+
+
+{% block title %}
+    Gestione proxy e metadati
+{% endblock %}
+
+{% block headers %}
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_proxypage.css">
+    <script language="JavaScript" src="{{ STATIC_URL }}fwp_proxypage.js"></script>
+
+{% endblock %}
+
+
+{% block navigation %}
+
+    <div id="proxyinfo"><a href="/fwp/" class="backtrack">«</a>{{ proxy_id }}</div>
+
+    <div id="minimap"></div>
+
+    <div class="button wide" id="proxy_configure"><a href="/fwp/proxy/config/{{ proxy_id }}">Configurazione</a></div>
+
+
+
+
+    <div id="metalisting"></div>
+
+{% endblock %}
+
+
+{% block functionality %}
+
+    <div id="proxymap"></div>
+
+
+
+{% endblock %}
+
+
+
+{% block starterscript %}
+    <script>
+        pageInit('{{ proxy_id }}', {{ manifest }});
+    </script>
+{% endblock %}

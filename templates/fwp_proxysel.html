@@ -1,0 +1,37 @@
+{% extends "fwpcore.html" %}
+
+
+{% block title %}
+    Selezione/creazione proxy
+{% endblock %}
+
+{% block headers %}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_proxysel.css">
+    <script language="JavaScript" src="{{ STATIC_URL }}fwp_proxysel.js"></script>
+{% endblock %}
+
+{% block navigation %}
+
+    <div class="button wide" id="proxy_create_new"><a href="/proxy/setup">Crea nuovo proxy</a></div>
+
+
+    <div id="proxylisting">
+    </div>
+
+
+
+{% endblock %}
+
+
+{% block functionality %}
+
+<div id="proxymap"></div>
+
+{% endblock %}
+
+
+{% block starterscript %}
+    <script>
+        pageInit({{ proxies }});
+    </script>
+{% endblock %}
