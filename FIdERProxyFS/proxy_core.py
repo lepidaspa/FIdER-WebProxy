@@ -451,7 +451,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	collection = {
 		'id' : shape_id,
 		'type': 'FeatureCollection',
-		'features' : []
+		'features' : [],
 	}
 
 
@@ -482,6 +482,9 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		print "Data will be normalised with convtable %s" % (convtable,)
 
 
+	#boundaries defines the implicit bounding box of the map.
+	# Using angular measure
+	boundaries = [181, 91,-181, -91]
 
 	for i in range (0, datasource.GetLayerCount()):
 		layer = datasource.GetLayer(i)
@@ -513,7 +516,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 				#print "Error on feature %s geometry %s: %s " % (feature, f, geom)
 				pass
 
-		# fixed to output actual dict
+			# fixed to output actual dict
 
 			jsondata = json.loads(feature.ExportToJson())
 
@@ -523,8 +526,40 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 			if normalise:
 				jsondata = adaptGeoJson(jsondata, convtable)
 
+			#TODO: handle more than point/linestring/multilinestring (currently it's implicit), move the bbox detection out of GeoJSON to the GEOMETRY element of the original feature
+
+			positions = []
+
+			ftype = jsondata['geometry']['type']
+			fgeom = jsondata['geometry']['coordinates']
+
+			#print "Setting bbox for feature type %s" % ftype
+			if ftype == 'Point':
+				positions.append(fgeom)
+			elif ftype == 'LineString' or ftype == 'MultiPoint':
+				for position in fgeom:
+					positions.append(position)
+			elif ftype == 'MultiLineString':
+				for linestring in fgeom:
+					for position in linestring:
+						positions.append(position)
+
+			for position in positions:
+
+				if position[0] < boundaries[0]:
+					boundaries[0] = position[0]
+				if position[0] > boundaries[2]:
+					boundaries[2] = position[0]
+
+				if position[1] < boundaries[1]:
+					boundaries[1] = position[1]
+				if position[1] > boundaries[3]:
+					boundaries[3] = position[1]
+
 			collection['features'].append(jsondata)
 
+	print "Boundaries set to "+str(boundaries)
+	collection['bbox'] = boundaries
 
 
 	return collection
