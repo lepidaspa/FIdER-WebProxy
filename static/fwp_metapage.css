@@ -72,8 +72,8 @@
 
 .uploadwfsmask, .uploadfilemask
 {
-    margin-bottom:  4px;
-    margin-left:        4px;
+    padding-bottom:  4px;
+    padding-left:        4px;
     white-space: nowrap;
 
 }
