@@ -5,12 +5,54 @@ body
 }
 
 
+.maskwidget
+{
+    color:              #ffffff;
+    background-color:   #ff8800;
+    border:             1px solid #ff8800;
+    margin-top:         8px;
+    padding-top:        4px;
+}
+
+.textbutton
+{
+    font-weight:        bold;
+
+}
+
+.mapactions
+{
+    text-align:     right;
+}
+
+.statemess
+{
+    font-size:  medium;
+
+    vertical-align: middle;
+    text-align: center;
+
+    background-color:      #ff5434;
+    color:                  #ffffff;
+    border:           1px solid #ff5434;
+
+    margin-bottom:  8px;
+
+
+}
+
+input [type=button]
+{
+    color:              #ffffff;
+    background-color:   #ff8800;
+    border:             1px solid #ff8800;
+}
 
 .button
 {
     color:              #ffffff;
     background-color:   #ff8800;
-    border: 1px solid #ff8800;
+    border:             1px solid #ff8800;
     text-align:         center;
 
 }
@@ -31,7 +73,7 @@ a.backtrack
 
 .button.wide
 {
-    width:      100%;
+    /*width:      100%; */
     margin-bottom:  4px;
 }
 
@@ -64,7 +106,7 @@ a.backtrack
     position:           absolute;
     top:                2.5em;
     left:               0;
-    right:              80%;
+    right:              75%;
     bottom:             0;
     overflow:           auto;
     padding-left:       8px;
@@ -82,7 +124,7 @@ a.backtrack
 {
     position:           absolute;
     top:                2.5em;
-    left:               20%;
+    left:               25%;
     right:              20%;
     bottom:             0;
 
@@ -92,6 +134,12 @@ a.backtrack
 
     border-left:        1px solid #ff8800;
     border-right:        1px solid #ff8800;
+}
+
+.button_pre
+{
+    float:              left;
+
 }
 
 .nav_entry a
@@ -123,4 +171,22 @@ a.backtrack
 
 #contextguide
 {
+}
+
+#minimap
+{
+    margin-bottom:          8px;
+}
+
+input, select
+{
+    border:             1px solid #ff8800;
+    background-color:   #ffffff;
+
+}
+
+input:disabled, select:disabled
+{
+    background-color: #EFFF82;
+
 }

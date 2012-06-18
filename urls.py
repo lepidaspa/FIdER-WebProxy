@@ -45,7 +45,8 @@ urlpatterns = patterns('',
 	url(r'^fwp/$', fwpviews.proxysel),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
-
+	url(r'^fwp/maps/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.proxy_loadmap),
+	url(r'^fwp/conversion/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.component_shapefile_table),
 
 
 )

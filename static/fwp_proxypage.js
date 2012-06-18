@@ -125,7 +125,7 @@ function bboxToFeature (bbox, olmap)
 function showSelArea ()
 {
 
-    proxymap_metalayer.setVisibility(false);
+    //proxymap_metalayer.setVisibility(false);
 
     var prefix = "meta_";
     var meta_i = parseInt(this.id.substr(prefix.length));
@@ -144,7 +144,7 @@ function showSelArea ()
 function hideSelArea ()
 {
     proxymap_selectlayer.removeAllFeatures();
-    proxymap_metalayer.setVisibility(true);
+    //proxymap_metalayer.setVisibility(true);
 
 }
 
@@ -167,9 +167,9 @@ function buildProxyMap ()
     proxymap_metalayer = new OpenLayers.Layer.Vector("Metadata", {styleMap: featurestylemap});
     proxymap.addLayer(proxymap_metalayer);
 
-    var selectstyle = new OpenLayers.Style ({fillOpacity: "0.2", fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 1});
-    var selectstylemap = new OpenLayers.StyleMap (selectstyle);
-    proxymap_selectlayer = new OpenLayers.Layer.Vector("Selection", {styleMap: selectstylemap});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 1, strokeDashstyle: "solid", pointRadius: 6});
+    featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    proxymap_selectlayer = new OpenLayers.Layer.Vector("Selection", {styleMap: featurestylemap});
     proxymap.addLayer(proxymap_selectlayer);
 
     proxymap.addControl(new OpenLayers.Control.Navigation());

@@ -8,9 +8,12 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.safestring import SafeString
 import json
+import urllib2
+from FIdERProxyFS import proxy_core
 import FIdERProxyFS.proxy_config_core as proxyconf
 import os
 import sys
+from FIdERProxyFS.proxy_core import readSingleShape
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -78,11 +81,98 @@ def metapage (request, **kwargs):
 
 	proxytype = learnProxyType(manifest)
 
+	#TODO: make conditional on proxy being NOT query and add alternative for query
+	proxymaps = []
+	for shape in os.listdir(os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)):
+		proxymaps.append(shape)
 
-	return render_to_response ('fwp_metapage.html', {'proxy_id': proxy_id, 'manifest': SafeString(json.dumps(manifest)), 'meta_id': meta_id, 'proxy_type': proxytype},
+
+
+
+	return render_to_response ('fwp_metapage.html', {'proxy_id': proxy_id, 'manifest': SafeString(json.dumps(manifest)), 'meta_id': meta_id, 'proxy_type': proxytype, 'maps': SafeString(json.dumps(proxymaps))},
 		context_instance=RequestContext(request))
 
 
+def proxy_loadmap (request, **kwargs):
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	shape_id = kwargs['shape_id']
+
+	print "Loading map data for map %s/%s/%s" % (proxy_id, meta_id, shape_id)
+
+	jsondata = readSingleShape (proxy_id, meta_id, shape_id)
+	return HttpResponse(jsondata, mimetype="application/json")
+
+
+
+def component_shapefile_table (request, **kwargs):
+	"""
+
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+	shapedata = None
+	shapetable = None
+
+	proxy_id = kwargs["proxy_id"]
+	meta_id = kwargs["meta_id"]
+	shape_id = kwargs["shape_id"]
+
+	shapedata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, shape_id, False)
+
+	try:
+		shapetable = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
+	except Exception as ex:
+		print "Error when loading shape conversion table: %s" % ex
+		shapetable = None
+
+	try:
+
+		jsonresponse = urllib2.urlopen(proxyconf.URL_CONVERSIONS)
+		convtable = json.load(jsonresponse)
+		print "Received conversion table from server: %s" % convtable
+
+	except Exception as ex:
+		if isinstance(ex, urllib2.HTTPError):
+			errormess = ex.code
+		elif isinstance(ex, urllib2.URLError):
+			errormess = ex.reason
+		else:
+			errormess = ex.message
+		print "Error when requesting conversion table from %s: %s" % (proxyconf.URL_CONVERSIONS, errormess)
+
+		#todo: replace with handling at JS level
+		raise
+
+	conversionto = {}
+	for objecttype in convtable.keys():
+		conversionto[objecttype] = []
+		for property in convtable[objecttype].keys():
+			conversionto[objecttype].append(property)
+
+	conversionfrom = []
+	for feature in shapedata['features']:
+		#print "Feature: %s *** (%s)" % (feature, type(feature))
+		#print "Properties: %s " % feature['properties']
+		#for key in feature['properties'].keys():
+		#	if not conversionfrom.has_key (key):
+		#		conversionfrom[key] = str(type(feature['properties'][key])).split("'")[1]
+		for ckey in feature['properties'].keys():
+			if ckey not in conversionfrom:
+				conversionfrom.append(ckey)
+
+
+	args = {
+		"shapedata" : conversionfrom,
+		"conversion" : conversionto,
+		"shapetable": shapetable
+	}
+
+	print args
+
+	return HttpResponse(json.dumps(args), mimetype="application/json")
 
 
 
