@@ -45,6 +45,8 @@ function pageInit(req_proxy_id, req_meta_id, req_proxy_type, req_manifest, req_m
 
     $("#renderingstate").hide();
     $("#loadingstate").hide();
+    $("#serverstate").hide();
+
 
     proxy_id = req_proxy_id;
     meta_id = req_meta_id;
@@ -167,6 +169,8 @@ function unsetLoadingState()
     proxymap.addControl(new OpenLayers.Control.Navigation());
     proxymap.addControl(new OpenLayers.Control.PanZoomBar());
 
+    $("#confirmuploadfile").live('click', uploadFromFile);
+    $("#confirmuploadwfs").live('click', uploadFromWeb);
 
 
 }
@@ -226,7 +230,7 @@ function renderMapCard (map_id)
         }
     }
 
-    var statsstring = '<div class="mapstats"><span class="mapname">'+mapname+'</span><br>Elementi: '+mapfeatures+'<br>('+
+    var statsstring = '<div class="mapstats"><span class="mapname">'+mapname+'</span><br>Oggetti: ('+
             maplines + ' tratte/' +
             mappoints + ' accessi)</div>';
 
@@ -252,23 +256,40 @@ function renderNewWFSMask()
 {
     closeAllMasks();
 
-    var uploadstring = '<div class="uploadwfsmask maskwidget" id="uploadwfs_new">' +
-            'http://<input type="text" id="mapsub" name="mapsub">' +
-            '<br><input type="button" value="Carica">'+
-            '</div>';
 
-    $("#proxy_addmap").append(uploadstring);
+    var uploadtable = '<table class="uploadwfsmask maskwidget" id="uploadwfs_new">' +
+            '<tr><td>URL</td><td><input type="text" id="mapsub" name="mapsub">' +
+            '<tr><td>Utente</td><td><input type="text" id="wfsuser" name="wfsuser"></td>' +
+            '<tr><td>Password</td><td><input type="text" id="wfspass" name="wfspass"></td>' +
+            '<tr><td colspan=2><input type="button" id="confirmuploadwfs" value="Carica"></td></tr>'+
+            '</table>';
+
+    /*var uploadstring = '<div class="uploadwfsmask maskwidget" id="uploadwfs_new">' +
+            'http://<input type="text" id="mapsub" name="mapsub">' +
+            '<br>Utente <input type="text" id="wfsuser" name="wfsuser"> '+
+            'Password <input type="text" id="wfspass" name="wfspass">'+
+            '<br><input type="button" value="Carica">'+
+            '</div>'; */
+
+    $("#proxy_addmap").append(uploadtable);
 }
 
 function renderNewShapeMask ()
 {
     closeAllMasks();
 
+    var uploadtable = '<table class="uploadfilemask maskwidget" id="uploadfile_new">' +
+            '<tr><td><input type="file" id="mapsub" name="mapsub"></td></tr>' +
+            '<tr><td colspan><input type="button" id="confirmuploadfile" value="Carica"></td></tr>'+
+            '</table>';
+
+/*
     var uploadstring = '<div class="uploadfilemask maskwidget" id="uploadfile_new">' +
             '<input type="file" id="mapsub" name="mapsub">' +
+            '<br><input type="button" value="Carica">'+
             '</div>';
-
-    $("#proxy_addmap").append(uploadstring);
+*/
+    $("#proxy_addmap").append(uploadtable);
 }
 
 function renderUploadFileMask()
@@ -276,14 +297,23 @@ function renderUploadFileMask()
 
     var prefix = "btn_uploadfile_";
     var i = parseInt(this.id.substr(prefix.length));
+    currentmap = i;
 
     closeAllMasks();
 
+    var uploadtable = '<table class="uploadfilemask maskwidget" id="uploadfile_'+i+'">' +
+            '<tr><td><input type="file" id="mapsub" name="mapsub"></td></tr>' +
+            '<tr><td colspan><input type="button" id="confirmuploadfile" value="Carica"></td></tr>'+
+            '</table>';
+
+/*
     var uploadstring = '<div class="uploadfilemask maskwidget" id="uploadfile_'+i+'">' +
             '<input type="file" id="mapsub" name="mapsub">' +
-            '</div>';
+            '<br><input type="button" value="Carica">'+
 
-    $("#map_"+i).append(uploadstring);
+            '</div>';
+*/
+    $("#map_"+i).append(uploadtable);
 
 }
 
@@ -292,19 +322,136 @@ function renderUploadWFSMask()
 
     var prefix = "btn_uploadwfs_";
     var i = parseInt(this.id.substr(prefix.length));
-
+    currentmap = i;
 
     closeAllMasks();
 
+    var uploadtable = '<table class="uploadwfsmask maskwidget" id="uploadwfs_'+i+'">' +
+            '<tr><td>URL</td><td><input type="text" id="mapsub" name="mapsub">' +
+            '<tr><td>Utente</td><td><input type="text" id="wfsuser" name="wfsuser"></td>' +
+            '<tr><td>Password</td><td><input type="text" id="wfspass" name="wfspass"></td>' +
+            '<tr><td colspan=2><input type="button" id="confirmuploadwfs"  value="Carica"></td></tr>'+
+            '</table>';
 
-    var uploadstring = '<div class="uploadwfsmask maskwidget" id="uploadwfs_'+i+'">' +
+
+    /*var uploadstring = '<div class="uploadwfsmask maskwidget" id="uploadwfs_'+i+'">' +
             'http://<input type="text" id="mapsub" name="mapsub">' +
+            '<br>Utente <input type="text" id="wfsuser" name="wfsuser"> '+
+            'Password <input type="text" id="wfspass" name="wfspass">'+
             '<br><input type="button" value="Carica">'+
             '</div>';
+     */
 
-    $("#map_"+i).append(uploadstring);
+    $("#map_"+i).append(uploadtable);
 
 }
+
+function uploadFromFile ()
+{
+
+    var prefix = "uploadfile_";
+
+    //alert(this.id);
+    var form = $("#"+this.id).closest(".uploadfilemask").prop("id");
+    var i = form.substr(prefix.length);
+
+    var map_id;
+    if (i != "new")
+    {
+        map_id = parseInt(i);
+    }
+    else
+    {
+        map_id = null;
+    }
+
+    //alert(JSON.stringify(this.id)+": "+form);
+    //     uploadfilemask            uploadfile_n
+
+
+    var urlstring = "/fwp/upload/"+proxy_id+"/"+meta_id+"/";
+    if (map_id != null)
+    {
+        urlstring += shapes[map_id]+"/";
+    }
+
+    // and now for some black magic...
+
+    //var xhr = new XMLHttpRequest();
+    var fd = new FormData();
+
+    fd.append('shapefile', $('#mapsub')[0].files[0]);
+
+
+    // setting the container on which we'll render the feedback
+    var container;
+    if (i == 'new')
+    {
+        container = "#proxy_addmap";
+    }
+    else
+    {
+        container = "#map_"+i;
+    }
+
+    $.ajax ({
+        url: urlstring,
+        data:   fd,
+        async: true,
+        processData:    false,
+        contentType:    false,
+        type: 'POST',
+        success: function(data) {
+            //alert ("COMPLETED");
+            postFeedbackMessage(data['success'], data['report'], container);
+            if (data['success'] == true)
+            {
+
+                rebuildShapeData(shapes[map_id]);
+            }
+        },
+        error: function (data)
+        {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
+        }
+    });
+
+}
+
+function uploadFromWeb ()
+{
+
+    // TODO: placeholder, implement
+
+}
+
+function rebuildShapeData (shape_id)
+{
+    // launches an ajax request to the server for re-parsing a map in the upload directory
+
+    $("#serverstate").show();
+
+    var urlstring;
+    urlstring = "/fwp/rebuild/"+proxy_id+"/"+meta_id+"/"+shape_id+"/";
+
+    var container = "#serverstate";
+
+    $.ajax ({
+        url:            urlstring,
+        async:          true,
+        success: function(data) {
+            //alert ("COMPLETED");
+            postFeedbackMessage(data['success'], data['report'], container);
+        },
+        error: function (data)
+        {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
+        }
+    });
+
+
+}
+
 
 function renderRemoverMask()
 {
@@ -347,7 +494,7 @@ function renderTranslationMask ()
                 tables = jsondata;
 
 
-            });
+     });
 
     //alert(JSON.stringify(tables));
 
@@ -386,6 +533,74 @@ function renderTranslationMask ()
 
     $("#convtable_catselect").unbind();
     $("#convtable_catselect").change(refreshTranslationTable);
+    $("#saveconversion_"+i).unbind();
+    $("#saveconversion_"+i).click(saveConversionTable);
+}
+
+function saveConversionTable()
+{
+
+    var jsondata = {};
+
+    jsondata['convtable'] = {};
+
+    var selid = $("#convtable_catselect").val();
+    var category = $("#convtable_catselect option[value='"+selid+"']").text();
+
+
+    jsondata ['proxy_id']  = proxy_id;
+    jsondata ['meta_id'] =  meta_id;
+    jsondata ['shape_id'] = shapes[currentmap];
+
+
+    for (var i = 0; i < convsource.length; i++)
+    {
+        var convfrom = convsource[i];
+        var convto = $("#mapping_"+i).val();
+        if (convto!='')
+        {
+            jsondata['convtable'][convfrom] = [category, convto];
+            //alert(convfrom+" TO "+convto);
+        }
+    }
+
+    //alert(JSON.stringify(jsondata));
+
+
+    $.ajax ({
+        url: "/fwp/maketable/",
+        async: true,
+        data: {jsonmessage: JSON.stringify(jsondata)},
+        type: 'POST',
+            success: function(data) {
+                //alert ("COMPLETED");
+                postFeedbackMessage(data['success'], data['report'], "#map_"+currentmap);
+        }
+    });
+
+
+
+}
+
+function postFeedbackMessage (success, report, widgetid)
+{
+    var status = success;
+    var message = report;
+
+    var feedbackclass;
+    if (status == true)
+    {
+        feedbackclass = "success";
+    }
+    else
+    {
+        feedbackclass = "fail";
+    }
+
+    var feedbackmess = '<div class="feedback '+feedbackclass+'">' +message+ '</div>';
+
+    closeAllMasks();
+    $(widgetid).append(feedbackmess);
 
 }
 
@@ -394,7 +609,9 @@ function refreshTranslationTable ()
     $("#convtable_table").remove();
     var ctwidget= renderTranslationTable();
 
-    $("#convtable_"+currentmap).append(ctwidget);
+    //$("#convtable_"+currentmap).append(ctwidget);
+
+    $("#saveconversion_"+currentmap).before(ctwidget);
 
 }
 
@@ -404,7 +621,8 @@ function refreshTranslationTable ()
 function renderTranslationTable()
 {
     // creates the translation table HTML widget according to the selected category
-    var selid = $("#convtable_catselect").value;
+    var selid = $("#convtable_catselect").val();
+    //alert(selid);
     if (!selid)
     {
         selid = 0;
@@ -414,24 +632,57 @@ function renderTranslationTable()
 
     // here we create only the options list, not the whole select widget as we need the ID of the original element we are converting
     //alert (selid+" -> "+JSON.stringify(convsource));
-    var convopts = '<option value="">Non usato</option>';
-    for (i = 0; i < convmodel[convmodelcats[selid]].length; i++)
-    {
-        convopts += '<option value="'+convmodel[convmodelcats[selid]][i]+'">'+convmodel[convmodelcats[selid]][i]+'</option>';
-    }
+
 
     var tablestr = '<table id="convtable_table">';
 
-
-
+    var convopts = '';
+    var selopt = '';
+    var currentcat = convmodelcats[selid];
+    var currentitemconv = '';
     for (i = 0; i < convsource.length; i++)
     {
         tablestr += '<tr><td>' +
                 convsource[i] +
                 '</td><td>' +
-                '<select id="mapping_"'+i+'>' +
-                convopts +
-                '</select></td></tr>';
+                '<select id="mapping_'+i+'">';
+
+        // if this property already belongs to the conversion table
+        if (convsource[i] in convtable)
+        {
+            // if the category in the existing conversion table is the same we are checking now
+            if (convtable[convsource[i]][0] == currentcat)
+            {
+                currentitemconv = convtable[convsource[i]][1];
+            }
+            else
+            {
+                currentitemconv = null;
+            }
+        }
+        else
+        {
+            currentitemconv = null;
+        }
+
+        convopts = '<option value="">Non usato</option>';
+        for (var s = 0; s < convmodel[currentcat].length; s++)
+        {
+            if (currentitemconv == convmodel[currentcat][s])
+            {
+                //alert("SELECTED "+convmodel[currentcat][s]+" for "+convsource[i]);
+                selopt = ' selected="selected"';
+            }
+            else
+            {
+                selopt = '';
+            }
+
+            convopts += '<option value="'+convmodel[currentcat][s]+'"'+selopt+'>'+convmodel[currentcat][s]+'</option>';
+        }
+        //alert(tablestr.length);
+
+        tablestr += convopts + '</select></td></tr>';
     }
     tablestr += '</table>';
 
@@ -449,6 +700,9 @@ function closeAllMasks()
      */
 
     $(".maskwidget").remove();
+    $(".feedback").remove();
+    //$(".statemess").hide();
+
 
     /*
     $(".uploadfilemask").remove();

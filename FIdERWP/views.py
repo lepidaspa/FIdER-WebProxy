@@ -465,7 +465,7 @@ def proxy_create_conversion (request):
 		print traceback.format_exc()
 
 
-	#print "TABLE: %s" % response_table_update
+	print "TABLE: %s" % response_table_update
 
 	return HttpResponse(json.dumps(response_table_update), mimetype="application/json")
 

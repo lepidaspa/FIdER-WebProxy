@@ -12,6 +12,7 @@ body
     border:             1px solid #ff8800;
     margin-top:         8px;
     padding-top:        4px;
+    clear:              both;
 }
 
 .textbutton
@@ -40,6 +41,20 @@ body
 
 
 }
+
+.feedback
+{
+    word-break:     normal;
+    word-wrap:      break-word;
+
+    color:          #ffffff;
+    padding:        4px;
+    clear:          both;
+
+    background-color: #6985b1;
+}
+
+
 
 input [type=button]
 {
@@ -188,5 +203,16 @@ input, select
 input:disabled, select:disabled
 {
     background-color: #EFFF82;
+
+}
+
+.feedback.success
+{
+    background-color: #12b42b;
+}
+
+.feeback.fail
+{
+    background-color: #e9324c;
 
 }

@@ -9,7 +9,7 @@
 
 .removemask
 {
-    text-align: center;
+    text-align:     center;
     font-weight:    bold;
 }
 
@@ -45,7 +45,7 @@
 {
     display:        table;
     word-wrap:      break-word;
-    word-break:     break-all;
+    /*word-break:     break-all; */
     width:              100%;
     max-width:          100%;
     border:             1px solid #ff8800;
@@ -74,7 +74,24 @@
 {
     padding-bottom:  4px;
     padding-left:        4px;
-    white-space: nowrap;
-
+    /*white-space: nowrap; */
+    text-align:         left;
+    width:              100%;
 }
 
+.uploadfilemask input[type=file], .uploadwfsmask input[type=file]
+{
+    color:          #000000;
+}
+
+
+.feedback.success
+{
+    background-color: #12b42b;
+}
+
+.feeback.fail
+{
+    background-color: #e9324c;
+
+}
