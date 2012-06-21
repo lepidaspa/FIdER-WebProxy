@@ -185,7 +185,7 @@ def handleFileEvent (eventpath):
 def rebuildFullShapesList (proxy_id):
 
 	"""
-	 Rebuilds the json data for all the metadata in a specific proxy, starting from the upload directory and clearing any pre-existent data. As such, i
+	 Rebuilds the json data for all the metadata in a specific proxy, starting from the upload directory and clearing any pre-existent data.
 	 :param proxy_id:
 	 :return:
 	 """

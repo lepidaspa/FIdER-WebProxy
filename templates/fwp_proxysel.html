@@ -7,12 +7,13 @@
 
 {% block headers %}
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_proxysel.css">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_proxycreate.css">
     <script language="JavaScript" src="{{ STATIC_URL }}fwp_proxysel.js"></script>
 {% endblock %}
 
 {% block navigation %}
 
-    <div class="button wide" id="proxy_create_new"><a href="/proxy/setup">Crea nuovo proxy</a></div>
+    <div class="button wide" id="proxy_create_new">Crea nuovo proxy</div>
 
 
     <div id="proxylisting">
@@ -26,6 +27,11 @@
 {% block functionality %}
 
 <div id="proxymap"></div>
+
+<div id="proxybuilder" class="inhiding">
+    {% include "fwp_proxycreate.html" %}
+</div>
+
 
 {% endblock %}
 

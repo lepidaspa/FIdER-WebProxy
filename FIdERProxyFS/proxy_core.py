@@ -150,7 +150,7 @@ def replicateDelete (proxy_id, meta_id, shape_id):
 		raise Exception ("Data for %s/%s already deleted in the geojson section of proxy %s" % (meta_id, shape_id, proxy_id))
 	else:
 		#TODO: add specific handling of further exceptions or just push it up the ladder
-		shutil.rmtree(path_gj)
+		os.remove(path_gj)
 
 
 def readSingleShape (proxy_id, meta_id, shape_id):

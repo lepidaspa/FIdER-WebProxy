@@ -20,6 +20,9 @@ var proj_900913 = "EPSG:900913";
 function pageInit(jsonlisting)
 {
 
+    // by default we only show the proxymap, not the creation interface
+    $("#proxybuilder").hide();
+
     proxies = jsonlisting;
 
     buildProxyList();
@@ -91,9 +94,18 @@ function buildProxyList ()
      */
     $(".nav_entry").hover(showProxyArea, hideProxyArea);
 
+    $("#proxy_create_new").click(openProxyCreation);
 
 
 }
+
+function openProxyCreation()
+{
+    $("#proxymap").hide();
+    $("#proxybuilder").removeClass("inhiding");
+    $("#proxybuilder").show();
+}
+
 
 function showProxyArea()
 {

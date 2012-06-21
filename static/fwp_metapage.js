@@ -46,7 +46,9 @@ function pageInit(req_proxy_id, req_meta_id, req_proxy_type, req_manifest, req_m
     $("#renderingstate").hide();
     $("#loadingstate").hide();
     $("#serverstate").hide();
-
+    $("#currentops").hide();
+    $("#btn_reload").hide();
+    $("#proxy_addmap").hide();
 
     proxy_id = req_proxy_id;
     meta_id = req_meta_id;
@@ -123,6 +125,8 @@ function checkShapesLoadingState()
     if (shapedata.length == shapes.length)
     {
         unsetLoadingState();
+        $("#proxy_addmap").show();
+
     }
 }
 
@@ -171,6 +175,8 @@ function unsetLoadingState()
 
     $("#confirmuploadfile").live('click', uploadFromFile);
     $("#confirmuploadwfs").live('click', uploadFromWeb);
+    $(".btn_confirmdelete").live('click', deleteMap);
+
 
 
 }
@@ -259,17 +265,12 @@ function renderNewWFSMask()
 
     var uploadtable = '<table class="uploadwfsmask maskwidget" id="uploadwfs_new">' +
             '<tr><td>URL</td><td><input type="text" id="mapsub" name="mapsub">' +
+            '<tr><td>Mappa</td><td><input type="tet" id="wfsmap" name="wfsmap"></td>' +
             '<tr><td>Utente</td><td><input type="text" id="wfsuser" name="wfsuser"></td>' +
-            '<tr><td>Password</td><td><input type="text" id="wfspass" name="wfspass"></td>' +
+            '<tr><td>Password</td><td><input type="password" id="wfspass" name="wfspass"></td>' +
             '<tr><td colspan=2><input type="button" id="confirmuploadwfs" value="Carica"></td></tr>'+
             '</table>';
 
-    /*var uploadstring = '<div class="uploadwfsmask maskwidget" id="uploadwfs_new">' +
-            'http://<input type="text" id="mapsub" name="mapsub">' +
-            '<br>Utente <input type="text" id="wfsuser" name="wfsuser"> '+
-            'Password <input type="text" id="wfspass" name="wfspass">'+
-            '<br><input type="button" value="Carica">'+
-            '</div>'; */
 
     $("#proxy_addmap").append(uploadtable);
 }
@@ -283,12 +284,7 @@ function renderNewShapeMask ()
             '<tr><td colspan><input type="button" id="confirmuploadfile" value="Carica"></td></tr>'+
             '</table>';
 
-/*
-    var uploadstring = '<div class="uploadfilemask maskwidget" id="uploadfile_new">' +
-            '<input type="file" id="mapsub" name="mapsub">' +
-            '<br><input type="button" value="Carica">'+
-            '</div>';
-*/
+
     $("#proxy_addmap").append(uploadtable);
 }
 
@@ -306,13 +302,6 @@ function renderUploadFileMask()
             '<tr><td colspan><input type="button" id="confirmuploadfile" value="Carica"></td></tr>'+
             '</table>';
 
-/*
-    var uploadstring = '<div class="uploadfilemask maskwidget" id="uploadfile_'+i+'">' +
-            '<input type="file" id="mapsub" name="mapsub">' +
-            '<br><input type="button" value="Carica">'+
-
-            '</div>';
-*/
     $("#map_"+i).append(uploadtable);
 
 }
@@ -328,19 +317,13 @@ function renderUploadWFSMask()
 
     var uploadtable = '<table class="uploadwfsmask maskwidget" id="uploadwfs_'+i+'">' +
             '<tr><td>URL</td><td><input type="text" id="mapsub" name="mapsub">' +
+            '<tr><td>Mappa</td><td><input type="tet" id="wfsmap" name="wfsmap"></td>' +
             '<tr><td>Utente</td><td><input type="text" id="wfsuser" name="wfsuser"></td>' +
-            '<tr><td>Password</td><td><input type="text" id="wfspass" name="wfspass"></td>' +
+            '<tr><td>Password</td><td><input type="password" id="wfspass" name="wfspass"></td>' +
             '<tr><td colspan=2><input type="button" id="confirmuploadwfs"  value="Carica"></td></tr>'+
             '</table>';
 
 
-    /*var uploadstring = '<div class="uploadwfsmask maskwidget" id="uploadwfs_'+i+'">' +
-            'http://<input type="text" id="mapsub" name="mapsub">' +
-            '<br>Utente <input type="text" id="wfsuser" name="wfsuser"> '+
-            'Password <input type="text" id="wfspass" name="wfspass">'+
-            '<br><input type="button" value="Carica">'+
-            '</div>';
-     */
 
     $("#map_"+i).append(uploadtable);
 
@@ -355,6 +338,7 @@ function uploadFromFile ()
     var form = $("#"+this.id).closest(".uploadfilemask").prop("id");
     var i = form.substr(prefix.length);
 
+
     var map_id;
     if (i != "new")
     {
@@ -362,7 +346,7 @@ function uploadFromFile ()
     }
     else
     {
-        map_id = null;
+        map_id = -1;
     }
 
     //alert(JSON.stringify(this.id)+": "+form);
@@ -370,7 +354,7 @@ function uploadFromFile ()
 
 
     var urlstring = "/fwp/upload/"+proxy_id+"/"+meta_id+"/";
-    if (map_id != null)
+    if (map_id != -1)
     {
         urlstring += shapes[map_id]+"/";
     }
@@ -379,6 +363,7 @@ function uploadFromFile ()
 
     //var xhr = new XMLHttpRequest();
     var fd = new FormData();
+    var uploadfilename = $('#mapsub').val();
 
     fd.append('shapefile', $('#mapsub')[0].files[0]);
 
@@ -407,7 +392,19 @@ function uploadFromFile ()
             if (data['success'] == true)
             {
 
-                rebuildShapeData(shapes[map_id]);
+                if (map_id != -1)
+                {
+                    var torebuild = shapes[map_id];
+                }
+                else
+                {
+                    //alert(uploadfilename);
+                    var pathels = uploadfilename.replace(/\\/g,"/").split("/");
+                    //alert(pathels+"\n***\n"+pathels[pathels.length-1]);
+                    torebuild = pathels[pathels.length-1].replace(".zip","").replace(",","");
+                }
+
+                rebuildShapeData(torebuild);
             }
         },
         error: function (data)
@@ -421,7 +418,73 @@ function uploadFromFile ()
 function uploadFromWeb ()
 {
 
-    // TODO: placeholder, implement
+
+    var prefix = "uploadwfs_";
+
+    //alert(this.id);
+    var form = $("#"+this.id).closest(".uploadwfsmask").prop("id");
+    var i = form.substr(prefix.length);
+
+
+    var map_id;
+    if (i != "new")
+    {
+        map_id = parseInt(i);
+    }
+    else
+    {
+        map_id = null;
+    }
+
+    // setting the container on which we'll render the feedback
+    var container;
+    if (i == 'new')
+    {
+        container = "#proxy_addmap";
+    }
+    else
+    {
+        container = "#map_"+i;
+    }
+
+    var urlstring = "/fwp/download/"+proxy_id+"/"+meta_id+"/";
+    if (map_id != null)
+    {
+        urlstring += shapes[map_id]+"/";
+    }
+
+
+
+    var wfsparams = {};
+
+    wfsparams['url'] = $("#mapsub").val();
+    wfsparams['user'] = $("#wfsuser").val();
+    wfsparams['pass'] = $("#wfspass").val();
+    wfsparams['layer'] = $("#wfsmap").val();
+
+
+    //alert (JSON.stringify(wfsparams));
+
+    $.ajax ({
+        url: urlstring,
+        data: wfsparams,
+        async: true,
+        type: 'POST',
+        success: function(data) {
+
+            postFeedbackMessage(data['success'], data['report'], container);
+            if (data['success'] == true)
+            {
+
+                //rebuildShapeData(shapes[map_id]);
+            }
+        },
+        error: function (data)
+        {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
+        }
+    });
+
 
 }
 
@@ -431,10 +494,12 @@ function rebuildShapeData (shape_id)
 
     $("#serverstate").show();
 
+    //alert(shape_id);
+
     var urlstring;
     urlstring = "/fwp/rebuild/"+proxy_id+"/"+meta_id+"/"+shape_id+"/";
 
-    var container = "#serverstate";
+    var container = "#currentops";
 
     $.ajax ({
         url:            urlstring,
@@ -448,6 +513,10 @@ function rebuildShapeData (shape_id)
             postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
         }
     });
+
+    $("#currentops").show();
+    $("#serverstate").hide();
+    $("#btn_reload").show();
 
 
 }
@@ -463,12 +532,48 @@ function renderRemoverMask()
 
     var removestring = '<div class="removemask maskwidget" id="remove_'+i+'">' +
             'Confermi l\'eliminazione della mappa?<br>' +
-            '<input type="button" id="btn_confirmdelete_'+i+'" value="Elimina">' +
+            '<input type="button" class="btn_confirmdelete" id="btn_confirmdelete_'+i+'" value="Elimina">' +
             '<br>ATTENZIONE: questa azione non può essere annullata.' +
             '</div>';
 
 
     $("#map_"+i).append(removestring);
+}
+
+function deleteMap ()
+{
+    var prefix = "btn_confirmdelete_";
+    var i = parseInt(this.id.substr(prefix.length));
+
+    closeAllMasks();
+
+    var container = "#currentops";
+
+    var controldict = {
+        'action': 'delete',
+        'proxy_id': proxy_id,
+        'meta_id': meta_id,
+        'shape_id': shapes[i]
+    };
+
+    $.ajax({
+        url: "/fwp/control/",
+        async: false,
+        data: controldict,
+        type: 'POST',
+        success: function(data)
+        {
+            postFeedbackMessage(data['success'], data['report'], container);
+        },
+        error: function (data)
+        {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container);
+        }
+    });
+
+    $("#currentops").show();
+    $("#serverstate").hide();
+    $("#btn_reload").show();
 }
 
 
@@ -483,6 +588,7 @@ function renderTranslationMask ()
     currentmap = i;
 
     closeAllMasks();
+    $("#serverstate").show();
 
     var tables;
 
@@ -535,6 +641,9 @@ function renderTranslationMask ()
     $("#convtable_catselect").change(refreshTranslationTable);
     $("#saveconversion_"+i).unbind();
     $("#saveconversion_"+i).click(saveConversionTable);
+
+    $("#serverstate").hide();
+
 }
 
 function saveConversionTable()
@@ -575,7 +684,8 @@ function saveConversionTable()
             success: function(data) {
                 //alert ("COMPLETED");
                 postFeedbackMessage(data['success'], data['report'], "#map_"+currentmap);
-        }
+                rebuildShapeData(shapes[currentmap]);
+            }
     });
 
 

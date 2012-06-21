@@ -2,19 +2,23 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
-from django import conf
+
+import json
+import traceback
+import urllib2
+import os
+import sys
+
+
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.safestring import SafeString
 from django.views.decorators.csrf import csrf_exempt
-import json
-import traceback
-import urllib2
-from FIdERProxyFS import proxy_core, ProxyFS
+from osgeo import ogr
+
+from FIdERProxyFS import proxy_core, ProxyFS, proxy_web
 import FIdERProxyFS.proxy_config_core as proxyconf
-import os
-import sys
 from FIdERProxyFS.proxy_core import readSingleShape
 from FIdERWP.views import saveMapFile
 
@@ -233,8 +237,109 @@ def proxy_create_conversion (request):
 	return HttpResponse(json.dumps(response_table_update), mimetype="application/json")
 
 
+@csrf_exempt
+def proxy_uploadwfs (request, **kwargs):
+
+	response_upload = {
+		'success': False,
+		'report': ""
+	}
+
+	print 'Loading from WFS'
+	print kwargs
+	#args = request.POST
+	#print args
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+
+	try:
+		shape_id = kwargs['shape_id']
+	except:
+		shape_id = request.POST['layer']
+
+	connect = {
+		'url': request.POST['url'],
+		'user': request.POST['user'],
+		'pass': request.POST['pass'],
+		'layer': str(request.POST['layer'])
+	}
+
+	print connect
+
+	protocol, separator, url = connect['url'].partition("://")
+	authstring = ""
+	if connect['user'] not in (None, ""):
+		authstring = connect['user']+"@"
+		if connect['pass'] not in (None, ""):
+			authstring = connect['pass']+":"+authstring
+
+	connectstring = "WFS:"+protocol+separator+authstring+url
+	print connectstring
+
+	driver = ogr.GetDriverByName('WFS')
+	try:
+		wfs = driver.Open(connectstring)
+		layer = wfs.GetLayerByName(connect['layer'])
+	except:
+		response_upload['report'] = "Connessione fallita o dati mancanti per l'indirizzo specificato."
+		return HttpResponse(json.dumps(response_upload), mimetype="application/json")
+
+	for feature in layer:
+		print 'Json representation for Feature: %s' % feature.GetFID()
+		print feature.ExportToJson()
+
+		#TODO: actual build
 
 
+
+
+
+
+
+	return HttpResponse(json.dumps(response_upload), mimetype="application/json")
+
+
+@csrf_exempt
+def proxy_controller (request):
+	"""
+	receives a POST request with the following parameters: action, proxy_id, meta_id, shape_id (if needed, technically only action and proxy_id may be mandatory, but this is dealt at function level)
+	:param request:
+	:return:
+	"""
+
+	actions = {
+		'delete': proxy_web.deleteMap
+	}
+
+	action = request.POST['action']
+	oppath = {}
+
+	try:
+		oppath['proxy_id'] = request.POST['proxy_id']
+		oppath['meta_id'] = request.POST['meta_id']
+		oppath['shape_id'] = request.POST['shape_id']
+	except:
+		# we try to get the most detailed path, but we do not know if the function to be called will need all parameters, so no warning is thrown here
+		pass
+
+
+	try:
+		result = actions[action](**oppath)
+	except Exception, ex:
+		result = {
+			'success':	False,
+			'report':	"Errore: %s" % str(ex)
+		}
+
+	return HttpResponse(json.dumps(result), mimetype="application/json")
+
+
+
+
+def proxy_rebuildmeta (request, **kwargs):
+	#TODO: placeholder, implement
+	pass
 
 
 

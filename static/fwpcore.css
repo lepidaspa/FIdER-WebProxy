@@ -42,6 +42,12 @@ body
 
 }
 
+#currentops
+{
+    border:             none;
+    background-color:   #ffffff;
+}
+
 .feedback
 {
     word-break:     normal;

@@ -13,7 +13,7 @@
 
 {% block navigation %}
 
-    <div id="metainfo"><div class="button_pre"><a href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a></div>{{ proxy_id }}: {{ meta_id }}</div>
+    <div id="metainfo"><div class="button_pre"><a href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a><a href="/fwp/proxy/{{ proxy_id }}/{{ meta_id }}" id="btn_reload"><img src="/static/resource/fwp_reload.png"></a></div>{{ proxy_id }}: {{ meta_id }}</div>
 
     <div id="minimap"></div>
 
@@ -21,6 +21,7 @@
     <div id="serverstate" class="statemess">Elaborazione dati</div>
     <div id="renderingstate" class="statemess">Aggiornamento mappa</div>
     <div id="loadingstate" class="statemess">Caricamento mappe</div>
+    <div id="currentops" class="statemess"></div>
 
     <div class="button wide" id="proxy_addmap">Nuova mappa: <span id="newmap_shapefile" class="blocky textbutton">FILE</span> / <span class="textbutton" id="newmap_wfs">WFS</span></div>
 

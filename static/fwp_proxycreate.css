@@ -1,0 +1,50 @@
+#proxycreate_mask
+{
+    background-color:   #ffffff;
+    margin:             0 4px 4px 4px;
+
+}
+
+.sectionmask
+{
+    color:              #ffffff;
+    width:              100%;
+    /*margin:             8px; */
+}
+
+.elementmask
+{
+
+    display:            inline-block;
+    background-color:   #ff8800;
+    margin:             4px;
+
+}
+
+.mapmask
+{
+    display:            inline-block;
+    height:             160px;
+    width:              320px;
+}
+
+.multifieldmask
+{
+    display:            table;
+}
+
+.fieldmask
+{
+    display:            table-row;
+    width:              100%;
+}
+
+.subfieldmask
+{
+    display:            table-cell;
+}
+
+#new_meta_table
+{
+    width:              100%;
+}
