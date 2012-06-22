@@ -4,6 +4,12 @@ body
     background-color: #ffffff;
 }
 
+input:disabled, select:disabled
+{
+    background-color: #EFFF82;
+    color:            #cccccc;
+
+}
 
 .maskwidget
 {

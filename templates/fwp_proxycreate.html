@@ -1,5 +1,8 @@
-<div id="proxycreate_mask">
+<script language="JavaScript" src="{{ STATIC_URL }}fwp_proxycreate.js"></script>
+<script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
 
+
+<div id="proxycreate_mask">
 
     <div class="sectionmask" id="create_proxydef">
 
@@ -7,7 +10,7 @@
             <div class="mapmask" id="proxymapcanvas"></div>
         </div>
 
-        <div id="ops_proxy_new" class="elementmask">
+        <div id="def_proxy_new" class="elementmask">
 
             <div class="multifieldmask">
 
@@ -29,16 +32,131 @@
                 </div>
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Valido al
+                        Valido al <input type="checkbox" id="proxy_dateto_forever">
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newproxy_dateto">
                     </div>
                 </div>
 
+                <!--
+                <div class="fieldmask" id="proxyedit_buttons">
+                    <div class="subfieldmask">
+                        <input type="button" value="*Nav" id="tool_nav_proxy" >
+                        <input type="button" value="*Draw" id="tool_draw_proxy" >
+                    </div>
+
+                </div>
+                -->
 
             </div>
 
+
+        </div>
+
+        <div id="ops_proxy_new" class="elementmask">
+
+            <div class="multifieldmask">
+
+                <div class="fieldmask">
+                    <div class="subfieldmask">
+                        Tipologia
+                    </div>
+                    <div class="subfieldmask">
+                        <select id="proxy_opsmode">
+                            <option value="read">Lettura</option>
+                            <option value="write">Scrittura</option>
+                            <option value="query">Query</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="fieldmask opsdetail_sel" id="proxy_opsmode_read">
+                    <div class="subfieldmask">
+                        Modalità lettura
+                    </div>
+                    <div class="subfieldmask">
+                        <select id="proxy_options_read">
+                            <option value="full">Completa</option>
+                            <option value="diff">Incrementale</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="fieldmask opsdetail_sel" id="proxy_opsmode_write">
+                    <div class="subfieldmask">
+                        Modalità scrittura
+                    </div>
+                    <div class="subfieldmask">
+                        <select id="proxy_options_write">
+                            <option value="full">Continua</option>
+                            <option value="sync">Periodica</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="fieldmask opsdetail_sel" id="proxy_opsmode_query">
+                    <div class="subfieldmask">
+                        Query geografiche
+                    </div>
+                    <div class="subfieldmask">
+                        <select id="proxy_options_query_geo">
+                            <option value="full">Complesse</option>
+                            <option value="bb">Bounding box</option>
+                            <option value="none">Non disponibili</option>
+                        </select>
+                    </div>
+
+                    <div class="subfieldmask">
+                        Query inventariali
+                    </div>
+                    <div class="subfieldmask">
+                        <select id="proxy_options_query_inv">
+                            <option value="full">Complete</option>
+                            <option value="simple">Semplici</option>
+                            <option value="none">Non disponibili</option>
+                        </select>
+                    </div>
+
+                    <div class="subfieldmask">
+                        Query temporali
+                    </div>
+                    <div class="subfieldmask">
+                        <select id="proxy_options_query_time">
+                            <option value="full">Complete</option>
+                            <option value="none">Non disponibili</option>
+                        </select>
+                    </div>
+
+                    <div class="subfieldmask">
+                        Business Intelligence
+                    </div>
+                    <div class="subfieldmask">
+                        <select id="proxy_options_query_bi">
+                            <option value="full">Completa</option>
+                            <option value="simple">Semplice</option>
+                            <option value="none">Non disponibile</option>
+                        </select>
+                    </div>
+
+                    <div class="subfieldmask">
+                        Firma
+                    </div>
+                    <div class="subfieldmask">
+                        <select id="proxy_options_query_sign">
+                            <option value="yes">Sì</option>
+                            <option value="no">No</option>
+
+                        </select>
+                    </div>
+
+                </div>
+
+
+
+
+            </div>
 
         </div>
 
@@ -49,7 +167,7 @@
         <table id="new_meta_table" class="elementmask">
 
             <tr>
-                <th>Nome</th><th colspan=2>Validità</th><th>Bounding Box</th><th>*</th>
+                <th class="newmeta_id">Nome</th><th class="newmeta_datefrom">Valido dal</th><th class="newmeta_dateto">Valido al</th><th class="newmeta_bb">Bounding Box</th><th class="newmeta_ctrldelete">Canc</th>
             </tr>
 
         </table>
@@ -60,7 +178,9 @@
 
         <div id="map_meta_new" class="elementmask">
             <div class="mapmask" id="metamapcanvas"></div>
+        </div>
 
+        <div id="def_meta_new" class="elementmask">
 
             <div class="multifieldmask">
 
@@ -89,13 +209,18 @@
                     </div>
                 </div>
 
+                <div class="fieldmask" id="newmeta_buttons">
+                    <div class="subfieldmask">
+                        <input type="button" value="Aggiungi" id="newmeta_confirm">
+                    </div>
+
+                </div>
+
 
             </div>
         </div>
 
         <div id="reports_pre" class="elementmask">
-
-
 
         </div>
 

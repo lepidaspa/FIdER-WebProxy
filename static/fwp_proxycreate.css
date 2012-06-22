@@ -1,50 +1,127 @@
 #proxycreate_mask
 {
     background-color:   #ffffff;
-    margin:             0 4px 4px 4px;
+    /*margin:             0 4px 4px 4px; */
 
+}
+
+#proxycreate_mask *
+{
+    font-size:               small;
+
+}
+
+#ops_proxy_new, #reports_pre
+{
+    width:          100%;
 }
 
 .sectionmask
 {
+    display:            table;
     color:              #ffffff;
     width:              100%;
     /*margin:             8px; */
+    padding-bottom:            4px;
+    border-spacing:         0;
+    border-width:           0;
 }
 
 .elementmask
 {
 
-    display:            inline-block;
+    display:            table-cell;
     background-color:   #ff8800;
-    margin:             4px;
+    /*margin:             4px; */
+    height:             100%;
+    vertical-align:     top;
+    padding:            4px;
 
-}
+    border-left:        1px solid #ffffff;
+    border-right:        1px solid #ffffff;
 
-.mapmask
-{
-    display:            inline-block;
-    height:             160px;
-    width:              320px;
-}
 
-.multifieldmask
-{
-    display:            table;
 }
 
 .fieldmask
 {
-    display:            table-row;
+    display:            table;
     width:              100%;
+    border-spacing:     0;
+    padding:            0;
 }
 
 .subfieldmask
 {
-    display:            table-cell;
+    display:            table-row;
+
 }
 
 #new_meta_table
 {
     width:              100%;
+    border-collapse:    collapse;
+}
+
+.newmeta_bb
+{
+    width:              100%;
+    border-right:       1px solid #ffffff;
+    border-left:        1px solid #ffffff;
+}
+
+.newmeta_id
+{
+    width:              12em;
+    min-width:          12em;
+    border-right:       1px solid #ffffff;
+}
+
+.newmeta_datefrom, .newmeta_dateto
+{
+    width:              10em;
+    min-width:          10em;
+    border-right:       1px solid #ffffff;
+    border-left:        1px solid #ffffff;
+}
+
+.newmeta_ctrldelete
+{
+    width:              4em;
+    min-width:          4em;
+}
+
+
+
+
+/*
+#new_meta_table th, #new_meta_table td
+{
+    max-width:              100%;
+}
+*/
+
+
+
+#map_meta_new, #map_proxy_new
+{
+
+    width:              320px;
+    height:             160px;
+
+}
+
+.mapmask
+{
+    display:            table-cell;
+    width:              320px;
+    min-width:          320px;
+    height:             160px;
+
+
+}
+
+#newmeta_buttons
+{
+    margin-top:         4px;
 }

@@ -22,6 +22,8 @@ function pageInit(jsonlisting)
 
     // by default we only show the proxymap, not the creation interface
     $("#proxybuilder").hide();
+    $("#proxy_show_map").hide();
+
 
     proxies = jsonlisting;
 
@@ -43,7 +45,7 @@ function pageInit(jsonlisting)
     mapvislayer = new OpenLayers.Layer.Vector();
     mapvis.addLayer(mapvislayer);
 
-    mapvis.addControl(new OpenLayers.Control.OverviewMap());
+    //mapvis.addControl(new OpenLayers.Control.OverviewMap());
     mapvis.addControl(new OpenLayers.Control.Navigation());
     mapvis.addControl(new OpenLayers.Control.PanZoomBar());
 
@@ -104,6 +106,7 @@ function openProxyCreation()
     $("#proxymap").hide();
     $("#proxybuilder").removeClass("inhiding");
     $("#proxybuilder").show();
+    create_initForm();
 }
 
 

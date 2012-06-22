@@ -361,6 +361,10 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 		"mid": False
 	}
 
+	ext_mandatory_json = {
+		"geojson": False
+	}
+
 	ext_accept = [
 		".shp", ".shx", ".dbf", ".prj", ".sbn", ".sbx", ".fbn", ".fbx", ".ain", ".aih", ".ixs", ".mxs", ".atx", ".cpg", ".shp.xml", ".qix", ".fix", ".qpj"
 	]
@@ -379,11 +383,13 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 				ext_mandatory_shape[cext] = True
 			if ext_mandatory_minfo.has_key(cext):
 				ext_mandatory_minfo[cext] = True
+			if ext_mandatory_json.has_key(cext):
+				ext_mandatory_json[cext] = True
 			#removed strict check on accepted fie types
 
 	print ext_mandatory_shape, ext_mandatory_minfo
-	if not (all(ext_mandatory_shape.values() or all(ext_mandatory_minfo.values()))):
-		raise InvalidShapeArchiveException ("Mandatory file missing in shape archive %s (should contain .shp, .shx, .dbf and .prj for shape file OR .mif and .mid for mapinfo)" % shape_id)
+	if not (all(ext_mandatory_shape.values()) or all(ext_mandatory_minfo.values()) or all(ext_mandatory_json.values()) ):
+		raise InvalidShapeArchiveException ("Mandatory file missing in shape archive %s (should contain .shp, .shx, .dbf and .prj for shape file OR .mif and .mid for mapinfo OR .geojson for geojson)" % shape_id)
 
 	#creating the path after opening the zip so there is a smaller risk of leaving trash behind if we get an error
 	path_mirror = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id, ".tmp")
@@ -433,6 +439,8 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		basepath, shape_id = os.path.split(path_shape)
 	basepath, meta_id = os.path.split(basepath)
 
+	issinglefile = len(os.listdir(path_shape)) == 1
+	path_shape = os.path.join(path_shape, os.listdir(path_shape)[0])
 
 	"""
 	if basepath.endswith(conf.path_mirror):
@@ -457,9 +465,11 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 	try:
 
+		print "Getting datasource fromr shape path %s" % path_shape
+		print "Datasource raw data: %s " % open(path_shape, "r").read()
 		datasource = ogr.Open(path_shape)
-		#print "EXTRACTING DATASOURCE SRS DATA:"
-		#print "****>"+str(dir(datasource))
+		print "EXTRACTING DATASOURCE SRS DATA:"
+		print "****>"+str(datasource)
 	except Exception as ex:
 		print "ERROR during OGR parse on %s: %s" % (path_shape, ex)
 		#TODO: better/proper debug
@@ -486,13 +496,15 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	# Using angular measure
 	boundaries = [181, 91,-181, -91]
 
+	print "Inspecting datasource %s " % datasource
+
 	for i in range (0, datasource.GetLayerCount()):
 		layer = datasource.GetLayer(i)
 		#print "EXTRACTING LAYER SRS DATA:"
 		#print "****>"+str(dir(layer))
 
 		sSRS=layer.GetSpatialRef()
-		print "Layer has spatial ref %s" % sSRS
+		print "Layer has %s features with spatial ref %s" % (layer.GetFeatureCount(), sSRS)
 
 
 		for f in range (0, layer.GetFeatureCount()):
@@ -502,19 +514,22 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 			#	print "EXTRACTING FEATURE SRS DATA:"
 			#	print "****>"+str(dir(feature))
 
-			geom = feature.GetGeometryRef()
-
 			#print "Feature %s geometry from %s into..." % (feature, geom)
 			try:
 				#geom.AssignSpatialReference(sSRS)
+
+				geom = feature.GetGeometryRef()
 
 				geom.TransformTo(tSRS)
 				geom.AssignSpatialReference(tSRS)
 				#print "Feature %s geometry to   %s" % (feature, geom)
 			except Exception as ex:
-				print "Transformation error on %s: %s" % (feature ,ex)
+				print "Transformation error on %s %s: %s" % (f, feature ,ex)
 				#print "Error on feature %s geometry %s: %s " % (feature, f, geom)
-				pass
+
+
+				#TODO: REMOVE, SHOULD BE HERE ONLY FOR DEBUG
+				continue
 
 			# fixed to output actual dict
 

@@ -4,6 +4,7 @@
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
 
 import json
+import tempfile
 import traceback
 import urllib2
 import os
@@ -16,6 +17,7 @@ from django.template.context import RequestContext
 from django.utils.safestring import SafeString
 from django.views.decorators.csrf import csrf_exempt
 from osgeo import ogr
+from zipfile import ZipFile
 
 from FIdERProxyFS import proxy_core, ProxyFS, proxy_web
 import FIdERProxyFS.proxy_config_core as proxyconf
@@ -134,7 +136,6 @@ def component_shapefile_table (request, **kwargs):
 		shapetable = None
 
 	try:
-
 		jsonresponse = urllib2.urlopen(proxyconf.URL_CONVERSIONS)
 		convtable = json.load(jsonresponse)
 		print "Received conversion table from server: %s" % convtable
@@ -285,15 +286,57 @@ def proxy_uploadwfs (request, **kwargs):
 		response_upload['report'] = "Connessione fallita o dati mancanti per l'indirizzo specificato."
 		return HttpResponse(json.dumps(response_upload), mimetype="application/json")
 
+	gjfeatures = []
 	for feature in layer:
-		print 'Json representation for Feature: %s' % feature.GetFID()
-		print feature.ExportToJson()
+		#print 'Json representation for Feature: %s' % feature.GetFID()
+		gjfeatures.append(json.loads(feature.ExportToJson()))
 
-		#TODO: actual build
+	#print gjfeatures
 
+	collection = {
+		'id' : shape_id,
+		'type': 'FeatureCollection',
+		'features' : gjfeatures
+		}
 
+	uploadpath = os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip")
 
+	#jsondata = json.dumps(collection)
+	#print jsondata
 
+	"""
+	print "Creating temp file to house "
+	transitfile = tempfile.TemporaryFile(mode="w+")
+	print "Dumping json to transitfile"
+	json.dump(collection, transitfile)
+
+	print "Adding temp data to zip file"
+
+	with ZipFile(uploadpath, 'w') as datazip:
+		print "Opened %s" % datazip
+		datazip.write(transitfile, shape_id+".geojson")
+
+	transitfile.close()
+	"""
+
+	print "Ready to zip WFS data"
+
+	with ZipFile(uploadpath, 'w') as datazip:
+		datazip.writestr(shape_id+".geojson", json.dumps(collection))
+
+	print "Zipped data ok"
+
+	try:
+		ProxyFS.handleFileEvent (os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
+		response_upload = {
+			'success': True,
+			'report': 'Mappa %s aggiornata.' % shape_id
+		}
+	except Exception, ex:
+		response_upload = {
+			'success': False,
+			'report': ex
+		}
 
 
 
