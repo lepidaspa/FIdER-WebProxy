@@ -58,6 +58,7 @@ def proxysel (request):
 		proxies [proxy_id] = {}
 		proxies [proxy_id]['area'] = proxydict[proxy_id]['area']
 		proxies [proxy_id]['time'] = proxydict[proxy_id]['time']
+		proxies [proxy_id]['name'] = proxydict[proxy_id]['name']
 
 
 	return render_to_response ('fwp_proxysel.html', {'proxies': SafeString(json.dumps(proxies))},
@@ -73,8 +74,7 @@ def proxypage (request, **kwargs):
 	proxy_id = kwargs['proxy_id']
 	manifest = getProxyManifest(proxy_id)
 
-
-	return render_to_response ('fwp_proxypage.html', {'proxy_id': proxy_id, 'manifest': SafeString(json.dumps(manifest))},
+	return render_to_response ('fwp_proxypage.html', {'proxy_id': proxy_id, 'manifest': SafeString(json.dumps(manifest)), 'proxy_name': manifest['name']},
 		context_instance=RequestContext(request))
 
 
@@ -96,7 +96,7 @@ def metapage (request, **kwargs):
 	for shape in os.listdir(os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)):
 		proxymaps.append(shape)
 
-	return render_to_response ('fwp_metapage.html', {'proxy_id': proxy_id, 'manifest': SafeString(json.dumps(manifest)), 'meta_id': meta_id, 'proxy_type': proxytype, 'maps': SafeString(json.dumps(proxymaps))},
+	return render_to_response ('fwp_metapage.html', {'proxy_id': proxy_id, 'proxy_name': manifest['name'], 'manifest': SafeString(json.dumps(manifest)), 'meta_id': meta_id, 'proxy_type': proxytype, 'maps': SafeString(json.dumps(proxymaps))},
 		context_instance=RequestContext(request))
 
 
@@ -108,7 +108,11 @@ def proxy_loadmap (request, **kwargs):
 
 	print "Loading map data for map %s/%s/%s" % (proxy_id, meta_id, shape_id)
 
-	jsondata = readSingleShape (proxy_id, meta_id, shape_id)
+	if os.path.exists(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id, shape_id)):
+		jsondata = readSingleShape (proxy_id, meta_id, shape_id)
+	else:
+		jsondata = {}
+
 	return HttpResponse(jsondata, mimetype="application/json")
 
 
@@ -463,9 +467,10 @@ def proxy_rebuildmap (request, **kwargs):
 			'report': 'Mappa %s aggiornata.' % shape_id
 		}
 	except Exception, ex:
+		print ex
 		response_rebuild = {
 			'success': False,
-			'report': ex
+			'report': unicode(ex)
 		}
 
 

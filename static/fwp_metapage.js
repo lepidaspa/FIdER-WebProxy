@@ -80,7 +80,7 @@ function pageInit(req_proxy_id, req_meta_id, req_proxy_type, req_manifest, req_m
 
     buildMetaMap();
 
-    if (proxy_type != 'query')
+    if ((proxy_type != 'query'))
     {
         renderMaps();
     }
@@ -106,16 +106,23 @@ function renderMaps()
 
     //todo: handle errors
 
-    for (var i = 0; i < shapes.length; i++)
+    if (shapes.length > 0)
     {
+        for (var i = 0; i < shapes.length; i++)
+        {
 
-        $.ajax({
-            url: "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+shapes[i],
-            async: true
-        }).done(function (jsondata) {
-                    shapedata.push(jsondata);
-                    checkShapesLoadingState();
-        });
+            $.ajax({
+                url: "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+shapes[i],
+                async: true
+            }).done(function (jsondata) {
+                        shapedata.push(jsondata);
+                        checkShapesLoadingState();
+            });
+        }
+    }
+    else
+    {
+        checkShapesLoadingState();
     }
 
 }
@@ -558,7 +565,7 @@ function deleteMap ()
 
     $.ajax({
         url: "/fwp/control/",
-        async: false,
+        async: true,
         data: controldict,
         type: 'POST',
         success: function(data)
@@ -594,7 +601,7 @@ function renderTranslationMask ()
 
     $.ajax({
         url: "/fwp/conversion/"+proxy_id+"/"+meta_id+"/"+shapes[i],
-        async: false
+        async: true
     }).done(function (jsondata) {
 
                 tables = jsondata;

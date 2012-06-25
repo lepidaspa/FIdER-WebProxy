@@ -21,7 +21,6 @@
     display:            table;
     color:              #ffffff;
     width:              100%;
-    /*margin:             8px; */
     padding-bottom:            4px;
     border-spacing:         0;
     border-width:           0;
@@ -68,9 +67,10 @@
     width:              100%;
     border-right:       1px solid #ffffff;
     border-left:        1px solid #ffffff;
+    padding-left:       4px;
 }
 
-.newmeta_id
+.newmeta_namefield
 {
     width:              12em;
     min-width:          12em;
@@ -83,12 +83,14 @@
     min-width:          10em;
     border-right:       1px solid #ffffff;
     border-left:        1px solid #ffffff;
+    padding-left:       4px;
 }
 
 .newmeta_ctrldelete
 {
     width:              4em;
     min-width:          4em;
+    text-align:         center;
 }
 
 
@@ -107,7 +109,7 @@
 {
 
     width:              320px;
-    height:             160px;
+    height:             200px;
 
 }
 
@@ -116,7 +118,7 @@
     display:            table-cell;
     width:              320px;
     min-width:          320px;
-    height:             160px;
+    height:             200px;
 
 
 }
@@ -124,4 +126,9 @@
 #newmeta_buttons
 {
     margin-top:         4px;
+}
+
+#create_actions
+{
+    text-align: center;
 }

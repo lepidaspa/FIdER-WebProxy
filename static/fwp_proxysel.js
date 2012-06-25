@@ -17,6 +17,8 @@ var defaultLat = 44.5;
 var proj_WGS84 = "EPSG:4326";
 var proj_900913 = "EPSG:900913";
 
+var proxynames = new Array();
+
 function pageInit(jsonlisting)
 {
 
@@ -84,10 +86,17 @@ function buildProxyList ()
         // TODO: placeholders, beautify
         var entry_area = proxies[proxy_id]['area'];
         var entry_time = proxies[proxy_id]['time'];
+        var entry_name = proxies[proxy_id]['name'];
 
-        var proxyentry = '<div class="nav_entry" id="proxies_'+proxy_id+'"><a href="/fwp/proxy/'+proxy_id+'">'+proxy_id+'</a><br>'+entry_area+'<br>'+entry_time+'</div>';
+        proxynames.push(entry_name);
+
+
+        var proxyentry = '<div class="nav_entry" id="proxies_'+proxy_id+'"><a href="/fwp/proxy/'+proxy_id+'">'+entry_name +'</a><br>'+entry_area+'<br>'+entry_time+'</div>';
         $("#proxylisting").append(proxyentry);
+
     }
+
+    //alert(proxynames);
 
     $(".nav_entry").unbind();
 

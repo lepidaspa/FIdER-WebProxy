@@ -504,11 +504,13 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		#print "****>"+str(dir(layer))
 
 		sSRS=layer.GetSpatialRef()
-		print "Layer has %s features with spatial ref %s" % (layer.GetFeatureCount(), sSRS)
+		print "Layer %s has %s features with spatial ref %s" % (layer, layer.GetFeatureCount(), sSRS)
 
 
-		for f in range (0, layer.GetFeatureCount()):
-			feature = layer.GetFeature(f)
+		feature = layer.GetNextFeature()
+		while feature is not None:
+		#for f in range (0, layer.GetFeatureCount()):
+		#		feature = layer.GetFeature(f)
 
 			#if f==0:
 			#	print "EXTRACTING FEATURE SRS DATA:"
@@ -573,9 +575,13 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 			collection['features'].append(jsondata)
 
+			feature = layer.GetNextFeature()
+
 	print "Boundaries set to "+str(boundaries)
 	collection['bbox'] = boundaries
 
+	if len(collection['features']) == 0:
+		raise Exception ('Could not retrieve any feature from map %s') % shape_id
 
 	return collection
 

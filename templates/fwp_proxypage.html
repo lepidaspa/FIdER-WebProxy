@@ -15,9 +15,9 @@
 
 {% block navigation %}
 
-    <div id="proxyinfo"><a href="/fwp/" class="backtrack">«</a>{{ proxy_id }}</div>
+    <div id="proxyinfo"><a href="/fwp/" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a>{{ proxy_name }}</div>
 
-    <div id="minimap"></div>
+    <div id="minimap" class="cornermap"></div>
 
     <div class="button wide" id="proxy_configure"><a href="/fwp/proxy/config/{{ proxy_id }}">Configurazione</a></div>
 

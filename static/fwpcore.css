@@ -6,9 +6,14 @@ body
 
 input:disabled, select:disabled
 {
-    background-color: #EFFF82;
-    color:            #cccccc;
+    background-color: #bbb7b9;
+    color:            #ffffff;
 
+}
+
+.cornermap
+{
+    clear: both;
 }
 
 .maskwidget
@@ -212,11 +217,6 @@ input, select
 
 }
 
-input:disabled, select:disabled
-{
-    background-color: #EFFF82;
-
-}
 
 .feedback.success
 {

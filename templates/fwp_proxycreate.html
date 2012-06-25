@@ -32,7 +32,7 @@
                 </div>
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Valido al <input type="checkbox" id="proxy_dateto_forever">
+                        Valido al <input type="checkbox" id="newproxy_dateto_use" checked="checked">
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newproxy_dateto">
@@ -76,7 +76,7 @@
                         Modalità lettura
                     </div>
                     <div class="subfieldmask">
-                        <select id="proxy_options_read">
+                        <select  id="proxy_options_read">
                             <option value="full">Completa</option>
                             <option value="diff">Incrementale</option>
                         </select>
@@ -101,7 +101,7 @@
                         Query geografiche
                     </div>
                     <div class="subfieldmask">
-                        <select id="proxy_options_query_geo">
+                        <select class="fields_query" id="proxy_options_query_geo">
                             <option value="full">Complesse</option>
                             <option value="bb">Bounding box</option>
                             <option value="none">Non disponibili</option>
@@ -112,7 +112,7 @@
                         Query inventariali
                     </div>
                     <div class="subfieldmask">
-                        <select id="proxy_options_query_inv">
+                        <select class="fields_query" id="proxy_options_query_inv">
                             <option value="full">Complete</option>
                             <option value="simple">Semplici</option>
                             <option value="none">Non disponibili</option>
@@ -123,7 +123,7 @@
                         Query temporali
                     </div>
                     <div class="subfieldmask">
-                        <select id="proxy_options_query_time">
+                        <select class="fields_query" id="proxy_options_query_time">
                             <option value="full">Complete</option>
                             <option value="none">Non disponibili</option>
                         </select>
@@ -133,7 +133,7 @@
                         Business Intelligence
                     </div>
                     <div class="subfieldmask">
-                        <select id="proxy_options_query_bi">
+                        <select class="fields_query" id="proxy_options_query_bi">
                             <option value="full">Completa</option>
                             <option value="simple">Semplice</option>
                             <option value="none">Non disponibile</option>
@@ -167,7 +167,7 @@
         <table id="new_meta_table" class="elementmask">
 
             <tr>
-                <th class="newmeta_id">Nome</th><th class="newmeta_datefrom">Valido dal</th><th class="newmeta_dateto">Valido al</th><th class="newmeta_bb">Bounding Box</th><th class="newmeta_ctrldelete">Canc</th>
+                <th class="newmeta_namefield">Nome</th><th class="newmeta_datefrom">Valido dal</th><th class="newmeta_dateto">Valido al</th><th class="newmeta_bb">Bounding Box</th><th class="newmeta_ctrldelete">Canc</th>
             </tr>
 
         </table>
@@ -194,7 +194,7 @@
                 </div>
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Valido dal
+                        Valido dal <input type="checkbox" id="newmeta_datefrom_use" checked="checked">
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newmeta_datefrom">
@@ -202,10 +202,20 @@
                 </div>
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Valido al
+                        Valido al <input type="checkbox" id="newmeta_dateto_use" checked="checked">
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newmeta_dateto">
+                    </div>
+                </div>
+
+                <div class="fieldmask">
+                    <div class="subfieldmask">
+                        Area <input type="checkbox" id="newmeta_bbox_use" checked="checked">
+                    </div>
+                    <div class="subfieldmask">
+                        <label for="newmeta_bbox_drawmode">Traccia</label> <input type="checkbox" id="newmeta_bbox_drawmode" disabled>
+                        <input type="button" value="Cancella" id="newmeta_bbox_erase" disabled>
                     </div>
                 </div>
 
@@ -228,7 +238,7 @@
     </div>
 
     <div id="create_actions">
-
+        <input type="button" value="Crea Proxy" id="proxy_create_confirm">
     </div>
 
 
