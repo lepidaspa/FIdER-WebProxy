@@ -59,6 +59,9 @@ input:disabled, select:disabled
     background-color:   #ffffff;
 }
 
+
+
+
 .feedback
 {
     word-break:     normal;
@@ -132,6 +135,30 @@ a.backtrack
     border-bottom:         1px solid #ff8800;
 }
 
+#contextguide
+{
+
+    position:           absolute;
+    top:                2.5em;
+    left:               80%;
+    right:              0;
+    bottom:             0;
+    overflow:           auto;
+    padding-left:       8px;
+    padding-right:      8px;
+
+}
+
+.help
+{
+    padding-top:            0;
+    margin-top:             0;
+}
+
+img.legend
+{
+    vertical-align:         middle;
+}
 
 #navigation
 {
@@ -145,7 +172,7 @@ a.backtrack
     padding-right:       8px;
 }
 
-#navigation > *
+#navigation > *, #contextguide > *
 {
     font-size:          small;
 
@@ -201,9 +228,7 @@ a.backtrack
     color:               #ff8800;
 }
 
-#contextguide
-{
-}
+
 
 #minimap
 {

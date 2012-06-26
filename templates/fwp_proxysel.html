@@ -42,3 +42,15 @@
         pageInit({{ proxies }});
     </script>
 {% endblock %}
+
+
+{% block contextguide %}
+
+    <div class="help">
+La mappa principale permette di visualizzare l'area di interesse geografico dei vari proxy. I proxy non interamente visibili nella schermata attuale vengono indicati in grigio. È possibile cliccare sul nome di un proxy per passare alla pagina relativa.
+    <br><br>
+  Per creare un nuovo proxy è necessario inserire un nome, una data d'inizio validità e un metadato. Nel caso dei proxy query è necessario attivare anche almeno una delle quattro modalità operative specifiche. <br><br>Ogni metadato deve avere un nome unico (rispetto agli altri metadati dello stesso proxy). I nomi di proxy e metadati devono comprendere non più di 20 caratteri (sono ammesse le elettere dalla A alla Z maiuscole e minuscole, numeri e il simbolo underscore _ ).
+    <br><br>
+  Le  aree di interesse vengono rilevate automaticamente dall'inquadratura della minimappa.
+    </div>
+{%  endblock %}
