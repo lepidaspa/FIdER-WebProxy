@@ -63,8 +63,6 @@ function renderMetaData()
 {
 
 
-
-
     for (var i = 0; i < manifest['metadata'].length; i++)
     {
         //alert(JSON.stringify(manifest['metadata'][i]));
@@ -72,16 +70,35 @@ function renderMetaData()
         // creating the text entry, which will then be bound to the highlight of the polygon on the map
 
         var meta_id =  manifest['metadata'][i]['name'];
+
         var meta_bb = manifest['metadata'][i]['area'];
         if (meta_bb.length != 4)
         {
             meta_bb = manifest['area'];
         }
+
+        var bbstring = "";
+        for (var b in meta_bb)
+        {
+            bbstring += meta_bb[b].toFixed(5)+" ";
+        }
+
+
         var meta_time = manifest['metadata'][i]['time'];
+        if (meta_time[0] == "")
+        {
+            meta_time[0] = manifest['time'][0];
+        }
+        if (meta_time[1] == "")
+        {
+            meta_time[1] = manifest['time'][1];
+        }
+
+        var timestring = meta_time[0] + " - " + meta_time[1];
 
 
 
-        var metastring = '<div class="metadesc" id="meta_'+i+'"><a href="/fwp/proxy/'+proxy_id+'/'+meta_id+'/">'+meta_id+'</a><br>'+meta_bb+'<br>'+meta_time+'</div>';
+        var metastring = '<div class="metadesc" id="meta_'+i+'"><a href="/fwp/proxy/'+proxy_id+'/'+meta_id+'/">'+meta_id+'</a><br>'+bbstring+'<br>'+timestring+'</div>';
 
         $("#metalisting").append(metastring);
 

@@ -415,6 +415,25 @@ def convertShapeFileToJson (proxy_id, meta_id, shape_id, normalise=True):
 
 	return convertShapePathToJson(shapepath, normalise)
 
+def getCoreFile (path_mapdir):
+	"""
+	Given a directory with map files in it, will (heuristically) find the "main" file for the accepted type of maps. We handle SHP an MINFO files for now. Note that the file dir is supposed to have already been validated (so no mixed types)
+	:param path_mapdir:
+	:return:
+	"""
+
+	core_ext = ['shp', 'mif']
+	allfiles = os.listdir(path_mapdir)
+	#print "Seeking core file from %s" % allfiles
+	for cfile in allfiles:
+		filename, sep, ext = cfile.partition(".")
+		if ext in core_ext:
+			#print "Found core file %s for path %s" % (cfile, path_mapdir)
+			return cfile
+
+	# if we find no core file we throw an exception (it should not be possible, otherwise the dir would NOT have been validated)
+	raise Exception ("Missing core file in map dir %s" % path_mapdir)
+
 
 def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	"""
@@ -440,7 +459,14 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	basepath, meta_id = os.path.split(basepath)
 
 	issinglefile = len(os.listdir(path_shape)) == 1
-	path_shape = os.path.join(path_shape, os.listdir(path_shape)[0])
+	if issinglefile:
+		#print "One file only"
+		path_shape = os.path.join(path_shape, os.listdir(path_shape)[0])
+	else:
+		#print "Multiple files, heuristic find"
+		path_shape = os.path.join(path_shape, getCoreFile(path_shape))
+	print "Main item:",path_shape
+
 
 	"""
 	if basepath.endswith(conf.path_mirror):
@@ -465,8 +491,8 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 	try:
 
-		print "Getting datasource fromr shape path %s" % path_shape
-		print "Datasource raw data: %s " % open(path_shape, "r").read()
+		print "Getting datasource from shape path %s" % path_shape
+		#print "Datasource raw data: %s " % open(path_shape, "r").read()
 		datasource = ogr.Open(path_shape)
 		print "EXTRACTING DATASOURCE SRS DATA:"
 		print "****>"+str(datasource)
