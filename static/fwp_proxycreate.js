@@ -71,6 +71,7 @@ function bindInputFields()
     // note that mouseup is quite intrusive at times
     $("#newproxy_name").keyup(create_CheckForSubmission);
     $("#newproxy_name").mouseup(create_CheckForSubmission);
+    $("#newproxy_name").change(create_CheckForSubmission);
 
 
     $("#newproxy_datefrom").datepicker( {onClose: create_CheckForSubmission, changeYear: true, dateFormat: "dd-mm-yy"});
@@ -90,8 +91,35 @@ function bindInputFields()
     // note that mouseup is quite intrusive at times
     $("#newmeta_name").keyup(create_CheckNewMetaInfo);
     $("#newmeta_name").mouseup(create_CheckNewMetaInfo);
+    $("#newmeta_name").change(create_CheckNewMetaInfo);
 
     $("#newmeta_confirm").click(create_AddNewMeta);
+
+
+    $(".newmeta_ctrldelete .metaremover").live('click', create_RemoveMeta);
+
+}
+
+function create_RemoveMeta()
+{
+   // alert(this.id+"\n"+JSON.stringify(metadata));
+
+    var prefix = "removemeta_";
+    var meta_id = this.id.substr(prefix.length);
+
+    delete metadata[meta_id];
+    //alert(JSON.stringify(metadata));
+    var newnames = new Array();
+    for (var i in metanames)
+    {
+        if (metanames[i] != meta_id)
+        {
+            newnames.push(metanames[i]);
+        }
+    }
+    metanames = newnames;
+
+    $("#"+this.id).closest("tr").remove();
 
 }
 
@@ -133,6 +161,8 @@ function create_AddNewMeta()
 
 
     renderMetaList();
+    $("#newmeta_name").val("");
+    $("#newmeta_name").trigger("change");
 
 }
 
@@ -183,8 +213,7 @@ function renderMetaList()
             var meta_bb = new Array();
 
 
-            //TODO: the 100K division is an ugly temporary and not guaranteed to have numbers VAGUELY SIMILAR to those actually expected to allow finishing the development of this section, should be fixed and removed at once
-            meta_bb.push(pointA.x/100000, pointA.y/100000, pointB.x/100000, pointB.y/100000);
+            meta_bb.push(pointA.x, pointA.y, pointB.x, pointB.y);
 
             //alert(meta_bb);
 
@@ -207,7 +236,7 @@ function renderMetaList()
                 '<td class="newmeta_datefrom">'+str_datefrom+'</td>' +
                 '<td class="newmeta_dateto">'+str_dateto+'</td>' +
                 '<td class="newmeta_bb">'+str_bb+'</td>' +
-                '<td class="newmeta_ctrldelete"><input type="button" value="-" id="removemeta_'+meta_id+'"></td>' +
+                '<td class="newmeta_ctrldelete"><input class="metaremover" type="button" value="-" id="removemeta_'+meta_id+'"></td>' +
                 '</tr>';
 
         $("#new_meta_table").append(trstring);
