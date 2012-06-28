@@ -60,9 +60,14 @@ def createSoftProxy (proxy_id, manifest):
 	os.makedirs(os.path.join(basepath, conf.path_geojson))
 	os.makedirs(os.path.join(basepath, conf.path_mirror))
 
+	#TODO: remove after cleaning up any code that leads to this file
 	fp_manifest = open(os.path.join(basepath,conf.path_manifest),'w+')
 	json.dump(manifest, fp_manifest)
 	fp_manifest.close()
+
+	fp_hpmanifest = open(os.path.join(conf.basemanifestpath, proxy_id+".manifest"), 'w+')
+	json.dump(manifest, fp_hpmanifest)
+	fp_hpmanifest.close()
 
 	for cmeta in manifest['metadata']:
 		meta_id = cmeta['name']

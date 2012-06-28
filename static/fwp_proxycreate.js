@@ -94,9 +94,10 @@ function bindInputFields()
     $("#newmeta_name").change(create_CheckNewMetaInfo);
 
     $("#newmeta_confirm").click(create_AddNewMeta);
-
-
     $(".newmeta_ctrldelete .metaremover").live('click', create_RemoveMeta);
+
+
+    $("#proxy_create_confirm").click(create_CreateProxy);
 
 }
 
@@ -120,6 +121,8 @@ function create_RemoveMeta()
     metanames = newnames;
 
     $("#"+this.id).closest("tr").remove();
+
+    create_CheckForSubmission();
 
 }
 
@@ -149,7 +152,7 @@ function create_AddNewMeta()
     if ($('#newmeta_bbox_use').is(':checked'))
     {
         // use own map bbox
-        boundingbox = newmetamap.baseLayer.getExtent().toBBOX();
+        boundingbox = newmetamap.getExtent().transform(newmetamap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
     }
     else
     {
@@ -163,6 +166,8 @@ function create_AddNewMeta()
     renderMetaList();
     $("#newmeta_name").val("");
     $("#newmeta_name").trigger("change");
+
+    create_CheckForSubmission();
 
 }
 
@@ -181,7 +186,7 @@ function renderMetaList()
         var meta_datefrom = metadata[meta_id]['time'][0];
         var meta_dateto = metadata[meta_id]['time'][1];
 
-        if (meta_datefrom != "")
+        if (meta_datefrom != "" && meta_datefrom != null)
         {
             str_datefrom = meta_datefrom;
         }
@@ -189,7 +194,8 @@ function renderMetaList()
         {
             str_datefrom = "(Globale)";
         }
-        if (meta_dateto != "")
+
+        if (meta_dateto != "" && meta_dateto != null)
         {
             str_dateto = meta_dateto;
         }
@@ -200,27 +206,29 @@ function renderMetaList()
 
 
         var str_bb = "";
-        var coords = metadata[meta_id]['area'];
+        var meta_bb = metadata[meta_id]['area'];
         //alert (newmetamap.projection+" "+coords);
-        if (coords!= null)
+        if (meta_bb!= null)
         {
 
             //var coords = meta_bb_pre.toBBOX();
             //alert(JSON.stringify(meta_bb));
 
-            var pointA = create_reprojPoint( newmetamap, coords[0], coords[1]);
-            var pointB = create_reprojPoint( newmetamap, coords[2], coords[3]);
-            var meta_bb = new Array();
+            //var pointA = create_reprojPoint( newmetamap, coords[0], coords[1]);
+            //var pointB = create_reprojPoint( newmetamap, coords[2], coords[3]);
+            //var meta_bb = new Array();
 
 
-            meta_bb.push(pointA.x, pointA.y, pointB.x, pointB.y);
+            //meta_bb.push(coords[0], coords[1], coords[2], coords[3]);
 
             //alert(meta_bb);
-
             for (var i in meta_bb)
             {
                 //alert("Index: "+i);
-
+                if (i == 2)
+                {
+                    str_bb += "<br>";
+                }
                 str_bb += " "+meta_bb[i].toFixed(5);
             }
         }
@@ -265,7 +273,7 @@ function switchProxyDateTo ()
     else
     {
         $("#newproxy_dateto").prop('disabled', true);
-        $("#newproxy_dateto").val("Permanente");
+        $("#newproxy_dateto").val("");
     }
     create_CheckForSubmission();
 }
@@ -280,7 +288,7 @@ function switchMetaDateFrom ()
     else
     {
         $("#newmeta_datefrom").prop('disabled', true);
-        $("#newmeta_datefrom").val("Globale");
+        $("#newmeta_datefrom").val("");
     }
     create_CheckNewMetaInfo();
 }
@@ -295,7 +303,7 @@ function switchMetaDateTo ()
     else
     {
         $("#newmeta_dateto").prop('disabled', true);
-        $("#newmeta_dateto").val("Globale");
+        $("#newmeta_dateto").val("");
     }
     create_CheckNewMetaInfo();
 }
@@ -355,9 +363,9 @@ function create_setMaps()
     create_setNavControls(newproxymap);
     create_setNavControls(newmetamap);
 
+
+    newproxymap.events.register("moveend", newproxymap, create_CheckForSubmission);
 }
-
-
 
 
 function create_createMapWidget(element)
@@ -369,13 +377,13 @@ function create_createMapWidget(element)
     OpenLayers.ImgPath = "/static/OpenLayers/themes/dark/";
 
     widget = new OpenLayers.Map(element, {controls: []});
-    widget.projection = proj_WGS84;
-    widget.displayProjection = new OpenLayers.Projection(proj_WGS84);
+    //widget.projection = proj_WGS84;
+    //widget.displayProjection = new OpenLayers.Projection(proj_WGS84);
 
-    var osmlayer  = new OpenLayers.Layer.OSM({projection: new OpenLayers.Projection(proj_WGS84)});
+    var osmlayer  = new OpenLayers.Layer.OSM();
     widget.addLayer(osmlayer);
 
-    var tracelayer = new OpenLayers.Layer.Vector({projection: new OpenLayers.Projection(proj_WGS84)});
+    var tracelayer = new OpenLayers.Layer.Vector();
     widget.addLayer(tracelayer);
 
 
@@ -402,12 +410,12 @@ function create_unsetNavControls (map)
 function create_centerMapTo (map, lon, lat, zoom)
 {
     var lonlat = new OpenLayers.LonLat (lon, lat);
-    var projected = lonlat.transform( new OpenLayers.Projection(proj_WGS84), map.getProjectionObject());
+    var projected = lonlat.transform(new OpenLayers.Projection(proj_WGS84), map.getProjectionObject());
 
     map.setCenter(projected, zoom);
 }
 
-function create_reprojPoint (map, pointX, pointY)
+function create_reprojPointToMap (map, pointX, pointY)
 {
     var reproj;
 
@@ -415,6 +423,17 @@ function create_reprojPoint (map, pointX, pointY)
 
     return new OpenLayers.Geometry.Point(reproj.lon, reproj.lat);
 }
+
+function create_reprojPointToStandard (map, pointX, pointY)
+{
+
+    var reproj;
+
+    reproj = new OpenLayers.LonLat(pointX, pointY).transform(map.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
+
+    return new OpenLayers.Geometry.Point(reproj.lon, reproj.lat);
+}
+
 
 function create_CheckNewMetaInfo()
 {
@@ -486,6 +505,14 @@ function create_CheckForSubmission()
     var warnings = 0;
     var errors = 0;
 
+    // warnings and errors have specific arrays with meta_ids used to assemble the report strings
+
+    var warnings_times = [];
+    var warnings_areas = [];
+
+    var errors_times = [];
+    var errors_areas = [];
+
     //TODO: add messages for each error/warning
     //Note that to avoid conflicts with CheckMetaInfo we will use two global arrays with warnings and errors and re-render the arrays as a whole after checking to avoid double
     // Also, we report inconsistencies, NOT missing fields to avoid saturation. The instructions about the mandatory fields will be in the help column on the side
@@ -506,7 +533,7 @@ function create_CheckForSubmission()
     if (proxymode == "query")
     {
         // proxy_options_query_geo, proxy_options_query_inv, proxy_options_query_time, proxy_options_query_bi
-        if ( ($("#proxy_options_query_geo").val() == "none") && ($("#proxy_options_query_inv").val() == "none") && ($("#proxy_options_query_time").val() == "none") && ($("#proxy_options_query_bi").val() == "none") )
+        if ( ($("#proxy_options_query_geo").val() == "none") && ($("#proxy_options_query_inv").val() == "none") && ($("#proxy_options_query_time").val() == "none") )
         {
             errors += 1;
         }
@@ -520,36 +547,130 @@ function create_CheckForSubmission()
     var hasdatefrom = validateDateField(proxydatefrom);
     var hasdateto = validateDateField(proxydateto);
 
+    var proxyfrom = hasdatefrom ? getDateForCmp(proxydatefrom) : null;
+    var proxyto = hasdateto ? getDateForCmp(proxydateto) : null;
+
     if (  (!hasdatefrom) || (($('#newproxy_dateto_use').is(':checked')) && (!hasdateto)) )
     {
         //alert("Invalid date combo: "+validateDateField(proxydatefrom)+","+validateDateField(proxydateto));
 
         errors += 1;
     }
-
-    // The dates of the proxy must be compatible
-    if (hasdatefrom && hasdateto)
+    // If dates are valid, they must be compatible
+    else if (hasdatefrom && hasdateto)
     {
-        if (getDateForCmp(proxydatefrom) > getDateForCmp(proxydateto))
+        if (proxyfrom >= proxyto)
         {
             errors += 1;
         }
     }
 
+
+    //alert("METADATA -> "+metadata.length+": "+JSON.stringify(metadata));
+
     // There must be at least ONE metadata
-    if (metadata.length == 0)
+    if (metanames.length == 0)
     {
         errors += 1;
     }
 
-    // for all metadata, the bounding box must be (at least partially) INSIDE the bounding box of the proxy itself and the dates must be in the same relation with the proxy dates
 
-    // partially included timespans and bboxes will be normalised, with a warning
-
-
-
+    else if (hasdatefrom && (proxyfrom < proxyto || !hasdateto))
+    // without date from for the proxy we cannot make most of the checks, so we throw ONE error
+    {
 
 
+        // for all metadata, the bounding box must be (at least partially) INSIDE the bounding box of the proxy itself and the dates must be in the same relation with the proxy dates
+
+        // partially included timespans and bboxes will be normalised, with a warning
+
+
+        var proxy_bb = newproxymap.getExtent().transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+
+        // note that here the i is the meta_id
+        for (var i in metadata)
+        {
+            var meta_bb = metadata[i]['area'];
+            var meta_time = metadata[i]['time'];
+
+            if (meta_bb != null)
+            {
+                var bbox_match = compareBboxArrays(meta_bb, proxy_bb);
+            }
+            else
+            {
+                bbox_match = 1;
+            }
+
+
+            if (bbox_match == 0)
+            {
+                // if partially inside
+                // partially outside, i.e. warning
+                warnings+=1;
+                warnings_areas.push(i);
+            }
+            else if (bbox_match == -1)
+            {
+                // totally out, i.e. error
+                errors += 1;
+                errors_areas.push(i);
+            }
+
+
+            // DATE VERIFICATION
+
+            // generating all numeric dates; might be redundant in some circumstances but makes for a clearer flow
+
+
+            if (!hasdateto)
+            {
+                proxydateto = null;
+            }
+
+
+            if (meta_time[0] == "")
+            {
+                meta_time[0] = proxydatefrom;
+            }
+
+            if (meta_time[1] == "")
+            {
+                meta_time[1] = proxydateto;
+            }
+
+            var timematch = compareTimeSpans(meta_time[0], meta_time[1], proxydatefrom, proxydateto);
+
+            if (timematch == 0)
+            {
+                warnings+=1;
+                warnings_times.push(i);
+            }
+            else if (timematch == -1)
+            {
+                errors+=1;
+                errors_times.push(i);
+            }
+
+        }
+
+
+
+
+
+    }
+    else
+    {
+
+        //TODO: add error message saying meta cannot be parsed without a full proxy description
+    }
+
+    var str_err_times = errors_times.length > 0 ? "WRONG TIME: "+JSON.stringify(errors_times) : "";
+    var str_err_areas = errors_areas.length > 0 ? "WRONG BBOX: "+JSON.stringify(errors_areas) : "";
+    var str_warn_times = warnings_times.length > 0 ? "AUTOFIX TIME: "+JSON.stringify(warnings_times) : "";
+    var str_warn_areas = warnings_areas.length > 0 ? "AUTOFIX BBOX: "+JSON.stringify(warnings_areas) : "";
+
+    $("#reports_pre").text(str_err_times+"\n"+str_err_areas+"\n"+str_warn_areas+"\n"+str_warn_times);
 
     // overall check
     if (errors > 0)
@@ -564,6 +685,91 @@ function create_CheckForSubmission()
 
 }
 
+
+function compareBboxArrays (can_bb, ref_bb)
+{
+    //Compares two bounding box arrays (left, bottom, right, top) as candidate and reference. Returns 1 for full match (candidate inside reference), 0 for partial (candidate partially inside) or -1 for no match (candidate entirely outside reference). Coordinates are expected to be in the same SRS, with right > left and top > bottom
+    //TODO: placeholder, implement
+
+    //alert ("Comparing "+can_bb+" to "+ref_bb);
+
+
+    var candidate = OpenLayers.Bounds.fromArray(can_bb);
+    var reference = OpenLayers.Bounds.fromArray(ref_bb);
+
+
+    if (reference.intersectsBounds(candidate))
+    {
+        //we have at least a partial match
+        if (reference.containsBounds(candidate))
+        {
+            // full containment
+            return 1;
+        }
+        else
+        {
+            // confirmed as partial
+            return 0;
+        }
+    }
+    else
+    {
+        // no intersection/containment at all
+        return -1;
+    }
+
+
+}
+
+function compareTimeSpans (str_can_from, str_can_to, str_ref_from, str_ref_to)
+{
+
+    // Compares two time span strings formatted according to the needs of getDateForCmp. Null defines open boundaries; returns 1 for full containment, 0 for partial containment and -1 for no match at all
+
+    var can_from = str_can_from != null ? getDateForCmp(str_can_from) : null;
+    var can_to = str_can_to != null ? getDateForCmp(str_can_to) : null;
+
+    var ref_from = str_ref_from != null ? getDateForCmp(str_ref_from) : null;
+    var ref_to = str_ref_to != null ? getDateForCmp(str_ref_to) : null;
+
+
+    // NOTE:we are not validating a timespan INSIDE itself since for our purpose it should have already been done
+
+    if (ref_from != null)
+    {
+        // if reference timespan is open backwards, we cannot exceed it there
+        // so we do the check only in case there is a limit
+
+        if (can_to != null && can_to < ref_from)
+        {
+            return -1;
+        }
+        else if (can_from == null || can_from < ref_from)
+        {
+            return 0;
+        }
+
+    }
+
+    if (ref_to != null)
+    {
+
+        if (can_from != null && can_from > ref_to)
+        {
+            return -1;
+        }
+        else if (can_to == null || can_to > ref_to)
+        {
+            return 0;
+        }
+
+    }
+
+    return 1;
+
+}
+
+
 function validateDateField (datestring)
 {
 
@@ -571,5 +777,228 @@ function validateDateField (datestring)
 
 
     return ((datestring.match(dateregex)) &&  (parseInt(datestring.substr(0,2)) < 32) && (parseInt(datestring.substr(3,2)) < 13) );
+
+}
+
+
+function create_CreateProxy ()
+{
+
+
+    //alert ("Creating proxy");
+    // creates the proxy according to the data in the proxy and metas by building a manifest and sending to the main server
+
+    // container div for feedback
+    var container = "#proxy_created";
+
+
+    // first we must re-check the proxy names, in case somebody create a proxy with the same name (that must be unique, though the actual identifier is the token provided by the server; except for this, all other validations have already been carried out and will NOT be repeated
+
+    var proxy_name = $("#newproxy_name").val();
+
+    var urlstring = "/fwp/proxylist";
+
+    var success = true;
+    var newnameslist = new Array();
+
+    $.ajax ({
+        url: urlstring,
+        async: false,
+        success: function(manifests) {
+            //alert ("COMPLETED");
+            //postFeedbackMessage(data['success'], data['report'], container);
+
+            for (var proxy_id in manifests)
+            {
+
+                newnameslist.push (manifests[proxy_id]['name']);
+
+                if (manifests[proxy_id]['name'] == proxy_name)
+                {
+                    postFeedbackMessage("fail", "ERRORE: È già presente un proxy con questo nome", container);
+                    success = false;
+                }
+            }
+
+        },
+        error: function (data)
+        {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container);
+            success = false;
+        }
+    });
+
+    if (!success)
+    {
+        proxynames = newnameslist;
+        create_CheckForSubmission();
+        return;
+    }
+
+    // then we assemble the manifest
+
+    var manifest = {};
+
+    manifest['name'] = proxy_name;
+    manifest['area'] = newproxymap.getExtent().transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+    var proxydatefrom = $("#newproxy_datefrom").val();
+    var proxyfromint = getDateForCmp(proxydatefrom);
+    proxydatefrom += "T00:00Z";
+    var proxydateto = $("#newproxy_dateto").val();
+    var proxytoint;
+    if (proxydateto != "")
+    {
+        proxytoint = getDateForCmp(proxydateto);
+        proxydateto += "T00:00Z";
+    }
+    else
+    {
+        proxytoint = null;
+    }
+
+
+
+    manifest['time'] = new Array (proxydatefrom, proxydateto);
+
+    var ops_prefix = "proxy_options_";
+
+    var opsmode = $("#proxy_opsmode").val();
+
+    var opsdict = {
+        'read' : 'none',
+        'write': 'none',
+        'query': {
+            'inventory': 'none',
+            'geographic': 'none',
+            'time': 'none',
+            'bi': 'none',
+            'signs': false
+        }
+    };
+
+    if (opsmode != 'query')
+    {
+        opsdict[opsmode] = $("#"+ops_prefix+opsmode).val();
+    }
+    else
+    {
+        opsdict[opsmode]['inventory'] = $("#"+ops_prefix+opsmode+"_inv").val();
+        opsdict[opsmode]['geographic'] = $("#"+ops_prefix+opsmode+"_geo").val();
+        opsdict[opsmode]['time'] = $("#"+ops_prefix+opsmode+"_time").val();
+        opsdict[opsmode]['bi'] = $("#"+ops_prefix+opsmode+'_bi').val();
+
+        opsdict[opsmode]['signs'] = $("#"+ops_prefix+opsmode+'_bi').val() == "true";
+    }
+
+    manifest['operations'] = opsdict;
+    manifest['metadata'] = new Array();
+
+    for (var i in metadata)
+    {
+        var metaname = i;
+
+        var metadatefrom = metadata[i]['time'][0];
+        var metadateto = metadata[i]['time'][1];
+
+        // normalising the date fields
+
+        if (metadatefrom != "" && metadatefrom != null)
+        {
+            if (getDateForCmp(metadatefrom) < proxyfromint)
+            {
+                metadatefrom = proxydatefrom;
+            }
+            else
+            {
+                metadatefrom += "T00:00Z";
+            }
+        }
+        else
+        {
+            metadatefrom = proxydatefrom;
+        }
+
+        if (metadateto != "" && metadateto != null)
+        {
+            if ((proxytoint != null) && proxytoint < getDateForCmp(metadateto))
+            {
+                metadateto = proxydateto;
+            }
+            else
+            {
+                metadateto += "T00:00Z";
+            }
+        }
+        else
+        {
+            metadateto = proxydateto;
+        }
+
+        var meta_time = new Array (metadatefrom, metadateto);
+
+
+        //TODO: normalize bounding box too (NOT urgent)
+        var meta_area = metadata[i]['area'] != null ? metadata[i]['area'] : manifest['area'];
+
+        var currentmeta = {
+            'name' : metaname,
+            'area' : meta_area,
+            'time' : meta_time
+        };
+
+        manifest['metadata'].push(currentmeta);
+    }
+
+    alert(JSON.stringify(manifest));
+
+    // call the proxy creation function from ProxyFS/proxy_core via ajax
+
+    urlstring = "/fwp/create/";
+
+    $.ajax ({
+        url: urlstring,
+        data: {jsonmessage: JSON.stringify(manifest)},
+        //contentType: 'application/json',
+        //dataType: 'json',
+        type: 'POST',
+        async: true,
+        success: function(data) {
+            //alert ("COMPLETED");
+            postFeedbackMessage(data['success'], data['report'], container);
+
+        },
+        error: function (data)
+        {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
+        }
+    });
+
+
+}
+
+
+
+//copied from fwp_metapage.js, removed closeAllMasks()
+function postFeedbackMessage (success, report, widgetid)
+{
+    var status = success;
+    var message = report;
+
+    var feedbackclass;
+    if (status == true)
+    {
+        feedbackclass = "success";
+    }
+    else
+    {
+        feedbackclass = "fail";
+    }
+
+    alert("ERROR: "+message);
+
+    var feedbackmess = '<div class="feedback '+feedbackclass+'">' +message+ '</div>';
+
+
+    $(widgetid).append(feedbackmess);
 
 }

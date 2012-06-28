@@ -62,6 +62,8 @@ urlpatterns = patterns('',
 
 
 	url(r'^fwp/control/', fwpviews.proxy_controller),
+	url(r'^fwp/proxylist/', fwpviews.proxy_get_all),
+	url(r'^fwp/create/', fwpviews.proxy_create_new),
 
 )
 

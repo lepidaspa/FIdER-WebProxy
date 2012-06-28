@@ -32,7 +32,7 @@
                 </div>
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Valido al <input type="checkbox" id="newproxy_dateto_use" checked="checked">
+                        Valido al <input type="checkbox" id="newproxy_dateto_use" checked="checked"> (permanente)
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newproxy_dateto">
@@ -103,7 +103,7 @@
                     <div class="subfieldmask">
                         <select class="fields_query" id="proxy_options_query_geo">
                             <option value="full">Complesse</option>
-                            <option value="bb">Bounding box</option>
+                            <option value="BB">Bounding box</option>
                             <option value="none">Non disponibili</option>
                         </select>
                     </div>
@@ -133,10 +133,10 @@
                         Business Intelligence
                     </div>
                     <div class="subfieldmask">
-                        <select class="fields_query" id="proxy_options_query_bi">
+                        <select class="fields_query" id="proxy_options_query_bi" disabled>
                             <option value="full">Completa</option>
                             <option value="simple">Semplice</option>
-                            <option value="none">Non disponibile</option>
+                            <option value="none" selected>Non disponibile</option>
                         </select>
                     </div>
 
@@ -145,8 +145,8 @@
                     </div>
                     <div class="subfieldmask">
                         <select id="proxy_options_query_sign">
-                            <option value="yes">Sì</option>
-                            <option value="no">No</option>
+                            <option value="true">Sì</option>
+                            <option value="false">No</option>
 
                         </select>
                     </div>
@@ -194,7 +194,7 @@
                 </div>
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Valido dal <input type="checkbox" id="newmeta_datefrom_use" checked="checked">
+                        Valido dal <input type="checkbox" id="newmeta_datefrom_use" checked="checked"> (globale)
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newmeta_datefrom">
@@ -202,7 +202,7 @@
                 </div>
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Valido al <input type="checkbox" id="newmeta_dateto_use" checked="checked">
+                        Valido al <input type="checkbox" id="newmeta_dateto_use" checked="checked"> (globale)
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newmeta_dateto">

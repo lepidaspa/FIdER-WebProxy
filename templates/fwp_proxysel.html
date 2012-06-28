@@ -13,6 +13,8 @@
 
 {% block navigation %}
 
+    <div class="statemess" id="proxy_created"></div>
+
     <div class="button wide" id="proxy_create_new">Crea nuovo proxy</div>
     <div class="button wide" id="proxy_show_map">Mappa principale</div>
 
@@ -47,10 +49,12 @@
 {% block contextguide %}
 
     <div class="help">
-La mappa principale permette di visualizzare l'area di interesse geografico dei vari proxy. I proxy non interamente visibili nella schermata attuale vengono indicati in grigio. È possibile cliccare sul nome di un proxy per passare alla pagina relativa.
+La mappa principale permette di visualizzare l'area di interesse geografico dei vari proxy. I proxy non visibili nella schermata attuale vengono indicati in grigio. È possibile cliccare sul nome di un proxy per passare alla pagina relativa.
     <br><br>
-  Per creare un nuovo proxy è necessario inserire un nome, una data d'inizio validità e un metadato. Nel caso dei proxy query è necessario attivare anche almeno una delle quattro modalità operative specifiche. <br><br>Ogni metadato deve avere un nome unico (rispetto agli altri metadati dello stesso proxy). I nomi di proxy e metadati devono comprendere non più di 20 caratteri (sono ammesse le elettere dalla A alla Z maiuscole e minuscole, numeri e il simbolo underscore _ ).
+  Per creare un nuovo proxy è necessario inserire un nome, una data d'inizio validità e un metadato. Nel caso dei proxy query è necessario attivare anche almeno una delle tre modalità di query elencate.<br><br>Ogni metadato deve avere un nome unico (rispetto agli altri metadati dello stesso proxy). I nomi di proxy e metadati possono comprendere fino a 20 caratteri (sono ammesse le elettere dalla A alla Z maiuscole e minuscole, numeri e il simbolo underscore _ ).
     <br><br>
-  Le  aree di interesse vengono rilevate automaticamente dall'inquadratura della minimappa.
+  Le  aree di interesse vengono rilevate automaticamente dall'inquadratura della minimappa.<br>
+    Date e aree di interesse non specificate nella descrizione dei metadati verranno allineate a quelle del proxy. Se questi intervalli andranno oltre quelli specificati per il proxy nel suo complesso, verranno ridotti automaticamente per rientrare in quelli del proxy.<br>
+    Gli intervalli di tempo sono inclusivi della data di inizio ed esclusivi di quella di fine.
     </div>
 {%  endblock %}

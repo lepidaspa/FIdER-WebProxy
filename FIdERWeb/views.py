@@ -23,6 +23,8 @@ from FIdERProxyFS import proxy_core, ProxyFS, proxy_web
 import FIdERProxyFS.proxy_config_core as proxyconf
 from FIdERProxyFS.proxy_core import readSingleShape
 from FIdERWP.views import saveMapFile
+from FIdERWeb import MessageTemplates, Components
+from MarconiLabsTools import ArDiVa
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -33,6 +35,7 @@ def error404test (request):
 
 	htmldata = "<html><body>Error 404 test: </body></html>"
 	return HttpResponse(htmldata)
+
 
 
 def error500test (request):
@@ -137,7 +140,10 @@ def component_shapefile_table (request, **kwargs):
 		shapetable = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
 	except Exception as ex:
 		print "Error when loading shape conversion table: %s" % ex
-		shapetable = None
+
+	if shapetable is None:
+		shapetable = {}
+
 
 	try:
 		jsonresponse = urllib2.urlopen(proxyconf.URL_CONVERSIONS)
@@ -346,6 +352,87 @@ def proxy_uploadwfs (request, **kwargs):
 
 	return HttpResponse(json.dumps(response_upload), mimetype="application/json")
 
+@csrf_exempt
+def proxy_create_new (request):
+	"""
+	Creates a new proxy from a partially compiled manifest and performs the full communication with the main server. Returns success only if the proxy is correctly registered
+	:param request:
+	:return:
+	"""
+
+	print "Trying to create a new proxy"
+	print request.POST
+
+	result = {
+		'success':  False,
+		'result': ""
+	}
+
+	try:
+
+		# creating the pre-manifest
+		jsonmessage = json.loads(request.POST['jsonmessage'])
+		premanifest = ArDiVa.Model(MessageTemplates.model_response_capabilities)
+		#TODO: check BASEURL!
+
+		print "SENT:",jsonmessage
+		print "PRE:",premanifest
+
+		# Getting the token from the main  server
+		accepted, message = Components.getWelcomeFromServer()
+
+		if accepted:
+			#assembling the manifest
+
+			proxy_id = message['token']
+			jsonmessage['token'] = proxy_id
+			filledok, manifest = premanifest.fillSafely(jsonmessage)
+
+			approved, response = Components.sendProxyManifestRaw (json.dumps(manifest))
+
+			if approved:
+
+
+				created, message = ProxyFS.createSoftProxy(proxy_id, manifest)
+
+				if created:
+					success = True
+					report = "Creazione del proxy %s completata." % jsonmessage['name']
+				else:
+					success = False
+					report = "Creazione del proxy %s fallita. Errore locale: %s" % (jsonmessage['name'], str(message))
+
+			else:
+
+				success = False
+				report = "Creazione del proxy %s fallita. Errore dal federatore: %s" % (jsonmessage['name'], str(response))
+
+
+		else:
+			success = False
+			report = "Creazione del proxy %s fallita, riprovare (%s).<br>Manifesto parziale %s" % (jsonmessage['name'], message, jsonmessage)
+
+
+		result = {
+			'success': success,
+			'report': report
+		}
+
+	except Exception as ex:
+		print (type(ex))
+		print ex
+		result = {
+			'success':	False,
+			'report':	"Errore nella procedura: %s" % str(ex)
+		}
+
+
+
+
+	print json.dumps(result)
+
+	return HttpResponse(json.dumps(result), mimetype="application/json")
+
 
 @csrf_exempt
 def proxy_controller (request):
@@ -497,6 +584,16 @@ def learnProxyType (manifest):
 		# proxy cannot be None, so by exclusion it must be query
 		return "query"
 
+def proxy_get_all (request):
+	"""
+	returns a key/value dict with guid:manifest of each soft proxy currently on the hard proxy
+	:param request:
+	:return: json
+	"""
+
+	return HttpResponse(json.dumps(getManifests()), mimetype="application/json")
+
+
 
 
 def getManifests ():
@@ -516,6 +613,8 @@ def getManifests ():
 
 	print proxylist
 	return proxylist
+
+
 
 
 def getProxyManifest (proxy_id):

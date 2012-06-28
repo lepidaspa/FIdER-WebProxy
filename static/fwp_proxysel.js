@@ -25,6 +25,7 @@ function pageInit(jsonlisting)
     // by default we only show the proxymap, not the creation interface
     $("#proxybuilder").hide();
     $("#proxy_show_map").hide();
+    $("#proxy_created").hide();
 
 
     proxies = jsonlisting;
@@ -61,7 +62,7 @@ function pageInit(jsonlisting)
 function centerMapTo (lon, lat, zoom)
 {
     var lonlat = new OpenLayers.LonLat (lon, lat);
-    var projected = lonlat.transform( new OpenLayers.Projection(proj_WGS84), mapvis.getProjectionObject());
+    var projected = lonlat.transform (new OpenLayers.Projection(proj_WGS84), mapvis.getProjectionObject());
 
     mapvis.setCenter(projected, zoom);
 }
@@ -71,7 +72,6 @@ function reprojPoint (pointX, pointY)
     var reproj;
 
     reproj = new OpenLayers.LonLat(pointX, pointY).transform(new OpenLayers.Projection(proj_WGS84), mapvis.getProjectionObject());
-
 
     return new OpenLayers.Geometry.Point(reproj.lon, reproj.lat);
 }
@@ -181,8 +181,11 @@ function showProxyList ()
     for (var proxy_id in proxies)
     {
         var pbox = proxies[proxy_id]['area'];
-        if (pbox[0] >= bbox[0] && pbox[1] >= bbox[1] && pbox[2] <= bbox [2] && pbox[3] <= bbox[3])
+
+        //if (pbox[0] >= bbox[0] && pbox[1] >= bbox[1] && pbox[2] <= bbox [2] && pbox[3] <= bbox[3])
+        if ((pbox [0] < bbox [2] && pbox[2] > bbox[0]) && (pbox[1] < bbox[3] && pbox[3] > pbox[1]))
         {
+
             // proxy accepted
 
             $(".nav_entry#proxies_"+proxy_id).removeClass("offmap");

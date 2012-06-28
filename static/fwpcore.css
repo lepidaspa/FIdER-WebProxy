@@ -1,13 +1,13 @@
 body
 {
-    font-family: sans-serif;
-    background-color: #ffffff;
+    font-family:        sans-serif;
+    background-color:   #ffffff;
 }
 
 input:disabled, select:disabled
 {
-    background-color: #bbb7b9;
-    color:            #ffffff;
+    background-color:   #bbb7b9;
+    color:              #ffffff;
 
 }
 
@@ -39,24 +39,24 @@ input:disabled, select:disabled
 
 .statemess
 {
-    font-size:  medium;
+    font-size:              medium;
 
-    vertical-align: middle;
-    text-align: center;
+    vertical-align:         middle;
+    text-align:             center;
 
-    background-color:      #ff5434;
+    background-color:       #ff5434;
     color:                  #ffffff;
-    border:           1px solid #ff5434;
+    border:                 1px solid #ff5434;
 
-    margin-bottom:  8px;
+    margin-bottom:          8px;
 
 
 }
 
 #currentops
 {
-    border:             none;
-    background-color:   #ffffff;
+    border:                 none;
+    background-color:       #ffffff;
 }
 
 
@@ -64,14 +64,14 @@ input:disabled, select:disabled
 
 .feedback
 {
-    word-break:     normal;
-    word-wrap:      break-word;
+    word-break:         normal;
+    word-wrap:          break-word;
 
-    color:          #ffffff;
-    padding:        4px;
-    clear:          both;
+    color:              #ffffff;
+    padding:            4px;
+    clear:              both;
 
-    background-color: #6985b1;
+    background-color:   #6985b1;
 }
 
 
@@ -94,16 +94,16 @@ input [type=button]
 
 a.backtrack
 {
-    color:   #ff8800;
-    font-weight: bold;
-    text-decoration: none;
+    color:              #ff8800;
+    font-weight:        bold;
+    text-decoration:    none;
 }
 
 .button:focus
 {
     color:              #000000;
-    border: 1px solid #ff8800;
-    background-color: #ffffff;
+    border:             1px solid #ff8800;
+    background-color:   #ffffff;
 }
 
 .button.wide
@@ -132,7 +132,7 @@ a.backtrack
     color:              #000000;
     font-weight:        bold;
 
-    border-bottom:         1px solid #ff8800;
+    border-bottom:      1px solid #ff8800;
 }
 
 #contextguide
@@ -169,7 +169,7 @@ img.legend
     bottom:             0;
     overflow:           auto;
     padding-left:       8px;
-    padding-right:       8px;
+    padding-right:      8px;
 }
 
 #navigation > *, #contextguide > *
@@ -192,7 +192,7 @@ img.legend
     padding:            0.5em;
 
     border-left:        1px solid #ff8800;
-    border-right:        1px solid #ff8800;
+    border-right:       1px solid #ff8800;
 }
 
 .button_pre
@@ -252,4 +252,9 @@ input, select
 {
     background-color: #e9324c;
 
+}
+
+tr
+{
+    vertical-align:     top;
 }

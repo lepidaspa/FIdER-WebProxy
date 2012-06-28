@@ -115,7 +115,10 @@ function renderMaps()
                 url: "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+shapes[i],
                 async: true
             }).done(function (jsondata) {
-                        shapedata.push(jsondata);
+                        var shapename = jsondata['id'];
+                        var map_id = shapes.indexOf(shapename);
+                        shapedata[map_id] = jsondata;
+                        //shapedata.push(jsondata);
                         checkShapesLoadingState();
             });
         }
@@ -127,13 +130,16 @@ function renderMaps()
 
 }
 
+
+
 function checkShapesLoadingState()
 {
+
+
     if (shapedata.length == shapes.length)
     {
         unsetLoadingState();
         $("#proxy_addmap").show();
-
     }
 }
 
@@ -158,6 +164,7 @@ function unsetLoadingState()
     for (var i = 0; i < shapedata.length; i++)
     {
         renderGeoJSON (shapedata[i], proxymap, proxymap_currentlayer);
+
         renderMapCard (i);
         //alert("Rendered "+shapes[i]);
     }
@@ -601,7 +608,7 @@ function renderTranslationMask ()
 
     $.ajax({
         url: "/fwp/conversion/"+proxy_id+"/"+meta_id+"/"+shapes[i],
-        async: true
+        async: false
     }).done(function (jsondata) {
 
                 tables = jsondata;

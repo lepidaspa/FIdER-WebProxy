@@ -84,7 +84,7 @@ def createSoftProxy (proxy_id, manifest):
 		proxy_core.createSoftProxy(proxy_id, manifest)
 	except Exception as ex:
 		traceback.print_exc()
-		return False, "Failed to create proxy %s. Cause: %s" % (proxy_id, ex.message)
+		return False, "Creazione del proxy %s fallita. Errore: %s" % (proxy_id, ex.message)
 
 	return True, manifest
 
