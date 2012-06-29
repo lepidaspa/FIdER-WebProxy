@@ -19,7 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 from osgeo import ogr
 from zipfile import ZipFile
 
-from FIdERProxyFS import proxy_core, ProxyFS, proxy_web
+from FIdERProxyFS import proxy_core, ProxyFS, proxy_web, proxy_query
 import FIdERProxyFS.proxy_config_core as proxyconf
 from FIdERProxyFS.proxy_core import readSingleShape
 from FIdERWP.views import saveMapFile
@@ -96,12 +96,18 @@ def metapage (request, **kwargs):
 
 	#TODO: make conditional on proxy being NOT query and add alternative for query
 	proxymaps = []
-	for shape in os.listdir(os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)):
-		proxymaps.append(shape)
+	for mapfile in os.listdir(os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)):
+		proxymaps.append(mapfile)
 
-	return render_to_response ('fwp_metapage.html', {'proxy_id': proxy_id, 'proxy_name': manifest['name'], 'manifest': SafeString(json.dumps(manifest)), 'meta_id': meta_id, 'proxy_type': proxytype, 'maps': SafeString(json.dumps(proxymaps))},
-		context_instance=RequestContext(request))
+	kwargs = {'proxy_id': proxy_id, 'proxy_name': manifest['name'], 'manifest': SafeString(json.dumps(manifest)), 'meta_id': meta_id, 'proxy_type': proxytype, 'maps': SafeString(json.dumps(proxymaps))}
 
+	if proxytype != 'query':
+		template = 'fwp_metapage.html'
+	else:
+		template = 'fwp_querypage.html'
+		kwargs['models'] = SafeString(json.dumps(getModels()))
+
+	return render_to_response (template, kwargs, context_instance=RequestContext(request))
 
 def proxy_loadmap (request, **kwargs):
 
@@ -117,6 +123,31 @@ def proxy_loadmap (request, **kwargs):
 		jsondata = {}
 
 	return HttpResponse(jsondata, mimetype="application/json")
+
+def getModels ():
+	"""
+	Get the list of fields for conversion from the main server
+	:return:
+	"""
+
+	try:
+		jsonresponse = urllib2.urlopen(proxyconf.URL_CONVERSIONS)
+		convtable = json.load(jsonresponse)
+		print "Received conversion table from server: %s" % convtable
+
+	except Exception as ex:
+		if isinstance(ex, urllib2.HTTPError):
+			errormess = ex.code
+		elif isinstance(ex, urllib2.URLError):
+			errormess = ex.reason
+		else:
+			errormess = ex.message
+		print "Error when requesting conversion table from %s: %s" % (proxyconf.URL_CONVERSIONS, errormess)
+
+		#todo: replace with handling at JS level
+		raise
+
+	return convtable
 
 
 
@@ -373,7 +404,7 @@ def proxy_create_new (request):
 		# creating the pre-manifest
 		jsonmessage = json.loads(request.POST['jsonmessage'])
 		premanifest = ArDiVa.Model(MessageTemplates.model_response_capabilities)
-		#TODO: check BASEURL!
+		#TODO: check that BASEURL receives the correct value
 
 		print "SENT:",jsonmessage
 		print "PRE:",premanifest
@@ -627,3 +658,40 @@ def getProxyManifest (proxy_id):
 	fp.close()
 
 	return manifestdata
+
+
+@csrf_exempt
+def probePostGIS (request):
+	"""
+	Performs a basic query to according to the parmaters received by POST to a PostGIS db server and returns the structure of the table
+	:param request:
+	:return: json with success/fail and report (error string or table data)
+	"""
+
+	conndata = json.loads(request.POST['jsonmessage'])['connection']
+	querydata = json.loads(request.POST['jsonmessage'])['query']
+
+
+	response_probe = {
+		'success': False,
+		'report': ''
+	}
+
+	try:
+		sqldata = proxy_query.probePostGIS(conndata, querydata['view'], querydata['schema'])
+		if len(sqldata) == 0:
+			response_probe ['report'] = "Nessun risultato."
+		else:
+			response_probe = {
+				'success': True,
+				'report': sqldata
+			}
+	except Exception, ex:
+		#print "ERROR: %s" % ex
+		response_probe['report'] = "Interrogazione fallita: %s" % ex
+
+	#print response_probe
+
+	return HttpResponse(json.dumps(response_probe), mimetype="application/json")
+
+

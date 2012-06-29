@@ -40,7 +40,7 @@ var convmodelcats;
 // id of the map item being worked on in the sidebar, needed to keep state with the bindings
 var currentmap;
 
-function pageInit(req_proxy_id, req_meta_id, req_proxy_type, req_manifest, req_maps)
+function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
 {
 
     $("#renderingstate").hide();
@@ -53,7 +53,6 @@ function pageInit(req_proxy_id, req_meta_id, req_proxy_type, req_manifest, req_m
     proxy_id = req_proxy_id;
     meta_id = req_meta_id;
     manifest = req_manifest;
-    proxy_type = req_proxy_type;
 
     shapes = jQuery.parseJSON(req_maps);
 
@@ -80,14 +79,8 @@ function pageInit(req_proxy_id, req_meta_id, req_proxy_type, req_manifest, req_m
 
     buildMetaMap();
 
-    if ((proxy_type != 'query'))
-    {
-        renderMaps();
-    }
-    else
-    {
-        renderQuery();
-    }
+    renderMaps();
+
 
     $("#newmap_shapefile").click(renderNewShapeMask);
     $("#newmap_wfs").click(renderNewWFSMask);
@@ -295,7 +288,7 @@ function renderNewShapeMask ()
 
     var uploadtable = '<table class="uploadfilemask maskwidget" id="uploadfile_new">' +
             '<tr><td><input type="file" id="mapsub" name="mapsub"></td></tr>' +
-            '<tr><td colspan><input type="button" id="confirmuploadfile" value="Carica"></td></tr>'+
+            '<tr><td colspan=2><input type="button" id="confirmuploadfile" value="Carica"></td></tr>'+
             '</table>';
 
 
@@ -725,7 +718,6 @@ function postFeedbackMessage (success, report, widgetid)
 
     closeAllMasks();
     $(widgetid).append(feedbackmess);
-
 }
 
 function refreshTranslationTable ()
@@ -850,13 +842,6 @@ function renderGeoJSON (shapedata, map, maplayer)
 
     //$("#renderingstate").hide();
 
-}
-
-
-
-function renderQuery()
-{
-    alert("PLACEHOLDER");
 }
 
 

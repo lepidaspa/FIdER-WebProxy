@@ -1,0 +1,60 @@
+{% extends "fwpcore.html" %}
+
+
+{% block title %}
+    Gestione metadato e mappe
+{% endblock %}
+
+
+{% block headers %}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_querypage.css">
+    <script language="JavaScript" src="{{ STATIC_URL }}fwp_querypage.js"></script>
+{% endblock %}
+
+{% block navigation %}
+
+    <div id="metainfo"><div class="button_pre"><a href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a><a href="/fwp/proxy/{{ proxy_id }}/{{ meta_id }}" id="btn_reload"><img src="/static/resource/fwp_reload.png"></a></div>{{ proxy_name }}: {{ meta_id }}</div>
+
+    <div id="minimap" class="cornermap"></div>
+
+
+    <div id="serverstate" class="statemess">Elaborazione dati</div>
+    <div id="renderingstate" class="statemess">Aggiornamento mappa</div>
+    <div id="loadingstate" class="statemess">Caricamento dati</div>
+    <div id="currentops" class="statemess"></div>
+
+    <div class="button wide" id="proxy_addconn"><span id="btn_addconn">Nuova connessione</span></div>
+
+
+    <div id="maplisting"></div>
+
+{% endblock %}
+
+{% block functionality %}
+
+
+    <div id="infograph"></div>
+
+
+
+
+{% endblock %}
+
+
+{% block starterscript %}
+    <script>
+        pageInit('{{ proxy_id }}', '{{ meta_id }}', {{ manifest }}, '{{ maps }}' );
+        req_models = {{ models }};
+        registerModels(req_models);
+    </script>
+{% endblock %}
+
+
+
+{% block contextguide %}
+
+    <div class="help">
+
+    </div>
+
+{%  endblock %}
