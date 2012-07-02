@@ -42,8 +42,6 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
     meta_id = req_meta_id;
     manifest = req_manifest;
 
-
-
     queries = jQuery.parseJSON(req_maps);
 
     //alert(JSON.stringify(manifest['metadata']));
@@ -59,11 +57,18 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
     var bbox = (manifest['area']);
     zoomToBBox(minimap, bbox);
 
+
     renderQueries();
 
     $("#btn_addconn").click(renderNewConnMask);
+    $(".btn_remove").live("click",renderRemoverMask);
+    $(".btn_confirmdelete").live("click",deleteMap);
+
+
 
 }
+
+
 
 function registerModels(req_models)
 {
@@ -76,6 +81,43 @@ function renderQueries()
 {
     //TODO: placeholder, implements
     // creates the infograph and launches the card rendering
+
+    //alert(JSON.stringify(queries));
+
+    for (var id in queries)
+    {
+
+        var host = queries[id]['connection']['host'];
+        var dbname = queries[id]['connection']['dbname'];
+        var schema = queries[id]['query']['schema'];
+        if (schema)
+        {
+            schema = schema+".";
+        }
+        var view = queries[id]['query']['view'];
+
+        var statsstring = '<div class="mapstats"><span class="mapname">'+id+'</span><br>' +
+                "DB: "+dbname+'@'+host+"<br>"+
+                "Vista: "+schema+view+'</div>';
+
+
+        var str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+id+'" src="/static/resource/fwp_convert.png">';
+        var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+id+'" src="/static/resource/fwp_remove.png">';
+
+        var mapactions = '<div class="mapactions">'+str_btn_convert+'<br>'+str_btn_remove+'</div>';
+
+        var mapcardstring = '<div class="mapcard" id="map_'+id+'">'+mapactions+statsstring+'<div class="quickcheck" id="details_'+id+'"></div></div>';
+
+        $("#maplisting").append(mapcardstring);
+
+
+
+    }
+
+
+
+
+
 }
 
 
@@ -96,14 +138,7 @@ function renderNewConnMask()
             '<div class="maskfield"><div class="masksubfield">Password</div><div class="masksubfield"><input type="text" id="conn_pass_new" name="conn_pass_new"></div></div>' +
             '' +
             '<input type="button" id="connect_new" value="Conferma">'+
-                    '</div>'
-            ;
-
-
-
-
-
-
+                    '</div>' ;
 
 
     $("#proxy_addconn").append(connmask);
@@ -140,12 +175,10 @@ function configConnection()
 function closeAllMasks()
 {
     // closes all information/feedback/creations masks in the navigation area
-    //TODO: placeholder, implement
 
     $(".formmask").remove();
     $(".feedback").remove();
-
-
+    $(".removemask").remove();
 
 }
 
@@ -213,14 +246,85 @@ function createNewConnection()
 
 }
 
+function showTranslation (map_id)
+{
+
+
+
+
+}
+
+
+
+function renderRemoverMask()
+{
+
+    var prefix = "btn_remove_";
+    var i = this.id.substr(prefix.length);
+
+    closeAllMasks();
+
+
+    var removestring = '<div class="removemask maskwidget" id="remove_'+i+'">' +
+            'Confermi l\'eliminazione della mappa?<br>' +
+            '<input type="button" class="btn_confirmdelete" id="btn_confirmdelete_'+i+'" value="Elimina">' +
+            '<br>ATTENZIONE: questa azione non può essere annullata.' +
+            '</div>';
+
+    $("#map_"+i).append(removestring);
+
+
+}
+
+function deleteMap ()
+{
+    var prefix = "btn_confirmdelete_";
+    var i = this.id.substr(prefix.length);
+
+    closeAllMasks();
+
+    var container = "#currentops";
+
+    var controldict = {
+        'action': 'delete',
+        'proxy_id': proxy_id,
+        'meta_id': meta_id,
+        'shape_id': i
+    };
+
+    $.ajax({
+        url: "/fwp/control/",
+        async: true,
+        data: controldict,
+        type: 'POST',
+        success: function(data)
+        {
+            postFeedbackMessage(data['success'], data['report'], container);
+        },
+        error: function (data)
+        {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container);
+        }
+    });
+
+    $("#currentops").show();
+    $("#serverstate").hide();
+    $("#btn_reload").show();
+}
+
+
+
+
+
 function editTranslation(ffields)
 {
     // creates a widget interface to set the conversion of foreign fields in our model fields
 
     closeAllMasks();
 
-    var convtable = '<div class="formmask" id="editxlate_new">' +
-            '<div class="maskfield"><div class="colhead masksubfield">Campo</div><div class="masksubfield colhead">Ricerca su</div></div>';
+    var xlatemask = '<div class="formmask" id="editxlate_new"></div>';
+
+    var convtable =  '<div class="maskfield"><div class="colhead masksubfield">Campo</div><div class="masksubfield colhead">Ricerca su</div></div>';
 
     var fieldselect_ops = '<option value=""></option>';
     for (var i in ffields)
@@ -236,32 +340,34 @@ function editTranslation(ffields)
 
         for (var f in models[m])
         {
-            convtable += '<div class="maskfield typefield typefieldlist_'+m+'"><div class="masksubfield">'+f+'</div><div class="masksubfield colhead"><select class="fieldtype_'+m+' fieldconv_'+f+'" id="fieldconversion_'+f+'">'+fieldselect_ops+'</select></div></div>';
+            convtable += '<div class="maskfield typefield typefieldlist_'+m+'"><div class="masksubfield">'+f+'</div><div class="masksubfield colhead"><select class=" fieldtype_'+m+' fieldconv_'+f+' fieldselect" id="fieldconversion_'+f+'">'+fieldselect_ops+'</select></div></div>';
         }
 
-        convtable += '<div class="maskfield typefield typefieldlist_'+m+'"><div class="masksubfield">Geometria</div><div class="masksubfield colhead"><select id="fieldconversion_geo">'+fieldselect_ops+'</select></div></div>';
+        convtable += '<div class="maskfield typefield typefieldlist_'+m+'"><div class="masksubfield">Geometria</div><div class="masksubfield colhead"><select class="fieldtype_'+m+' fieldconv_geometry fieldselect" id="fieldconversion_geometry">'+fieldselect_ops+'</select></div></div>';
 
     }
     typeselect += '</select></div>';
 
 
-    convtable += '</div>' +
-            '<input type="button" id="newconn_save" value="Crea">';
+    convtable +=             '<input type="button" id="newconn_save" value="Crea"></div>';
 
 
 
     if (cc_id == 'new')
     {
 
-        renderConnSummary("#proxy_addconn");
+        $("#proxy_addconn").append(xlatemask);
+        renderConnSummary("#editxlate_new");
+        $("#editxlate_new").append(typeselect);
+        $("#editxlate_new").append(convtable);
 
-        $("#proxy_addconn").append(typeselect);
-        $("#proxy_addconn").append(convtable);
 
 
         $("select#objtype").unbind();
         $("select#objtype").change(filterConversionFields);
         $("select#objtype").trigger("change");
+        $("select.fieldselect").unbind();
+        $("select.fieldselect").change(checkConversions);
         $("#newconn_save").unbind();
         $("#newconn_save").click(saveNewConnection);
     }
@@ -269,23 +375,112 @@ function editTranslation(ffields)
 
 }
 
+function checkConversions()
+{
+
+    var in_use = new Array();
+    var has_dupes = false;
+    var has_geom = false;
+
+    var filter =  $("select#objtype").val();
+    var prefix_objtype = "fieldtype_";
+
+    var prefix_selectitem = "fieldconversion_";
+
+    // checking only conversions for the selected type
+    $("select."+prefix_objtype+filter).each(
+            function (i)
+            {
+
+                var currentto = $(this).attr('id').substr(prefix_selectitem.length);
+                var currentfrom = $(this).val();
+                if (currentfrom != "")
+                {
+                    if (in_use.indexOf(currentfrom) == -1)
+                    {
+                        in_use.push(currentfrom);
+                    }
+                    else
+                    {
+                        has_dupes = true;
+                    }
+
+                    if (currentto == 'geometry')
+                    {
+                        has_geom = true;
+                    }
+                }
+
+            }
+
+    );
+
+    if (has_dupes || (in_use.length == 0) || !has_geom)
+    {
+        $("#newconn_save").prop('disabled', true);
+    }
+    else
+    {
+        $("#newconn_save").prop('disabled', false);
+
+    }
+
+}
+
+
 function saveNewConnection ()
 {
 
     var conversion = {};
+
+    // Getting the value of the main select (i.e. type of object)
     var filter =  $("select#objtype").val();
 
-    $("select.fieldtype_"+filter).each(
+    var prefix_destfield = "fieldconversion_";
+    var prefix_objtype = "fieldtype_";
+
+    $("select."+prefix_objtype+filter).each(
             function (i)
             {
                 if ($(this).val()!="")
                 {
-                    alert($(this).attr('class'));
-                }
 
+                    var convfrom = $(this).val();
+                    var convto = $(this).attr("id").substr(prefix_destfield.length);
+
+                    conversion[convfrom] = [filter, convto];
+
+                    //alert(convfrom+": "+filter+"."+convto);
+                }
             }
     );
 
+    //alert(JSON.stringify(currentconn));
+    //alert(JSON.stringify(conversion));
+
+    jsondata = {'connection': currentconn, 'conversion': conversion}
+    //alert(JSON.stringify(jsondata));
+
+    var urlstring = "/fwp/registerquery/"+proxy_id+"/"+meta_id+"/";
+    var container = "#proxy_addconn";
+
+    $.ajax ({
+        url: urlstring,
+        data:   {jsonmessage: JSON.stringify(jsondata)},
+        async: true,
+        type: 'POST',
+        success: function(data) {
+            //alert ("SUCCESS");
+            postFeedbackMessage(data['success'], data['report'], container);
+            //TODO: add page reload, the function will be very quick anyway since it only works locally
+        },
+        error: function (data)
+        {
+            //alert ("FAIL");
+            postFeedbackMessage(false, "ERROR: "+JSON.stringify(data), container);
+
+        }
+    });
 
 
 
@@ -309,6 +504,7 @@ function filterConversionFields()
 
     $(".typefield").hide();
     $(".typefieldlist_"+ctype).show();
+    checkConversions();
 
 }
 

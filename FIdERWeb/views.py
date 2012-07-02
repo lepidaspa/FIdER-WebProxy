@@ -94,10 +94,18 @@ def metapage (request, **kwargs):
 
 	proxytype = learnProxyType(manifest)
 
-	#TODO: make conditional on proxy being NOT query and add alternative for query
-	proxymaps = []
-	for mapfile in os.listdir(os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)):
-		proxymaps.append(mapfile)
+
+	if proxytype != 'query':
+		metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)
+		#TODO: make conditional on proxy being NOT query and add alternative for query
+		proxymaps = []
+		for mapfile in os.listdir(metadir):
+			proxymaps.append(mapfile)
+	else:
+		metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_mirror, meta_id)
+		proxymaps = {}
+		for mapfile in os.listdir(metadir):
+			proxymaps[mapfile] = json.load(open(os.path.join(metadir, mapfile)))
 
 	kwargs = {'proxy_id': proxy_id, 'proxy_name': manifest['name'], 'manifest': SafeString(json.dumps(manifest)), 'meta_id': meta_id, 'proxy_type': proxytype, 'maps': SafeString(json.dumps(proxymaps))}
 
@@ -106,6 +114,8 @@ def metapage (request, **kwargs):
 	else:
 		template = 'fwp_querypage.html'
 		kwargs['models'] = SafeString(json.dumps(getModels()))
+
+	print proxymaps
 
 	return render_to_response (template, kwargs, context_instance=RequestContext(request))
 
@@ -695,3 +705,40 @@ def probePostGIS (request):
 	return HttpResponse(json.dumps(response_probe), mimetype="application/json")
 
 
+@csrf_exempt
+def registerquery (request, **kwargs):
+	"""
+	saves info for a specific query on disc, with the connection string in the mirror directory and the conversion table in the mappings directory
+	:param request:
+	:return: json with success/fail and report
+	"""
+
+	print request.POST
+	#print kwargs
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+
+	print "Working on",proxy_id, meta_id
+
+	jsondata = json.loads(request.POST['jsonmessage'])
+
+	print "JSONDATA: "+str(jsondata)
+
+	conn = jsondata['connection']
+	convert = jsondata['conversion']
+	cid = jsondata['connection']['name']
+
+	response_register = {
+		'success': False,
+		'report': 'null'
+	}
+
+	try:
+		proxy_query.registerQuery (proxy_id, meta_id, cid, conn, convert)
+		response_register['success'] = True
+		response_register['report'] = "Connessione a db aggiunta con successo."
+	except Exception as ex:
+		response_register['report'] = "ERRORE: %s" % ex
+
+	return HttpResponse(json.dumps(response_register), mimetype="application/json")

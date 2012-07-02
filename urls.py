@@ -22,51 +22,29 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 
-	# urls for active operations, proxy-side
-	url(r'^proxy/setup', wpviews.softproxy_create_manifest),
-	url(r'^proxy/create', wpviews.softproxy_create_make),
-	url(r'^proxy/conversion', wpviews.softproxy_conversion_setup),
-	url(r'^proxy/shapetable/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', wpviews.component_shapefile_table),
-	url(r'^proxy/refresh/(?P<proxy_id>\w*)', wpviews.hardproxy_refresh),
-	url(r'^proxy/debug', wpviews.showfeatures),
-	url(r'^proxy/maketable/', wpviews.proxy_create_conversion),
-	url(r'^proxy/upload/', wpviews.proxy_uploadmap),
-	url(r'^proxy/vis/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', wpviews.proxy_visual),
-	url(r'^proxy/maps/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', wpviews.proxy_loadmap),
-	url(r'^proxy/vis/', wpviews.proxy_visual),
-
 	# urls for "passive" operations, called by the main server
 	url(r'^data/(?P<proxy_id>\w*)/', wpviews.proxy_read_full),
 
-	url(r'^proxy/$', wpviews.proxy_features),
-
-
-
-	url(r'^fwp/$', fwpviews.proxysel),
-	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
-	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
+	#urls for self-ops, called by the proxy
+	url(r'^fwp/maketable/', fwpviews.proxy_create_conversion),
 	url(r'^fwp/maps/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.proxy_loadmap),
 	url(r'^fwp/conversion/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.component_shapefile_table),
-	url(r'^fwp/maketable/', fwpviews.proxy_create_conversion),
 	url(r'^fwp/upload/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_uploadmap),
 	url(r'^fwp/upload/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.proxy_uploadmap),
-
-
 	url(r'^fwp/download/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_uploadwfs),
 	url(r'^fwp/download/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.proxy_uploadwfs),
-
-
-
 	url(r'^fwp/rebuild/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_rebuildmap),
 	url(r'^fwp/rebuild/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/', fwpviews.proxy_rebuildmeta),
-
-
 	url(r'^fwp/control/', fwpviews.proxy_controller),
 	url(r'^fwp/proxylist/', fwpviews.proxy_get_all),
 	url(r'^fwp/create/', fwpviews.proxy_create_new),
 	url(r'^fwp/newqueryconn/', fwpviews.probePostGIS),
+	url(r'^fwp/registerquery/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.registerquery),
 
-
+	#urls for active operations, called by the clients
+	url(r'^fwp/$', fwpviews.proxysel),
+	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
+	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
 )
 
 

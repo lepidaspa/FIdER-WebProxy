@@ -104,6 +104,7 @@
     margin-top:         8px;
     padding-top:        4px;
     clear:              both;
+    width:              100%;
 }
 
 .maskfield
@@ -120,4 +121,23 @@
 .colhead
 {
     font-weight:        bold;
+}
+
+
+#editxlate_new
+{
+    width:              100%;
+
+}
+
+.connsummary
+{
+    left:               auto;
+    right:              auto;
+}
+
+#select_objtype
+{
+    left:               auto;
+    right:              auto;
 }

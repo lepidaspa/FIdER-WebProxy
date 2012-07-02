@@ -532,7 +532,7 @@ function rebuildShapeData (shape_id)
 function renderRemoverMask()
 {
     var prefix = "btn_remove_";
-    var i = parseInt(this.id.substr(prefix.length));
+    var i = this.id.substr(prefix.length);
 
     closeAllMasks();
 
