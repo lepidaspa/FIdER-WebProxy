@@ -2,14 +2,13 @@ from django.conf.urls.defaults import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
-from FIdERWP import views as wpviews
 from FIdERWeb import views as fwpviews
 import settings
 
 admin.autodiscover()
 
-handler404 = 'wpviews.error404test'
-handler500 = 'wpviews.error500test'
+handler404 = 'fwpviews.error404test'
+handler500 = 'fwpviews.error500test'
 
 urlpatterns = patterns('',
     # Examples:
@@ -23,7 +22,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
 	# urls for "passive" operations, called by the main server
-	url(r'^data/(?P<proxy_id>\w*)/', wpviews.proxy_read_full),
+	url(r'^data/(?P<proxy_id>\w*)/', fwpviews.proxy_read_full),
 
 	#urls for self-ops, called by the proxy
 	url(r'^fwp/maketable/', fwpviews.proxy_create_conversion),

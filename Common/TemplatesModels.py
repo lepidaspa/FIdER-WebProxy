@@ -89,8 +89,9 @@ model_request_query = {
 		"BB": list,
 		"inventory": dict,
 		"time": unicode,
-		"signed": bool
 	},
+	"maxitems": int,
+	"offset": int
 }
 
 

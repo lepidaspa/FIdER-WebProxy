@@ -22,7 +22,6 @@ from zipfile import ZipFile
 from FIdERProxyFS import proxy_core, ProxyFS, proxy_web, proxy_query
 import FIdERProxyFS.proxy_config_core as proxyconf
 from FIdERProxyFS.proxy_core import readSingleShape
-from FIdERWP.views import saveMapFile
 from FIdERWeb import MessageTemplates, Components
 from MarconiLabsTools import ArDiVa
 
@@ -352,24 +351,6 @@ def proxy_uploadwfs (request, **kwargs):
 
 	uploadpath = os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip")
 
-	#jsondata = json.dumps(collection)
-	#print jsondata
-
-	"""
-	print "Creating temp file to house "
-	transitfile = tempfile.TemporaryFile(mode="w+")
-	print "Dumping json to transitfile"
-	json.dump(collection, transitfile)
-
-	print "Adding temp data to zip file"
-
-	with ZipFile(uploadpath, 'w') as datazip:
-		print "Opened %s" % datazip
-		datazip.write(transitfile, shape_id+".geojson")
-
-	transitfile.close()
-	"""
-
 	print "Ready to zip WFS data"
 
 	with ZipFile(uploadpath, 'w') as datazip:
@@ -381,8 +362,20 @@ def proxy_uploadwfs (request, **kwargs):
 		ProxyFS.handleFileEvent (os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
 		response_upload = {
 			'success': True,
-			'report': 'Mappa %s aggiornata.' % shape_id
+			'report': 'Mappa %s aggiornata. ' % shape_id
 		}
+
+		# adding the wfs resource to the list of remote resources IF it worked
+
+		try:
+			fp_wfsres = open(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id, shape_id+".wfs"))
+			json.dump(connect, fp_wfsres)
+			fp_wfsres.close()
+			response_upload['report'] += "Configurato l'aggiornamento automatico."
+		except:
+			response_upload['report'] += "Non è stato possibile configurare l'aggiornamento automatico."
+
+
 	except Exception, ex:
 		response_upload = {
 			'success': False,
@@ -742,3 +735,98 @@ def registerquery (request, **kwargs):
 		response_register['report'] = "ERRORE: %s" % ex
 
 	return HttpResponse(json.dumps(response_register), mimetype="application/json")
+
+
+def saveMapFile (uploaded, proxy_id, meta_id, shape_id=None):
+	"""
+	Takes an uploaded file (usually InMemoryUploadedFile) and saves it to the proxy/meta/shape destination, if needed after normalising the names inside
+	:param uploaded:
+	:param proxy_id:
+	:param meta_id:
+	:param shape_id:
+	:return:
+	"""
+
+	print "Uploading file %s, size %s " % (uploaded.name, uploaded.size)
+	#print "Data: %s " % (str(uploaded.read()))
+
+	isvalid = proxy_core.verifyShapeArchiveStructure(uploaded)
+	if not isvalid:
+		return False, "Struttura dell'archivio non valida"
+
+	if shape_id is None:
+		shape_id = uploaded.name[:-4]
+		if os.path.exists(os.path.join(conf.baseuploadpath, proxy_id, meta_id, uploaded.name)):
+			os.remove(os.path.join(conf.baseuploadpath, proxy_id, meta_id, uploaded.name))
+		fs = FileSystemStorage(location=os.path.join(conf.baseuploadpath))
+		savepath = fs.save(os.path.join(proxy_id, meta_id, shape_id+".zip"), File(uploaded))
+		return True, savepath
+	else:
+		try:
+			if os.path.exists(os.path.join(conf.baseuploadpath, proxy_id, meta_id, shape_id+".zip")):
+				os.remove(os.path.join(conf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
+
+			zipfrom = zipfile.ZipFile(uploaded)
+			zipdata = zipfrom.infolist()
+			try:
+				zipto = zipfile.ZipFile(os.path.join(conf.baseuploadpath,proxy_id, meta_id, shape_id+".zip"), 'w', zipfile.ZIP_DEFLATED)
+			except:
+				zipto = zipfile.ZipFile(os.path.join(conf.baseuploadpath,proxy_id, meta_id, shape_id+".zip"), 'w', zipfile.ZIP_STORED)
+			for element in zipdata:
+				filename = element.filename.replace(element.filename.split(".")[0], shape_id)
+				zipto.writestr(filename, zipfrom.read(element))
+			zipto.close()
+			return True, shape_id
+
+		except Exception as ex:
+			#print ex.message
+			return False, "Eccezione: %s" % ex
+
+
+
+
+
+
+
+
+def set_access_control_headers(response):
+	response['Access-Control-Allow-Origin'] = '*'
+	response['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
+	response['Access-Control-Max-Age'] = 1000
+	response['Access-Control-Allow-Headers'] = '*'
+
+class HttpOptionsDecorator(object):
+	def __init__(self, f):
+		self.f = f
+
+	def __call__(self, *args, **kwargs):
+		#logging.info("Call decorator")
+		request = args[0]
+		if request.method == "OPTIONS":
+			response = HttpResponse()
+			set_access_control_headers(response)
+			return response
+		else:
+			response = self.f(*args, **kwargs)
+			set_access_control_headers(response)
+			return response
+
+
+@HttpOptionsDecorator
+def proxy_read_full (request, **kwargs):
+	"""
+	returns all the data for a specific proxy
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	read_result = {}
+
+	proxy_id = kwargs['proxy_id']
+
+	print "DJANGO: performing full read of proxy %s " % proxy_id
+
+	read_result = proxy_core.handleReadFull(proxy_id)
+
+	return HttpResponse(read_result, mimetype="application/json")

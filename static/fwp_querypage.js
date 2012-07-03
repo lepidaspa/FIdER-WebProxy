@@ -79,8 +79,7 @@ function registerModels(req_models)
 
 function renderQueries()
 {
-    //TODO: placeholder, implements
-    // creates the infograph and launches the card rendering
+    // creates the infograph? and launches the card rendering
 
     //alert(JSON.stringify(queries));
 

@@ -21,7 +21,7 @@ from Common.errors import *
 import proxy_config_core as conf
 import proxy_lock
 
-from FIdERWP.Components import sendMessageToServer
+from Common.Components import sendMessageToServer
 
 """
 This module is called when a change happens in the filesystem (specifically in the upload directory, but the proxy checks anyway in case the fs monitor cannot filter before informing the proxy)
