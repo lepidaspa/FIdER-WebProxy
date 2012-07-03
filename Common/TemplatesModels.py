@@ -87,7 +87,7 @@ model_request_query = {
 	"message_format": [u'query',],
 	"query" : {
 		"BB": list,
-		"inventory": dict,
+		"inventory": list,
 		"time": unicode,
 	},
 	"maxitems": int,
