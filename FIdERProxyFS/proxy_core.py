@@ -72,7 +72,8 @@ def createSoftProxy (proxy_id, manifest):
 	for cmeta in manifest['metadata']:
 		meta_id = cmeta['name']
 
-		os.makedirs (os.path.join(basepath, "conf", "mappings", meta_id))
+		os.makedirs (os.path.join(basepath, conf.path_mappings, meta_id))
+		os.makedirs (os.path.join(basepath, conf.path_remoteres, meta_id))
 		os.makedirs (os.path.join(uploadpath, meta_id))
 		os.makedirs (os.path.join(basepath, conf.path_geojson, meta_id))
 		os.makedirs (os.path.join(basepath, conf.path_mirror, meta_id))
@@ -473,10 +474,6 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	print "Main item:",path_shape
 
 
-	"""
-	if basepath.endswith(conf.path_mirror):
-		basepath = basepath[:len(conf.path_mirror)]
-	"""
 	basepath = basepath.partition(conf.path_mirror)[0]
 
 	if basepath.endswith("/"):
