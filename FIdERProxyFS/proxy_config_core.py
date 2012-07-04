@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
-
 def loadConfFile(filepath):
+	print "Loading %s" % filepath
 	confdata = {}
 	fp = open(filepath)
 	for line in fp:
-		key, value = line.strip().split("=",1)
 		try:
 			if line[0] != "#":
+				key, value = line.strip().split("=",1)
 				confdata[key]=value
 		except:
 			pass
@@ -24,9 +25,17 @@ def loadConfFile(filepath):
 #TODO: REPLACE WITH ACTUAL CONFIG DATA
 import config_testing
 
+if __name__ == "__main__":
+	relpath = "."
+else:
+	relpath = os.path.dirname(__file__)
+
+print relpath
+
 #TODO: make conf file more complete and place it out (problems with Django?)
 #conf_core = loadConfFile(os.path.join("..","proxy_core.conf"))
-conf_core = loadConfFile("proxy_core.conf")
+print "Loading config from %s" % relpath
+conf_core = loadConfFile(os.path.join(relpath, "proxy_core.conf"))
 
 
 
