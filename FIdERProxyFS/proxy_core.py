@@ -554,7 +554,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 				geom.AssignSpatialReference(tSRS)
 				#print "Feature %s geometry to   %s" % (feature, geom)
 			except Exception as ex:
-				print "Transformation error on %s %s: %s" % (f, feature ,ex)
+				print "Transformation error on %s: %s" % (feature ,ex)
 				#print "Error on feature %s geometry %s: %s " % (feature, f, geom)
 
 

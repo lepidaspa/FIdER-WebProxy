@@ -17,6 +17,8 @@ import proxy_config_core as proxyconf
 
 
 
+
+
 def getReverseConversion (proxy_id, meta_id, map_id):
 	"""
 	Gets the fields conversion table, but with the values (our model) in place of the keys (external model)
@@ -44,6 +46,19 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 	:return:
 	"""
 
+
+	import psycopg2.extensions
+	DEC2FLOAT = psycopg2.extensions.new_type(
+		psycopg2._psycopg.DECIMAL.values, # oids for the decimal type
+		'DEC2FLOAT', # the new typecaster name
+		psycopg2.extensions.FLOAT) # the typecaster creating floats
+
+	# register the typecaster globally
+	psycopg2.extensions.register_type(DEC2FLOAT)
+
+
+	proj_WGS84 = 4326
+
 	jsonmessage = json.loads(jsonmessage)
 
 	messagemodel = ArDiVa.Model(Common.TemplatesModels.model_request_query)
@@ -60,11 +75,18 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 	for querybit in jsonmessage['query']['inventory']:
 		columns.append(querybit['column'])
 
+
+
 	revtable = getReverseConversion(proxy_id, meta_id, map_id)
 
 	# if a column is missing, we return an empty list without checking the DB
 	if not all (map(revtable.has_key, columns)):
-		return []
+		collection = {
+			"id" : map_id,
+			"type": "FeatureCollection",
+			"features" : [],
+			}
+		return json.dumps(collection)
 
 	convtable = {}
 	for key in revtable.keys():
@@ -72,8 +94,9 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	# now we can proceed with the actual query process
 
-
-	conn_data = json.load(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id))
+	fp_conndata = open(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id))
+	conn_data = json.load(fp_conndata)
+	fp_conndata.close()
 	connstring = makeConnectString(conn_data['connection'])
 
 	try:
@@ -98,13 +121,20 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 	for querybit in jsonmessage['query']['inventory']:
 
 		newbit = sep + " %s " + operators[querybit['operator']]
-		wherestring += cur.mogrify(newbit, (querybit['column'], querybit['params']))
+		wherestring += newbit % (revtable[querybit['column']], querybit['params'])
 
 		sep = " AND "
 
-	#TODO: add bounding box  check
+	if len(jsonmessage['query']['BB']) > 0:
 
-	wherestring += ";"
+		#TODO: verify if we prefer to also have items that CROSS the bounding box or if we only what what is COMPLETELY inside (current)
+
+		bb = jsonmessage['query']['BB']
+
+		newbit = sep + " transform("+revtable['geometry'] +", "+str(proj_WGS84)+") @ ST_SetSRID(ST_MakeBox2D(ST_Point(%s, %s), ST_Point(%s , %s)), "+str(proj_WGS84)+")"
+		wherestring += cur.mogrify(newbit, (bb[0], bb[1], bb[2], bb[3]))
+
+
 	print wherestring
 
 	view_id = conn_data['query']['view']
@@ -112,27 +142,85 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 	if schema_id != "" and schema_id is not None:
 		schema_id += "."
 
+
+	fields = []
 	selectcols = ""
 	sep = ""
-	for colname in columns:
-		selectcols += sep + colname + " AS " + convtable[colname]
+	for colname in convtable:
+
+		alias = convtable[colname]
+		fields.append(alias)
+		if convtable[colname] == "geometry":
+			colname = "ST_AsGeoJSON(transform("+colname+", 4326))"
+
+		selectcols += sep + colname + " AS " + alias
 		sep = ", "
 
-	querystring = 'SELECT '+selectcols+' FROM '+schema_id+view_id + ' WHERE ' + wherestring
+	if selectcols == "":
+		selectcols = " * "
 
-	print "SELECT REQUESTED: " + querystring
+	if wherestring != "":
+		wherestring = " WHERE "+wherestring
+
+	limitstring = " LIMIT %s" % jsonmessage['maxitems']
+	offsetstring = " OFFSET %s" % jsonmessage['offset']
+
+	querystring = 'SELECT '+selectcols+' FROM '+schema_id+view_id + wherestring + limitstring + offsetstring + ";"
+
+	print "REQUESTED SELECT: " + querystring
 
 	cur.execute(querystring)
 
-	cur.scroll(jsonmessage['offset'])
+	#cur.scroll(jsonmessage['offset'])
 
-	fields = cur.fetchmany(jsonmessage['maxitems'])
+	results = cur.fetchall()
 
 	cur.close()
 	conn.close()
 
-	return fields
 
+	# now we change the fields into a JSON structure
+	#print results
+	#print fields
+
+
+	#print "RESULTS RAW"
+	#print results
+
+	#print "RESULTING GEOJSON"
+
+	collection = {
+		"id" : map_id,
+		"type": "FeatureCollection",
+		"features" : [],
+		}
+
+
+
+	for row in results:
+
+		data = {}
+
+		data['type'] = "Feature"
+		data['geometry'] = json.loads(row[fields.index('geometry')])
+
+		properties = {}
+
+		for field in fields:
+			if field != 'geometry':
+				properties[field] = row[fields.index(field)]
+
+		data['properties'] = properties
+
+		collection['features'].append(data)
+
+
+
+	#print json.dumps(collection)
+
+
+
+	return json.dumps(collection)
 
 
 

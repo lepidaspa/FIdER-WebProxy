@@ -830,3 +830,21 @@ def proxy_read_full (request, **kwargs):
 	read_result = proxy_core.handleReadFull(proxy_id)
 
 	return HttpResponse(read_result, mimetype="application/json")
+
+def proxy_perform_query (request, **kwargs):
+	"""
+	Performs an sql query on proxy, meta, map as per kwargs with the JSON message in request.POST
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	querydata = request.POST['remotequery']
+
+	geojson = proxy_query.makeSelectFromJson(proxy_id, meta_id, map_id, querydata)
+
+	return HttpResponse(geojson, mimetype="application/json")
