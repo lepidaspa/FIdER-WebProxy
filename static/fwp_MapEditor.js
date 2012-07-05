@@ -103,6 +103,9 @@ function loadMainMap()
 
 
         coredata = jsondata;
+
+
+
         //alert ("Loaded map "+map_id+"\n"+JSON.stringify(coredata));
         renderMiniMap('minimap');
         renderMainMap('mapview');
@@ -175,6 +178,9 @@ function loadShadowLayer (map_id)
 function renderMainMap (widgetid)
 {
 
+    var maptype = coredata['features'][0]['geometry']['type'];
+    //alert("Map type: "+maptype);
+
     mapview = new OpenLayers.Map('mapview', {controls: []});
     mapview.projection = proj_WGS84;
     mapview.displayProjection = new OpenLayers.Projection(proj_WGS84);
@@ -228,10 +234,24 @@ function renderMainMap (widgetid)
     panel = new OpenLayers.Control.Panel({
         displayClass: "olControlEditingToolbar"
     });
-    drawcontrol = new OpenLayers.Control.DrawFeature(
-            vislayer, OpenLayers.Handler.Polygon,
-            {displayClass: "olControlDrawFeaturePoint", title: "Draw Features", handlerOptions: {holeModifier: "altKey"}}
-    );
+
+    if (maptype == "Point")
+    {
+        drawcontrol = new OpenLayers.Control.DrawFeature(
+                vislayer, OpenLayers.Handler.Point,
+                {displayClass: "olControlDrawFeaturePoint", title: "Draw Features", handlerOptions: {holeModifier: "altKey"}}
+        );
+    }
+    else
+    {
+        drawcontrol = new OpenLayers.Control.DrawFeature(
+                vislayer, OpenLayers.Handler.Path,
+                {displayClass: "olControlDrawFeaturePoint", title: "Draw Features", handlerOptions: {holeModifier: "altKey"}}
+        );
+    }
+
+
+
     editcontrol = new OpenLayers.Control.ModifyFeature(
             vislayer, {displayClass: "olControlModifyFeature", title: "Modify Features"}
     );

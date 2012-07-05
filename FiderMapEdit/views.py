@@ -38,7 +38,30 @@ def mapeditor (request, **kwargs):
 
 	#TODO: add map type detection
 
+	# check if the map has a mapping file
+	"""
 
+	convtablepath = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mappings, meta_id, shape_id)
+	try:
+		if os.path.exists(convtablepath):
+			fp_conv = open(convtablepath)
+			convtable = json.load(fp_conv)
+			fp_conv.close()
+
+
+	except:
+		# check on the actual map file
+		pass
+
+
+	datapath = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id, shape_id)
+	fp_data = open(datapath)
+	data = json.load(fp_data)
+	fp_data.close()
+
+	heuristic = data['features'][0]['geometry']['type']
+
+	"""
 
 
 	print proxymaps
