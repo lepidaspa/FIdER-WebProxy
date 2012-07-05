@@ -4,11 +4,11 @@
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
 
 import json
-import tempfile
 import traceback
 import urllib2
 import os
 import sys
+from zipfile import ZipFile
 
 
 from django.http import HttpResponse
@@ -17,7 +17,6 @@ from django.template.context import RequestContext
 from django.utils.safestring import SafeString
 from django.views.decorators.csrf import csrf_exempt
 from osgeo import ogr
-from zipfile import ZipFile
 
 from FIdERProxyFS import proxy_core, ProxyFS, proxy_web, proxy_query
 import FIdERProxyFS.proxy_config_core as proxyconf
@@ -114,7 +113,7 @@ def metapage (request, **kwargs):
 		template = 'fwp_querypage.html'
 		kwargs['models'] = SafeString(json.dumps(getModels()))
 
-	print proxymaps
+	#print "MAP DATA:\n",proxymaps,"\n***************************************************"
 
 	return render_to_response (template, kwargs, context_instance=RequestContext(request))
 

@@ -58,7 +58,6 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
 
     //alert(JSON.stringify(manifest['metadata']));
 
-    //TODO: import theme to local and replace this after DEMO (or before?)
     OpenLayers.ImgPath = "/static/OpenLayers/themes/dark/";
 
     minimap = new OpenLayers.Map('minimap', {controls: []});

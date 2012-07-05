@@ -3,6 +3,7 @@ from django.conf.urls.defaults import patterns, include, url
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 from FIdERWeb import views as fwpviews
+from FiderMapEdit import views as editviews
 import settings
 
 admin.autodiscover()
@@ -42,9 +43,12 @@ urlpatterns = patterns('',
 	url(r'^fwp/registerquery/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.registerquery),
 
 	#urls for active operations, called by the clients
-	url(r'^fwp/$', fwpviews.proxysel),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
+	url(r'^fwp/edit/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', editviews.mapeditor),
+	url(r'^fwp/$', fwpviews.proxysel),
+
+
 )
 
 

@@ -1,0 +1,52 @@
+{% extends "fwpcore.html" %}
+
+{% block title %}
+Analisi e modifica delle mappe
+{% endblock %}
+
+{% block headers %}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_MapEditor.css">
+    <script language="JavaScript" src="{{ STATIC_URL }}fwp_MapEditor.js"></script>
+{% endblock %}
+
+
+
+{% block navigation %}
+
+    {# TODO: put the buttons for help and screen conf here #}
+    <div id="mapsummary">
+        {{ proxy_name }}: {{ meta_id }}: {{ shape_id }}
+    </div>
+
+    <div id="minimap" class="cornermap"></div>
+    <div id="loadingstate" class="statemess">Caricamento mappe</div>
+
+    <div id="mapcontrol">
+        <label for="sel_setshadow">Riferimento:</label> <select id="sel_setshadow">
+            <option value=""></option>
+            {% for map in maps %}
+                {% if map != shape_id %}
+                    <option value="{{ map }}">{{ map }}</option>
+                {%  endif %}
+            {% endfor %}
+        </select>
+    </div>
+
+
+{% endblock %}
+
+{% block functionality %}
+
+    <div id="mapview"></div>
+
+{% endblock %}
+
+{% block starterscript %}
+    <script>
+        pageInit('{{ proxy_id }}', '{{ meta_id }}', '{{ shape_id }}', {{ mapsjson }});
+    </script>
+{% endblock %}
+
+{% block contextguide %}
+
+{%  endblock %}
