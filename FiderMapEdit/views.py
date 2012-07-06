@@ -3,6 +3,8 @@
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
 from django.utils.safestring import SafeString
+import urllib2
+from FIdERProxyFS import proxy_core
 from FIdERWeb.views import getProxyManifest
 
 
@@ -28,7 +30,6 @@ def mapeditor (request, **kwargs):
 
 	manifest = getProxyManifest(proxy_id)
 
-
 	print "Launching map editor for map %s/%s/%s" % (proxy_id, meta_id, shape_id)
 
 	metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)
@@ -36,34 +37,24 @@ def mapeditor (request, **kwargs):
 	for mapfile in os.listdir(metadir):
 		proxymaps.append(mapfile)
 
-	#TODO: add map type detection
-
-	# check if the map has a mapping file
-	"""
-
-	convtablepath = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mappings, meta_id, shape_id)
-	try:
-		if os.path.exists(convtablepath):
-			fp_conv = open(convtablepath)
-			convtable = json.load(fp_conv)
-			fp_conv.close()
-
-
-	except:
-		# check on the actual map file
-		pass
-
-
-	datapath = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id, shape_id)
-	fp_data = open(datapath)
-	data = json.load(fp_data)
-	fp_data.close()
-
-	heuristic = data['features'][0]['geometry']['type']
-
-	"""
-
-
 	print proxymaps
 
-	return render_to_response ('fwp_MapEditor.html', {'proxy_id': proxy_id, 'meta_id': meta_id, 'shape_id': shape_id, 'maps': proxymaps, 'mapsjson': SafeString(json.dumps(proxymaps)), 'proxy_name': manifest['name'] }, context_instance=RequestContext(request))
+	try:
+		jsonresponse = urllib2.urlopen(proxyconf.URL_CONVERSIONS)
+		convtable = json.load(jsonresponse)
+		print "Received conversion table from server: %s" % convtable
+
+	except Exception as ex:
+		if isinstance(ex, urllib2.HTTPError):
+			errormess = ex.code
+		elif isinstance(ex, urllib2.URLError):
+			errormess = ex.reason
+		else:
+			errormess = ex.message
+		print "Error when requesting conversion table from %s: %s" % (proxyconf.URL_CONVERSIONS, errormess)
+
+		#TODO: check how to go forward if we cannot access the conversion table. Technically we could edit what properties we have on each geo object, but it is far from optimal
+		raise
+
+
+	return render_to_response ('fwp_MapEditor.html', {'proxy_id': proxy_id, 'meta_id': meta_id, 'shape_id': shape_id, 'maps': proxymaps, 'mapsjson': SafeString(json.dumps(proxymaps)), 'proxy_name': manifest['name'], 'objmodel': SafeString(json.dumps(convtable)) }, context_instance=RequestContext(request))

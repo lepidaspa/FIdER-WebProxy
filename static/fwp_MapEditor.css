@@ -34,3 +34,58 @@
 .olControlEditingToolbar .olControlModifyFeatureItemActive {
     background-position: -1px -24px;
 }
+
+
+
+.featurecard
+{
+    display:        table;
+    word-wrap:      break-word;
+    /*word-break:     break-all; */
+    width:              100%;
+    max-width:          100%;
+    border:             1px solid #ff8800;
+    margin-bottom:      8px;
+}
+
+.featureactions
+{
+    float:          right;
+    /*margin:         4px; */
+    padding-right:   4px;
+    padding-top:     4px;
+}
+
+.mapcontrol
+{
+    width:          100%;
+}
+
+table#feature_props
+{
+    width:              100%;
+    clear:              both;
+    left:               0;
+    right:              0;
+
+    background-color:   #ff8800;
+    color:              #ffffff;
+
+}
+
+#feature_desc
+{
+    padding:            4px;
+
+}
+
+table#feature_props *
+{
+    vertical-align: middle;
+}
+
+#featuremask
+{
+    background-color:   #ff8800;
+    color:              #ffffff;
+}

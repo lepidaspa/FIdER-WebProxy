@@ -32,6 +32,10 @@ Analisi e modifica delle mappe
         </select>
     </div>
 
+    <div id="currentfeature">
+
+    </div>
+
 
 {% endblock %}
 
@@ -43,7 +47,7 @@ Analisi e modifica delle mappe
 
 {% block starterscript %}
     <script>
-        pageInit('{{ proxy_id }}', '{{ meta_id }}', '{{ shape_id }}', {{ mapsjson }});
+        pageInit('{{ proxy_id }}', '{{ meta_id }}', '{{ shape_id }}', {{ mapsjson }}, {{ objmodel }});
     </script>
 {% endblock %}
 

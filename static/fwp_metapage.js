@@ -604,8 +604,6 @@ function renderTranslationMask ()
     }).done(function (jsondata) {
 
                 tables = jsondata;
-
-
      });
 
     //alert(JSON.stringify(tables));

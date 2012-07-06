@@ -635,19 +635,6 @@ def getConversionTable (proxy_id, meta_id, shape_id):
 			raise ConversionTableAccessException ("Error while accessing conversion table for %s.%s.%s: %s" % (proxy_id, meta_id, shape_id, ex.message))
 
 
-def createConversionTable (conversiontable, proxy_id, meta_id, shape_id=None):
-	"""
-	Dumps a conversion table to the location required. If shape_id is none, we save to ALL shapes in the meta. Does not check if the table already exists
-	:param conversiontable:
-	:param proxy_id:
-	:param meta_id:
-	:param shape_id:
-	:return:
-	"""
-
-	#placeholder, it's done through a Django view
-
-	pass
 
 def adaptGeoJson (jsondata, conversiontable=None):
 	"""
