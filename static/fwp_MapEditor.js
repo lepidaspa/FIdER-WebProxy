@@ -53,6 +53,21 @@ var datamodel;
 // TODO: replace with final naming
 var modelref = { 'Point': 'Well', 'LineString': 'Duct', 'MultiLineString' : 'Duct'};
 
+var newfeature_prefix = "PIPERGIS_new_";
+var newfeature_id = 0;
+
+
+
+/*
+The changelist shows ALL changes to the map in sequence. It does not combine changes, so it can be used as an undo list to work back step by step.
+The changesource shows the state of the modified elements at load time, so we can check quickly if a modification has been undone (such as new features being deleted, attributes being corrected) and do a faster compare with the main server
+ */
+var changesource = {};
+var changelist = new Array();
+
+var prechange = {};
+
+
 function pageInit (req_proxy, req_meta, req_map, req_maplist, req_model)
 {
 /*
@@ -256,25 +271,35 @@ function renderMainMap (widgetid)
     {
         drawcontrol = new OpenLayers.Control.DrawFeature(
                 vislayer, OpenLayers.Handler.Point,
-                {displayClass: "olControlDrawFeaturePoint", title: "Draw Features", handlerOptions: {holeModifier: "altKey"}}
+                {
+                    displayClass: "olControlDrawFeaturePoint",
+                    title: "Draw Features",
+                    handlerOptions:
+                    {
+                        holeModifier: "altKey"
+                    },
+                    featureAdded: (setNewFid)
+                }
         );
     }
     else
     {
-        drawcontrol = new OpenLayers.Control.DrawFeature(
+        drawcontrol = new OpenLayers.Control.DrawFeature
+            (
                 vislayer, OpenLayers.Handler.Path,
-                {displayClass: "olControlDrawFeaturePoint", title: "Draw Features", handlerOptions: {holeModifier: "altKey"}}
-        );
+                {
+                    displayClass: "olControlDrawFeaturePoint",
+                    title: "Draw Features",
+                    handlerOptions:
+                    {
+                        holeModifier: "altKey"
+                    },
+                    featureAdded: (setNewFid)
+                }
+            );
     }
 
-    /*
-    removecontrol = new OpenLayers.Control.RemoveFeature (vislayer,
 
-            {onDone: function(feature) {console.log(feature)}
-            });
-    removecontrol.activate();
-    mapview.addControl(removecontrol);
-     */
 
     editcontrol = new OpenLayers.Control.ModifyFeature(
             vislayer, {
@@ -294,17 +319,9 @@ function renderMainMap (widgetid)
     mapview.addControl(new OpenLayers.Control.PanZoomBar());
     mapview.addControl(new OpenLayers.Control.MousePosition());
 
-    //TODO: add REMOVECONTROL
-
-
-    //TODO: add UNDO CONTROL
-
-
-    //TODO: add INFO CONTROL
-
 
     vislayer.events.register('featureselected', mapview, renderFeatureCard);
-
+    vislayer.events.register('featureunselected', mapview, freeSelection);
 
 
     var bbox = (coredata['bbox']);
@@ -314,6 +331,110 @@ function renderMainMap (widgetid)
     //alert(mapview.controls);
 
 }
+
+function freeSelection (caller)
+{
+
+    var selected = caller['feature'];
+
+    if ((selected.geometry != prechange.geometry) || (selected.attributes != prechange.attributes))
+    {
+
+        //alert("Updating feature "+selected['fid']);
+        // we have changes to register
+        updateChangeSource();
+        updateChangelist();
+    }
+
+    //alert("Unselected "+feature.fid);
+    prechange = null;
+    $("#currentfeature").empty();
+
+}
+
+
+function setNewFid (feature)
+{
+
+    //vislayer.addFeatures ([feature]);
+
+    feature.fid = newfeature_prefix+newfeature_id.toString();
+    newfeature_id++;
+    vislayer.addFeatures([feature]);
+
+
+    // changesource to null since we want to clarify the object is CREATED
+    changesource[feature.fid] = null;
+
+    prechange = {
+        'fid':              feature.fid,
+        'geometry':         feature.geometry,
+        'attributes':       feature.attributes
+    };
+
+    updateChangelist();
+
+
+}
+
+function updateChangelist ()
+{
+
+    /*
+    Adds the last change to the changelist
+     */
+
+    var cfid = prechange['fid'];
+
+    var oldstate = {
+        'geometry':     prechange.geometry,
+        'attributes':   prechange.attributes
+    };
+
+    var feature = vislayer.getFeatureByFid(cfid);
+
+    var changedata = {
+        'fid':              cfid,
+        'prev':             oldstate
+    };
+
+
+    if (feature != null)
+    {
+        changedata ['current'] = {
+                        'geometry':     feature.geometry,
+                        'attributes':   feature.attributes
+                    }
+    }
+    else
+    {
+        // we deleted the feature so there is no data to work on
+        changedata['current'] = null;
+    }
+
+    changelist.push(changedata);
+
+
+
+}
+
+function updateChangeSource ()
+{
+
+    /*
+    Adding a feature to the changesource list, will actually be done only once
+     */
+
+    if (!changesource.hasOwnProperty(prechange['fid']))
+    {
+        changesource[prechange['fid']] = {
+            geometry:   prechange['geometry'],
+            attributes: prechange['attributes']
+        }
+    }
+
+}
+
 
 function renderFeatureCard (caller)
 {
@@ -346,6 +467,23 @@ function renderFeatureCard (caller)
     $("#currentfeature").empty();
     $("#currentfeature").append(fcard);
 
+    /*
+     Since this is called every time we select a feature, we use it as a pre-select to prepare the data for the changelist and changesource variables
+     */
+
+    prechange = {
+        'fid':              feature.fid,
+        'geometry':         feature.geometry,
+        'attributes':       {}
+    };
+
+    for (var attrname in feature.attributes)
+    {
+        prechange['attributes'][attrname] = feature.attributes[attrname];
+    }
+
+
+
 }
 
 function cancelDeleteFeature ()
@@ -355,7 +493,7 @@ function cancelDeleteFeature ()
     var fid = this.id.substr(prefix.length);
 
     $("#featuremask").empty();
-    $("#featuremask").append(renderAttributesMask(vislayer.features[fid]))
+    $("#featuremask").append(renderAttributesMask(vislayer.getFeatureByFid(fid)));
 
 }
 
@@ -406,16 +544,21 @@ function renderRemoveMask ()
 
 function deleteCurrentFeature()
 {
+
     var prefix = "deleteok_";
     var fid = this.id.substr(prefix.length);
 
-    //var fordelete = new Array();
-    //fordelete.push(vislayer.features[fid]);
 
+    updateChangeSource();
 
     vislayer.removeFeatures(vislayer.selectedFeatures);
+
+    updateChangelist();
+
     $("#currentfeature").empty();
 
+    editcontrol.deactivate();
+    editcontrol.activate();
 
 }
 
@@ -438,15 +581,19 @@ function saveAttributeChanges ()
         newattrs[attr_name] = $(this).val();
     });
 
-    //alert("Changing feature: "+JSON.stringify(vislayer.features[fid].attributes));
+    //alert("Changing features for "+vislayer.getFeaturesByFid(fid));
 
-    vislayer.features[fid].attributes = newattrs;
+    vislayer.getFeatureByFid(fid)['attributes']= newattrs;
 
 
     var feedbackmess = '<div class="feedback success">Dati aggiornati.</div>';
 
     $("#feature_props").after(feedbackmess);
+    updateChangeSource();
+    updateChangelist();
 
+
+    //alert("New attributes for feature "+feature.fid+": "+JSON.stringify(vislayer.getFeaturesByFid(fid).attributes));
 
 }
 
@@ -454,13 +601,11 @@ function saveAttributeChanges ()
 function renderGeoJSON (shapedata, map, maplayer)
 {
 
-
     var geojson_format = new OpenLayers.Format.GeoJSON({'externalProjection':new OpenLayers.Projection(proj_WGS84), 'internalProjection':map.getProjectionObject()});
 
     var stringmap = JSON.stringify(shapedata);
     var formatmap = geojson_format.read(stringmap);
     maplayer.addFeatures(formatmap);
-
 
 }
 

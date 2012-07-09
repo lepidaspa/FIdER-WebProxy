@@ -152,7 +152,18 @@ function create_AddNewMeta()
     if ($('#newmeta_bbox_use').is(':checked'))
     {
         // use own map bbox
-        boundingbox = newmetamap.getExtent().transform(newmetamap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+
+        if (newmetamap.layers[1].features.length == 0)
+        {
+            //alert ("Using auto bb");
+            boundingbox = newmetamap.getExtent().transform(newmetamap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+        }
+        else
+        {
+            //alert ("Using given bb");
+            boundingbox = newmetamap.layers[1].features[0].geometry.bounds.transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+        }
+
     }
     else
     {
@@ -360,8 +371,9 @@ function create_setMaps()
     newproxymap = create_createMapWidget("proxymapcanvas");
     newmetamap = create_createMapWidget("metamapcanvas");
 
-    create_setNavControls(newproxymap);
-    create_setNavControls(newmetamap);
+    //create_setNavControls(newproxymap);
+    create_setDrawControls(newproxymap);
+    create_setDrawControls(newmetamap);
 
 
     newproxymap.events.register("moveend", newproxymap, create_CheckForSubmission);
@@ -383,14 +395,56 @@ function create_createMapWidget(element)
     var osmlayer  = new OpenLayers.Layer.OSM();
     widget.addLayer(osmlayer);
 
-    var tracelayer = new OpenLayers.Layer.Vector();
-    widget.addLayer(tracelayer);
 
+
+    var defaultstyle = new OpenLayers.Style ( {fillOpacity: 0.4, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    var selectstyle = new OpenLayers.Style ( {fillOpacity: 0.4, fillColor: "#0000FF", strokeColor: "#0000FF", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    var drawstyle = new OpenLayers.Style ( {fillOpacity: 0.4, fillColor: "#0000FF", strokeColor: "#0000FF", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    featurestylemap = new OpenLayers.StyleMap ({'default': defaultstyle, 'select': selectstyle, 'temporary': drawstyle})
+    // adding the "state" layer
+    var tracelayer = new OpenLayers.Layer.Vector("BoundingBox", {styleMap: featurestylemap});
+    widget.addLayer(tracelayer);
 
     create_centerMapTo(widget, defaultLon, defaultLat, 6);
 
+
     return widget;
 
+}
+
+function create_setDrawControls (map)
+{
+
+    var drawcontrol = new OpenLayers.Control.DrawFeature(
+            map.layers[1], OpenLayers.Handler.RegularPolygon,
+
+            {featureAdded: replaceOldBox, displayClass: "olControlDrawFeaturePoint", title: "Draw Features", handlerOptions: {holeModifier: "altKey", sides: 4,
+        irregular: true}});
+    var panel = new OpenLayers.Control.Panel({
+        displayClass: "olControlEditingToolbar"
+    });
+    panel.addControls([
+        new OpenLayers.Control.Navigation({title: "Navigate"}),
+        drawcontrol]);
+    map.addControl(panel);
+
+}
+
+function replaceOldBox (feature)
+{
+    var layer = feature.layer;
+    var removelist = new Array();
+    for (var f in layer.features)
+    {
+        if (feature != layer.features[f])
+        {
+            removelist.push (layer.features[f]);
+        }
+    }
+
+    layer.removeFeatures(removelist);
+    create_CheckForSubmission();
+    //alert("Killing old bbox from "+feature.layer.map);
 }
 
 function create_setNavControls (map)
@@ -585,7 +639,19 @@ function create_CheckForSubmission()
         // partially included timespans and bboxes will be normalised, with a warning
 
 
-        var proxy_bb = newproxymap.getExtent().transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+        var proxy_bb;
+        if (newproxymap.layers[1].features.length == 0)
+        {
+            //alert ("Using auto bb");
+            proxy_bb = newproxymap.getExtent().transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+        }
+        else
+        {
+            //alert ("Using given bb");
+            proxy_bb = newproxymap.layers[1].features[0].geometry.bounds.transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+        }
+
+
 
         // note that here the i is the meta_id
         for (var i in metadata)
@@ -840,7 +906,19 @@ function create_CreateProxy ()
     var manifest = {};
 
     manifest['name'] = proxy_name;
-    manifest['area'] = newproxymap.getExtent().transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+
+    if (newproxymap.layers[1].features.length == 0)
+    {
+        //alert ("Using auto bb");
+        manifest['area'] = newproxymap.getExtent().transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+    }
+    else
+    {
+        //alert ("Using given bb");
+        manifest['area'] = newproxymap.layers[1].features[0].geometry.bounds.transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+    }
+
+
     var proxydatefrom = $("#newproxy_datefrom").val();
     var proxyfromint = getDateForCmp(proxydatefrom);
     proxydatefrom += "T00:00Z";
