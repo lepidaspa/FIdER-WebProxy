@@ -45,9 +45,9 @@ urlpatterns = patterns('',
 	#urls for active operations, called by the clients
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
-	url(r'^fwp/edit/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', editviews.mapeditor),
+	url(r'^edit/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', editviews.mapeditor),
 	url(r'^fwp/$', fwpviews.proxysel),
-
+	url(r'^edit/update/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', editviews.implementchanges),
 
 )
 

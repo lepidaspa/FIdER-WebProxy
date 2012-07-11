@@ -188,7 +188,7 @@ def buildReadList (proxy_id, timestamp=None):
 	metalist = []
 	print "PROXY READ LIST FOR REQUEST on %s at %s" % (proxy_id, timestamp)
 
-	if timestamp == None:
+	if timestamp is None:
 		#total read, all meta used
 
 		metalist = os.listdir(os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson))
@@ -317,7 +317,7 @@ def verifyShapeArchiveStructure (filedata, filename=None):
 			if ext_mandatory_minfo.has_key(cext):
 				ext_mandatory_minfo[cext] = True
 
-		if filename!=None:
+		if filename is not None:
 			if candidatepath.split(".")[0] != filename:
 				return False
 
@@ -809,3 +809,141 @@ def createMessageFromTemplate (template, **customfields):
 	else:
 		print messagemodel.log
 		raise RuntimeProxyException ("Failed to create valid %s %s message for proxy %s" % (template['message_type'], template['message_format'], customfields['token']))
+
+
+
+def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist):
+	"""
+	This function opens a geojson map and alters only a specific list of objects. Before doing it, it checks that the previous status of these items is still in sync with the status the request sender had. If the data is in sync, the changes are made and a list of updated Ids is sent back, otherwise an error with the status of the unsynced objects.
+	:param proxy_id:
+	:param meta_id:
+	:param shape_id:
+	:param req_changelist: a json dictionary (by featureid) with a dictionary for each item that has 'origin' as the pre-modification status and 'current' as the current
+	:return:
+	"""
+
+	success = False
+	objects = []
+
+	# loading the map from the geojson directory
+	gj_fp = open(os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id ))
+	mapdata = json.load(gj_fp)
+	gj_fp.close()
+
+	changelist = json.loads(req_changelist)
+	# modified etrny: json entry
+	keylist = {}
+	allids = []
+
+
+	print "Comparing changelist: \n%s" % req_changelist
+
+	#print "map length %s" % len(mapdata['features'])
+
+	for i in range (0, len(mapdata['features'])):
+		currentid = mapdata['features'][i]['id']
+		allids.append(currentid)
+		#print "%s %s: %s %s" % (type(i),i, type(currentid), currentid)
+		#print i
+		#print mapdata['features'][i]
+		if changelist.has_key(str(currentid)):
+			keylist[currentid] = str(i)
+
+	#print "Comparing to map:\n%s" % mapdata
+
+	print "Keylist: %s" % keylist
+
+	# checking if there is any misalignment
+	syncstatus = {}
+
+	for fid in keylist.keys():
+		tid = keylist[fid]
+		candidate = changelist[tid]['origin']
+		reference = mapdata['features'][fid]
+
+		#print "Comparing %s to %s" % (candidate, reference)
+
+		syncstatus[fid] = ( candidate ['geometry'] == reference['geometry'] and candidate['attributes'] == reference['properties'] )
+
+
+	print "Syncstatus: %s " % syncstatus
+
+
+	# code for change
+	newfid = max([fid for fid in allids if isinstance(fid, int)])
+	tids = dict ((v,k) for k, v in keylist.iteritems())
+	if all(syncstatus.values()):
+
+		# we apply the changes and get an updated ids list
+
+		# 1. apply the changes to the json data
+
+		fidchanges = {}
+		deleted = []
+
+		for fid in changelist.keys():
+
+			print "Updating element %s" % fid
+
+			if fid not in keylist.values():
+				newfid += 1
+				print "Renaming changelist key %s to %s" % (fid, newfid)
+
+				#1.1.1 create a new feature
+
+				cgeom = changelist[fid]['current']['geometry']
+				cprop = changelist[fid]['current']['attributes']
+
+				mapdata['features'].append ({
+					'geometry': cgeom, 'type': 'Feature', 'properties': cprop, 'id': newfid
+				})
+
+				#TODO #1.1.2 add old -> new FID conversion
+
+				fidchanges[fid] = newfid
+
+			else:
+
+				basetid = tids[fid]
+
+				#balancing the removed elements
+				delta = len(filter(lambda did: did < basetid, deleted))
+				tid = basetid-delta
+
+				if changelist[fid]['current'] is not None:
+					#1.2 save to the existing feature with id = keylist[fid]
+
+					mapdata['features'][tid]['geometry'] = changelist[fid]['current']['geometry']
+					mapdata['features'][tid]['properties'] = changelist[fid]['current']['attributes']
+
+					fidchanges[fid] = fid
+				else:
+					#1.2.1 removing the feature
+					del mapdata['features'][tid]
+					deleted.append(basetid)
+
+		#TODO #2. save the json data to geojson and mirror folders
+
+
+		gj_fp = open(os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id ), 'w+')
+		json.dump(mapdata, gj_fp)
+		gj_fp.close()
+
+		#TODO #2. COPY GEOJSON DATA to mirror folder
+
+	else:
+
+		# we create a list of the inconsistencies and send them back
+		# loading the map from the geojson directory
+		pass
+
+
+
+	print "Returning %s (%s)" % (success, objects)
+	return success, objects
+
+
+
+
+
+

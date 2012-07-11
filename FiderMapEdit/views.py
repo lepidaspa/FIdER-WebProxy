@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+from django.http import HttpResponse
 from django.utils.safestring import SafeString
+from django.views.decorators.csrf import csrf_exempt
 import urllib2
-from FIdERProxyFS import proxy_core
+from FIdERProxyFS import proxy_core, proxy_lock
 from FIdERWeb.views import getProxyManifest
 
 
@@ -58,3 +60,50 @@ def mapeditor (request, **kwargs):
 
 
 	return render_to_response ('fwp_MapEditor.html', {'proxy_id': proxy_id, 'meta_id': meta_id, 'shape_id': shape_id, 'maps': proxymaps, 'mapsjson': SafeString(json.dumps(proxymaps)), 'proxy_name': manifest['name'], 'objmodel': SafeString(json.dumps(convtable)) }, context_instance=RequestContext(request))
+
+
+@csrf_exempt
+def implementchanges (request, **kwargs):
+	"""
+	Inserts the changelist in POST into the map, returns a table with the old and new ID of the saved objects (changes are actually only for deleted and created objects, but all are added to the table). NOTE: this will also save the updated geojson in this AND in the mirror directory and remove the conversion table as it is no longer needed (this works directly on the federator model)
+	:param request:
+	:param kwargs: proxy_id, meta_id, map_id
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	shape_id = kwargs['shape_id']
+
+	try:
+
+		locker = proxy_lock.ProxyLocker (retries=3, wait=5)
+
+
+		req_changes = request.POST['changelist']
+
+		success, objects = locker.performLocked (proxy_core.alterMapDetails, proxy_id, meta_id, shape_id, req_changes)
+
+		print "Map has been modified"
+
+		feedback = {
+			'success': success,
+			'report': 	objects
+		}
+
+		#TODO: placeholder, implement
+
+		print feedback
+	except Exception, ex:
+
+
+		feedback = {
+			'success': False,
+			'report': ex
+		}
+
+
+
+
+	return HttpResponse(feedback, mimetype="application/json")
+

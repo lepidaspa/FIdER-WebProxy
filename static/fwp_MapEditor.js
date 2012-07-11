@@ -67,6 +67,8 @@ var changelist = new Array();
 
 var prechange = {};
 
+var idlink;
+
 
 function pageInit (req_proxy, req_meta, req_map, req_maplist, req_model)
 {
@@ -75,6 +77,9 @@ Loads the main map and the list of additional maps
  */
 
     $("#renderingstate").hide();
+    $("#savingstate").hide();
+    $("#btn_savechanges").hide();
+
 
 
     proxy_id = req_proxy;
@@ -99,7 +104,7 @@ Loads the main map and the list of additional maps
     $(".btn_remove").live('click', renderRemoveMask);
     $(".canceldelete").live('click', cancelDeleteFeature);
     $(".deleteok").live('click', deleteCurrentFeature);
-
+    $("#btn_savechanges").click(saveMapChanges);
 
 
 }
@@ -107,7 +112,7 @@ Loads the main map and the list of additional maps
 function setLoadingState()
 {
     $("#loadingstate").show();
-
+5
 
 
 }
@@ -239,7 +244,7 @@ function renderMainMap (widgetid)
 
 
     renderGeoJSON (coredata, mapview, vislayer);
-
+    createIdTable (coredata, vislayer);
 
     /* TODO: check if we can work directly on the  vislayer layer
     // setting style
@@ -332,6 +337,26 @@ function renderMainMap (widgetid)
 
 }
 
+function createIdTable (jsondata, maplayer)
+{
+    // we also set up a mapping from tids to fids
+    // ID is the id ATTRIBUTE of the feature in the json, tid its id as memeber of the array, fid the ID attribute as translated in the map
+
+    //TODO: placeholder, implement
+
+    idlink = {};
+
+    for (var tid in jsondata['features'])
+    {
+
+        var fid = jsondata['features'][tid]['id'];
+
+        idlink[fid] = tid;
+
+    }
+
+}
+
 function freeSelection (caller)
 {
 
@@ -386,16 +411,20 @@ function updateChangelist ()
 
     var cfid = prechange['fid'];
 
+    /* removing, not really needed
+    TODO: confirm removal
+
     var oldstate = {
         'geometry':     prechange.geometry,
         'attributes':   prechange.attributes
     };
+     */
 
     var feature = vislayer.getFeatureByFid(cfid);
 
     var changedata = {
-        'fid':              cfid,
-        'prev':             oldstate
+        'fid':              cfid
+        //'prev':             oldstate
     };
 
 
@@ -413,23 +442,24 @@ function updateChangelist ()
     }
 
     changelist.push(changedata);
-
+    $("#btn_savechanges").show();
 
 
 }
 
-function updateChangeSource ()
+function updateChangeSource (featureid)
 {
 
     /*
     Adding a feature to the changesource list, will actually be done only once
      */
+    var fid = prechange['fid'];
 
-    if (!changesource.hasOwnProperty(prechange['fid']))
+    if (!changesource.hasOwnProperty(fid))
     {
-        changesource[prechange['fid']] = {
-            geometry:   prechange['geometry'],
-            attributes: prechange['attributes']
+        changesource[fid] = {
+            geometry:   coredata['features'][idlink[fid]]['geometry'],
+            attributes: coredata['features'][idlink[fid]]['properties']
         }
     }
 
@@ -601,11 +631,16 @@ function saveAttributeChanges ()
 function renderGeoJSON (shapedata, map, maplayer)
 {
 
-    var geojson_format = new OpenLayers.Format.GeoJSON({'externalProjection':new OpenLayers.Projection(proj_WGS84), 'internalProjection':map.getProjectionObject()});
+    var geojson_format = new OpenLayers.Format.GeoJSON({'externalProjection': new OpenLayers.Projection(proj_WGS84), 'internalProjection':map.getProjectionObject()});
 
     var stringmap = JSON.stringify(shapedata);
     var formatmap = geojson_format.read(stringmap);
     maplayer.addFeatures(formatmap);
+
+
+
+
+
 
 }
 
@@ -628,4 +663,136 @@ function reprojPoint (pointX, pointY, olmap)
 
 
     return new OpenLayers.Geometry.Point(reproj.lon, reproj.lat);
+}
+
+
+function compressChangelist()
+{
+    /*
+    reduces the changelist to one modification per item
+     */
+
+    console.log("CHANGES, FULL:\n"+changelist+"\n****************");
+
+    //todo: placeholder, implement
+    var compressed = {};
+
+    var gjformat = new OpenLayers.Format.GeoJSON({'externalProjection': new OpenLayers.Projection(proj_WGS84), 'internalProjection': mapview.getProjectionObject()});
+
+    for (var i in changelist)
+    {
+
+
+        var change = changelist[i];
+        var cfid = change['fid'];
+
+        if (!compressed.hasOwnProperty(cfid))
+        {
+            compressed[cfid] = {
+                'origin': {},
+                'current': {}
+            };
+            //compressed[cfid]['origin'] = changesource[cfid];
+
+
+            if (changesource[cfid] != null)
+            {
+
+                // pre-existing object has been modified
+
+                compressed[cfid]['origin']['attributes'] = changesource[cfid]['attributes'];
+                // we  switched to the json data so we do not need the conversion anymore
+                //compressed[cfid]['origin']['geometry'] = JSON.parse(gjformat.write(changesource[cfid]['geometry']));
+                compressed [cfid]['origin']['geometry'] = changesource[cfid]['geometry'];
+
+            }
+            else
+            {
+                // object has been created from scratch
+                compressed[cfid]['origin'] = null;
+            }
+
+        }
+
+
+        if (change['current'] != null)
+        {
+
+            // object has been modified with new data
+
+            //compressed[cfid]['current'] = change['current'];
+            compressed[cfid]['current']['attributes'] = change['current']['attributes'];
+            compressed[cfid]['current']['geometry'] = JSON.parse(gjformat.write(change['current']['geometry']));
+        }
+        else
+        {
+            // object has been deleted
+
+            compressed[cfid]['current'] = null;
+
+        }
+
+
+
+    }
+
+
+    return compressed;
+
+}
+
+
+
+function saveMapChanges ()
+{
+
+    // first we get a compressed list of changes for the comparison
+
+    var changes = compressChangelist();
+    console.log(JSON.stringify(changes));
+
+    // We try to save. *IF* there is an inconsistency, then we switch to the correction flow and see what we want to do with an additional layer showing the synced and unsynced objects and a mask on the side to confirm them.
+
+    var urlstring = '/edit/update/'+proxy_id+"/"+meta_id+"/"+map_id+"/";
+
+    $.ajax (
+        {
+            url:    urlstring,
+            data:   {changelist: JSON.stringify(changes)},
+            async:  true,
+            type:   'POST',
+            success: function (data) {
+                //NOTE: success can still return a failed update in case the two maps are not in sync. Our return data will be a boolean (updated/not updated) and a report with the new id and state of each submitted object, OR a list of the out of sync objects
+                if (data['success'] == true)
+                {
+                    // update the changesource variable
+                    rebuildChangeSource (changes, data['report']);
+
+                }
+                else
+                {
+                    // open mask for handling of inconsistencies
+
+                }
+
+            },
+            error: function (data)
+            {
+
+                console.log(data.responseText);
+
+                //postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
+            }
+        }
+    );
+
+
+
+
+
+}
+
+function rebuildChangeSource (changes, confirmation)
+{
+
 }

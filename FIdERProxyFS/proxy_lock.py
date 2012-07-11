@@ -3,8 +3,10 @@
 import inspect
 import os.path
 import time
+import sys
 
 from Common.errors import *
+import traceback
 import proxy_config_core as conf
 
 __author__ = 'Antonio Vaccarino'
@@ -216,16 +218,20 @@ class ProxyLocker ():
 			#print "Action: %s with Args %s and KWArgs %s" % (action, args, kwargs)
 			output = action(*args, **kwargs)
 		except Exception as ex:
+			traceback.print_tb(sys.exc_info()[2])
+			print "Issue: %s" % ex
 			issue = ex
 
 			# we try to release the lockfile and THEN we send the core exception up
 			try:
 				releaseFSLock(proxy_id, meta_id, shape_id)
 			except Exception as exb:
-				print "Error: "+str(ex)
+				print "Error: "+str(exb)
 				raise InternalProxyException ("Failed to release lockfile for %s/%s.%s \n(%s)\n while closing after the following error:\n%s" % (proxy_id, meta_id, shape_id, exb.message, issue.message))
 
 			print "fslockrelease issue: "+str(issue)
+
+
 			raise issue
 
 
