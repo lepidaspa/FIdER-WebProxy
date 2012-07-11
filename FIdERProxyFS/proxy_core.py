@@ -922,14 +922,33 @@ def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist):
 					del mapdata['features'][tid]
 					deleted.append(basetid)
 
-		#TODO #2. save the json data to geojson and mirror folders
+		#2.1 save the json data to geojson and mirror folders
 
+		gjpath = os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id )
 
-		gj_fp = open(os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id ), 'w+')
+		gj_fp = open(gjpath, 'w+')
 		json.dump(mapdata, gj_fp)
 		gj_fp.close()
 
-		#TODO #2. COPY GEOJSON DATA to mirror folder
+		#2.2 COPY GEOJSON DATA to mirror folder
+
+		mirror_path = os.path.join (conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
+		targets = os.listdir(mirror_path)
+
+		for target in targets:
+			if os.path.isdir (target):
+				shutil.rmtree (os.path.join(mirror_path, target))
+			else:
+				os.unlink(os.path.join(mirror_path, target))
+
+
+		shutil.copy(gjpath, os.path.join(mirror_path, shape_id+".geojson"))
+
+		#2.3 remove translation table for this map since we have the correct model already
+
+		os.unlink (os.path.join(conf.baseproxypath, proxy_id, conf.path_mappings, meta_id, shape_id))
+
+
 
 	else:
 
