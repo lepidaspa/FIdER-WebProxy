@@ -61,12 +61,12 @@ def sendMessageToServer (jsonmessage, url, method, successreturns=None, failretu
 			succeeded = False
 
 
-
-
 	if canverify is True and succeeded is None:
 		raise CommunicationFailure ("Unexpected message from server: %s" % jsonresponse)
 	else:
 		return succeeded, jsonresponse
+
+
 
 def sendProxyManifestRaw (jsonmanifest):
 	"""

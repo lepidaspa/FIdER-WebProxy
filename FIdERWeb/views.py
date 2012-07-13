@@ -782,12 +782,6 @@ def saveMapFile (uploaded, proxy_id, meta_id, shape_id=None):
 			return False, "Eccezione: %s" % ex
 
 
-
-
-
-
-
-
 def set_access_control_headers(response):
 	response['Access-Control-Allow-Origin'] = '*'
 	response['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
@@ -840,13 +834,17 @@ def proxy_perform_query (request, **kwargs):
 	:return:
 	"""
 
+
+
 	proxy_id = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
 
 	querydata = request.POST['remotequery']
 
+	#print "PRE-QUERY DATA REQ: %s" % querydata
+
 	geojson = proxy_query.makeQueryOnMeta(proxy_id, meta_id, querydata)
 
-	print "ABOUT TO SEND BACK: %s " % geojson
+	#print "ABOUT TO SEND BACK: %s " % geojson
 
 	return HttpResponse(geojson, mimetype="application/json")

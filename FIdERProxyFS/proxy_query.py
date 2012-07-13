@@ -225,8 +225,8 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	collection = []
 
-	print "FIELDS: %s" % fields
-	print "RESULTS: %s" % results
+	#print "FIELDS: %s" % fields
+	#print "RESULTS: %s" % results
 
 	for row in results:
 
@@ -235,7 +235,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 		data['type'] = "Feature"
 		data['geometry'] = json.loads(row[fields.index('geometry')])
 
-		print "GEOM: %s " % data['geometry']
+		#print "GEOM: %s " % data['geometry']
 
 		properties = {}
 
@@ -302,7 +302,7 @@ def probePostGIS (conndata, table, schema=""):
 	cur.execute(querystring)
 	fields = cur.fetchall()
 
-	print str(sqlstring % sqlvalues)+": "+str(fields)
+	#print str(sqlstring % sqlvalues)+": "+str(fields)
 
 	#print "Postgres error %s: %s" % (e.pgcode, e.pgerror)
 
@@ -333,5 +333,7 @@ def registerQuery (proxy_id, meta_id, map_id, data_conn, data_conv):
 	fp_conversion = open(loc_conv_table, 'w+')
 	json.dump(data_conv, fp_conversion)
 	fp_conversion.close()
+
+	#TODO: return meaningful value
 
 	return
