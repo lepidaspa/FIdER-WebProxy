@@ -831,7 +831,7 @@ def proxy_read_full (request, **kwargs):
 	return HttpResponse(read_result, mimetype="application/json")
 
 
-
+@csrf_exempt
 def proxy_perform_query (request, **kwargs):
 	"""
 	Performs an sql query on proxy, meta, map as per kwargs with the JSON message in request.POST
@@ -845,6 +845,8 @@ def proxy_perform_query (request, **kwargs):
 
 	querydata = request.POST['remotequery']
 
-	geojson = proxy_query.makeSelectFromJson(proxy_id, meta_id, querydata)
+	geojson = proxy_query.makeQueryOnMeta(proxy_id, meta_id, querydata)
+
+	print "ABOUT TO SEND BACK: %s " % geojson
 
 	return HttpResponse(geojson, mimetype="application/json")

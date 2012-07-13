@@ -80,6 +80,8 @@ def makeQueryOnMeta (proxy_id, meta_id, jsonmessage):
 
 	collection['features'] = featureslist
 
+	#print collection
+
 	return json.dumps(collection)
 
 
@@ -223,7 +225,8 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	collection = []
 
-
+	print "FIELDS: %s" % fields
+	print "RESULTS: %s" % results
 
 	for row in results:
 
@@ -231,6 +234,8 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 		data['type'] = "Feature"
 		data['geometry'] = json.loads(row[fields.index('geometry')])
+
+		print "GEOM: %s " % data['geometry']
 
 		properties = {}
 
@@ -248,7 +253,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 
 
-	return json.dumps(collection)
+	return collection
 
 
 

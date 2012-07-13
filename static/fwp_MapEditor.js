@@ -772,13 +772,19 @@ function saveMapChanges ()
                     // update the changesource variable
                     console.log("Modification successful");
                     rebuildChangeSource (changes, data['report']);
+                    $("#btn_savechanges").hide();
+
+                    postFeedbackMessage(data['success'],"Modifiche salvate correttamente.","#feature_props");
+
 
                 }
                 else
                 {
                     console.log("Modification failed");
                     // open mask for handling of inconsistencies
+                    postFeedbackMessage(data['success'],"Aggiornamento fallito.","#feature_props");
                     renderResaveMask (changes, data['report']);
+
 
 
 
@@ -801,6 +807,28 @@ function saveMapChanges ()
 
 
 }
+
+function postFeedbackMessage (success, report, widgetid)
+{
+    var status = success;
+    var message = report;
+
+    var feedbackclass;
+    if (status == true)
+    {
+        feedbackclass = "success";
+    }
+    else
+    {
+        feedbackclass = "fail";
+    }
+
+    var feedbackmess = '<div class="feedback '+feedbackclass+'">' +message+ '</div>';
+
+    $(widgetid).append(feedbackmess);
+}
+
+
 
 function rebuildChangeSource (changes, confirmation)
 {
@@ -888,8 +916,6 @@ function renderResaveMask (changes, consistency)
     /*
     Creates a mask that allows the user to see what can be saved and what is out of sync and choose to either: Cancel all changes and reload the map, Save the consistent elements,
      */
-
-    //TODO: consider adding "Force save on ALL feastures"
 
     var statustable = '<table id="consistencycheck"><tr><th>Elemento</th><th>Stato</th></tr>';
 
