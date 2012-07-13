@@ -81,17 +81,16 @@ def implementchanges (request, **kwargs):
 
 
 		req_changes = request.POST['changelist']
+		req_model = request.POST['model']
 
-		success, objects = locker.performLocked (proxy_core.alterMapDetails, proxy_id, meta_id, shape_id, req_changes)
+		success, objects = locker.performLocked (proxy_core.alterMapDetails, proxy_id, meta_id, shape_id, req_changes, req_model)
 
-		print "Map has been modified"
+		print "Map has been modified (success: %s)" % success
 
 		feedback = {
 			'success': success,
 			'report': 	objects
 		}
-
-		#TODO: placeholder, implement
 
 		print feedback
 	except Exception, ex:
@@ -103,7 +102,5 @@ def implementchanges (request, **kwargs):
 		}
 
 
-
-
-	return HttpResponse(feedback, mimetype="application/json")
+	return HttpResponse(json.dumps(feedback), mimetype="application/json")
 

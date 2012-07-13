@@ -1047,7 +1047,7 @@ function create_CreateProxy ()
         },
         error: function (data)
         {
-            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
+            postFeedbackMessage("fail", "ERRORE AJAX: "+JSON.stringify(data), container)
         }
     });
 
@@ -1072,7 +1072,7 @@ function postFeedbackMessage (success, report, widgetid)
         feedbackclass = "fail";
     }
 
-    alert("ERROR: "+message);
+    alert("RISULTATO: "+message);
 
     var feedbackmess = '<div class="feedback '+feedbackclass+'">' +message+ '</div>';
 

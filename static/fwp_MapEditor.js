@@ -244,7 +244,7 @@ function renderMainMap (widgetid)
 
 
     renderGeoJSON (coredata, mapview, vislayer);
-    createIdTable (coredata, vislayer);
+    createIdTable (coredata);
 
     /* TODO: check if we can work directly on the  vislayer layer
     // setting style
@@ -337,7 +337,7 @@ function renderMainMap (widgetid)
 
 }
 
-function createIdTable (jsondata, maplayer)
+function createIdTable (jsondata)
 {
     // we also set up a mapping from tids to fids
     // ID is the id ATTRIBUTE of the feature in the json, tid its id as memeber of the array, fid the ID attribute as translated in the map
@@ -755,10 +755,14 @@ function saveMapChanges ()
 
     var urlstring = '/edit/update/'+proxy_id+"/"+meta_id+"/"+map_id+"/";
 
+    var modelstruct = {};
+    modelstruct["mid"] = modelref[maptype];
+    modelstruct["struct"] = datamodel[modelref[maptype]];
+
     $.ajax (
         {
             url:    urlstring,
-            data:   {changelist: JSON.stringify(changes)},
+            data:   {changelist: JSON.stringify(changes), model: JSON.stringify(modelstruct)},
             async:  true,
             type:   'POST',
             success: function (data) {
@@ -766,12 +770,17 @@ function saveMapChanges ()
                 if (data['success'] == true)
                 {
                     // update the changesource variable
+                    console.log("Modification successful");
                     rebuildChangeSource (changes, data['report']);
 
                 }
                 else
                 {
+                    console.log("Modification failed");
                     // open mask for handling of inconsistencies
+                    renderResaveMask (changes, data['report']);
+
+
 
                 }
 
@@ -779,6 +788,7 @@ function saveMapChanges ()
             error: function (data)
             {
 
+                console.log("General error during modification");
                 console.log(data.responseText);
 
                 //postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
@@ -794,5 +804,105 @@ function saveMapChanges ()
 
 function rebuildChangeSource (changes, confirmation)
 {
+
+    /*
+    Updates the status of the changed elements so that they reflect the IDs in the confirmation data.
+     */
+
+    console.log("Confirmation list:"+JSON.stringify(confirmation));
+
+    idlink = {};
+
+    var gjformat = new OpenLayers.Format.GeoJSON({'externalProjection': new OpenLayers.Projection(proj_WGS84), 'internalProjection': mapview.getProjectionObject()});
+
+
+    var linkerdelta = 0;
+    var cseqid;
+    for (var fid in confirmation)
+    {
+
+        if (confirmation[fid] != null)
+        {
+
+            var cfid = parseInt(confirmation[fid]);
+
+            var current = vislayer.getFeatureByFid(fid);
+            //console.log(JSON.stringify(current.geometry));
+            //console.log(JSON.stringify(current.attributes));
+            //console.log("id->"+current.id+"->fid"+current.fid);
+
+            current.fid = cfid;
+
+            var cfeature = {};
+            cfeature['type'] = 'Feature';
+            cfeature['id'] = cfid;
+            cfeature['properties'] =  current.attributes;
+            cfeature['id'] = cfid;
+            cfeature['geometry'] = gjformat.write(current.geometry);
+
+            if (!idlink.hasOwnProperty(confirmation[fid]))
+            {
+                coredata['features'].push(cfeature);
+            }
+            else
+            {
+                cseqid = current.fid - linkerdelta;
+                coredata['features'][cseqid] = cfeature;
+            }
+
+            console.log("Element fid "+fid+" moved to fid "+current.fid);
+        }
+        else
+        {
+
+
+            if (idlink.hasOwnProperty(fid))
+            {
+
+                //TODO: delete element in sequence and add 1 to linkerdelta
+
+                cseqid = idlink[fid] - linkerdelta;
+                coredata.splice(cseqid, 1);
+                linkerdelta++;
+
+            }
+
+            console.log("Element fid "+fid+" deleted ");
+        }
+    }
+
+
+    createIdTable(coredata);
+    changesource = {};
+
+
+
+
+
+
+}
+
+
+function renderResaveMask (changes, consistency)
+{
+    /*
+    Creates a mask that allows the user to see what can be saved and what is out of sync and choose to either: Cancel all changes and reload the map, Save the consistent elements,
+     */
+
+    //TODO: consider adding "Force save on ALL feastures"
+
+    var statustable = '<table id="consistencycheck"><tr><th>Elemento</th><th>Stato</th></tr>';
+
+    for (var fid in consistency)
+    {
+        statustable += '<tr><td>'+fid+'</td><td>'+consistency[fid]+'</td></tr>';
+    }
+
+    statustable += '</table>';
+
+    var mask = '<div id="resavemask">'+statustable+'</div>';
+
+
+
 
 }

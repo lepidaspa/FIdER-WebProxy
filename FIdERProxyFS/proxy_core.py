@@ -18,6 +18,7 @@ from osgeo import ogr
 from Common.errors import RuntimeProxyException
 import MarconiLabsTools.ArDiVa
 
+
 sys.path.append("../")
 
 from Common import TemplatesModels
@@ -25,7 +26,6 @@ from FIdERProxyFS import proxy_lock
 import proxy_config_core as conf
 from Common.errors import *
 from FIdERFLL import validate_fields
-
 
 
 def getManifest (proxy_id):
@@ -513,8 +513,6 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	#SRS CONVERSION CODE
 
 
-	jsonlist = []
-
 	if normalise:
 		convtable = getConversionTable(proxy_id, meta_id, shape_id)
 		print "Data will be normalised with convtable %s" % (convtable,)
@@ -525,6 +523,12 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	boundaries = [181, 91,-181, -91]
 
 	print "Inspecting datasource %s " % datasource
+
+
+	# fix for when OGR cannot assign a featureid
+	noid = []
+	maxid = 0
+
 
 	for i in range (0, datasource.GetLayerCount()):
 		layer = datasource.GetLayer(i)
@@ -601,9 +605,27 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 				if position[1] > boundaries[3]:
 					boundaries[3] = position[1]
 
+
+			print "DEBUG: JSONDATA: %s (%s)" % (jsondata, type(jsondata))
+
+			if jsondata.has_key(id):
+				try:
+					if int(jsondata['id']) > maxid:
+						maxid = int(jsondata['id'])
+				except:
+					pass
+			else:
+				noid.append(len(collection['features']))
+
+
 			collection['features'].append(jsondata)
 
 			feature = layer.GetNextFeature()
+
+	for seqid in noid:
+		collection['features'][seqid]['id'] = maxid
+		maxid+=1
+
 
 	print "Boundaries set to "+str(boundaries)
 	collection['bbox'] = boundaries
@@ -812,7 +834,7 @@ def createMessageFromTemplate (template, **customfields):
 
 
 
-def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist):
+def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist, req_model=None):
 	"""
 	This function opens a geojson map and alters only a specific list of objects. Before doing it, it checks that the previous status of these items is still in sync with the status the request sender had. If the data is in sync, the changes are made and a list of updated Ids is sent back, otherwise an error with the status of the unsynced objects.
 	:param proxy_id:
@@ -847,7 +869,7 @@ def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist):
 		#print i
 		#print mapdata['features'][i]
 		if changelist.has_key(str(currentid)):
-			keylist[currentid] = str(i)
+			keylist[str(currentid)] = i
 
 	#print "Comparing to map:\n%s" % mapdata
 
@@ -858,8 +880,8 @@ def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist):
 
 	for fid in keylist.keys():
 		tid = keylist[fid]
-		candidate = changelist[tid]['origin']
-		reference = mapdata['features'][fid]
+		candidate = changelist[fid]['origin']
+		reference = mapdata['features'][tid]
 
 		#print "Comparing %s to %s" % (candidate, reference)
 
@@ -872,6 +894,7 @@ def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist):
 	# code for change
 	newfid = max([fid for fid in allids if isinstance(fid, int)])
 	tids = dict ((v,k) for k, v in keylist.iteritems())
+	print "TIDS: %s" % tids
 	if all(syncstatus.values()):
 
 		# we apply the changes and get an updated ids list
@@ -885,26 +908,29 @@ def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist):
 
 			print "Updating element %s" % fid
 
-			if fid not in keylist.values():
-				newfid += 1
-				print "Renaming changelist key %s to %s" % (fid, newfid)
 
-				#1.1.1 create a new feature
+			if fid not in keylist.keys():
 
-				cgeom = changelist[fid]['current']['geometry']
-				cprop = changelist[fid]['current']['attributes']
+				if changelist[fid]['current'] is not None:
+					newfid += 1
+					print "Renaming changelist key %s to %s" % (fid, newfid)
 
-				mapdata['features'].append ({
-					'geometry': cgeom, 'type': 'Feature', 'properties': cprop, 'id': newfid
-				})
+					#1.1.1 create a new feature
 
-				#TODO #1.1.2 add old -> new FID conversion
+					cgeom = changelist[fid]['current']['geometry']
+					cprop = changelist[fid]['current']['attributes']
 
-				fidchanges[fid] = newfid
+					mapdata['features'].append ({
+						'geometry': cgeom, 'type': 'Feature', 'properties': cprop, 'id': newfid
+					})
+
+					#TODO #1.1.2 add old -> new FID conversion
+
+					fidchanges[fid] = newfid
 
 			else:
 
-				basetid = tids[fid]
+				basetid = keylist[fid]
 
 				#balancing the removed elements
 				delta = len(filter(lambda did: did < basetid, deleted))
@@ -921,6 +947,8 @@ def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist):
 					#1.2.1 removing the feature
 					del mapdata['features'][tid]
 					deleted.append(basetid)
+
+					fidchanges[fid] = None
 
 		#2.1 save the json data to geojson and mirror folders
 
@@ -946,23 +974,47 @@ def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist):
 
 		#2.3 remove translation table for this map since we have the correct model already
 
-		os.unlink (os.path.join(conf.baseproxypath, proxy_id, conf.path_mappings, meta_id, shape_id))
+		path_mapconf = os.path.join(conf.baseproxypath, proxy_id, conf.path_mappings, meta_id, shape_id)
 
+		if os.path.exists(path_mapconf):
+			os.unlink (path_mapconf)
 
+		#2.3.2 recreate the translation table so we don't risk losing properties if we rebuild the gj folder
+
+		#TODO: implement logging
+		#NOTE: we TRY to recover the model, but fail silently in case, since it's not critical and the user can fix it. LOG somewhere?
+
+		try:
+
+			req_model = json.loads(req_model)
+
+			mapmodel = {}
+			mtype = req_model['mid']
+
+			for elid in req_model['struct'].keys():
+				mapmodel [elid] = [mtype, elid]
+
+			print "SAVING NEW MODEL: %s" % mapmodel
+
+			mapconf_fp = open(path_mapconf, 'w+')
+			json.dump(mapmodel, mapconf_fp)
+			mapconf_fp.close()
+
+		except Exception, ex:
+			print "DEBUG: failed to save data model due to %s" % ex
+
+		success = True
+		objects = fidchanges
 
 	else:
 
 		# we create a list of the inconsistencies and send them back
 		# loading the map from the geojson directory
-		pass
+		#(actually a full list with true/false depending on the status of the single object)
+
+		success = False
+		objects = syncstatus
 
 
-
-	print "Returning %s (%s)" % (success, objects)
+	#print "Returning %s (%s)" % (success, objects)
 	return success, objects
-
-
-
-
-
-

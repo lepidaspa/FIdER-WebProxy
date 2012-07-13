@@ -175,6 +175,7 @@ function unsetLoadingState()
     $(".btn_remove").unbind();
     $(".btn_remove").click(renderRemoverMask);
 
+
     // activates map controls, removes the front layer
     proxymap.addControl(new OpenLayers.Control.Navigation());
     proxymap.addControl(new OpenLayers.Control.PanZoomBar());
@@ -251,8 +252,10 @@ function renderMapCard (map_id)
     var str_btn_uploadwfs = '<img alt="Aggiorna da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
     var str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
     var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
+    var editlink = "/edit/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/"
+    var str_btn_edit = '<a href="'+editlink+'"><img alt="Modifica" class="btn_edit" id="btn_edit_'+map_id+'" src="/static/resource/fwp_editmap.png"></a>';
 
-    var mapactions = '<div class="mapactions">'+str_btn_focus+' '+str_btn_convert+'<br>'+str_btn_uploadfile+' '+str_btn_uploadwfs+'<br>'+str_btn_remove+'</div>';
+    var mapactions = '<div class="mapactions">'+str_btn_focus+' '+str_btn_convert+'<br>'+str_btn_uploadfile+' '+str_btn_uploadwfs+'<br>'+str_btn_edit+' '+str_btn_remove+'</div>';
 
     var mapcardstring = '<div class="mapcard" id="map_'+map_id+'">'+mapactions+statsstring+'</div>';
 

@@ -13,10 +13,13 @@ __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
 import psycopg2
+import psycopg2.extensions
+
 import proxy_config_core as proxyconf
 
 
-
+class QueryFailedException (Exception):
+	pass
 
 
 def getReverseConversion (proxy_id, meta_id, map_id):
@@ -39,15 +42,56 @@ def getReverseConversion (proxy_id, meta_id, map_id):
 
 
 
-def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
+def makeQueryOnMeta (proxy_id, meta_id, jsonmessage):
 	"""
-	Takes a JSON message and builds a PGSQL query string from it
+	Takes a JSON message, verifies it and builds a PGSQL query string from it for each map in the requested metadata. Returns one feature collection for each map since mappings can be different on the various registered queries
 	:param jsonquery:
 	:return:
 	"""
 
 
-	import psycopg2.extensions
+	jsonmessage = json.loads(jsonmessage)
+
+	messagemodel = ArDiVa.Model(Common.TemplatesModels.model_request_query)
+
+	if not messagemodel.validateCandidate(jsonmessage):
+		raise Exception ("Messaggio non valido: %s" % messagemodel.log)
+
+
+	#TODO: add proxy_id and meta_id? HOW?
+
+	collection = {
+		"type": "FeatureCollection",
+		"features" : [],
+		"properties": {
+			"proxy": proxy_id,
+			"meta": meta_id
+		}
+	}
+
+
+	# checking which queries are available for this meta
+	querypath = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id)
+	querylist = os.listdir(querypath)
+
+	featureslist = []
+	for query in querylist:
+		featureslist.extend(makeSelectFromJson(proxy_id, meta_id, query, jsonmessage))
+
+	collection['features'] = featureslist
+
+	return json.dumps(collection)
+
+
+
+def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
+	"""
+	Takes a JSON message and builds a PGSQL query string from it; this function is expected to be called via makeQueryOnMeta
+	:param jsonquery:
+	:return: array of features, NOT a featurecollection object
+	"""
+
+
 	DEC2FLOAT = psycopg2.extensions.new_type(
 		psycopg2._psycopg.DECIMAL.values, # oids for the decimal type
 		'DEC2FLOAT', # the new typecaster name
@@ -59,12 +103,6 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	proj_WGS84 = 4326
 
-	jsonmessage = json.loads(jsonmessage)
-
-	messagemodel = ArDiVa.Model(Common.TemplatesModels.model_request_query)
-
-	if not messagemodel.validateCandidate(jsonmessage):
-		raise Exception ("Messaggio non valido: %s" % messagemodel.log)
 
 	# if the message is valid, we assemble the query
 
@@ -75,18 +113,12 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 	for querybit in jsonmessage['query']['inventory']:
 		columns.append(querybit['column'])
 
-
-
 	revtable = getReverseConversion(proxy_id, meta_id, map_id)
 
 	# if a column is missing, we return an empty list without checking the DB
 	if not all (map(revtable.has_key, columns)):
-		collection = {
-			"id" : map_id,
-			"type": "FeatureCollection",
-			"features" : [],
-			}
-		return json.dumps(collection)
+		return []
+
 
 	convtable = {}
 	for key in revtable.keys():
@@ -104,7 +136,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 		cur = conn.cursor()
 		print "Connection established"
 	except Exception as ex:
-		raise Exception ("Connessione fallita: %s" % ex)
+		raise QueryFailedException ("Connessione fallita: %s" % ex)
 
 	#NOTE: bt as BETWEEN removed for now since it would require a specific syntax
 	operators = {
@@ -189,11 +221,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	#print "RESULTING GEOJSON"
 
-	collection = {
-		"id" : map_id,
-		"type": "FeatureCollection",
-		"features" : [],
-		}
+	collection = []
 
 
 
@@ -212,7 +240,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 		data['properties'] = properties
 
-		collection['features'].append(data)
+		collection.append(data)
 
 
 

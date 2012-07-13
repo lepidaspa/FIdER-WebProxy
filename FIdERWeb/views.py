@@ -9,7 +9,7 @@ import urllib2
 import os
 import sys
 from zipfile import ZipFile
-
+import zipfile
 
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
@@ -755,22 +755,22 @@ def saveMapFile (uploaded, proxy_id, meta_id, shape_id=None):
 
 	if shape_id is None:
 		shape_id = uploaded.name[:-4]
-		if os.path.exists(os.path.join(conf.baseuploadpath, proxy_id, meta_id, uploaded.name)):
-			os.remove(os.path.join(conf.baseuploadpath, proxy_id, meta_id, uploaded.name))
-		fs = FileSystemStorage(location=os.path.join(conf.baseuploadpath))
+		if os.path.exists(os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, uploaded.name)):
+			os.remove(os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, uploaded.name))
+		fs = FileSystemStorage(location=os.path.join(proxyconf.baseuploadpath))
 		savepath = fs.save(os.path.join(proxy_id, meta_id, shape_id+".zip"), File(uploaded))
 		return True, savepath
 	else:
 		try:
-			if os.path.exists(os.path.join(conf.baseuploadpath, proxy_id, meta_id, shape_id+".zip")):
-				os.remove(os.path.join(conf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
+			if os.path.exists(os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip")):
+				os.remove(os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
 
 			zipfrom = zipfile.ZipFile(uploaded)
 			zipdata = zipfrom.infolist()
 			try:
-				zipto = zipfile.ZipFile(os.path.join(conf.baseuploadpath,proxy_id, meta_id, shape_id+".zip"), 'w', zipfile.ZIP_DEFLATED)
+				zipto = zipfile.ZipFile(os.path.join(proxyconf.baseuploadpath,proxy_id, meta_id, shape_id+".zip"), 'w', zipfile.ZIP_DEFLATED)
 			except:
-				zipto = zipfile.ZipFile(os.path.join(conf.baseuploadpath,proxy_id, meta_id, shape_id+".zip"), 'w', zipfile.ZIP_STORED)
+				zipto = zipfile.ZipFile(os.path.join(proxyconf.baseuploadpath,proxy_id, meta_id, shape_id+".zip"), 'w', zipfile.ZIP_STORED)
 			for element in zipdata:
 				filename = element.filename.replace(element.filename.split(".")[0], shape_id)
 				zipto.writestr(filename, zipfrom.read(element))
@@ -830,6 +830,8 @@ def proxy_read_full (request, **kwargs):
 
 	return HttpResponse(read_result, mimetype="application/json")
 
+
+
 def proxy_perform_query (request, **kwargs):
 	"""
 	Performs an sql query on proxy, meta, map as per kwargs with the JSON message in request.POST
@@ -840,10 +842,9 @@ def proxy_perform_query (request, **kwargs):
 
 	proxy_id = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
-	map_id = kwargs['map_id']
 
 	querydata = request.POST['remotequery']
 
-	geojson = proxy_query.makeSelectFromJson(proxy_id, meta_id, map_id, querydata)
+	geojson = proxy_query.makeSelectFromJson(proxy_id, meta_id, querydata)
 
 	return HttpResponse(geojson, mimetype="application/json")
