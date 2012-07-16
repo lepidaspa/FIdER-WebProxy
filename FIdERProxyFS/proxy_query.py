@@ -42,7 +42,7 @@ def getReverseConversion (proxy_id, meta_id, map_id):
 
 
 
-def makeQueryOnMeta (proxy_id, meta_id, jsonmessage):
+def makeQueryOnMeta (proxy_id, meta_id, json_raw):
 	"""
 	Takes a JSON message, verifies it and builds a PGSQL query string from it for each map in the requested metadata. Returns one feature collection for each map since mappings can be different on the various registered queries
 	:param jsonquery:
@@ -50,9 +50,14 @@ def makeQueryOnMeta (proxy_id, meta_id, jsonmessage):
 	"""
 
 
-	jsonmessage = json.loads(jsonmessage)
+	jsonmessage = json.loads(json_raw)
+
+	print "Working on %s, type %s " % (jsonmessage, type(jsonmessage))
+
 
 	messagemodel = ArDiVa.Model(Common.TemplatesModels.model_request_query)
+
+	print "Model %s " % messagemodel
 
 	if not messagemodel.validateCandidate(jsonmessage):
 		raise Exception ("Messaggio non valido: %s" % messagemodel.log)
@@ -65,7 +70,8 @@ def makeQueryOnMeta (proxy_id, meta_id, jsonmessage):
 		"features" : [],
 		"properties": {
 			"proxy": proxy_id,
-			"meta": meta_id
+			"meta": meta_id,
+			"errors": []
 		}
 	}
 
@@ -76,7 +82,10 @@ def makeQueryOnMeta (proxy_id, meta_id, jsonmessage):
 
 	featureslist = []
 	for query in querylist:
-		featureslist.extend(makeSelectFromJson(proxy_id, meta_id, query, jsonmessage))
+		try:
+			featureslist.extend(makeSelectFromJson(proxy_id, meta_id, query, jsonmessage))
+		except QueryFailedException:
+			collection['properties']['errors'].append(query)
 
 	collection['features'] = featureslist
 

@@ -841,7 +841,7 @@ def proxy_perform_query (request, **kwargs):
 
 	querydata = request.POST['remotequery']
 
-	#print "PRE-QUERY DATA REQ: %s" % querydata
+	print "PRE-QUERY DATA REQ: %s (%s)" % (querydata, type(querydata))
 
 	geojson = proxy_query.makeQueryOnMeta(proxy_id, meta_id, querydata)
 
