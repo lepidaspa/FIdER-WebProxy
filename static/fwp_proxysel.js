@@ -32,6 +32,8 @@ function pageInit(jsonlisting)
 
     buildProxyList();
 
+    $("#proxymap").empty();
+
     //TODO: import theme to local and replace this after DEMO (or before?)
     OpenLayers.ImgPath = "/static/OpenLayers/themes/dark/";
 
@@ -79,16 +81,35 @@ function reprojPoint (pointX, pointY)
 function buildProxyList ()
 {
 
+    console.log("PROXY LIST: "+JSON.stringify(proxies));
     // Takes the global var proxies and creates the full proxy listing in the side bar
+    proxynames = new Array();
+    $("#proxylisting").empty();
 
     for (var proxy_id in proxies)
     {
         // TODO: placeholders, beautify
-        var entry_area = proxies[proxy_id]['area'];
-        var entry_time = proxies[proxy_id]['time'];
         var entry_name = proxies[proxy_id]['name'];
 
         proxynames.push(entry_name);
+
+        var entry_area = "";
+        for (var b in proxies[proxy_id]['area'])
+        {
+            entry_area += proxies[proxy_id]['area'][b].toFixed(5)+" ";
+        }
+
+
+        var entry_time = proxies[proxy_id]['time'][0];
+        if (proxies[proxy_id]['time'].length == 2)
+        {
+            entry_time += " - "+proxies[proxy_id]['time'][1];
+        }
+        else
+        {
+            entry_time += " - ";
+        }
+
 
 
         var proxyentry = '<div class="nav_entry" id="proxies_'+proxy_id+'"><a href="/fwp/proxy/'+proxy_id+'">'+entry_name +'</a><br>'+entry_area+'<br>'+entry_time+'</div>';

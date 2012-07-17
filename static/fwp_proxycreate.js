@@ -350,9 +350,14 @@ function backToMaps()
 
     $("#proxy_create_new").show();
     $("#proxy_show_map").hide();
-    $("#proxymap").show();
+
     $("#proxymapcanvas").hide();
     $("#metamapcanvas").hide();
+
+    $("#proxymap").show();
+
+    // we do this to properly reset the main map
+    pageInit(proxies);
 
 }
 
@@ -371,9 +376,10 @@ function create_setMaps()
     newproxymap = create_createMapWidget("proxymapcanvas");
     newmetamap = create_createMapWidget("metamapcanvas");
 
-    //create_setNavControls(newproxymap);
-    create_setDrawControls(newproxymap);
-    create_setDrawControls(newmetamap);
+    create_setNavControls(newproxymap);
+    create_setNavControls(newmetamap);
+    //create_setDrawControls(newproxymap);
+    //create_setDrawControls(newmetamap);
 
 
     newproxymap.events.register("moveend", newproxymap, create_CheckForSubmission);
@@ -400,7 +406,7 @@ function create_createMapWidget(element)
     var defaultstyle = new OpenLayers.Style ( {fillOpacity: 0.4, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
     var selectstyle = new OpenLayers.Style ( {fillOpacity: 0.4, fillColor: "#0000FF", strokeColor: "#0000FF", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
     var drawstyle = new OpenLayers.Style ( {fillOpacity: 0.4, fillColor: "#0000FF", strokeColor: "#0000FF", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
-    featurestylemap = new OpenLayers.StyleMap ({'default': defaultstyle, 'select': selectstyle, 'temporary': drawstyle})
+    featurestylemap = new OpenLayers.StyleMap ({'default': defaultstyle, 'select': selectstyle, 'temporary': drawstyle});
     // adding the "state" layer
     var tracelayer = new OpenLayers.Layer.Vector("BoundingBox", {styleMap: featurestylemap});
     widget.addLayer(tracelayer);
@@ -432,6 +438,7 @@ function create_setDrawControls (map)
 
 function replaceOldBox (feature)
 {
+    /*
     var layer = feature.layer;
     var removelist = new Array();
     for (var f in layer.features)
@@ -443,6 +450,12 @@ function replaceOldBox (feature)
     }
 
     layer.removeFeatures(removelist);
+    */
+
+    var newbox = feature;
+    feature.layer.removeAllFeatures();
+    feature.layer.addFeatures(new Array (newbox));
+
     create_CheckForSubmission();
     //alert("Killing old bbox from "+feature.layer.map);
 }
@@ -731,10 +744,19 @@ function create_CheckForSubmission()
         //TODO: add error message saying meta cannot be parsed without a full proxy description
     }
 
-    var str_err_times = errors_times.length > 0 ? "WRONG TIME: "+JSON.stringify(errors_times) : "";
+
+
+
+    var str_err_times = errors_times.length > 0 ? writeIssueList("Intervalli non compatibili: ", errors_times)  : "";
+    var str_err_areas = errors_areas.length > 0 ? writeIssueList("Aree non compatibili: ", errors_areas) : "";
+    var str_warn_times = warnings_times.length > 0 ? writeIssueList("Intervalli normalizzati: ", warnings_times) : "";
+    var str_warn_areas = warnings_areas.length > 0 ? writeIssueList("Aree normalizzate: ", warnings_areas) : "";
+
+    /*
     var str_err_areas = errors_areas.length > 0 ? "WRONG BBOX: "+JSON.stringify(errors_areas) : "";
     var str_warn_times = warnings_times.length > 0 ? "AUTOFIX TIME: "+JSON.stringify(warnings_times) : "";
     var str_warn_areas = warnings_areas.length > 0 ? "AUTOFIX BBOX: "+JSON.stringify(warnings_areas) : "";
+    */
 
     $("#reports_pre").text(str_err_times+"\n"+str_err_areas+"\n"+str_warn_areas+"\n"+str_warn_times);
 
@@ -747,6 +769,23 @@ function create_CheckForSubmission()
     {
         $("#proxy_create_confirm").prop('disabled', false);
     }
+
+
+}
+
+function writeIssueList (introstring, instances)
+{
+
+    var report = introstring;
+
+    var sep = "";
+    for (var i in instances)
+    {
+        report += sep+instances[i];
+        sep = ", ";
+    }
+
+    return report;
 
 
 }

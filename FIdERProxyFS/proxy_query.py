@@ -60,6 +60,7 @@ def makeQueryOnMeta (proxy_id, meta_id, json_raw):
 	print "Model %s " % messagemodel
 
 	if not messagemodel.validateCandidate(jsonmessage):
+		print "DEBUG: invalid message %s" % jsonmessage
 		raise Exception ("Messaggio non valido: %s" % messagemodel.log)
 
 
@@ -79,6 +80,8 @@ def makeQueryOnMeta (proxy_id, meta_id, json_raw):
 	# checking which queries are available for this meta
 	querypath = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id)
 	querylist = os.listdir(querypath)
+
+	print "trying to query on %s " % querylist
 
 	featureslist = []
 	for query in querylist:
@@ -178,7 +181,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 		wherestring += cur.mogrify(newbit, (bb[0], bb[1], bb[2], bb[3]))
 
 
-	print wherestring
+	print "QUERY CONDITIONS: *************\n%s\n******************************" % wherestring
 
 	view_id = conn_data['query']['view']
 	schema_id = conn_data['query']['schema']

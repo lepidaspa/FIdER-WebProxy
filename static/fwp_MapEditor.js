@@ -441,6 +441,7 @@ function updateChangelist ()
         changedata['current'] = null;
     }
 
+
     changelist.push(changedata);
     $("#btn_savechanges").show();
 
@@ -618,6 +619,7 @@ function saveAttributeChanges ()
 
     var feedbackmess = '<div class="feedback success">Dati aggiornati.</div>';
 
+    $(".feedback").remove();
     $("#feature_props").after(feedbackmess);
     updateChangeSource();
     updateChangelist();
@@ -774,7 +776,7 @@ function saveMapChanges ()
                     rebuildChangeSource (changes, data['report']);
                     $("#btn_savechanges").hide();
 
-                    postFeedbackMessage(data['success'],"Modifiche salvate correttamente.","#feature_props");
+                    postFeedbackMessage(data['success'],"Modifiche salvate correttamente.","#states");
 
 
                 }
@@ -782,7 +784,7 @@ function saveMapChanges ()
                 {
                     console.log("Modification failed");
                     // open mask for handling of inconsistencies
-                    postFeedbackMessage(data['success'],"Aggiornamento fallito.","#feature_props");
+                    postFeedbackMessage(data['success'],"Aggiornamento fallito.","#states");
                     renderResaveMask (changes, data['report']);
 
 

@@ -14,16 +14,15 @@ Analisi e modifica delle mappe
 {% block navigation %}
 
     {# TODO: put the buttons for help and screen conf here #}
-    <div id="mapsummary">
-        {{ proxy_name }}: {{ meta_id }}: {{ shape_id }}
+    <div id="mapsummary"><a href="/fwp/proxy/{{ proxy_id }}/{{ meta_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a> {{ proxy_name }}: {{ meta_id }}: {{ shape_id }}
     </div>
 
     <div id="minimap" class="cornermap"></div>
-    <div id="loadingstate" class="statemess">Caricamento mappe</div>
-    <div id="savingstate" class="statemess">Salvataggio in corso</div>
-
-    <div class="button wide" id="btn_savechanges">Salva la mappa aggiornata</div>
-
+    <div id="states">
+        <div id="loadingstate" class="statemess">Caricamento mappe</div>
+        <div id="savingstate" class="statemess">Salvataggio in corso</div>
+        <div class="button wide" id="btn_savechanges">Salva la mappa aggiornata</div>
+    </div>
 
 
     <div id="mapcontrol">
