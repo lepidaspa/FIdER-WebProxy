@@ -40,9 +40,10 @@ var convmodelcats;
 // id of the map item being worked on in the sidebar, needed to keep state with the bindings
 var currentmap;
 
-function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
+function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote)
 {
 
+    console.log(JSON.parse(req_remote));
     $("#renderingstate").hide();
     $("#loadingstate").hide();
     $("#serverstate").hide();

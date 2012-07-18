@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import shutil
-import traceback
-from Common import TemplatesModels
-from FIdERProxyFS import proxy_core
-from FIdERProxyFS.proxy_core import createMessageFromTemplate
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
-#from httplib import HTTPException
-#from time import sleep
+import shutil
+import traceback
 import zipfile
 import time
 import sys
 import os
 import json
 
+import ogr
+
+import Common
+from FIdERProxyFS import proxy_core
 from Common.errors import *
 import proxy_config_core as conf
 import proxy_lock
+from Common import TemplatesModels
 
 from Common.Components import sendMessageToServer
 
@@ -81,7 +81,7 @@ def logEvent (eventdata, iserror=False):
 def createSoftProxy (proxy_id, manifest):
 
 	try:
-		proxy_core.createSoftProxy(proxy_id, manifest)
+		proxy_core.makeSoftProxy(proxy_id, manifest)
 	except Exception as ex:
 		traceback.print_exc()
 		return False, "Creazione del proxy %s fallita. Errore: %s" % (proxy_id, ex.message)
@@ -251,7 +251,7 @@ def createMessageUpdatesRead (proxy_id, timestamp):
 		}
 	}
 
-	requestmsg = createMessageFromTemplate(template, token=proxy_id, **customfields)
+	requestmsg = proxy_core.createMessageFromTemplate(template, token=proxy_id, **customfields)
 
 	return json.dumps(requestmsg)
 
@@ -284,7 +284,7 @@ def sendUpdatesWrite (proxy_id):
 		}
 	}
 
-	requestmsg = createMessageFromTemplate(template, token=proxy_id, **customfields)
+	requestmsg = Common.Components.createMessageFromTemplate(template, token=proxy_id, **customfields)
 
 	#TODO: actual implementation of message transmission handling, right now we only have an empty function call
 	send_success = sendMessageToServer(json.dumps(requestmsg), conf.URL_WRITEREQUEST, 'POST', TemplatesModels.model_response_write, TemplatesModels.model_error_error)
@@ -307,6 +307,99 @@ def sendUpdatesWrite (proxy_id):
 	else:
 		#leave the /next listing as is and log the failure as issue
 		logEvent ("Failed to send updates for proxy %s (meta/timestamp list: %s)" % (proxy_id, updateslist), True)
+
+
+
+def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
+	"""
+	Loads a remote WFS resource to the proxy/meta/map combination in the request.
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:param connect: dictionary with connection info: url, user, pass, layer
+	:param setforupdate: boolean, whether to write the connection configuration in the remoteres directory for future updates. This is off by default as the function is called more often as an update than for creation
+	:return: a report dict with keys success (bool) and report (string)
+	"""
+
+	response_upload = {
+		'success': False,
+		'report': ''
+	}
+
+	protocol, separator, url = connect['url'].partition("://")
+	authstring = ""
+	if connect['user'] not in (None, ""):
+		authstring = connect['user']+"@"
+		if connect['pass'] not in (None, ""):
+			authstring = connect['pass']+":"+authstring
+
+	connectstring = "WFS:"+protocol+separator+authstring+url
+	print connectstring,connect
+
+	driver = ogr.GetDriverByName('WFS')
+	try:
+		wfs = driver.Open(connectstring)
+		layer = wfs.GetLayerByName(str(connect['layer']))
+	except Exception as ex:
+		print "Connection error: %s " % ex
+		# TODO: add logging
+		response_upload['report'] = "Connessione fallita o dati mancanti per l'indirizzo specificato."
+		return response_upload
+
+	gjfeatures = []
+	for feature in layer:
+		#print 'Json representation for Feature: %s' % feature.GetFID()
+		gjfeatures.append(json.loads(feature.ExportToJson()))
+
+	#print gjfeatures
+
+	collection = {
+		'id' : map_id,
+		'type': 'FeatureCollection',
+		'features' : gjfeatures
+	}
+
+	uploadpath = os.path.join(conf.baseuploadpath, proxy_id, meta_id, map_id+".zip")
+
+	print "Ready to zip WFS data"
+
+	with zipfile.ZipFile(uploadpath, 'w') as datazip:
+		datazip.writestr(map_id+".geojson", json.dumps(collection))
+
+	print "Zipped data ok"
+
+	try:
+		handleFileEvent (os.path.join(conf.baseuploadpath, proxy_id, meta_id, map_id+".zip"))
+		response_upload = {
+			'success': True,
+			'report': 'Mappa %s aggiornata. ' % map_id
+		}
+
+		# adding the wfs resource to the list of remote resources IF it worked
+
+		if setforupdate:
+
+			try:
+				fppath = os.path.join(conf.baseproxypath, proxy_id, conf.path_remoteres, meta_id)
+				os.makedirs(fppath)
+				fp_wfsres = open(os.path.join(fppath, map_id+".wfs"), 'w+')
+				json.dump(connect, fp_wfsres)
+				fp_wfsres.close()
+				response_upload['report'] += "Configurato l'aggiornamento automatico."
+			except Exception as ex:
+				print "ERROR while saving as remote resource: %s " % ex
+				response_upload['report'] += "Aggiornamento automatico non configurato."
+
+
+	except Exception, ex:
+		response_upload = {
+			'success': False,
+			'report': ex
+		}
+
+
+	return response_upload
+
 
 def getProxyList ():
 
@@ -332,9 +425,9 @@ def getFullProxyListing (precompiled=True):
 
 	branch = ""
 	if precompiled:
-		branch = "maps/json"
+		branch = conf.path_geojson
 	else:
-		branch = "maps/mirror"
+		branch = conf.path_mirror
 
 	list_proxy = getProxyList()
 

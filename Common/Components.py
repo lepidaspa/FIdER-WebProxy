@@ -1,18 +1,48 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+
 import json
 import urllib
 import urllib2
+import sys
+
+
+
 from FIdERProxyFS import proxy_config_core as conf
 from FIdERProxyFS import proxy_core
 from MarconiLabsTools import ArDiVa
 from Common.errors import *
 from Common import TemplatesModels
+import MarconiLabsTools
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
-#from ProxySystem
+
+def createMessageFromTemplate (template, **customfields):
+	"""
+	Sends a json message to the main server and returns success if the response code is correct
+	:param template: the model, must be ArDiVa.Model compliant
+	:param customfields: a dict with all the custom data to be added to the model
+	:return: dictionary message ready for json.dumps, exception if the modified messge fails validation on the template
+	"""
+
+	#NOTE: should we keep proxy_id explicit in the message creation (for the purpose of logging)?
+
+	messagemodel = MarconiLabsTools.ArDiVa.Model(template)
+
+	filledok, requestmsg = messagemodel.fillSafely(customfields)
+
+	if filledok is True:
+		return requestmsg
+	else:
+		print messagemodel.log
+		raise RuntimeProxyException ("Failed to create valid %s %s message for proxy %s" % (template['message_type'], template['message_format'], customfields['token']))
+
+
+
 def sendMessageToServer (jsonmessage, url, method, successreturns=None, failreturns=None):
 	"""
 	Sends a json message to the main server and returns success if the response code is correct

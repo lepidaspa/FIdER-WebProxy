@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+
+# Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
@@ -15,16 +18,13 @@ import json
 
 from osgeo import ogr
 
-from Common.errors import RuntimeProxyException
-import MarconiLabsTools.ArDiVa
-
-
 sys.path.append("../")
+
+from Common.errors import *
 
 from Common import TemplatesModels
 from FIdERProxyFS import proxy_lock
 import proxy_config_core as conf
-from Common.errors import *
 from FIdERFLL import validate_fields
 
 
@@ -32,7 +32,7 @@ def getManifest (proxy_id):
 
 	return json.load(open(os.path.join(conf.baseproxypath,proxy_id,conf.path_manifest)))
 
-def createSoftProxy (proxy_id, manifest):
+def makeSoftProxy (proxy_id, manifest):
 	"""
 	Creates the filestructure for a softproxy using the chosen id and the manifest
 	:param proxy_id:
@@ -636,6 +636,30 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	return collection
 
 
+def getRemotesList (proxy_id):
+	"""
+	Returns a list of all the remote resource config files (i.e. WFS) retrieved for the specified proxy.
+	:param proxy_id:
+	:return: list of dicts with meta_id, shape_id keys/values
+	"""
+
+	maps_remotepath = []
+
+	proxy_remotepath = os.path.join (conf.baseproxypath, proxy_id, conf.path_remoteres)
+
+	for meta_id in os.listdir(proxy_remotepath):
+		meta_remotepath = os.path.join(proxy_remotepath, meta_id)
+		for mapconf in os.listdir(meta_remotepath):
+			maps_remotepath.append({'meta_id': meta_id, 'mapconf': mapconf})
+
+	return maps_remotepath
+
+
+
+
+
+
+
 def getConversionTable (proxy_id, meta_id, shape_id):
 	"""
 	Returns a conversion table for geojson features properties. returns a dictionary with dict[keyfrom] = keyto. Returns None if there is NO table for the specified shape_id, raises an Exception if the file exists but cannot be properly accessed or parsed
@@ -809,28 +833,8 @@ def queueForSend (proxy_id, meta_id):
 
 	nextfilepath = os.path.join (conf.baseproxypath, proxy_id, "next", meta_id)
 
-	open(nextfilepath, 'w').close()
+	open(nextfilepath, 'w+').close()
 
-
-def createMessageFromTemplate (template, **customfields):
-	"""
-	Sends a json message to the main server and returns success if the response code is correct
-	:param template: the model, must be ArDiVa.Model compliant
-	:param customfields: a dict with all the custom data to be added to the model
-	:return: dictionary message ready for json.dumps, exception if the modified messge fails validation on the template
-	"""
-
-	#NOTE: should we keep proxy_id explicit in the message creation (for the purpose of logging)?
-
-	messagemodel = MarconiLabsTools.ArDiVa.Model(template)
-
-	filledok, requestmsg = messagemodel.fillSafely(customfields)
-
-	if filledok is True:
-		return requestmsg
-	else:
-		print messagemodel.log
-		raise RuntimeProxyException ("Failed to create valid %s %s message for proxy %s" % (template['message_type'], template['message_format'], customfields['token']))
 
 
 

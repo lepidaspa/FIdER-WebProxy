@@ -8,7 +8,6 @@ import traceback
 import urllib2
 import os
 import sys
-from zipfile import ZipFile
 import zipfile
 
 from django.http import HttpResponse
@@ -16,7 +15,6 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.safestring import SafeString
 from django.views.decorators.csrf import csrf_exempt
-from osgeo import ogr
 
 from FIdERProxyFS import proxy_core, ProxyFS, proxy_web, proxy_query
 import FIdERProxyFS.proxy_config_core as proxyconf
@@ -95,10 +93,16 @@ def metapage (request, **kwargs):
 
 	if proxytype != 'query':
 		metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)
-		#TODO: make conditional on proxy being NOT query and add alternative for query
+
 		proxymaps = []
 		for mapfile in os.listdir(metadir):
 			proxymaps.append(mapfile)
+
+		remotedir = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id)
+		remotemaps = []
+		for conffile in os.listdir(remotedir):
+			remotemaps.append(conffile[:-4])
+
 	else:
 		metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_mirror, meta_id)
 		proxymaps = {}
@@ -109,6 +113,7 @@ def metapage (request, **kwargs):
 
 	if proxytype != 'query':
 		template = 'fwp_metapage.html'
+		kwargs['remote'] = SafeString(json.dumps(remotemaps))
 	else:
 		template = 'fwp_querypage.html'
 		kwargs['models'] = SafeString(json.dumps(getModels()))
@@ -287,6 +292,58 @@ def proxy_create_conversion (request):
 	return HttpResponse(json.dumps(response_table_update), mimetype="application/json")
 
 
+def proxy_refresh_remote (request, **kwargs):
+	"""
+	Updates ALL WFS (and remote) resources on this proxy. Starts from a GET request and does not return any response
+	:param request:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+
+	response_refresh_remote = {
+		'success': False,
+		'report': {
+			'updated': [],
+			'errors': []
+		}
+	}
+
+	try:
+		remotelist = proxy_core.getRemotesList (proxy_id)
+	except Exception as ex:
+		print "ERROR: %s " % ex
+
+		return HttpResponse(json.dumps(response_refresh_remote), mimetype="application/json")
+
+
+	for item in remotelist:
+		meta_id = item['meta_id']
+		conf_file = item['mapconf']
+		map_id = conf_file[:-4]
+
+
+		conf_fp = open(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id, conf_file))
+		connect = json.load(conf_fp)
+		conf_fp.close()
+
+		response_wfsupdate = ProxyFS.uploadWFS (proxy_id, meta_id, map_id, connect)
+
+		print response_wfsupdate
+
+		if response_wfsupdate['success'] is True:
+			response_refresh_remote['report']['updated'].append([proxy_id, meta_id, map_id])
+		else:
+			response_refresh_remote['report']['errors'].append([proxy_id, meta_id, map_id])
+
+	response_refresh_remote['success'] = True
+
+	print "Refresh result: %s" % response_refresh_remote
+
+	return HttpResponse(json.dumps(response_refresh_remote), mimetype="application/json")
+
+
+
 @csrf_exempt
 def proxy_uploadwfs (request, **kwargs):
 
@@ -317,69 +374,7 @@ def proxy_uploadwfs (request, **kwargs):
 
 	print connect
 
-	protocol, separator, url = connect['url'].partition("://")
-	authstring = ""
-	if connect['user'] not in (None, ""):
-		authstring = connect['user']+"@"
-		if connect['pass'] not in (None, ""):
-			authstring = connect['pass']+":"+authstring
-
-	connectstring = "WFS:"+protocol+separator+authstring+url
-	print connectstring
-
-	driver = ogr.GetDriverByName('WFS')
-	try:
-		wfs = driver.Open(connectstring)
-		layer = wfs.GetLayerByName(connect['layer'])
-	except:
-		response_upload['report'] = "Connessione fallita o dati mancanti per l'indirizzo specificato."
-		return HttpResponse(json.dumps(response_upload), mimetype="application/json")
-
-	gjfeatures = []
-	for feature in layer:
-		#print 'Json representation for Feature: %s' % feature.GetFID()
-		gjfeatures.append(json.loads(feature.ExportToJson()))
-
-	#print gjfeatures
-
-	collection = {
-		'id' : shape_id,
-		'type': 'FeatureCollection',
-		'features' : gjfeatures
-		}
-
-	uploadpath = os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip")
-
-	print "Ready to zip WFS data"
-
-	with ZipFile(uploadpath, 'w') as datazip:
-		datazip.writestr(shape_id+".geojson", json.dumps(collection))
-
-	print "Zipped data ok"
-
-	try:
-		ProxyFS.handleFileEvent (os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
-		response_upload = {
-			'success': True,
-			'report': 'Mappa %s aggiornata. ' % shape_id
-		}
-
-		# adding the wfs resource to the list of remote resources IF it worked
-
-		try:
-			fp_wfsres = open(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id, shape_id+".wfs"))
-			json.dump(connect, fp_wfsres)
-			fp_wfsres.close()
-			response_upload['report'] += "Configurato l'aggiornamento automatico."
-		except:
-			response_upload['report'] += "Non è stato possibile configurare l'aggiornamento automatico."
-
-
-	except Exception, ex:
-		response_upload = {
-			'success': False,
-			'report': ex
-		}
+	response_upload = ProxyFS.uploadWFS(proxy_id, meta_id, shape_id, connect, True)
 
 
 

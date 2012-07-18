@@ -25,6 +25,7 @@ urlpatterns = patterns('',
 	# urls for "passive" operations, called by the main server
 	url(r'^data/(?P<proxy_id>\w*)/', fwpviews.proxy_read_full),
 	url(r'^query/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/', fwpviews.proxy_perform_query),
+	url(r'^refreshremote/(?P<proxy_id>\w*)/', fwpviews.proxy_refresh_remote),
 
 	#urls for self-ops, called by the proxy
 	url(r'^fwp/maketable/', fwpviews.proxy_create_conversion),
