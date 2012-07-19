@@ -1,3 +1,5 @@
+
+
 #mapsummary
 {
 
@@ -44,16 +46,17 @@
     /*word-break:     break-all; */
     width:              100%;
     max-width:          100%;
-    border:             1px solid #ff8800;
+    border:             1px solid #90EE90;
+    background-color:   #ffffbb;
+    color:              #000000;
     margin-bottom:      8px;
 }
 
 .featureactions
 {
-    float:          right;
-    /*margin:         4px; */
-    padding-right:   4px;
-    padding-top:     4px;
+    float:              right;
+    padding-right:      4px;
+    padding-top:        4px;
 }
 
 .mapcontrol
@@ -68,8 +71,8 @@ table#feature_props
     left:               0;
     right:              0;
 
-    background-color:   #ff8800;
-    color:              #ffffff;
+    background-color:   #ffffbb;
+    color:              #000000;
 
 }
 
@@ -89,3 +92,6 @@ table#feature_props *
     background-color:   #ff8800;
     color:              #ffffff;
 }
+
+
+

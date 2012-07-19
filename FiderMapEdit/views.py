@@ -62,6 +62,17 @@ def mapeditor (request, **kwargs):
 	return render_to_response ('fwp_MapEditor.html', {'proxy_id': proxy_id, 'meta_id': meta_id, 'shape_id': shape_id, 'maps': proxymaps, 'mapsjson': SafeString(json.dumps(proxymaps)), 'proxy_name': manifest['name'], 'objmodel': SafeString(json.dumps(convtable)) }, context_instance=RequestContext(request))
 
 
+def getMapsList (request):
+	"""
+	Returns a full list of the non-query maps in the proxy
+	:param request:
+	:return:
+	"""
+
+
+
+
+
 @csrf_exempt
 def implementchanges (request, **kwargs):
 	"""

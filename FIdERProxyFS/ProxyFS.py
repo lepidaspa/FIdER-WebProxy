@@ -381,7 +381,11 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 
 			try:
 				fppath = os.path.join(conf.baseproxypath, proxy_id, conf.path_remoteres, meta_id)
-				os.makedirs(fppath)
+				try:
+					os.makedirs(fppath)
+				except:
+					# already exists: not a problem, if more severe we will get a different error later and handle that
+					pass
 				fp_wfsres = open(os.path.join(fppath, map_id+".wfs"), 'w+')
 				json.dump(connect, fp_wfsres)
 				fp_wfsres.close()

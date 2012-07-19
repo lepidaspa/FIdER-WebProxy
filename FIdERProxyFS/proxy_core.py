@@ -606,7 +606,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 					boundaries[3] = position[1]
 
 
-			print "DEBUG: JSONDATA: %s (%s)" % (jsondata, type(jsondata))
+			#print "DEBUG: JSONDATA: %s (%s)" % (jsondata, type(jsondata))
 
 			if jsondata.has_key(id):
 				try:
@@ -634,6 +634,27 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		raise Exception ('Could not retrieve any feature from map %s') % shape_id
 
 	return collection
+
+
+def getAllEditables ():
+	"""
+	Returns a dict with proxy/meta/shape of only editable maps (queries excluded) in the hardproxy
+	:return:
+	"""
+
+	maplist = {}
+
+	proxymanifests = os.listdir(conf.basemanifestpath)
+	for manfile in proxymanifests:
+		manifestdata = json.load(open(os.path.join(conf.baseproxypath, manfile)))
+
+		if manifestdata['operations']['read'] != "none" or manifestdata['operations']['write'] != "none":
+			maplist[manfile.split(".")[0]] = {}
+
+	for proxy_id in maplist.keys():
+
+
+
 
 
 def getRemotesList (proxy_id):

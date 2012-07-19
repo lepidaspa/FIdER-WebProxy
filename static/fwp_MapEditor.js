@@ -80,6 +80,8 @@ Loads the main map and the list of additional maps
     $("#savingstate").hide();
     $("#btn_savechanges").hide();
 
+    toggleContextGuide();
+
 
 
     proxy_id = req_proxy;
@@ -109,10 +111,26 @@ Loads the main map and the list of additional maps
 
 }
 
+function toggleContextGuide()
+{
+    if (!$("#contextguide").is(':hidden'))
+    {
+        $("#contextguide").hide();
+        $("#functionality").css("right", "0");
+        $("#functionality").css("border-right", "none");
+    }
+    else
+    {
+        $("#contextguide").show();
+        $("#functionality").css("right", "25%");
+        $("#functionality").css("border-right", "1px solid #ffff00");
+    }
+
+}
+
 function setLoadingState()
 {
     $("#loadingstate").show();
-5
 
 
 }
@@ -143,31 +161,12 @@ function loadMainMap()
 
 
         //alert ("Loaded map "+map_id+"\n"+JSON.stringify(coredata));
-        renderMiniMap('minimap');
         renderMainMap('mapview');
         unsetLoadingState();
 
     });
 
 
-
-}
-
-
-function renderMiniMap (widgetid)
-{
-
-
-    minimap = new OpenLayers.Map(widgetid, {controls: []});
-    minimap.projection = proj_WGS84;
-    minimap.displayProjection = new OpenLayers.Projection(proj_WGS84);
-
-    var layer = new OpenLayers.Layer.OSM();
-
-    minimap.addLayer(layer);
-
-    var bbox = (coredata['bbox']);
-    zoomToBBox(minimap, bbox);
 
 }
 
