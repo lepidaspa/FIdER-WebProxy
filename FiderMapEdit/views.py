@@ -69,8 +69,7 @@ def getMapsList (request):
 	:return:
 	"""
 
-
-
+	return HttpResponse(json.dumps(proxy_core.getAllEditables()), mimetype="application/json")
 
 
 @csrf_exempt

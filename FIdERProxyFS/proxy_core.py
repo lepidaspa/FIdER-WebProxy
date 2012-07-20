@@ -638,7 +638,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 def getAllEditables ():
 	"""
-	Returns a dict with proxy/meta/shape of only editable maps (queries excluded) in the hardproxy
+	Returns a dict with proxy/meta/shape of only editable maps (queries excluded) in the hardproxy. Note that element with key ".name" in a proxy is not a meta but the name of the proxy (. char cannot be used in meta names)
 	:return:
 	"""
 
@@ -646,13 +646,25 @@ def getAllEditables ():
 
 	proxymanifests = os.listdir(conf.basemanifestpath)
 	for manfile in proxymanifests:
-		manifestdata = json.load(open(os.path.join(conf.baseproxypath, manfile)))
+		manifestdata = json.load(open(os.path.join(conf.basemanifestpath, manfile)))
+
+		proxy_id = manfile.split(".")[0]
 
 		if manifestdata['operations']['read'] != "none" or manifestdata['operations']['write'] != "none":
-			maplist[manfile.split(".")[0]] = {}
 
-	for proxy_id in maplist.keys():
+			maplist[proxy_id] = {}
+			maplist[proxy_id]['.name'] = manifestdata['name']
 
+			for metadata in manifestdata['metadata']:
+				meta_id = metadata['name']
+				maplist[proxy_id][meta_id] = []
+
+				mapfilenames = os.listdir(os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id))
+				for mapname in mapfilenames:
+					maplist[proxy_id][meta_id].append(mapname)
+
+
+	return maplist
 
 
 

@@ -1,14 +1,56 @@
+#workcontext
+{
+    display:        table;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
 
+hr
+{
+    border:         none;
+    border-bottom:  1px solid #ffff00;
+    width:          95%;
+    height:         0;
+}
 
 #mapsummary
 {
 
+
+    display:        table-row-group;
     font-size:      xx-small;
     word-wrap:      break-word;
     word-break:     break-all;
+}
+
+#currentcontext
+{
+    font-weight:    bold;
+
+    text-align:     center;
+    margin-bottom:  0.5em;
+}
+
+#mapcontrol
+{
+    display:        table-row;
+    width:          100%;
+}
+
+.wct_section
+{
+    display:        table-row;
 
 }
 
+
+.wct_label, .wct_field
+{
+    display:        table-cell;
+    padding-bottom: 4px;
+    padding-right:  4px;
+
+}
 
 #minimap
 {
@@ -59,10 +101,7 @@
     padding-top:        4px;
 }
 
-.mapcontrol
-{
-    width:          100%;
-}
+
 
 table#feature_props
 {

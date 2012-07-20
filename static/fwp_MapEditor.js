@@ -16,6 +16,13 @@ var meta_id;
 var map_id;
 var proxy_name;
 
+// editable maps by meta by proxy
+var editables = {};
+var proxycodes = {};
+
+var metabyproxy = {};
+
+
 // list of all the maps available in the same metadata, to be used as additional layer and for snapping
 var maps;
 
@@ -42,6 +49,7 @@ var snaplayer;
 var drawcontrol;
 var editcontrol;
 var snapcontrol;
+var measurecontrol;
 var removecontrol;
 var infocontrol;
 var panel;
@@ -96,8 +104,8 @@ Loads the main map and the list of additional maps
     OpenLayers.ImgPath = "/static/OpenLayers/themes/dark/";
 
     setLoadingState();
+    loadChooserWidget();
     loadMainMap();
-
 
     $("#sel_setshadow").change(setShadowLayer);
 
@@ -107,6 +115,7 @@ Loads the main map and the list of additional maps
     $(".canceldelete").live('click', cancelDeleteFeature);
     $(".deleteok").live('click', deleteCurrentFeature);
     $("#btn_savechanges").click(saveMapChanges);
+    $(".mapswitcher").live('change', renderChooserWidget);
 
 
 }
@@ -141,6 +150,176 @@ function unsetLoadingState()
 }
 
 
+function loadChooserWidget()
+{
+    var urlstring = "/edit/mapslist/";
+    $.ajax ({
+        url:    urlstring,
+        async:  true
+    }).done(function (jsondata) {
+            proxycodes = {};
+            editables = {};
+            metabyproxy = {};
+            for (var proxy_id in jsondata)
+            {
+                proxycodes[proxy_id] = jsondata[proxy_id]['.name'];
+                editables[proxy_id] = {};
+                metabyproxy[proxy_id] = new Array();
+                for (var meta_id in jsondata[proxy_id])
+                {
+                    if (meta_id != '.name')
+                    {
+                        editables[proxy_id][meta_id] = jsondata[proxy_id][meta_id];
+                        metabyproxy[proxy_id].push(meta_id);
+                    }
+                }
+            }
+
+            renderChooserWidget();
+    });
+
+}
+
+function renderChooserWidget ()
+{
+
+    //console.log("-> "+this.id);
+    // renders the chooser according to the selections or to the current map
+    if (!this.id)
+    {
+        console.log("Chooser widget launched by code");
+        // creating presets
+        var sel_pid = proxy_id;
+        var sel_mid = meta_id;
+        var sel_sid = map_id;
+    }
+    else
+    {
+        console.log("Chooser widget launched by user via "+this.id);
+        if (this.id == 'sel_proxy')
+        {
+            sel_pid = $("#sel_proxy").val();
+            sel_mid = null;
+            sel_sid = null;
+        }
+        else if (this.id == 'sel_meta')
+        {
+            sel_pid = $("#sel_proxy").val();
+            sel_mid = $("#sel_meta").val();
+            sel_sid = null;
+        }
+        else if (this.id == 'sel_map')
+        {
+            sel_pid = $("#sel_proxy").val();
+            sel_mid = $("#sel_meta").val();
+            sel_sid = $("#sel_map").val();
+        }
+
+    }
+
+    // autofill
+    console.log ("Metas for this proxy: "+metabyproxy[sel_pid].length);
+
+    if (metabyproxy[sel_pid].length == 1)
+    {
+        sel_mid = metabyproxy[sel_pid][0];
+        console.log ("Autoset meta for proxy "+sel_pid+" to "+sel_mid);
+    }
+
+    if (sel_mid != null && editables[sel_pid][sel_mid].length == 1)
+    {
+        sel_sid = editables[sel_pid][sel_mid][0];
+        console.log ("Autoset map for meta "+sel_mid+" to "+sel_sid);
+    }
+
+    var selstring;
+
+    // create proxy selector
+    var sel_proxy = '<select class="mapswitcher" id="sel_proxy">';
+    for (var pid in editables)
+    {
+        var proxyname = proxycodes[pid];
+        if (pid == sel_pid)
+        {
+            selstring = ' selected="selected"';
+        }
+        else
+        {
+            selstring = '';
+        }
+        sel_proxy += '<option value="'+pid+'"'+selstring+'>'+proxyname+'</option>';
+    }
+    sel_proxy += '</select>';
+
+    // create meta_selector; always active since in the worst case we have a proxy selected
+    var sel_meta = '<select class="mapswitcher" id="sel_meta">';
+    if (sel_mid == null)
+    {
+        sel_meta += '<option selected="selected"></option>';
+    }
+    for (var mid in editables[sel_pid])
+    {
+        if (mid == sel_mid)
+        {
+            selstring = ' selected="selected"';
+        }
+        else
+        {
+            selstring = '';
+        }
+        sel_meta += '<option value="'+mid+'"'+selstring+'>'+mid+'</option>';
+    }
+    sel_meta += '</select>';
+
+    // create map selector (only if there's a meta selected)
+    if (sel_mid != null)
+    {
+        var sel_map = '<select class="mapswitcher" id="sel_map">';
+
+        if (sel_sid == null)
+        {
+            sel_map += '<option selected="selected"></option>';
+        }
+
+        for (var sid in editables[sel_pid][sel_mid])
+        {
+            if (editables[sel_pid][sel_mid][sid] == sel_sid)
+            {
+                selstring = ' selected="selected"';
+            }
+            else
+            {
+                selstring = '';
+            }
+            sel_map += '<option value="'+editables[sel_pid][sel_mid][sid]+'"'+selstring+'>'+editables[sel_pid][sel_mid][sid]+'</option>';
+
+        }
+        sel_map += '</select>';
+
+        // create loader button
+        var btn_loadnew = '<input type="button" id="loadnewmap" value="&gt&gt;">';
+
+        sel_map = '<div class="wct_label">Mappa</div><div class="wct_field">'+sel_map+' '+btn_loadnew+'</div>';
+
+    }
+    else
+    {
+        sel_map = '';
+    }
+
+    var sel_proxymeta = '<div class="wct_label">Contesto</div><div class="wct_field">'+ sel_proxy + " " + sel_meta + '</div>';
+
+    // and append to a pre-existing fixed widget
+    $("#mapsummary").empty();
+    $("#mapsummary").append('<div class="wct_section">'+sel_proxymeta+'</div><div class="wct_section">'+sel_map+"</div>");
+
+    if (sel_sid == null)
+    {
+        $("#loadnewmap").attr("disabled", "disabled");
+    }
+
+}
+
 function loadMainMap()
 {
     /*
@@ -154,12 +333,7 @@ function loadMainMap()
         url:    urlstring,
         async:  true
     }).done(function (jsondata) {
-
-
         coredata = jsondata;
-
-
-
         //alert ("Loaded map "+map_id+"\n"+JSON.stringify(coredata));
         renderMainMap('mapview');
         unsetLoadingState();
@@ -173,15 +347,12 @@ function loadMainMap()
 function setShadowLayer()
 {
     // removes the current background layer and, if needed loads the new one
-
     snaplayer.removeAllFeatures();
     var newshadow = $("#sel_setshadow").val();
     if (newshadow != "")
     {
         loadShadowLayer(newshadow);
     }
-
-
 }
 
 function loadShadowLayer (map_id)
@@ -189,10 +360,7 @@ function loadShadowLayer (map_id)
     /*
     Loads the "background" vector for the main map
      */
-
-
     var urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id;
-
     $.ajax ({
         url:    urlstring,
         async:  true
@@ -312,9 +480,42 @@ function renderMainMap (widgetid)
 
             }
     );
+
+
+
+
+    measurecontrol = new OpenLayers.Control.Measure(
+
+        OpenLayers.Handler.Path, {
+            /*
+            persist: true,
+            handlerOptions: {
+                layerOptions: {
+                    renderers: renderer,
+                    styleMap: styleMap
+                }
+            }*/
+            eventListeners:
+            {
+                'measure': handleMeasure,
+                'measurepartial': handleMeasure,
+                'deactivate': hideDistance
+            },
+            handlerOptions:
+            {
+                persist: true
+
+            },
+            displayClass: 'olControlDrawFeaturePath',
+            displayUnits: 'm'
+        });
+
+
+
+
     panel.addControls([
         //new OpenLayers.Control.Navigation({title: "Navigate"}),
-        drawcontrol, editcontrol
+        drawcontrol, editcontrol, measurecontrol
     ]);
 
     mapview.addControl(panel);
@@ -336,12 +537,33 @@ function renderMainMap (widgetid)
 
 }
 
+function handleMeasure(event)
+{
+    //TODO: placeholder, implement
+
+    //var geometry = event.geometry;
+    var units = event.units;
+    var measure = event.measure.toFixed(6);
+
+    var measureinfo = "Distanza: "+measure+" "+units;
+    console.log(measureinfo);
+
+    $("#currentfeature").empty();
+    $("#currentfeature").append(measureinfo);
+
+}
+
+function hideDistance()
+{
+    //TODO: placeholder, implement
+    $("#currentfeature").empty();
+}
+
 function createIdTable (jsondata)
 {
     // we also set up a mapping from tids to fids
     // ID is the id ATTRIBUTE of the feature in the json, tid its id as memeber of the array, fid the ID attribute as translated in the map
 
-    //TODO: placeholder, implement
 
     idlink = {};
 

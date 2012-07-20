@@ -86,8 +86,8 @@ input [type=button]
 
 .button
 {
-    color:              #ffffff;
-    background-color:   #006400;
+    color:              #000000;
+    background-color:   #ffffbb;
     border:             1px solid #006400;
     text-align:         center;
 
