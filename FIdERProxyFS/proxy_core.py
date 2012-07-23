@@ -30,7 +30,10 @@ from FIdERFLL import validate_fields
 
 def getManifest (proxy_id):
 
-	return json.load(open(os.path.join(conf.baseproxypath,proxy_id,conf.path_manifest)))
+	return json.load(open(os.path.join(conf.basemanifestpath, proxy_id+".manifest")))
+
+
+	#return json.load(open(os.path.join(conf.baseproxypath,proxy_id,conf.path_manifest)))
 
 def makeSoftProxy (proxy_id, manifest):
 	"""
@@ -292,6 +295,7 @@ def verifyShapeArchiveStructure (filedata, filename=None):
 	try:
 		zipfp = zipfile.ZipFile(filedata)
 	except Exception as ex:
+		print "Exception in zip loading: %s" % ex
 		return False
 
 	ext_mandatory_shape = {
@@ -306,7 +310,12 @@ def verifyShapeArchiveStructure (filedata, filename=None):
 		"mid": False
 	}
 
+	ext_mandatory_json = {
+		"geojson": False
+	}
+
 	for candidatepath in zipfp.namelist():
+		#print "Checking candidate path %s" % candidatepath
 		#checking that no file unpacks to a different directory
 		if "/" in candidatepath:
 			return False
@@ -316,13 +325,17 @@ def verifyShapeArchiveStructure (filedata, filename=None):
 				ext_mandatory_shape[cext] = True
 			if ext_mandatory_minfo.has_key(cext):
 				ext_mandatory_minfo[cext] = True
+			if ext_mandatory_json.has_key(cext):
+				ext_mandatory_json[cext] = True
 
 		if filename is not None:
 			if candidatepath.split(".")[0] != filename:
+				print "Archive/data filename mismatch"
 				return False
 
-	if not (all(ext_mandatory_shape.values() or all(ext_mandatory_minfo.values()))):
+	if not (all(ext_mandatory_shape.values()) or all(ext_mandatory_minfo.values()) or all(ext_mandatory_json.values())):
 		return False
+
 
 
 	return True
