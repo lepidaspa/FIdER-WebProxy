@@ -508,8 +508,8 @@ class Model (dict):
 			if key not in modelkeys:
 				generated[key] = kwargs[key]
 
-		#TODO: val_loose (and the override to subtemplates) is a temporary fix for multilevel dicts that are described in their lower levels in the original template, should work also in val_strict; NOTE 2012-06-07: removed, issue probably fixed, leaving the TODO for checking
-		return self.validateCandidate(generated, self.VAL_STRICT, True), generated
+		#TODO: val_loose (and the override to subtemplates) is a temporary fix for multilevel dicts that are described in their lower levels in the original template, should work also in val_strict; NOTE 2012-06-07: removed, issue probably fixed, leaving the TODO for checking; NOTE 2012-07-25 STILL THERE...
+		return self.validateCandidate(generated, self.VAL_LOOSE, True), generated
 
 
 class Check:
