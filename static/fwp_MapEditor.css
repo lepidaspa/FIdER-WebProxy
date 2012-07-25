@@ -1,56 +1,12 @@
-#workcontext
-{
-    display:        table;
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-
-hr
-{
-    border:         none;
-    border-bottom:  1px solid #ffff00;
-    width:          95%;
-    height:         0;
-}
-
 #mapsummary
 {
 
-
-    display:        table-row-group;
     font-size:      xx-small;
     word-wrap:      break-word;
     word-break:     break-all;
-}
-
-#currentcontext
-{
-    font-weight:    bold;
-
-    text-align:     center;
-    margin-bottom:  0.5em;
-}
-
-#mapcontrol
-{
-    display:        table-row;
-    width:          100%;
-}
-
-.wct_section
-{
-    display:        table-row;
 
 }
 
-
-.wct_label, .wct_field
-{
-    display:        table-cell;
-    padding-bottom: 4px;
-    padding-right:  4px;
-
-}
 
 #minimap
 {
@@ -71,14 +27,14 @@ hr
     padding:        0 8px 8px 8px;
 }
 
-
+/*
 .olControlEditingToolbar .olControlModifyFeatureItemInactive {
     background-position: -1px -1px;
 }
 .olControlEditingToolbar .olControlModifyFeatureItemActive {
     background-position: -1px -24px;
 }
-
+*/
 
 
 .featurecard
@@ -88,20 +44,22 @@ hr
     /*word-break:     break-all; */
     width:              100%;
     max-width:          100%;
-    border:             1px solid #90EE90;
-    background-color:   #ffffbb;
-    color:              #000000;
+    border:             1px solid #ff8800;
     margin-bottom:      8px;
 }
 
 .featureactions
 {
-    float:              right;
-    padding-right:      4px;
-    padding-top:        4px;
+    float:          right;
+    /*margin:         4px; */
+    padding-right:   4px;
+    padding-top:     4px;
 }
 
-
+.mapcontrol
+{
+    width:          100%;
+}
 
 table#feature_props
 {
@@ -110,8 +68,8 @@ table#feature_props
     left:               0;
     right:              0;
 
-    background-color:   #ffffbb;
-    color:              #000000;
+    background-color:   #ff8800;
+    color:              #ffffff;
 
 }
 
@@ -131,6 +89,3 @@ table#feature_props *
     background-color:   #ff8800;
     color:              #ffffff;
 }
-
-
-

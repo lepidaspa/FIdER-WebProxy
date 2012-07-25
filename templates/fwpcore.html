@@ -5,9 +5,6 @@
     <title>Catasto Federato - {% block title %}{% endblock %}</title>
 
 
-    {% block defaultcss %}
-    <link rel="stylesheet" href="{{ STATIC_URL }}fwpcore.css">
-    {% endblock %}
 
 
     <link rel="stylesheet" href="{{ STATIC_URL }}smoothness/jquery-ui-1.8.20.custom.css">
@@ -16,6 +13,10 @@
     <script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
     <script language="JavaScript" src="{{ STATIC_URL }}OpenLayers/OpenLayers.js"></script>
 
+
+    {% block defaultcss %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}fwpcore.css">
+    {% endblock %}
 
     {#  custom javascript and css for this specific page #}
     {% block headers %}{% endblock %}

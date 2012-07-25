@@ -1,0 +1,4 @@
+All files marked as "-inactive" were created from the original theme via ImageMagick with the following line:
+convert <inputfile> -colorspace Gray <outputfile>
+
+Also the mActionMeasureRed.png has been modified from the mActionMeasure.png icon for better readability when needing to distinguish the color and gray versions (enabled/disabled) against the OSM background

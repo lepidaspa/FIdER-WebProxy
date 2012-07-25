@@ -57,8 +57,21 @@ var measurecontrol;
 var snapcontrol;
 var editcontrol;
 
-
+// links the actual FID with the sequence id in the map [ features ] array
 var idlink;
+
+// featureId currently in use
+var currentfid;
+
+// arrays by FID
+// values BEFRORE anychange (added the first time an element is selected)
+var prechange = {};
+// values AFTER the LATEST change
+var changelist = {};
+
+
+// format to retrieve geometries from the map in geojson
+var gjformat;
 
 function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fider, req_maps_st, req_models)
 {
@@ -88,16 +101,14 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     // map models allowed by the main server
     console.log("Received models from server: "+JSON.stringify(req_models));
     models = req_models;
-    /* models = [];
-    for (var m in req_models)
-    {
-        models.push(req_models[m]);
-    }*/
+
 
 
 
     console.log ("Init map...");
     createMap('mapview');
+
+
 
 
     console.log ("Init context mask...");
@@ -107,6 +118,8 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     $("#btn_loadsnap").live('click', loadShadowMap);
     $("#txt_addfield").live('change mouseup keyup', checkNewFieldName);
     $("#btn_addfield").live('click', addNewField);
+
+    $(".setproperty").live('change mouseup keyup', updateFieldInMap);
 
     resetContext();
 
@@ -168,6 +181,10 @@ function createMap (widgetid)
     mapview.projection = proj_WGS84;
     mapview.displayProjection = new OpenLayers.Projection(proj_WGS84);
 
+    // setting the format to translate geometries out of the map
+    gjformat = new OpenLayers.Format.GeoJSON({'externalProjection': new OpenLayers.Projection(proj_WGS84), 'internalProjection': mapview.getProjectionObject()});
+
+
     var baselayer = new OpenLayers.Layer.OSM();
     mapview.addLayer(baselayer);
 
@@ -194,6 +211,8 @@ function createMap (widgetid)
 
 
     autoZoom(mapview);
+
+
 
 }
 
@@ -227,13 +246,13 @@ function setMapControls ()
         drawcontrol = new OpenLayers.Control.DrawFeature(
             vislayer, OpenLayers.Handler.Point,
             {
-                displayClass: "olControlDrawFeaturePoint",
-                title: "Draw Features",
+                displayClass: "olLabsControlDrawFeaturePoint",
+                title: "Aggiungi",
                 handlerOptions:
                 {
                     holeModifier: "altKey"
                 },
-                featureAdded: (setNewFid)
+                featureAdded: (createNewFeature)
             }
         );
     }
@@ -243,13 +262,13 @@ function setMapControls ()
             (
                 vislayer, OpenLayers.Handler.Path,
                 {
-                    displayClass: "olControlDrawFeaturePoint",
-                    title: "Draw Features",
+                    displayClass: "olLabsControlDrawFeaturePath",
+                    title: "Aggiungi",
                     handlerOptions:
                     {
                         holeModifier: "altKey"
                     },
-                    featureAdded: (setNewFid)
+                    featureAdded: (createNewFeature)
                 }
             );
     }
@@ -258,8 +277,8 @@ function setMapControls ()
 
     editcontrol = new OpenLayers.Control.ModifyFeature(
         vislayer, {
-            displayClass: "olControlModifyFeature",
-            title: "Modify Features"
+            displayClass: "olLabsControlModifyFeature",
+            title: "Modifica"
         }
     );
 
@@ -280,8 +299,10 @@ function setMapControls ()
                 persist: true,
                 immediate: true
             },
-            displayClass: 'olControlDrawFeaturePath',
-            displayUnits: 'm'
+            displayClass: 'olLabsControlMeasure',
+            displayUnits: 'm',
+            title: "Misura"
+
         });
 
 
@@ -303,16 +324,122 @@ function setMapControls ()
 
 }
 
+function addToPreChange(fid)
+{
+    /*
+    Adds the current status of the requested feature to the prechange dict
+    IF the feature has not been added already
+     */
+
+    if (!prechange.hasOwnProperty(fid))
+    {
+        prechange[fid] = {
+            'geometry': mapdata['features'][idlink[fid]]['geometry'],
+            'properties': mapdata['features'][idlink[fid]]['properties']
+        }
+    }
+
+}
 
 
+
+function updateChangeList()
+{
+
+    /*
+    Add modifications for a specific feature to the changelist
+     */
+
+    if (!currentfid)
+    {
+        return;
+    }
+
+    // TODO: placeholder, implement
+    console.log ("updating the changelist with element "+currentfid);
+
+    if (!changelist[currentfid])
+    {
+        changelist[currentfid] = {};
+    }
+
+    // we take the geometry from the map
+
+    changelist[currentfid]['geometry'] = JSON.parse(gjformat.write(vislayer.getFeatureByFid(currentfid).geometry));
+
+
+    // and the feature properties from the form IF open, otherwise from mapdata/
+    if ($(".featurefield.setproperty").length > 0)
+    {
+        // if we have a form open we clean up before adding/changing the values
+
+        changelist[currentfid]['attributes'] = {};
+        $.each($(".featurefield.setproperty"), function ()
+        {
+
+            var fieldid = (this.id.split("_")[1]);
+            var fieldval = $("#"+this.id).val();
+
+            changelist[currentfid]['attributes'][fields[fieldid]] = fieldval;
+
+        });
+
+    }
+    else
+    {
+
+        // without the form, in case we have nothing yet in the changelist for this item, we get from mapdata
+
+        if (!changelist[currentfid]['attributes'])
+        {
+            changelist[currentfid]['attributes'] = mapdata['features'][idlink[currentfid]]['properties'];
+        }
+
+    }
+
+
+
+
+}
+
+
+function createNewFeature(feature)
+{
+    //TODO: placeholder, implement
+
+    // set new FID and then add to the prechange and changelist lists
+
+    console.log("Creating new feature");
+    console.log(feature);
+
+    // openlayers id
+    var olid = feature.id;
+
+
+
+
+}
+
+function setNewFid()
+{
+
+    //TODO: placeholder, implement
+
+}
 
 function renderFeatureCard(caller)
 {
+
+
+
     $("#currentfeature").empty();
 
     var featurecard = $('<div class="featurecard"></div>');
 
     var feature = caller['feature'];
+    currentfid = feature.fid;
+
+    addToPreChange(currentfid);
 
     console.log('Selected feature '+feature.fid+': '+ftype_name);
     console.log(feature.attributes);
@@ -322,7 +449,7 @@ function renderFeatureCard(caller)
     var featurefields = $('<table id="featurefields"></table>');
     for (var f in fields)
     {
-        featurefields.append('<tr><td>'+fields[f]+'</td><td><input type="text" class="featurefield" id="featurefields_'+f+'"></td></tr>');
+        featurefields.append('<tr><td>'+fields[f]+'</td><td><input type="text" class="featurefield setproperty" id="featurefields_'+f+'"></td></tr>');
     }
 
     var addfield = '<tr id="tr_addfield"><td colspan=2><hr></td></tr>' +
@@ -340,6 +467,18 @@ function renderFeatureCard(caller)
 
     $("#currentfeature").show();
     checkNewFieldName();
+}
+
+function updateFieldInMap ()
+{
+
+    var newval = $(this).val();
+    var fcode = $(this).prop('id').split("_")[1];
+    var seqid = idlink[currentfid];
+
+    console.log("Changing "+fields[fcode]+" of "+currentfid+" to "+newval);
+
+
 }
 
 
@@ -367,9 +506,7 @@ function addNewField ()
     fields.push(ftitle);
     var idx = fields.length-1;
 
-    var fieldstring = '<tr><td>'+ftitle+'</td><td><input type="text" class="featurefield" id="featurefields_'+idx+'"></td></tr>';
-
-
+    var fieldstring = '<tr><td>'+ftitle+'</td><td><input type="text" class="featurefield setproperty" id="featurefields_'+idx+'"></td></tr>';
 
     $("#tr_addfield").before(fieldstring);
     $("#txt_addfield").val("");
@@ -385,6 +522,9 @@ function freeSelection ()
 {
     console.log("Deselecting feature");
 
+    updateChangeList();
+
+    currentfid = null;
     $("#currentfeature").empty();
     $("#currentfeature").hide();
 }
@@ -399,23 +539,15 @@ function createIdTable (jsondata)
 
     for (var seqid in jsondata['features'])
     {
-
         var fid = jsondata['features'][seqid]['id'];
-
         idlink[fid] = seqid;
-
     }
 
 }
 
-function setNewFid()
-{
-    //TODO: placeholder, implement
-}
 
 function handleMeasure(event)
 {
-    //TODO: placeholder, implement
 
     //var geometry = event.geometry;
     var units = event.units;

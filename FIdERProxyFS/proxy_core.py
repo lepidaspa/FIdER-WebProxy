@@ -3,6 +3,9 @@
 
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+from exceptions import Exception
+import Common.TemplatesModels
+import FIdERProxyFS.proxy_config_core as conf
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -26,6 +29,7 @@ from Common import TemplatesModels
 from FIdERProxyFS import proxy_lock
 import proxy_config_core as conf
 from FIdERFLL import validate_fields
+from Common.Components import createMessageFromTemplate, sendMessageToServer
 
 
 def getManifest (proxy_id):
@@ -226,6 +230,7 @@ def handleReadFull (proxy_id):
 	for meta_id in buildReadList(proxy_id):
 		meta_dict [meta_id] = locker.performLocked(assembleMetaJson, proxy_id, meta_id)
 
+	print "Read performed"
 
 	template = TemplatesModels.model_response_read_full
 	customfields = {
@@ -238,6 +243,8 @@ def handleReadFull (proxy_id):
 
 	responsemsg = createMessageFromTemplate(template, **customfields)
 
+
+	print "RESULT: %s features " % len(responsemsg)
 	#NOTE that the read happens as a HTTPResponse, so we only return the json for Django to send back, rather than handling the HTTPConnection ourselves
 
 	return json.dumps(responsemsg)
@@ -1068,3 +1075,29 @@ def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist, req_model=None
 
 	#print "Returning %s (%s)" % (success, objects)
 	return success, objects
+
+
+def sendProxyManifestRaw (jsonmanifest):
+	"""
+	Sends the manifest of a given soft proxy to the main server and returns the response
+	:param jsonmanifest:
+	:return:
+	"""
+
+	print "Expected replies for manifest send:\n%s\n%s" % (TemplatesModels.model_response_manifest_success, TemplatesModels.model_response_manifest_fail)
+
+
+
+	try:
+		return sendMessageToServer(jsonmanifest, conf.URL_WRITEMANIFEST, 'POST',  TemplatesModels.model_response_manifest_success, TemplatesModels.model_response_manifest_fail)
+	except Exception as ex:
+		return False, "Error while sending manifest to %s: %s" % (conf.URL_WRITEMANIFEST, str(ex))
+
+
+def sendProxyManifestFromFile (proxy_id):
+	"""
+	Sends the manifest of a given soft proxy to the main server and returns the response
+	:param proxy_id:
+	:return:
+	"""
+	return sendProxyManifestRaw(getManifest(proxy_id))

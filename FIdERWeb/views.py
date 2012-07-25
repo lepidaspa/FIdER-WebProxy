@@ -815,7 +815,13 @@ def proxy_read_full (request, **kwargs):
 
 	print "DJANGO: performing full read of proxy %s " % proxy_id
 
-	read_result = proxy_core.handleReadFull(proxy_id)
+	try:
+		read_result = proxy_core.handleReadFull(proxy_id)
+	except Exception as ex:
+
+		print "Error: "+str(ex)
+
+
 
 	return HttpResponse(read_result, mimetype="application/json")
 
