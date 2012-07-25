@@ -64,6 +64,7 @@ path_geojson = 'maps/geojson'
 path_manifest = 'conf/manifest.json'
 path_mappings = 'conf/mappings'
 path_remoteres = 'conf/remote'
+path_standalone = 'maps/st'
 
 tries_for_connection = 3
 tries_for_lock = 5
@@ -81,4 +82,5 @@ URL_DISCOVERY = MAINSERVER_LOC+conf_core["URL_FIDER_WELCOME"]
 URL_WRITEREQUEST = MAINSERVER_LOC+conf_core["URL_FIDER_SUBMIT_WRITE"]
 URL_WRITEMANIFEST = MAINSERVER_LOC+conf_core["URL_FIDER_SUBMIT_MANIFEST"]
 URL_CONVERSIONS = MAINSERVER_LOC+conf_core["URL_FIDER_REQUEST_CONVERSIONS"]
+URL_MODELS = MAINSERVER_LOC+conf_core["URL_FIDER_REQUEST_MODELS"]
 

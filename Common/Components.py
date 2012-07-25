@@ -166,3 +166,21 @@ def getConversionsFromServer ():
 		return False, "Error when requesting tables from %s: %s" % (conf.URL_DISCOVERY, errormess)
 
 	return True, conversiontable
+
+# gets the map models from the main server
+def getModelsFromServer():
+
+	try:
+		jsonresponse = urllib2.urlopen(conf.URL_MODELS)
+		models = json.load(jsonresponse)
+
+	except Exception as ex:
+		if isinstance(ex, urllib2.HTTPError):
+			errormess = ex.code
+		elif isinstance(ex, urllib2.URLError):
+			errormess = ex.reason
+		else:
+			errormess = ex.message
+		return False, "Error when requesting tables from %s: %s" % (conf.URL_MODELS, errormess)
+
+	return True, models

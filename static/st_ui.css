@@ -1,0 +1,130 @@
+body
+{
+    font-family:        sans-serif;
+    background-color:   #006400;
+    color:              #ffffff;
+}
+
+#servicebar
+{
+    position:           absolute;
+    top:                0;
+    left:               0;
+    right:              0;
+    height:             57px;
+
+    padding-left:       12px;
+    /* padding-top:        4px; */
+
+    color:              #ffffff;
+    font-weight:        bold;
+
+    background-color:   #112B11;
+
+    border-bottom:      1px solid #ffff00;
+
+    background-image: url('/static/logo_invento.png'), url('/static/logo_labs.png'),url('/static/top_bg.png');
+    background-repeat: no-repeat;
+    background-position: top left, top right, top center;
+}
+
+#contextguide
+{
+
+    position:           absolute;
+    top:                69px;
+    left:               80%;
+    right:              0;
+    bottom:             0;
+    overflow:           auto;
+    padding-left:       8px;
+    padding-right:      8px;
+
+}
+
+#navigation
+{
+    position:           absolute;
+    top:                69px;
+    left:               0;
+    right:              75%;
+    bottom:             0;
+    overflow:           auto;
+    padding-left:       8px;
+    padding-right:      8px;
+}
+
+#navigation > *, #contextguide > *
+{
+    font-size:          small;
+
+}
+
+#functionality
+{
+    position:           absolute;
+    top:                57px;
+    left:               25%;
+    right:              20%;
+    bottom:             0;
+
+    overflow:           auto;
+
+    padding:            0.5em;
+
+    border-top:         1px solid #ffff00;
+    border-left:        1px solid #ffff00;
+    border-right:       1px solid #ffff00;
+}
+
+#mapview
+{
+    position:       absolute;
+    top:            0;
+    bottom:         0;
+    left:           0;
+    right:          0;
+
+    padding:        0 8px 8px 8px;
+}
+
+hr
+{
+    border:         none;
+    border-top:  1px solid #ffff00;
+}
+
+input, select, input[type=button]
+{
+    border:         none;
+    background-color:   #ffffbb;
+}
+
+
+.featurefield
+{
+    background-color:   #ffffbb;
+}
+
+.cardtitle
+{
+    font-weight:        bold;
+}
+
+#currentfeature
+{
+    background-color:   #ffffbb;
+    color:              #000000;
+    padding:            4px;
+
+}
+
+#currentfeature .featurefield
+{
+    border:             1px solid #006400;
+}
+
+#tr_addfield hr
+{
+    border-top:         1px dashed #006400;
+}
