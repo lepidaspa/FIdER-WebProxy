@@ -23,7 +23,7 @@ body
 
     border-bottom:      1px solid #ffff00;
 
-    background-image: url('/static/logo_invento.png'), url('/static/logo_labs.png'),url('/static/top_bg.png');
+    background-image: url('/static/logo_powered_invento_beta.png'), url('/static/logo_labs.png'),url('/static/top_bg.png');
     background-repeat: no-repeat;
     background-position: top left, top right, top center;
 }
@@ -94,6 +94,8 @@ hr
     border-top:  1px solid #ffff00;
 }
 
+
+
 input, select, input[type=button]
 {
     border:         none;
@@ -116,15 +118,39 @@ input, select, input[type=button]
     background-color:   #ffffbb;
     color:              #000000;
     padding:            4px;
-
 }
+
+
 
 #currentfeature .featurefield
 {
     border:             1px solid #006400;
 }
 
+
+
 #tr_addfield hr
 {
     border-top:         1px dashed #006400;
+}
+
+
+.fbutton
+{
+    background-color:   #bbeebb;
+    text-align:         center;
+    color:              #000000;
+    cursor:             pointer;
+}
+
+
+#btn_savechanges.warning
+{
+    background-color:   #ffffbb;
+    border:             2px solid #ff0000;
+}
+
+#btn_savechanges.disabled
+{
+    background-color:   #cccccc;
 }

@@ -23,7 +23,8 @@ Graphics replacemente CSS for OpenLayers
     height:                 24px;
     background-position:    0 0;
     margin:                 0 5px 0 0;
-
+    border:                 none;
+    padding-bottom:         4px;
 
 }
 
@@ -32,12 +33,14 @@ Graphics replacemente CSS for OpenLayers
 {
     background-image: url("/static/gis-0.1/mActionToggleEditing-inactive.png");
 
+
 }
 
 .olControlEditingToolbar .olLabsControlModifyFeatureItemActive
 {
 
     background-image: url("/static/gis-0.1/mActionToggleEditing.png");
+    border-bottom:      1px solid #000000;
 }
 
 
@@ -50,14 +53,17 @@ Graphics replacemente CSS for OpenLayers
 .olControlEditingToolbar .olLabsControlDrawFeaturePointItemActive
 {
     background-image: url("/static/gis-0.1/mActionCapturePoint.png");
+    border-bottom:      1px solid #000000;
 }
 
 .olControlEditingToolbar .olLabsControlDrawFeaturePathItemInactive {
     background-image: url("/static/gis-0.1/mActionCaptureLine-inactive.png");
+
 }
 
 .olControlEditingToolbar .olLabsControlDrawFeaturePathItemActive {
     background-image: url("/static/gis-0.1/mActionCaptureLine.png");
+    border-bottom:      1px solid #000000;
 }
 
 
@@ -70,5 +76,5 @@ Graphics replacemente CSS for OpenLayers
 .olControlEditingToolbar .olLabsControlMeasureItemActive {
 
     background-image: url("/static/gis-0.1/mActionMeasureRed.png");
-
+    border-bottom:      1px solid #000000;
 }

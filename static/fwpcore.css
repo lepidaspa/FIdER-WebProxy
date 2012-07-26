@@ -83,7 +83,7 @@ input [type=button]
     border:             1px solid #ff8800;
 }
 
-.button
+.button, .fbutton
 {
     color:              #ffffff;
     background-color:   #ff8800;

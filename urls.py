@@ -55,7 +55,9 @@ urlpatterns = patterns('',
 
 	# standalone tool section
 	url(r'^st/(?P<proxy_id>\w*)/$', stviews.uiview),
-	url(r'^st/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', stviews.uiview)
+	url(r'^st/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', stviews.loadSTMap),
+	url(r'^stsave/(?P<proxy_id>\w*)/$', stviews.saveMap)
+
 
 
 
