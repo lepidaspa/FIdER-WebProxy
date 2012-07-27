@@ -348,7 +348,7 @@ function finalizeSave()
     changelist = null;
     activemap = ".st/"+$("#txt_saveto").val();
 
-
+    var reloadurl = activemap;
     var mapmodel_req = mapmodel;
     var maptype_req = maptype;
 
@@ -363,6 +363,12 @@ function finalizeSave()
 
     renderContextMask();
     checkSaveState();
+
+
+    //TODO: remove, quick hack
+
+    loadMap(reloadurl);
+    createmode = false;
 
 }
 
@@ -707,6 +713,22 @@ function updateChangeList()
     changelist[currentfid]['geometry'] = JSON.parse(gjformat.write(vislayer.getFeatureByFid(currentfid).geometry));
 
 
+
+    // creating a basic structure for the properties so we don't end up with missing keys when saving, if the element was NOT already in the changelist
+
+    var newtochangelist = false;
+    if (!changelist[currentfid] || !changelist[currentfid]['properties'])
+    {
+        newtochangelist = true;
+        changelist[currentfid]['properties'] = {};
+        for (var f in fields)
+        {
+            changelist[currentfid]['properties'][fields[f]] = "";
+        }
+    }
+
+
+
     // and the feature properties from the form IF open, otherwise from mapdata/
     if ($(".featurefield.setproperty").length > 0)
     {
@@ -714,7 +736,7 @@ function updateChangeList()
 
         console.log("Saving properties from form");
 
-        changelist[currentfid]['properties'] = {};
+        //changelist[currentfid]['properties'] = {};
         $.each($(".featurefield.setproperty"), function ()
         {
 
@@ -729,18 +751,20 @@ function updateChangeList()
     else if (idlink[currentfid])
     {
 
-        // without the form, in case we have nothing yet in the changelist for this item, we get from mapdata; IF the object is in the map
+        // without the form, in case we have nothing yet in the changelist for this item, we get from mapdata
 
-        if (!changelist[currentfid]['properties'])
+        if (newtochangelist)
         {
-            changelist[currentfid]['properties'] = mapdata['features'][idlink[currentfid]]['properties'];
+
+            for (var p in mapdata['features'][idlink[currentfid]]['properties'])
+            {
+                changelist[currentfid]['properties'][p] = mapdata['features'][idlink[currentfid]]['properties'][p];
+            }
+
         }
 
     }
-    else
-    {
-        changelist[currentfid]['properties'] = {};
-    }
+
 
     console.log("Current status of feature "+currentfid);
     console.log(changelist[currentfid]);
@@ -1077,7 +1101,8 @@ function renderContextMask ()
 
         if (!mapmeta)
         {
-            var mapname = "NuovaMappa_"+new Date().getTime();
+
+            var mapname = "Nuova_"+moment().format('YYMMDDHHmmss');
         }
         else
         {
