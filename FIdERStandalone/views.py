@@ -9,6 +9,7 @@ from django.utils.safestring import SafeString
 from django.views.decorators.csrf import csrf_exempt
 import json
 import os
+from FIdERWebST import views as fwstviews
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -47,13 +48,16 @@ def uiview (request, **kwargs):
 
 	print proxy_id, proxy_name, proxy_meta, maplist, maplist_st
 
-	hasmodels, models = Components.getModelsFromServer()
-	if not hasmodels:
-		models = None
-	else:
-		models = SafeString(json.dumps(models))
+	#TODO: remove marker, commented out for debug reasons
+	#hasmodels, models = Components.getModelsFromServer()
+	#if not hasmodels:
+	#	models = None
+	#else:
+	#	models = SafeString(json.dumps(models))
 
-	return render_to_response ('st_ui.html', {'proxy_id': proxy_id, 'proxy_name': proxy_name, 'proxy_meta': SafeString(json.dumps(proxy_meta)), 'maps_fider': SafeString(json.dumps(maplist)), 'maps_st': SafeString(json.dumps(maplist_st)),  'models': models, 'manifest': SafeString(json.dumps(manifest))}, context_instance=RequestContext(request))
+	models = fwstviews.getModels()
+
+	return render_to_response ('st_ui.html', {'proxy_id': proxy_id, 'proxy_name': proxy_name, 'proxy_meta': SafeString(json.dumps(proxy_meta)), 'maps_fider': SafeString(json.dumps(maplist)), 'maps_st': SafeString(json.dumps(maplist_st)),  'models': SafeString(json.dumps(models)), 'manifest': SafeString(json.dumps(manifest))}, context_instance=RequestContext(request))
 
 
 def loadSTMap (request, **kwargs):

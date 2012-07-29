@@ -1,0 +1,44 @@
+.ctx_fieldname, .ctx_fieldval
+{
+    display:    table-cell;
+}
+
+.ctx_topic
+{
+    display:    table-row;
+}
+
+#view_context
+{
+    display:            table;
+    border-collapse:    separate;
+}
+
+hr
+{
+    border:         none;
+    border-top:  1px solid #ff8800;
+}
+
+#view_map
+{
+    position:       absolute;
+    top:            0;
+    bottom:         0;
+    left:           0;
+    right:          0;
+
+    padding:        0 8px 8px 8px;
+}
+
+#uploadfield
+{
+    float:          right;
+    visibility:     hidden;
+}
+
+#contextloader *:disabled, #contextsaver *:disabled
+{
+    color:          #000000;
+    background:     #cccccc;
+}

@@ -4,7 +4,6 @@
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
 import json
 import os
-from psycopg2.tests.testconfig import dbname
 import Common.TemplatesModels
 from FIdERProxyFS import proxy_core
 from MarconiLabsTools import ArDiVa

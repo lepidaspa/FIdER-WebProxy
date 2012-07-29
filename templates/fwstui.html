@@ -1,0 +1,94 @@
+{% extends "fwpcore.html" %}
+
+{% block title %}
+    PIpER - Strumento Standalone
+{% endblock %}
+
+{% block headers %}
+    <script language="JavaScript" src="{{ STATIC_URL }}fwstui.js"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}moment.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwstui.css">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}gis.css">
+
+
+{% endblock %}
+
+{%  block servicebar %}
+
+{% endblock %}
+
+
+{% block navigation %}
+
+
+    <input type="file" id="uploadfield" accept="application/zip">
+
+    <div id="view_context">
+
+        <div class="ctx_topic" id="contextsummary">
+
+        </div>
+
+        <div class="ctx_topic" id="contextloader">
+
+        </div>
+
+        <div class="ctx_topic" id="contextsaver">
+
+        </div>
+
+
+
+        <div class="ctx_topic" id="view_shadow">
+
+        </div>
+
+    </div>
+
+    <hr>
+
+
+
+    <div id="view_filter">
+
+    </div>
+
+
+
+    <hr>
+
+
+    <div id="view_detail">
+
+    </div>
+
+    <hr>
+
+
+
+{% endblock %}
+
+{% block functionality %}
+
+    <div id="view_map"></div>
+
+{% endblock %}
+
+{% block starterscript %}
+    <script>
+        pageInit(
+                '{{ proxy_id }}',
+                {{ manifest }},
+                {{ proxy_meta }},
+                {{ maps_fider }},
+                {{ maps_st }},
+                {{ models }}
+        );
+
+    </script>
+{% endblock %}
+
+{% block contextguide %}
+
+{%  endblock %}

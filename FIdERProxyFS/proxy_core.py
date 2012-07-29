@@ -515,7 +515,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 		print "Getting datasource from shape path %s" % path_shape
 		#print "Datasource raw data: %s " % open(path_shape, "r").read()
-		datasource = ogr.Open(path_shape)
+		datasource = ogr.Open(str(path_shape))
 		print "EXTRACTING DATASOURCE SRS DATA:"
 		print "****>"+str(datasource)
 	except Exception as ex:
@@ -587,7 +587,9 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 			# fixed to output actual dict
 
+			#print "DEBUG: exporting %s to JSON" % feature
 			jsondata = json.loads(feature.ExportToJson())
+			#print "DEBUG: exported %s" % jsondata
 
 			#print "feature.exportToJson outputs "+str(type(jsondata))
 

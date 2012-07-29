@@ -2,9 +2,12 @@ from django.conf.urls.defaults import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+
 from FIdERWeb import views as fwpviews
 from FiderMapEdit import views as editviews
 from FIdERStandalone import views as stviews
+
+from FIdERWebST import views as fwstviews
 
 import settings
 
@@ -56,7 +59,11 @@ urlpatterns = patterns('',
 	# standalone tool section
 	url(r'^st/(?P<proxy_id>\w*)/$', stviews.uiview),
 	url(r'^st/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', stviews.loadSTMap),
-	url(r'^stsave/(?P<proxy_id>\w*)/$', stviews.saveMap)
+	url(r'^stsave/(?P<proxy_id>\w*)/$', stviews.saveMap),
+
+	# standalone tool v2
+	url(r'^fwst/(?P<proxy_id>\w*)/$', fwstviews.uiview),
+	url(r'^fwst/upload/(?P<proxy_id>\w*)/$', fwstviews.uploadfile)
 
 
 
