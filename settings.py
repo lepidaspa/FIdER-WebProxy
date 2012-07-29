@@ -74,7 +74,7 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-	'/home/drake/DevTeam/Labs-FIdER/FIdER-WebProxy/static',
+	'/home/drake/PycharmProjects/FIdER/FIdER-WebProxy/static',
 )
 
 # List of finder classes that know how to find static files in
@@ -125,10 +125,9 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 	'FIdER-WebProxy.FIdERWeb',
-	'FIdER-WebProxy.FiderMapEdit',
-	'FIdER-WebProxy.FIdERWebST',
-	'FIdER-WebProxy.FIdERStandalone'
-)
+	'FIdER-WebProxy.FiderMapEdit'
+
+	)
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
