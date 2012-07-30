@@ -6,6 +6,8 @@
  * To change this template use File | Settings | File Templates.
  */
 
+// current map data
+var mapdata;
 
 // setting globals
 
@@ -42,6 +44,8 @@ var mapview;
 var vislayer;
 // vector layer used for alignment
 var snaplayer;
+// vector layer used for highlighting features, goes UNDER vislayer and OVER snaplayer
+var filterlayer;
 // format used to translate and output coordinates from the map
 var gjformat;
 
@@ -217,6 +221,83 @@ function checkCompleteUpload (data, textStatus, jqXHR)
     console.log("Reporting completed upload of the file in use");
     console.log(data);
 
+    if (data['success'] == true)
+    {
+        reportFeedback(true, "Caricamento file completato");
+        var mapname =  $("#ctx_sel_newmap").val().split("/")[1].replace(".zip","");
+        getUploadedMap(".st", mapname);
+    }
+    else
+    {
+        reportFeedback(false, "Caricamento file fallito");
+        //TODO: re-enable the selection fields
+    }
+}
+
+function getUploadedMap (meta_id, map_id)
+{
+
+    // gets a map from either a metadata or the standalone area, then takes the action chosen earlier in the selector
+
+    var urlstring;
+    if (meta_id == ".st")
+    {
+        urlstring = "/fwst/"+proxy_id+"/"+map_id;
+    }
+    else
+    {
+        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id;
+    }
+
+    $.ajax ({
+        url:    urlstring,
+        async:  true,
+        success:    applyNewMap,
+        error:  reportFailedDownload
+    });
+
+}
+
+function applyNewMap (newdata, textStatus, jqXHR)
+{
+
+    reportFeedback(true, "Applicazione file completata");
+
+    // takes the json data from the just downloaded map and applies it to the normal map or creates a new one as needed
+
+    //actions are 'open' and 'merge'
+    var action = $("#sel_action_newmap");
+    console.log(newdata);
+    console.log(action);
+
+    // if no map is available, we always create
+    if (activemap == null)
+    {
+        action = 'open';
+    }
+
+
+
+}
+
+
+function reportFeedback (positive, message)
+{
+
+    $("#statemessage").empty();
+    if (positive)
+    {
+        $("#statemessage").addClass("goodnews");
+        $("#statemessage").removeClass("badnews");
+    }
+    else
+    {
+        $("#statemessage").removeClass("goodnews");
+        $("#statemessage").addClass("badnews");
+    }
+    $("#statemessage").text(message);
+
+
 }
 
 function reportFailedUpload (xhr,err)
@@ -228,9 +309,16 @@ function reportFailedUpload (xhr,err)
     console.log(err);
 }
 
+function reportFailedDownload (xhr, err)
+{
+    // TODO: placeholder, implement
+    console.log("Reporting failed download of the requested file");
+    console.log("readyState: "+xhr.readyState+"\nstatus: "+xhr.status);
+    console.log("responseText: "+xhr.responseText);
+    console.log(err);
+}
 
-
-function uiReset()
+    function uiReset()
 {
     // rebuilds the UI elements; does NOT reinit the elements and variables
 
@@ -246,9 +334,7 @@ function uiReset()
         setMapControlsEdit();
     }
 
-
-
-
+    $("#statemessage").empty();
 
 }
 

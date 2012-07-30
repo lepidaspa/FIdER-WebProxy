@@ -33,7 +33,9 @@ hr
 
 #uploadfield
 {
-    float:          right;
+    position:       absolute;
+    right:          -300;
+    top:            -300;
     visibility:     hidden;
 }
 

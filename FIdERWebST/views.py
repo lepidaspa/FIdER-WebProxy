@@ -57,6 +57,21 @@ def uiview (request, **kwargs):
 	return render_to_response ('fwstui.html', {'proxy_id': proxy_id, 'proxy_name': proxy_name, 'proxy_meta': SafeString(json.dumps(proxy_meta)), 'maps_fider': SafeString(json.dumps(maplist)), 'maps_st': SafeString(json.dumps(maplist_st)),  'models': SafeString(json.dumps(models)), 'manifest': SafeString(json.dumps(manifest))}, context_instance=RequestContext(request))
 
 
+def loadSTMap (request, **kwargs):
+	"""
+	Loads a map from the standalone area
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	map_id = kwargs['map_id']
+
+	mapdata = json.load(open(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)))
+
+	return HttpResponse(json.dumps(mapdata), mimetype="application/json")
+
 def getModels ():
 	"""
 	Returns a dictionary with the extended models list combining local and server provided models
