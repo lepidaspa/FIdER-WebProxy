@@ -61,6 +61,9 @@ var drawcontrol;
 // panel containing the controls
 var panel;
 
+// fid of the current feature being edited
+var cfid;
+
 function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fider, req_maps_st, req_models)
 {
 
@@ -533,7 +536,7 @@ function checkCompleteUpload (data, textStatus, jqXHR)
     else
     {
         reportFeedback(false, "Caricamento file fallito");
-        //TODO: re-enable the selection fields
+        unlockContext();
     }
 }
 
@@ -1131,21 +1134,57 @@ function handleMeasure()
     //TODO: placeholder, implement
 }
 
-function renderFeatureCard()
+function renderFeatureCard(caller)
 {
-    //TODO: placeholder, implement
+    //TODO: set CFID
     // #view_feature
 
-    var featurecard = '<div class="ctx_topic"><div class="ctx_fieldname"></div><div class="ctx_fieldval"></div></div>';
+    var feature = caller['feature'];
 
+    var featurecard = $('<div class="ctx_topic"><div class="ctx_fieldname"></div><div class="ctx_fieldval"></div></div>');
 
+    for (var propname in activemodel['properties'])
+    {
 
+        var datalist = "";
+        var listref = "";
+        if ($.isArray(activemodel['properties'][propname] == 'array'))
+        {
+            datalist = $('<datalist id="modprop_'+propname+'"></datalist>');
+            listref = ' list="modprop_'+propname+'"';
+            for (var i in activemodel['properties'][propname])
+            {
+                datalist.append('<option value="'+activemodel['properties'][propname][i]+'">');
+            }
+
+            //TODO: if range of values, add option to set a button to set the same property to ALL elements (very careful...)
+        }
+
+        var propval = "";
+        if (feature['attributes'].hasOwnProperty(propname))
+        {
+              propval = feature['attributes'][propname];
+        }
+        // TODO: verify if we should use .fid or .id
+        var cprop = $('<div class="ctx_fieldname">'+propname+'</div>' +
+            '<div class="ctx_fieldval featureedit" id="setfeatureprop_'+feature.id+'_'+propname+'"'+listref+'>'+propval+'</div>' + datalist +
+            '<div class="ctx_fieldact"></div>');
+    }
 
 }
 
-function freeSelection ()
+function freeSelection (caller)
 {
-    //TODO: placeholder, implement
+    // applies changes to the properties (so we avoid a change for every keypress
+    // NOTE: this call should be FORCED whenever needed
+
+    var fieldlist = $(".featureedit");
+    var newprops;
+    for (var i in fieldlist)
+    {
+       //TODO: implement
+    }
+
 }
 
 
