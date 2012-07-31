@@ -100,11 +100,28 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     uiReset();
 
     $("#ctx_sel_newmap").live("change", checkFileUpload);
+    $("#ctx_sel_snapmap").live("change", checkSnapLoad);
     $("#uploadfield").live("change", updateUploadSelector);
     $("#btn_newmap").live("click", tryUploadMerge);
+    $("#btn_newsnap").live("click", tryLoadShadow);
     $("#btn_savemap").live("click", trySaveMap);
     $("#ctx_saveto").live("mouseup keyup change", checkSaveName);
 
+
+
+}
+
+function checkSnapLoad()
+{
+    var mapreq = $("#ctx_sel_snapmap").val();
+    if (mapreq == "")
+    {
+        $("#btn_newsnap").prop("disabled", true);
+    }
+    else
+    {
+        $("#btn_newsnap").prop("disabled", false);
+    }
 }
 
 function checkSaveName()
@@ -136,15 +153,24 @@ function lockContext()
     $("#view_context select").prop('disabled', true);
     $("#view_context input").prop('disabled', true);
 
+    $("#progspinner").show();
+
 }
 
 function unlockContext()
 {
     // re-enables interactions with the context area
     console.log("Re-enabling context after load");
+    $("#progspinner").hide();
     $("#view_context select").prop('disabled', false);
     $("#view_context input").prop('disabled', false);
     checkSaveName();
+
+    //NOTE: bad
+    if (activemodel)
+    {
+        setMapControlsEdit();
+    }
 }
 
 function checkFileUpload()
@@ -154,6 +180,12 @@ function checkFileUpload()
 
     var upreq = $("#ctx_sel_newmap").val();
     var action = $("#sel_action_newmap").val();
+
+    if (upreq == "")
+    {
+        $("#btn_newmap").prop('disabled', true);
+        return;
+    }
 
     // if the user is on the file selection, we launch the dialog (and have a callback to update the file upload field
     if (upreq.split("/")[0] == ".file")
@@ -199,6 +231,44 @@ function updateUploadSelector ()
     console.log("Chosen file "+filename);
     $("#ctx_newmap_fileopt").text(filename);
     $("#ctx_newmap_fileopt").val(".file/"+filename);
+
+}
+
+
+function tryLoadShadow ()
+{
+    console.log($("#ctx_sel_snapmap").val());
+
+    lockContext();
+    var contentreq = $("#ctx_sel_snapmap").val().split("/");
+    var meta_id = contentreq[0];
+    var map_id = contentreq[1];
+
+    var urlstring;
+    if (meta_id == ".st")
+    {
+        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id;
+    }
+    else
+    {
+        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id;
+    }
+
+    $.ajax ({
+        url:    urlstring,
+        async:  true,
+        success:    applyNewSnap,
+        error:  reportFailedDownload
+    });
+
+}
+
+
+function applyNewSnap (data, textStatus, jqXHR)
+{
+
+    renderGeoJSONCollection(data, snaplayer, true);
+    unlockContext();
 
 }
 
@@ -301,9 +371,10 @@ function setSaverHint (haschanges)
         $("#contextsaver").removeClass("savehint");
     }
 
-
-
 }
+
+
+
 
 function trySaveMap ()
 {
@@ -451,7 +522,7 @@ function checkCompleteUpload (data, textStatus, jqXHR)
 {
     // TODO: placeholder, implement
     console.log("Reporting completed upload of the file in use");
-    console.log(data);
+    //console.log(data);
 
     if (data['success'] == true)
     {
@@ -499,7 +570,7 @@ function applyNewMap (newdata, textStatus, jqXHR)
 
     //actions are 'open' and 'merge'
     var action = $("#sel_action_newmap").val();
-    console.log(newdata);
+    //console.log(newdata);
     console.log(action);
 
     // if no map is available, we always create
@@ -680,26 +751,22 @@ function renderGeoJSONCollection (jsondata, layer, cleanup)
         $("#ctx_saveto").val(activemap.split("/")[1]);
     }
 
-    /*
-    var geojson_format = new OpenLayers.Format.GeoJSON({
 
-        'externalProjection': new OpenLayers.Projection(proj_WGS84),
-        'internalProjection':layer.map.getProjectionObject()
-    });
-     */
 
     var stringmap = JSON.stringify(jsondata);
-    //var formatmap = geojson_format.read(stringmap);
     var formatmap = gjformat.read(stringmap);
 
     //console.log(formatmap);
 
     layer.addFeatures(formatmap);
 
+
+
     if (cleanup !== true)
     {
         setSaverHint(true);
     }
+
 
 }
 
@@ -751,6 +818,9 @@ function reportFailedDownload (xhr, err)
 
 function uiReset()
 {
+
+    $("#progspinner").hide();
+
     // rebuilds the UI elements; does NOT reinit the elements and variables
 
     buildContext();
@@ -767,6 +837,10 @@ function uiReset()
     }
 
     $("#statemessage").empty();
+
+    checkFileUpload();
+    checkSnapLoad();
+    checkSaveName();
 
 }
 
@@ -948,6 +1022,8 @@ function setMapControlsNav ()
 function setMapControlsEdit ()
 {
 
+    maptype = activemodel['objtype'];
+
     // draws the editing controls that change by context (lines or points)
     // add snap control
     snapcontrol = new OpenLayers.Control.Snapping ({
@@ -990,8 +1066,8 @@ function setMapControlsEdit ()
                     handlerOptions:
                     {
                         holeModifier: "altKey"
-                    },
-                    featureAdded: (createNewFeature)
+                    }
+                    /* featureAdded: (createNewFeature) */
                 }
             );
     }
@@ -1042,6 +1118,34 @@ function setMapControlsEdit ()
     vislayer.events.register('featureunselected', mapview, freeSelection);
 
 
+}
+
+
+function hideDistance()
+{
+    //TODO: placeholder, implement
+}
+
+function handleMeasure()
+{
+    //TODO: placeholder, implement
+}
+
+function renderFeatureCard()
+{
+    //TODO: placeholder, implement
+    // #view_feature
+
+    var featurecard = '<div class="ctx_topic"><div class="ctx_fieldname"></div><div class="ctx_fieldval"></div></div>';
+
+
+
+
+}
+
+function freeSelection ()
+{
+    //TODO: placeholder, implement
 }
 
 

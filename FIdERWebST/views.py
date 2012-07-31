@@ -112,11 +112,12 @@ def getModels ():
 
 	#TODO: add local "registered" models
 
-	#TODO: REMOVE comment -> DEBUG: FIDER down, skipping
-	#hasmodels, models_fider = Components.getModelsFromServer()
-	#if hasmodels:
-	#	for model_key in models_fider.keys():
-	#		models[model_key] = models_fider[model_key]
+
+	hasmodels, models_fider = Components.getModelsFromServer()
+	if hasmodels:
+		for model_key in models_fider.keys():
+			models[model_key] = models_fider[model_key]
+
 	return models
 
 

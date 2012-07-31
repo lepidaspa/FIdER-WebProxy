@@ -25,16 +25,25 @@
 
 }
 
-#view_context
+#view_context, #view_mapmodel, #view_feature
 {
     display:            table;
     border-collapse:    separate;
 }
 
+
+
 hr
 {
     border:         none;
     border-top:  1px solid #ff8800;
+}
+
+#progspinner
+{
+    text-align:     center;
+    right:          auto;
+    left:           auto;
 }
 
 #view_map
@@ -56,7 +65,7 @@ hr
     visibility:     hidden;
 }
 
-#contextloader *:disabled, #contextsaver *:disabled
+#view_context *:disabled
 {
     color:          #000000;
     background:     #cccccc;
@@ -65,5 +74,4 @@ hr
 #contextsaver.savehint
 {
     background-color: #e9324c;
-
 }
