@@ -1,4 +1,4 @@
-.ctx_fieldname, .ctx_fieldval
+.ctx_fieldname, .ctx_fieldval, .ctx_fieldact
 {
     display:    table-cell;
 }
@@ -6,6 +6,23 @@
 .ctx_topic
 {
     display:    table-row;
+}
+
+.ctx_fieldval
+{
+    padding-left:    2px;
+    padding-right:   2px;
+}
+
+.ctx_fieldval input, .ctx_fieldval select
+{
+
+    width: 100%;
+
+    box-sizing: border-box;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing: border-box;
+
 }
 
 #view_context
@@ -43,4 +60,10 @@ hr
 {
     color:          #000000;
     background:     #cccccc;
+}
+
+#contextsaver.savehint
+{
+    background-color: #e9324c;
+
 }

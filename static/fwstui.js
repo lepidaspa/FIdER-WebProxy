@@ -7,6 +7,8 @@
  */
 
 // current map data
+
+//TODO: remove, used only for setting the bounding box, which will be wrecked anyway as soon as we merge two maps and should be handled differently
 var mapdata;
 
 // setting globals
@@ -100,6 +102,30 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     $("#ctx_sel_newmap").live("change", checkFileUpload);
     $("#uploadfield").live("change", updateUploadSelector);
     $("#btn_newmap").live("click", tryUploadMerge);
+    $("#btn_savemap").live("click", trySaveMap);
+    $("#ctx_saveto").live("mouseup keyup change", checkSaveName);
+
+}
+
+function checkSaveName()
+{
+    // checks if the save widget has a valid name
+    // ADDITION: now also checks if there is an activemap to be saved
+
+    var cname = $("#ctx_saveto").val();
+
+    if (cname.match(/^[A-Za-z0-9_]+$/)==null || !activemap)
+    {
+        console.log("Non valid filename "+cname);
+        $("#btn_savemap").prop('disabled', true);
+    }
+    else
+    {
+        $("#btn_savemap").prop('disabled', false);
+
+    }
+
+
 
 }
 
@@ -107,16 +133,18 @@ function lockContext()
 {
     // disables interactions with the context area until the unlock function is called (e.g. during loadings)
     console.log("Disabling context during load");
-    $("#contextloader select").prop('disabled', true);
-    $("#contextloader input").prop('disabled', true);
+    $("#view_context select").prop('disabled', true);
+    $("#view_context input").prop('disabled', true);
+
 }
 
 function unlockContext()
 {
     // re-enables interactions with the context area
-    console.log("Re-enabling context during load");
-    $("#contextloader select").prop('disabled', false);
-    $("#contextloader input").prop('disabled', false);
+    console.log("Re-enabling context after load");
+    $("#view_context select").prop('disabled', false);
+    $("#view_context input").prop('disabled', false);
+    checkSaveName();
 }
 
 function checkFileUpload()
@@ -125,12 +153,26 @@ function checkFileUpload()
     // in case,it opens the file selection dialog from the hidden #uploadfield
 
     var upreq = $("#ctx_sel_newmap").val();
+    var action = $("#sel_action_newmap").val();
 
     // if the user is on the file selection, we launch the dialog (and have a callback to update the file upload field
     if (upreq.split("/")[0] == ".file")
     {
         $("#uploadfield").trigger('click');
     }
+    else
+    {
+        if (action == 'merge' && upreq == activemap)
+        {
+            $("#btn_newmap").prop('disabled', true);
+
+        }
+        else
+        {
+            $("#btn_newmap").prop('disabled', false);
+        }
+    }
+
 
 }
 
@@ -168,6 +210,7 @@ function tryUploadMerge()
 
     lockContext();
 
+    var actionreq = $("#sel_action_newmap").val();
     var contentreq = $("#ctx_sel_newmap").val().split("/");
     console.log(contentreq);
 
@@ -182,15 +225,204 @@ function tryUploadMerge()
     else if (contentreq[0] == '.model')
     {
         // no upload, we simply add/reset the model
-
+        setNewMapModel (contentreq[1], actionreq);
     }
     else
     {
         // we load the map from the standalone area/meta
+        getUploadedMap(contentreq[0], contentreq[1]);
 
     }
 
 }
+
+function setNewMapModel (model_id, method)
+{
+
+    // creates a new map of the requested model or adds the model to the current one, according to the method. Currently works with "open" (create new) and "merge" (add to current)
+
+    //TODO: de-hardcode open and merge values to global constant
+
+    var newmodel = models[model_id];
+
+    if (activemap == null)
+    {
+        method = 'open';
+    }
+
+    var success = true;
+    if (method == 'open')
+    {
+        // erase current map and create a new one setting newmodel as activemodel
+        vislayer.removeAllFeatures();
+        integrateMapModel(newmodel, true);
+
+        activemap = newmodel['name'];
+        $("#ctx_saveto").val(activemap);
+        checkSaveName();
+
+    }
+    else if (method == 'merge')
+    {
+        // only integrate
+        console.log("Integrating "+newmodel.objtype+" vs "+activemodel.objtype);
+        if (newmodel.objtype == activemodel.objtype)
+        {
+            integrateMapModel(newmodel, false);
+        }
+        else
+        {
+            success = false;
+            reportFeedback(false, "Modello non compatibile");
+        }
+
+    }
+
+    if (success)
+    {
+        setSaverHint(true);
+    }
+
+    unlockContext();
+
+}
+
+function setSaverHint (haschanges)
+{
+
+    // sets the class of the saver widget so that the user can see if there are changes to be saved
+
+    if (haschanges)
+    {
+        $("#contextsaver").addClass("savehint");
+    }
+    else
+    {
+        $("#contextsaver").removeClass("savehint");
+    }
+
+
+
+}
+
+function trySaveMap ()
+{
+
+    lockContext();
+
+    //launches the process to save the current map in the standalone area with the name in the ctx_saveto field; any map in the standalone area that has the same name will be overwritten
+
+    // gathers all data from the OpenLayers map then launches a callback chain for the actual upload process
+
+    var mapname = $("#ctx_saveto").val();
+    var mapjson = layerToJSON (vislayer, mapname);
+    //todo: implement upload
+
+    var urlstring = "/fwst/save/"+proxy_id+"/"+mapname+"/";
+
+
+    reportFeedback(true, "Salvataggio in corso");
+
+    $.ajax (
+        {
+            url:    urlstring,
+            data:   {
+                'mapname': mapname,
+                'jsondata': JSON.stringify(mapjson)
+            },
+            async:  true,
+            type:   'POST',
+            success: confirmSave,
+            error: reportFailedSave
+        }
+    );
+
+}
+
+function confirmSave (data, textStatus, jqXHR)
+{
+
+    if (data['success'] == true)
+    {
+        reportFeedback(true, "Mappa salvata con successo");
+        setSaverHint(false);
+    }
+    else
+    {
+        reportFeedback(false, "Salvataggio fallito: "+data['report']);
+    }
+    unlockContext();
+
+}
+
+function reportFailedSave (err, xhr)
+{
+
+    reportFeedback(false, "Errore durante il salvataggio ("+JSON.stringify(err)+")");
+    unlockContext();
+
+}
+
+function layerToJSON (layer, mapid)
+{
+
+    var jsondata = {
+        'type': 'FeatureCollection',
+        'model': activemodel,
+        'features': []
+    };
+
+    if (mapid)
+    {
+        jsondata['id'] = mapid;
+    }
+
+    var geom;
+    var props;
+    for (var fid in layer.features)
+    {
+        geom = JSON.parse(gjformat.write(layer.features[fid].geometry));
+        props = layer.features[fid].attributes;
+
+        for (var propname in activemodel['properties'])
+        {
+            // we add empty values for any property that should not be already created in the feature
+            if (!props.hasOwnProperty(propname))
+            {
+                props[propname] = "";
+            }
+        }
+
+        // we do not specify an ID since the geoid is not actually relevant for our use and can change and/or be erased on merges.
+        jsondata['features'].push({
+            'type': "Feature",
+            'geometry': geom,
+            'properties': props
+        });
+    }
+
+    return jsondata;
+
+
+}
+
+
+function buildSaver()
+{
+    var defaultname = "";
+    if (activemap)
+    {
+        defaultname = activemap;
+    }
+
+    var savewidget = $('<div class="ctx_fieldname">Salva</div><div class="ctx_fieldval"><input id="ctx_saveto" type="text" value="'+defaultname+'"></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_savemap"></div>');
+
+    $("#contextsaver").empty();
+    $("#contextsaver").append(savewidget);
+    checkSaveName();
+}
+
+
 
 function uploadFileToStandalone()
 {
@@ -242,7 +474,7 @@ function getUploadedMap (meta_id, map_id)
     var urlstring;
     if (meta_id == ".st")
     {
-        urlstring = "/fwst/"+proxy_id+"/"+map_id;
+        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id;
     }
     else
     {
@@ -266,7 +498,7 @@ function applyNewMap (newdata, textStatus, jqXHR)
     // takes the json data from the just downloaded map and applies it to the normal map or creates a new one as needed
 
     //actions are 'open' and 'merge'
-    var action = $("#sel_action_newmap");
+    var action = $("#sel_action_newmap").val();
     console.log(newdata);
     console.log(action);
 
@@ -274,11 +506,204 @@ function applyNewMap (newdata, textStatus, jqXHR)
     if (activemap == null)
     {
         action = 'open';
+
+    }
+
+    var cleanup = false;
+    if (action == 'open')
+    {
+        // cleanup before rendering
+        cleanup = true;
+    }
+
+    var canintegrate = true;
+
+    var mapmodel;
+    try
+    {
+        mapmodel = extractMapModel (newdata);
+
+        // we check for model consistency ONLY in case of merge, so we already know activemodel and activemap have been set
+        if (action == 'merge')
+        {
+            console.log(mapmodel.objtype);
+            console.log(activemodel.objtype);
+
+            if (mapmodel.objtype != activemodel.objtype)
+            {
+                console.log("model object type mismatch "+mapmodel.objtype+" vs "+activemodel.objtype);
+                canintegrate = false;
+                reportFeedback(false, "Modelli non compatibili");
+            }
+
+        }
+    }
+    catch (error)
+    {
+        console.log("Errore: "+error);
+        canintegrate = false;
+        reportFeedback(false, "Modello della nuova mappa non valido o compatibile");
+    }
+
+    if (canintegrate)
+    {
+        renderGeoJSONCollection(newdata, vislayer, cleanup);
+        integrateMapModel(mapmodel, cleanup);
+
+    }
+
+
+    unlockContext();
+
+}
+
+
+function integrateMapModel (newmodel, cleanup)
+{
+
+    // if cleanup is true, we replace the current model with the new one, otherwise we only add any new properties we find
+
+    // we don't check or change the type of data used by each property
+
+    if (cleanup)
+    {
+        activemodel = {};
+        activemodel = newmodel;
+        if (!newmodel['name'])
+        {
+            var modelname = $("#ctx_sel_newmap").text();
+        }
+    }
+    else
+    {
+        for (var propname in newmodel['properties'])
+        {
+
+            if (!activemodel['properties'].hasOwnProperty(propname))
+            {
+                activemodel['properties'][propname] = newmodel['properties'][propname];
+            }
+        }
     }
 
 
 
+
+
 }
+
+function extractMapModel (jsondata)
+{
+    // extracts model data from a FeatureCollection json dict.
+
+    var model = {};
+    model.objtype = null;
+    model.name = null;
+    model.properties = {};
+
+    // we check for the model notation in the dict itself, to start with
+    // if any element other than name is missing, we ignore this
+    var validmodel = false;
+    if (jsondata.hasOwnProperty('model'))
+    {
+
+        if (jsondata.model.hasOwnProperty('objtype') && jsondata.model.hasOwnProperty('properties'))
+        {
+            validmodel = true;
+            model.objtype = jsondata.model.objtype;
+            model.properties = jsondata.model.properties;
+            if (jsondata.model.hasOwnProperty('name'))
+            {
+                model.name = jsondata.model.name;
+            }
+        }
+
+    }
+
+    if (!validmodel && (!jsondata.hasOwnProperty('features') || jsondata.features.length == 0))
+    {
+        throw "EmptyModel";
+    }
+
+    for (var f in jsondata['features'])
+    {
+
+        var fmodel = jsondata['features'][f]['geometry']['type'];
+
+        if (model.objtype != fmodel)
+        {
+            if (model.objtype == null)
+            {
+                model.objtype = fmodel;
+            }
+            else
+            {
+                throw "ObjTypeMismatch";
+            }
+        }
+
+        var fprops = jsondata['features'][f]['properties'];
+        for (var pname in fprops)
+        {
+            if (!model.properties.hasOwnProperty(pname))
+            {
+                // we do not do a consistency check on the type of each property inside the file, for now
+                model.properties[pname] = typeof(fprops[pname]);
+            }
+        }
+    }
+
+
+    return model;
+
+
+
+
+}
+
+
+function renderGeoJSONCollection (jsondata, layer, cleanup)
+{
+
+    // renders the content of jsondata on the requested layer.
+    // if cleanup is true, erase everything before rendering
+    // (allows for merging with existing data, note that the merge does not include the mapdata in other variables)
+
+    if (cleanup === true)
+    {
+        layer.removeAllFeatures();
+    }
+
+    if (!activemap)
+    {
+        activemap = $("#ctx_sel_newmap").val();
+        $("#ctx_saveto").val(activemap.split("/")[1]);
+    }
+
+    /*
+    var geojson_format = new OpenLayers.Format.GeoJSON({
+
+        'externalProjection': new OpenLayers.Projection(proj_WGS84),
+        'internalProjection':layer.map.getProjectionObject()
+    });
+     */
+
+    var stringmap = JSON.stringify(jsondata);
+    //var formatmap = geojson_format.read(stringmap);
+    var formatmap = gjformat.read(stringmap);
+
+    //console.log(formatmap);
+
+    layer.addFeatures(formatmap);
+
+    if (cleanup !== true)
+    {
+        setSaverHint(true);
+    }
+
+}
+
+
 
 
 function reportFeedback (positive, message)
@@ -307,6 +732,8 @@ function reportFailedUpload (xhr,err)
     console.log("readyState: "+xhr.readyState+"\nstatus: "+xhr.status);
     console.log("responseText: "+xhr.responseText);
     console.log(err);
+
+    unlockContext();
 }
 
 function reportFailedDownload (xhr, err)
@@ -316,14 +743,19 @@ function reportFailedDownload (xhr, err)
     console.log("readyState: "+xhr.readyState+"\nstatus: "+xhr.status);
     console.log("responseText: "+xhr.responseText);
     console.log(err);
+
+    unlockContext();
+
+
 }
 
-    function uiReset()
+function uiReset()
 {
     // rebuilds the UI elements; does NOT reinit the elements and variables
 
     buildContext();
     buildLoader();
+    buildSaver();
 
     buildMapWidget();
     buildSnapChooser();
@@ -396,7 +828,7 @@ function buildMapList ()
     var ctx_mapsel = $('<optgroup label="Area Standalone"></optgroup>');
     for (var m in maps_st)
     {
-        ctx_mapsel.append('<option value=".st/"'+maps_st[m]+'>'+maps_st[m]+'</option>');
+        ctx_mapsel.append('<option value=".st/'+maps_st[m]+'">'+maps_st[m]+'</option>');
     }
 
     for (var meta_id in maps_fider)
@@ -426,11 +858,11 @@ function buildLoader()
     // creates the mask to load/add files and models to the current map
 
     var ctx_actionsel = '<select id="sel_action_newmap">' +
-        '<option value="open">Apri/Crea</option>' +
+        '<option value="open">Crea</option>' +
         '<option value="merge">Integra</option>' +
         '</select>';
 
-    var ctx_loadnew = $('<div class="ctx_fieldname">'+ctx_actionsel+'</div><div class="ctx_fieldval"><select id="ctx_sel_newmap"><option value=""></option><optgroup label="Da file"><option id="ctx_newmap_fileopt" value=".file">Seleziona...</option></optgroup></select><input type="button" value="&gt;&gt;" id="btn_newmap"></div>');
+    var ctx_loadnew = $('<div class="ctx_fieldname">'+ctx_actionsel+'</div><div class="ctx_fieldval"><select id="ctx_sel_newmap"><option value=""></option><optgroup label="Da file"><option id="ctx_newmap_fileopt" value=".file">Seleziona...</option></optgroup></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newmap"></div>');
 
     var ctx_modelsel = $('<optgroup label="Modello"></optgroup>');
     for (var model_id in models)
@@ -451,7 +883,7 @@ function buildLoader()
 
 function buildSnapChooser ()
 {
-    var ctx_snapchooser = $('<div class="ctx_fieldname">Allinea a</div><div class="ctx_fieldval"><select id="ctx_sel_snapmap"><option value=""></option></select><input type="button" value="&gt;&gt;" id="btn_newsnap"></div>');
+    var ctx_snapchooser = $('<div class="ctx_fieldname">Allinea a</div><div class="ctx_fieldval"><select id="ctx_sel_snapmap"><option value=""></option></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newsnap"></div>');
     ctx_snapchooser.children('#ctx_sel_snapmap').append(buildMapList());
 
     $("#view_shadow").append(ctx_snapchooser);

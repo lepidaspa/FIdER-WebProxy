@@ -238,3 +238,50 @@ def saveMapToST (uploaded, proxy_id, map_id):
 
 
 
+@csrf_exempt
+def saveSTMap (request, **kwargs):
+	"""
+	Saves a map in the Standalone directory of the requested proxy, overwrites any existing map in that point
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	try:
+		proxy_id = kwargs['proxy_id']
+		map_id = request.POST['mapname']
+		mapdata = request.POST['jsondata']
+
+		print "Changes submitted for map %s to standalone tool %s" % (map_id, proxy_id)
+		print "format %s" % (type(mapdata))
+		print "DATA: %s" % mapdata
+
+		path_tool = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone)
+
+		dest_fp = open(os.path.join(path_tool, map_id), 'w+')
+		json.dump(json.loads(mapdata), dest_fp)
+		dest_fp.close()
+
+
+		feedback = {
+			'success': True,
+			'report': "Mappa salvata correttamente nell'area standalone"
+		}
+
+	except Exception as ex:
+
+		print "Save fail due to:\n%s" % ex
+
+		feedback = {
+
+			'success': False,
+			'report': "Salvataggio fallito: %s" % ex
+
+		}
+
+
+
+
+
+
+	return HttpResponse(json.dumps(feedback), mimetype="application/json")

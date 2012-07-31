@@ -114,7 +114,7 @@ def saveMap (request, **kwargs):
 		feedback = {
 
 			'success': False,
-			'report': ex
+			'report': "Salvataggio fallito: %s" % ex
 
 		}
 
