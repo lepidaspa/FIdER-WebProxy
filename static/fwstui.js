@@ -1227,7 +1227,8 @@ function renderFeatureCard(caller)
 
 
 
-    var button_destroy = '<input type="image" src="/static/resource/fwp_remove.png" id="btn_destroyfeature">';
+    //var button_destroy = '<input type="image" src="/static/resource/fwp_remove.png" id="btn_destroyfeature">';
+    var button_destroy = '<input type="button" value="Elimina" id="btn_destroyfeature">';
 
     $("#view_feature").append('<div class="ctx_topic"><div class="ctx_fieldname">Elemento</div><div class="ctx_fieldval">'+getMapTypeName()+'</div><div class="ctx_fieldact">'+button_destroy+'</div></div>');
 
