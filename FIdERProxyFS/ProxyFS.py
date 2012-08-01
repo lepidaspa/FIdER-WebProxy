@@ -13,6 +13,8 @@ import os
 import json
 
 import ogr
+import gdal
+
 
 import Common
 from FIdERProxyFS import proxy_core
@@ -22,7 +24,6 @@ import proxy_lock
 from Common import TemplatesModels
 
 from Common.Components import sendMessageToServer
-
 """
 This module is called when a change happens in the filesystem (specifically in the upload directory, but the proxy checks anyway in case the fs monitor cannot filter before informing the proxy)
 """
@@ -329,22 +330,35 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 	protocol, separator, url = connect['url'].partition("://")
 	authstring = ""
 	if connect['user'] not in (None, ""):
-		authstring = connect['user']+"@"
+		authstring = connect['user']
 		if connect['pass'] not in (None, ""):
-			authstring = connect['pass']+":"+authstring
+			authstring = authstring+":"+connect['pass']
+		authstring += "@"
 
 	connectstring = "WFS:"+protocol+separator+authstring+url
 	print connectstring,connect
 
+	gdal.SetConfigOption('GML_CONSIDER_EPSG_AS_URN', 'YES')
+	gdal.SetConfigOption('GML_INVERT_AXIS_ORDER_IF_LAT_LONG', 'YES')
+
+
 	driver = ogr.GetDriverByName('WFS')
+	#driver.__setattr__("GML_INVERT_AXIS_ORDER_IF_LAT_LONG", True)
 	try:
+
 		wfs = driver.Open(connectstring)
+		#rewfs = driver.CopyDataSource(wfs, "rewfs", options=["GML_INVERT_AXIS_ORDER_IF_LAT_LONG=YES"] )
+		#layer = wfs.CopyLayer(wfs.GetLayerByName(str(connect['layer'])),str(connect['layer']),  options=["GML_INVERT_AXIS_ORDER_IF_LAT_LONG=YES"])
+
 		layer = wfs.GetLayerByName(str(connect['layer']))
+
 	except Exception as ex:
 		print "Connection error: %s " % ex
 		# TODO: add logging
 		response_upload['report'] = "Connessione fallita o dati mancanti per l'indirizzo specificato."
 		return response_upload
+
+	print "Received WFS data"
 
 	gjfeatures = []
 	for feature in layer:
@@ -400,6 +414,9 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 			'success': False,
 			'report': ex
 		}
+
+
+	gdal.SetConfigOption('GML_INVERT_AXIS_ORDER_IF_LAT_LONG', None)
 
 
 	return response_upload

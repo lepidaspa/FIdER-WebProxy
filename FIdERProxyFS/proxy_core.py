@@ -413,7 +413,7 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 				ext_mandatory_json[cext] = True
 			#removed strict check on accepted fie types
 
-	print ext_mandatory_shape, ext_mandatory_minfo
+	print ext_mandatory_shape, ext_mandatory_minfo, ext_mandatory_json
 	if not (all(ext_mandatory_shape.values()) or all(ext_mandatory_minfo.values()) or all(ext_mandatory_json.values()) ):
 		raise InvalidShapeArchiveException ("Mandatory file missing in shape archive %s (should contain .shp, .shx, .dbf and .prj for shape file OR .mif and .mid for mapinfo OR .geojson for geojson)" % shape_id)
 
@@ -469,6 +469,8 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	:param temp: if we are working on the .tmp directory
 	:return: geojson feature data
 	"""
+
+	#gdal.SetConfigOption('GML_INVERT_AXIS_ORDER_IF_LAT_LONG', 'NO')
 
 	#TODO: debug only, remove if not needed (error 1 on empty geoms)
 	ogr.UseExceptions()
@@ -557,6 +559,9 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 		sSRS=layer.GetSpatialRef()
 		print "Layer %s has %s features with spatial ref %s" % (layer, layer.GetFeatureCount(), sSRS)
+
+
+
 
 
 		feature = layer.GetNextFeature()

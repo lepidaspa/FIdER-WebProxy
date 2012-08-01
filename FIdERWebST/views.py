@@ -142,7 +142,7 @@ def uploadfile (request, **kwargs):
 
 	if request.method == 'POST':
 		try:
-			print "Raw data: %s" % request.FILES
+			#print "Raw data: %s" % request.FILES
 			upload = request.FILES['shapefile']
 		except:
 			response_upload['report'] = "Nessun file inviato."
@@ -255,7 +255,7 @@ def saveSTMap (request, **kwargs):
 
 		print "Changes submitted for map %s to standalone tool %s" % (map_id, proxy_id)
 		print "format %s" % (type(mapdata))
-		print "DATA: %s" % mapdata
+		#print "DATA: %s" % mapdata
 
 		path_tool = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone)
 

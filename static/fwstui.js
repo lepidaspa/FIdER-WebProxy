@@ -6,7 +6,13 @@
  * To change this template use File | Settings | File Templates.
  */
 
-// current map data
+var defaultobjtype = {
+    'LineString': 'Tratta',
+    'Point': 'Punto'
+};
+
+
+
 
 //TODO: remove, used only for setting the bounding box, which will be wrecked anyway as soon as we merge two maps and should be handled differently
 var mapdata;
@@ -61,8 +67,11 @@ var drawcontrol;
 // panel containing the controls
 var panel;
 
-// fid of the current feature being edited
+// id of the current feature being edited
+// note that this is the INTERNAL id used by OpenLayers
 var cfid;
+
+var propprefix = 'setfeatureprop_';
 
 function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fider, req_maps_st, req_models)
 {
@@ -109,9 +118,18 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     $("#btn_newsnap").live("click", tryLoadShadow);
     $("#btn_savemap").live("click", trySaveMap);
     $("#ctx_saveto").live("mouseup keyup change", checkSaveName);
+    $("#btn_destroyfeature").live("click", destroyFeature);
+
+    $(".btn_removeprop").live("click", removeProperty);
+    $("#btn_addprop").live("click", addProperty);
 
 
+}
 
+function destroyFeature()
+{
+    vislayer.destroyFeatures(vislayer.getFeatureById(cfid));
+    freeSelection();
 }
 
 function checkSnapLoad()
@@ -151,6 +169,16 @@ function checkSaveName()
 
 function lockContext()
 {
+
+    try
+    {
+        freeSelection();
+    }
+    catch (err)
+    {
+        console.log("No feature selected at the moment");
+    }
+
     // disables interactions with the context area until the unlock function is called (e.g. during loadings)
     console.log("Disabling context during load");
     $("#view_context select").prop('disabled', true);
@@ -173,6 +201,7 @@ function unlockContext()
     if (activemodel)
     {
         setMapControlsEdit();
+        renderMapCard();
     }
 }
 
@@ -327,7 +356,11 @@ function setNewMapModel (model_id, method)
     if (method == 'open')
     {
         // erase current map and create a new one setting newmodel as activemodel
-        vislayer.removeAllFeatures();
+
+
+        vislayer.destroyFeatures();
+        console.log("Erased features");
+        console.log(vislayer.features);
         integrateMapModel(newmodel, true);
 
         activemap = newmodel['name'];
@@ -623,6 +656,10 @@ function applyNewMap (newdata, textStatus, jqXHR)
     {
         renderGeoJSONCollection(newdata, vislayer, cleanup);
         integrateMapModel(mapmodel, cleanup);
+        if (action == 'open')
+        {
+            $("#ctx_saveto").val($("#ctx_sel_newmap").val().split("/")[1]);
+        }
 
     }
 
@@ -1025,6 +1062,20 @@ function setMapControlsNav ()
 function setMapControlsEdit ()
 {
 
+    try
+    {
+        snapcontrol.deactivate();
+        drawcontrol.deactivate();
+        editcontrol.deactivate();
+        measurecontrol.deactivate();
+    }
+    catch (err)
+    {
+        console.log("No active controls yet");
+    }
+
+
+
     maptype = activemodel['objtype'];
 
     // draws the editing controls that change by context (lines or points)
@@ -1053,8 +1104,8 @@ function setMapControlsEdit ()
                 handlerOptions:
                 {
                     holeModifier: "altKey"
-                },
-                featureAdded: (createNewFeature)
+                }
+                /*featureAdded: (createNewFeature) */
             }
         );
     }
@@ -1132,30 +1183,74 @@ function hideDistance()
 function handleMeasure()
 {
     //TODO: placeholder, implement
+    freeSelection();
+}
+
+function resetViewDetail()
+{
+    $("#view_mapmodel").empty();
+    $("#view_feature").empty();
+    $("#view_measure").empty();
+}
+
+function getMapTypeName ()
+{
+
+    if (activemodel.hasOwnProperty('name') && activemodel['name']!=null)
+    {
+        return activemodel['name'];
+    }
+    else
+    {
+        return defaultobjtype[activemodel['objtype']];
+    }
+
 }
 
 function renderFeatureCard(caller)
 {
+
+    // in case we switch from one feature to another in the openlayers viewport
+    freeSelection();
+
     //TODO: set CFID
     // #view_feature
 
     var feature = caller['feature'];
 
-    var featurecard = $('<div class="ctx_topic"><div class="ctx_fieldname"></div><div class="ctx_fieldval"></div></div>');
+    cfid  = feature.id;
+
+    console.log("Selected feature "+cfid);
+
+    resetViewDetail();
+
+
+
+
+    var button_destroy = '<input type="image" src="/static/resource/fwp_remove.png" id="btn_destroyfeature">';
+
+    $("#view_feature").append('<div class="ctx_topic"><div class="ctx_fieldname">Elemento</div><div class="ctx_fieldval">'+getMapTypeName()+'</div><div class="ctx_fieldact">'+button_destroy+'</div></div>');
+
+
+    console.log("Attributes:");
+    console.log(feature['attributes']);
 
     for (var propname in activemodel['properties'])
     {
 
         var datalist = "";
         var listref = "";
-        if ($.isArray(activemodel['properties'][propname] == 'array'))
+        var listclass = "";
+        if ($.isArray(activemodel['properties'][propname]))
         {
             datalist = $('<datalist id="modprop_'+propname+'"></datalist>');
             listref = ' list="modprop_'+propname+'"';
+            listclass = " datalisted";
             for (var i in activemodel['properties'][propname])
             {
-                datalist.append('<option value="'+activemodel['properties'][propname][i]+'">');
+                datalist.append('<option value="'+activemodel['properties'][propname][i]+'"></option>');
             }
+            console.log(datalist);
 
             //TODO: if range of values, add option to set a button to set the same property to ALL elements (very careful...)
         }
@@ -1165,28 +1260,113 @@ function renderFeatureCard(caller)
         {
               propval = feature['attributes'][propname];
         }
-        // TODO: verify if we should use .fid or .id
-        var cprop = $('<div class="ctx_fieldname">'+propname+'</div>' +
-            '<div class="ctx_fieldval featureedit" id="setfeatureprop_'+feature.id+'_'+propname+'"'+listref+'>'+propval+'</div>' + datalist +
-            '<div class="ctx_fieldact"></div>');
+
+        var cprop = $('<div class="ctx_topic"><div class="ctx_fieldname">'+propname+'</div>' +
+            '<div class="ctx_fieldval"><input type="text" value="'+propval+'" class="featureedit'+listclass+'" id="'+propprefix+propname+'" '+listref+'>'+
+            '</div><div class="ctx_fieldact"></div></div>');
+
+        /* LEFT just in case, but we should be able to use datalist
+        if ($.isArray(activemodel['properties'][propname]))
+        {
+            console.log("Trying autocomplete on "+propprefix+propname);
+            console.log(activemodel['properties'][propname]);
+            console.log(cprop.children("#"+propprefix+propname));
+            cprop.find("#"+propprefix+propname).autocomplete({source: activemodel['properties'][propname]});
+        }*/
+
+        cprop.children(".ctx_fieldval").prepend(datalist);
+
+        $("#view_feature").append(cprop);
+
     }
+
+    //$("#view_feature").append(featurecard);
 
 }
 
 function freeSelection (caller)
 {
-    // applies changes to the properties (so we avoid a change for every keypress
-    // NOTE: this call should be FORCED whenever needed
+    // applies changes to the properties of the current object
+    // (so we avoid a change for every keypress)
 
-    var fieldlist = $(".featureedit");
-    var newprops;
-    for (var i in fieldlist)
+
+    // caller provides the event name via caller['type'], if applicable
+
+    var feature = vislayer.getFeatureById(cfid);
+
+    $(".featureedit").each(
+        function ()
+        {
+            var propval = $(this).val();
+            var propname = $(this).attr('id').slice(propprefix.length);
+            console.log("setting "+propname+" in "+cfid+" to "+propval);
+
+            vislayer.getFeatureById(cfid).attributes[propname] = propval;
+
+        }
+    );
+
+    resetViewDetail();
+
+    setSaverHint(true);
+
+
+    // when we do not render a feature, we draw the map card, unless we are using the measure tool (which triggers a different event anyway)
+
+    if (!measurecontrol.active && !drawcontrol.active)
     {
-       //TODO: implement
+        renderMapCard();
     }
+
+    //console.log(mapview.getControlsBy('active', true));
+
+    $("#statemessage").empty();
+    cfid = null;
+
 
 }
 
+function renderMapCard()
+{
+    // shows all the details about the current map
+    //TODO: implement
+
+    resetViewDetail();
+
+    // showing the map type
+    $("#view_mapmodel").append('<div class="ctx_topic"><div class="ctx_fieldname">Tipologia</div><div class="ctx_fieldval"  id="maptypedef">'+getMapTypeName()+'</div>');
+
+    for (var propname in activemodel['properties'])
+    {
+
+        var button_destroy = '<input type="button" class="btn_modelform btn_removeprop" value="-" id="btn_removeprop_'+propname+'">';
+        //var button_destroy = '<input type="image" src="/static/resource/fwp_remove.png" id="btn_removeprop_'+propname+'">';
+
+        var suggestions = "";
+        var sep = "";
+        var proprange = activemodel['properties'][propname];
+        if ($.isArray(proprange))
+        {
+            // render prop values list
+            for (var i in proprange)
+            {
+                suggestions+=proprange[i]+";";
+            }
+        }
+        $("#view_mapmodel").append('<div class="ctx_topic"><div class="ctx_fieldname">'+propname+'</div><div class="ctx_fieldval"><input type="text" value="'+suggestions+'"></div><div class="ctx_fieldact">'+button_destroy+'</div></div>');
+
+
+    }
+
+    var button_addnew = '<input type="button" class="btn_modelform" value="+" id="btn_addprop">';
+
+    // adding new property
+    $("#view_mapmodel").append('<div class="ctx_topic" id="addmodelproperty"><div class="ctx_fieldname"><input type="text" id="model_newpropname"></div><div class="ctx_fieldval"><input type="text" value=""></div><div class="ctx_fieldact">'+button_addnew+'</div></div>');
+
+
+
+
+}
 
 
 function autoZoom (olmap)

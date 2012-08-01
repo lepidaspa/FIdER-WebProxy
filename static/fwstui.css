@@ -1,11 +1,16 @@
 .ctx_fieldname, .ctx_fieldval, .ctx_fieldact
 {
-    display:    table-cell;
+    display:            table-cell;
+    vertical-align:     middle;
+    padding-top:        1px;
+    padding-bottom:     1px;
+
 }
 
 .ctx_topic
 {
     display:    table-row;
+
 }
 
 .ctx_fieldval
@@ -17,21 +22,23 @@
 .ctx_fieldval input, .ctx_fieldval select
 {
 
-    width: 100%;
+    width:                  100%;
+    box-sizing:             border-box;
+    -webkit-box-sizing:     border-box;
+    -moz-box-sizing:        border-box;
 
-    box-sizing: border-box;
-    -webkit-box-sizing:border-box;
-    -moz-box-sizing: border-box;
+}
 
+input[type=image]
+{
+    border:         none;
 }
 
 #view_context, #view_mapmodel, #view_feature
 {
     display:            table;
-    border-collapse:    separate;
+    border-collapse:    collapse;
 }
-
-
 
 hr
 {
@@ -74,4 +81,35 @@ hr
 #contextsaver.savehint
 {
     background-color: #e9324c;
+}
+
+
+.datalisted
+{
+    background-image:               url('/static/resource/fwp_dropdown.png');
+    background-position:            99% 50%;
+    background-repeat:              no-repeat;
+}
+
+
+#maptypedef
+{
+    font-weight:    bold;
+}
+
+
+
+#model_newpropname
+{
+    width:          6em;
+}
+
+#addmodelproperty
+{
+    border-top:         1px dashed #ff8800;
+}
+
+.btn_modelform
+{
+    min-width:          24px;
 }
