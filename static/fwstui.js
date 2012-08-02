@@ -129,13 +129,46 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
 
     $(".ctx_propvalues").live("change mouseup keyup", setModelPropForm);
 
+    $("#btn_filter_apply").live("change", applyFilter);
 
 }
 
 function applyFilter()
 {
 
+    var req = $("#btn_filter_apply").prop("checked");
+
+    if (!req)
+    {
+        filterlayer.destroyFeatures();
+        return
+    }
+
+    // if the checkbox is activated, we (try) render the requested features
+
+    var propname = $("#sel_filter_propname").val();
+    var propval  = $("#txt_filter_propvalue").val();
+
+    var forcopy = vislayer.getFeaturesByAttribute(propname, propval);
+
+    if (forcopy && forcopy.length > 0)
+    {
+        console.log("Copying features");
+
+
+        for (var i in forcopy)
+        {
+            console.log(forcopy);
+            filterlayer.addFeatures(forcopy[i].clone());
+        }
+
+
+    }
+
+
 }
+
+
 
 function resetFilterSuggestions()
 {
@@ -239,7 +272,7 @@ function addProperty()
     activemodel.properties[newpropname] = newpropvals;
 
     // we also save any other change that has been made on the same form
-    $(".ctx_mapmodel").each(setModelPropForm);
+    $(".ctx_propvalues").each(setModelPropForm);
 
     renderMapCard();
 
@@ -1001,7 +1034,7 @@ function uiReset()
 
     // rebuilds the UI elements; does NOT reinit the elements and variables
 
-    buildContext();
+    //buildContext();
     buildLoader();
     buildSaver();
 
@@ -1173,7 +1206,16 @@ function buildMapWidget()
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     // adding the "background" layer
     snaplayer= new OpenLayers.Layer.Vector("Riferimento", {styleMap: featurestylemap});
-    mapview.addLayer(snaplayer);
+    //mapview.addLayer(snaplayer);
+
+
+    // setting style
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#188E01", strokeColor: "#188E01", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
+    featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    // adding the "background" layer
+    filterlayer = new OpenLayers.Layer.Vector("Ricerca", {styleMap: featurestylemap});
+    //mapview.addLayer(filterlayer);
+
 
     // setting style
     //featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 1, strokeDashstyle: "solid", pointRadius: 6});
@@ -1184,8 +1226,9 @@ function buildMapWidget()
     featurestylemap = new OpenLayers.StyleMap ({'default': defaultstyle, 'select': selectstyle, 'temporary': drawstyle});
     // adding the "state" layer
     vislayer= new OpenLayers.Layer.Vector("Mappa", {styleMap: featurestylemap});
-    mapview.addLayer(vislayer);
+    //mapview.addLayer(vislayer);
 
+    mapview.addLayers([snaplayer, filterlayer, vislayer]);
 
     autoZoom(mapview);
 
@@ -1432,8 +1475,11 @@ function setModelPropForm ()
 
     // sets the properties in the activemodel from the form for a single field
 
+
+
     var prefix = "txt_propvalues_";
     var propname = $(this).attr('id').slice(prefix.length);
+
 
     try
     {
@@ -1490,7 +1536,7 @@ function freeSelection (caller)
 
     // saves changes to the model, if the model detail was open
 
-    $(".ctx_mapmodel").each(setModelPropForm);
+    $(".ctx_propvalues").each(setModelPropForm);
 
     // redrawing the filter widget after setting the new properties
     renderFilterMask();
@@ -1556,14 +1602,12 @@ function renderFilterMask()
     $("#view_filter").append(txtinput);
     $("#view_filter").append(applyfilter);
 
+
+
 }
 
 
 
-function getFilterSuggestions()
-{
-
-}
 
 function renderMapCard()
 {
