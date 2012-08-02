@@ -310,6 +310,31 @@ def sendUpdatesWrite (proxy_id):
 		logEvent ("Failed to send updates for proxy %s (meta/timestamp list: %s)" % (proxy_id, updateslist), True)
 
 
+def sideloadST (proxy_id, meta_id, stmap_id, saveto_id):
+
+
+	uploadpath = os.path.join(conf.baseuploadpath, proxy_id, meta_id, saveto_id+".zip")
+	frompath = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, stmap_id)
+
+	with zipfile.ZipFile(uploadpath, 'w') as datazip:
+		datazip.write(frompath, stmap_id+".geojson")
+
+	print "Zipped data ok"
+
+	try:
+		handleFileEvent (uploadpath)
+		response_sideload = {
+			'success': True,
+			'report': 'Mappa %s importata correttamente. ' % stmap_id
+		}
+	except Exception as ex:
+		response_sideload = {
+			'success': False,
+			'report': 'Importazione di %s fallita. Causa: %s' % (stmap_id, ex)
+		}
+
+	return response_sideload
+
 
 def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 	"""
@@ -343,7 +368,6 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 
 
 	driver = ogr.GetDriverByName('WFS')
-	#driver.__setattr__("GML_INVERT_AXIS_ORDER_IF_LAT_LONG", True)
 	try:
 
 		wfs = driver.Open(connectstring)

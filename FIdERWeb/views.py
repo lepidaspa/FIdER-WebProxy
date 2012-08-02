@@ -98,10 +98,14 @@ def metapage (request, **kwargs):
 		for mapfile in os.listdir(metadir):
 			proxymaps.append(mapfile)
 
+
 		remotedir = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id)
 		remotemaps = []
 		for conffile in os.listdir(remotedir):
 			remotemaps.append(conffile[:-4])
+
+		maplist_st = os.listdir(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone))
+
 
 	else:
 		metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_mirror, meta_id)
@@ -114,6 +118,8 @@ def metapage (request, **kwargs):
 	if proxytype != 'query':
 		template = 'fwp_metapage.html'
 		kwargs['remote'] = SafeString(json.dumps(remotemaps))
+		kwargs['maps_st'] = SafeString(json.dumps(maplist_st))
+
 	else:
 		template = 'fwp_querypage.html'
 		kwargs['models'] = SafeString(json.dumps(getModels()))
@@ -849,3 +855,28 @@ def proxy_perform_query (request, **kwargs):
 	#print "ABOUT TO SEND BACK: %s " % geojson
 
 	return HttpResponse(geojson, mimetype="application/json")
+
+
+@csrf_exempt
+def sideloadSTMap (request, **kwargs):
+	"""
+	copies a map from the standalone area to the requested meta_id and map_id, all vars passed via post
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = request.POST['proxy_id']
+	meta_id = request.POST['meta_id']
+	map_id = request.POST['map_id']
+	saveto = request.POST['saveto']
+	if not saveto or saveto is None or saveto == "":
+		saveto = map_id
+
+
+
+	response_sideload = ProxyFS.sideloadST (proxy_id, meta_id, map_id, saveto)
+
+
+
+	return HttpResponse(json.dumps(response_sideload), mimetype="application/json")

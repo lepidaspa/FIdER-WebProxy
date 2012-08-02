@@ -12,6 +12,7 @@ var proj_900913 = "EPSG:900913";
 var proxy_id;
 var meta_id;
 var shapes;
+var maps_st;
 var shapedata;
 var manifest;
 var proxy_type;
@@ -40,7 +41,7 @@ var convmodelcats;
 // id of the map item being worked on in the sidebar, needed to keep state with the bindings
 var currentmap;
 
-function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote)
+function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote, req_maps_st)
 {
 
     console.log(JSON.parse(req_remote));
@@ -51,11 +52,16 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote)
     $("#btn_reload").hide();
     $("#proxy_addmap").hide();
 
+    $("#waitspinner").hide();
+
     proxy_id = req_proxy_id;
     meta_id = req_meta_id;
     manifest = req_manifest;
 
     shapes = jQuery.parseJSON(req_maps);
+    maps_st = jQuery.parseJSON(req_maps_st);
+    console.log("Maps from standalone: "+JSON.stringify(maps_st)+"\nfrom");
+    console.log(req_maps_st);
 
     //alert(JSON.stringify(manifest['metadata']));
 
@@ -81,9 +87,16 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote)
 
     renderMaps();
 
+    $("#confirmuploadfile").live('click', uploadFromFile);
+    $("#confirmuploadwfs").live('click', uploadFromWeb);
+    $("#confirmsideloadST").live('click', sideloadFromST);
+    $(".btn_confirmdelete").live('click', deleteMap);
+
 
     $("#newmap_shapefile").click(renderNewShapeMask);
     $("#newmap_wfs").click(renderNewWFSMask);
+    $("#newmap_st").click(renderNewSTMask);
+
 
 }
 
@@ -143,6 +156,7 @@ function setLoadingState()
     //featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 1, strokeDashstyle: "solid"});
     //featurestylemap = new OpenLayers.StyleMap(featurestyle);
     $("#loadingstate").show();
+    $("#waitspinner").show();
 
     proxymap_currentlayer.removeAllFeatures();
 }
@@ -153,6 +167,7 @@ function unsetLoadingState()
 
     $("#loadingstate").hide();
 
+
     // renders the maps
     for (var i = 0; i < shapedata.length; i++)
     {
@@ -162,6 +177,8 @@ function unsetLoadingState()
         //alert("Rendered "+shapes[i]);
     }
 
+
+    $("#waitspinner").hide();
 
     $(".btn_focus").unbind();
     $(".btn_focus").click(focusSelMap);
@@ -181,9 +198,6 @@ function unsetLoadingState()
     proxymap.addControl(new OpenLayers.Control.Navigation());
     proxymap.addControl(new OpenLayers.Control.PanZoomBar());
 
-    $("#confirmuploadfile").live('click', uploadFromFile);
-    $("#confirmuploadwfs").live('click', uploadFromWeb);
-    $(".btn_confirmdelete").live('click', deleteMap);
 
 
 
@@ -253,7 +267,9 @@ function renderMapCard (map_id)
     var str_btn_uploadwfs = '<img alt="Aggiorna da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
     var str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
     var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
-    var editlink = "/edit/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/"
+    //var editlink = "/edit/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";
+    // TODO: set again to integrated map editor rather than standalone
+    var editlink = "/fwst/"+proxy_id;
     var str_btn_edit = '<a href="'+editlink+'"><img alt="Modifica" class="btn_edit" id="btn_edit_'+map_id+'" src="/static/resource/fwp_editmap.png"></a>';
 
     var mapactions = '<div class="mapactions">'+str_btn_focus+' '+str_btn_convert+'<br>'+str_btn_uploadfile+' '+str_btn_uploadwfs+'<br>'+str_btn_edit+' '+str_btn_remove+'</div>';
@@ -284,6 +300,24 @@ function renderNewWFSMask()
 
     $("#proxy_addmap").append(uploadtable);
 }
+
+function renderNewSTMask ()
+{
+    closeAllMasks();
+
+    var chooser = $('<div id="uploadSTMask" class="maskwidget"><select id="newmap_chooserST"><option value=""></option></select></div>');
+    for (var i in maps_st)
+    {
+        chooser.children("#newmap_chooserST").append('<option value="'+maps_st[i]+'">'+maps_st[i]+'</option>');
+    }
+
+    chooser.append('<input type="button" id="confirmsideloadST" value="Importa">');
+
+    $("#proxy_addmap").append(chooser);
+
+
+}
+
 
 function renderNewShapeMask ()
 {
@@ -497,6 +531,56 @@ function uploadFromWeb ()
 
 
 }
+
+function sideloadFromST ()
+{
+
+    var requested = $("#newmap_chooserST").val();
+
+    if (!requested || requested == "")
+    {
+        return;
+    }
+
+    //TODO: add support for upload to a specific map name other than the original
+
+    var urlstring = "/fwp/stimport/";
+    var container = "#proxy_addmap";
+
+
+    //NOTE: saveto is a placeholder for saving to a different map
+    var saveto = map_id;
+    var params = {
+        'proxy_id': proxy_id,
+        'meta_id': meta_id,
+        'map_id': requested,
+        'saveto': saveto
+    };
+
+    $.ajax ({
+        url:    urlstring,
+        data:   params,
+        async:  true,
+        type:   'POST',
+        success: function (data) {
+            postFeedbackMessage(data['success'], data['report'], container);
+
+            rebuildShapeData(saveto);
+
+        },
+        error:  function (data) {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
+        }
+
+    });
+
+
+
+}
+
+
+
+
 
 function rebuildShapeData (shape_id)
 {

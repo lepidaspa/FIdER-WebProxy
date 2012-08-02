@@ -23,7 +23,9 @@
     <div id="loadingstate" class="statemess">Caricamento mappe</div>
     <div id="currentops" class="statemess"></div>
 
-    <div class="button wide" id="proxy_addmap">Nuova mappa: <span id="newmap_shapefile" class="blocky textbutton">FILE</span> / <span class="textbutton" id="newmap_wfs">WFS</span></div>
+    <div class="button wide" id="proxy_addmap">Nuova mappa: <span id="newmap_shapefile" class="blocky textbutton">FILE</span> / <span class="textbutton" id="newmap_wfs">WFS</span> / <span class="textbutton" id="newmap_st">Interna</span></div>
+
+    <div id="waitspinner"><img src="/static/resource/progressbar.gif"></div>
 
     <div id="maplisting"></div>
 
@@ -42,7 +44,7 @@
 
 {% block starterscript %}
     <script>
-        pageInit('{{ proxy_id }}', '{{ meta_id }}', {{ manifest }}, '{{ maps }}', '{{ remote }}');
+        pageInit('{{ proxy_id }}', '{{ meta_id }}', {{ manifest }}, '{{ maps }}', '{{ remote }}', '{{ maps_st }}');
     </script>
 {% endblock %}
 

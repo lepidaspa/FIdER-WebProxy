@@ -128,6 +128,7 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
 
 function destroyFeature()
 {
+    vislayer.removeFeatures(vislayer.getFeatureById(cfid));
     vislayer.destroyFeatures(vislayer.getFeatureById(cfid));
     freeSelection();
 }
@@ -1295,17 +1296,23 @@ function freeSelection (caller)
 
     var feature = vislayer.getFeatureById(cfid);
 
-    $(".featureedit").each(
-        function ()
-        {
-            var propval = $(this).val();
-            var propname = $(this).attr('id').slice(propprefix.length);
-            console.log("setting "+propname+" in "+cfid+" to "+propval);
+    if (feature != null)
+    {
+        $(".featureedit").each(
+            function ()
+            {
+                var propval = $(this).val();
+                var propname = $(this).attr('id').slice(propprefix.length);
+                console.log("setting "+propname+" in "+cfid+" to "+propval);
 
-            vislayer.getFeatureById(cfid).attributes[propname] = propval;
+                vislayer.getFeatureById(cfid).attributes[propname] = propval;
 
-        }
-    );
+            }
+        );
+    }
+
+
+
 
     resetViewDetail();
 

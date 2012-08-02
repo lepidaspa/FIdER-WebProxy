@@ -66,9 +66,9 @@ urlpatterns = patterns('',
 	url(r'^fwst/(?P<proxy_id>\w*)/$', fwstviews.uiview),
 	url(r'^fwst/upload/(?P<proxy_id>\w*)/$', fwstviews.uploadfile),
 	url(r'^fwst/maps/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.loadSTMap),
-	url(r'^fwst/save/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.saveSTMap)
+	url(r'^fwst/save/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.saveSTMap),
 
-
+	url(r'^fwp/stimport', fwpviews.sideloadSTMap)
 
 
 
