@@ -62,10 +62,13 @@ def makeSoftProxy (proxy_id, manifest):
 	os.makedirs(os.path.join(basepath, "locks"))
 
 
+
 	#creating directories for data
 	os.makedirs(os.path.join(basepath, "next"))
 	os.makedirs(os.path.join(basepath, conf.path_geojson))
 	os.makedirs(os.path.join(basepath, conf.path_mirror))
+	os.makedirs(os.path.join(basepath, conf.path_standalone))
+
 
 	#TODO: remove after cleaning up any code that leads to this file
 	fp_manifest = open(os.path.join(basepath,conf.path_manifest),'w+')
