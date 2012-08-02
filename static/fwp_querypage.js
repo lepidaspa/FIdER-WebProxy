@@ -142,20 +142,7 @@ function renderNewConnMask()
 
     $("#proxy_addconn").append(connmask);
 
-    /*
-     QUICK TESTING HACK
-     */
-    $("#conn_name_new").val("Testbed");
-    $("#conn_host_new").val("195.62.186.196");
-    $("#conn_port_new").val("5432");
-    $("#conn_db_new").val("geodb");
-    $("#conn_schema_new").val("reti");
-    $("#conn_view_new").val("f_links_ln");
-    $("#conn_user_new").val("labs");
-    $("#conn_pass_new").val("lepidalabs");
-    /*
-     TODO: REMOVE THE ABOVE HARDCODING
-     */
+
 
     $("#connect_new").unbind();
     $("#connect_new").click(createNewConnection);
