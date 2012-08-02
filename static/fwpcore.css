@@ -4,6 +4,11 @@ body
     background-color:   #ffffff;
 }
 
+body.passive
+{
+    cursor: wait;
+}
+
 input:disabled, select:disabled
 {
     background-color:   #bbb7b9;

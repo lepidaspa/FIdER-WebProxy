@@ -121,8 +121,141 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     $("#btn_destroyfeature").live("click", destroyFeature);
 
     $(".btn_removeprop").live("click", removeProperty);
+    $("#model_newpropname").live("change mouseup keyup", checkNewPropName);
     $("#btn_addprop").live("click", addProperty);
+    $("#btn_filter_apply").live("change mouseup", applyFilter);
 
+    $("#sel_filter_propname").live("change", resetFilterSuggestions);
+
+    $(".ctx_propvalues").live("change mouseup keyup", setModelPropForm);
+
+
+}
+
+function applyFilter()
+{
+
+}
+
+function resetFilterSuggestions()
+{
+
+    $("#txt_filter_propvalue").removeClass("datalisted");
+    $("#filter_suggested").empty();
+    var propfilter = $("#sel_filter_propname").val();
+    console.log("Updating filter suggestions for "+propfilter);
+    if (!propfilter || propfilter=="")
+    {
+        return;
+    }
+
+    var choices = [];
+    if ($.isArray(activemodel.properties[propfilter]))
+    {
+        choices = choices.concat(activemodel.properties[propfilter]);
+    }
+
+    console.log("Forced choices "+choices.length);
+
+    var morechoices = [];
+    for (var i in vislayer.features)
+    {
+        var current = vislayer.features[i].attributes[propfilter];
+        if (current && current != "" && morechoices.indexOf(current) == -1)
+        {
+            morechoices.push(current);
+
+        }
+
+        if (morechoices.length>100)
+        {
+            break;
+        }
+    }
+
+    choices = choices.concat(morechoices);
+    console.log("Found "+choices.length+" suggestions");
+
+    for (i in choices)
+    {
+        $("#filter_suggested").append('<option value="'+choices[i]+'">');
+    }
+
+    if (choices.length > 0)
+    {
+        $("#txt_filter_propvalue").addClass("datalisted");
+    }
+
+
+
+
+
+
+}
+
+function checkNewPropName ()
+{
+
+    var cname = $("#model_newpropname").val();
+    var cprops = Object.getOwnPropertyNames(activemodel.properties);
+    if (cname.match(/^[A-Za-z0-9_]+$/)==null || cprops.indexOf(cname) != -1)
+    {
+        console.log("Non valid property name"+cname);
+        $("#btn_addprop").prop('disabled', true);
+    }
+    else
+    {
+        $("#btn_addprop").prop('disabled', false);
+
+    }
+}
+
+function addProperty()
+{
+
+    var newpropname = $("#model_newpropname").val();
+    if (!$("#model_newpropvals").val())
+    {
+        return;
+    }
+    var rawpropvals = $("#model_newpropvals").val().split(";");
+
+    var newpropvals = [];
+    for (var i in rawpropvals)
+    {
+        var trimmed = $.trim(rawpropvals[i]);
+
+        if (trimmed != "")
+        {
+            newpropvals.push(trimmed);
+        }
+    }
+
+    if (newpropvals.length == 0)
+    {
+        newpropvals = "str";
+    }
+
+    activemodel.properties[newpropname] = newpropvals;
+
+    // we also save any other change that has been made on the same form
+    $(".ctx_mapmodel").each(setModelPropForm);
+
+    renderMapCard();
+
+}
+
+function removeProperty()
+{
+    var prefix = "btn_removeprop_";
+    var cid = $(this).prop('id');
+
+    var propname = cid.slice(prefix.length);
+
+    delete activemodel.properties[propname];
+
+    renderMapCard();
+    renderFilterMask();
 
 }
 
@@ -171,6 +304,8 @@ function checkSaveName()
 function lockContext()
 {
 
+    $("body").addClass("passive");
+
     try
     {
         freeSelection();
@@ -204,6 +339,8 @@ function unlockContext()
         setMapControlsEdit();
         renderMapCard();
     }
+
+    $("body").removeClass("passive");
 }
 
 function checkFileUpload()
@@ -940,11 +1077,15 @@ function buildMapList ()
 {
     // returns the optgroups of maps currently available as jQuery object
 
+    var container = $("<select><option></option></select>");
+
     var ctx_mapsel = $('<optgroup label="Area Standalone"></optgroup>');
     for (var m in maps_st)
     {
         ctx_mapsel.append('<option value=".st/'+maps_st[m]+'">'+maps_st[m]+'</option>');
     }
+
+    container.append(ctx_mapsel);
 
     for (var meta_id in maps_fider)
     {
@@ -960,10 +1101,10 @@ function buildMapList ()
             ctx_metamapsel.append('<option value="'+meta_id+'/'+map_id+'">'+map_id+'</option>');
         }
 
-        ctx_mapsel.append(ctx_metamapsel);
+        container.append(ctx_metamapsel);
     }
 
-    return ctx_mapsel;
+    return container.children("optgroup");
 
 }
 
@@ -1286,6 +1427,57 @@ function renderFeatureCard(caller)
 
 }
 
+function setModelPropForm ()
+{
+
+    // sets the properties in the activemodel from the form for a single field
+
+    var prefix = "txt_propvalues_";
+    var propname = $(this).attr('id').slice(prefix.length);
+
+    try
+    {
+        var rawpropvals = $(this).val().split(";");
+    }
+    catch (err)
+    {
+        rawpropvals = [];
+        rawpropvals.push($(this).val());
+    }
+    console.log("Setting prop "+propname);
+    console.log(rawpropvals);
+
+
+    var newpropvals = [];
+    for (var i in rawpropvals)
+    {
+        var trimmed = $.trim(rawpropvals[i]);
+
+        if (trimmed != "")
+        {
+            newpropvals.push(trimmed);
+        }
+    }
+
+    if (newpropvals.length == 0)
+    {
+        newpropvals = "str";
+    }
+    else
+    {
+        console.log("Setting "+propname+" to "+JSON.stringify(newpropvals));
+        activemodel.properties[propname] = newpropvals;
+    }
+
+
+    setSaverHint(true);
+    $("#sel_filter_propname").trigger('change');
+
+
+
+}
+
+
 function freeSelection (caller)
 {
     // applies changes to the properties of the current object
@@ -1293,6 +1485,18 @@ function freeSelection (caller)
 
 
     // caller provides the event name via caller['type'], if applicable
+
+
+
+    // saves changes to the model, if the model detail was open
+
+    $(".ctx_mapmodel").each(setModelPropForm);
+
+    // redrawing the filter widget after setting the new properties
+    renderFilterMask();
+
+
+    // saves changes to the feature properties, if a feature was selected
 
     var feature = vislayer.getFeatureById(cfid);
 
@@ -1334,10 +1538,42 @@ function freeSelection (caller)
 
 }
 
+function renderFilterMask()
+{
+
+    $("#view_filter").empty();
+
+    var chooser = $('<select id="sel_filter_propname"><option></option></select>');
+    for (var i in Object.getOwnPropertyNames(activemodel.properties))
+    {
+        var current = Object.getOwnPropertyNames(activemodel.properties)[i];
+        chooser.append('<option value="'+current+'">'+current+'</option>');
+    }
+    var txtinput = $('<input type=text id="txt_filter_propvalue" list="filter_suggested"><datalist id="filter_suggested"></datalist>');
+    var applyfilter = '<input type="checkbox" id="btn_filter_apply">';
+
+    $("#view_filter").append(chooser);
+    $("#view_filter").append(txtinput);
+    $("#view_filter").append(applyfilter);
+
+}
+
+
+
+function getFilterSuggestions()
+{
+
+}
+
 function renderMapCard()
 {
+    renderFilterMask();
     // shows all the details about the current map
     //TODO: implement
+
+
+    // catch-all redraw: since renderMapCard is usually called after changes to the model, we can use this to redraw the filter widget
+    renderFilterMask();
 
     resetViewDetail();
 
@@ -1361,7 +1597,7 @@ function renderMapCard()
                 suggestions+=proprange[i]+";";
             }
         }
-        $("#view_mapmodel").append('<div class="ctx_topic"><div class="ctx_fieldname">'+propname+'</div><div class="ctx_fieldval"><input type="text" value="'+suggestions+'"></div><div class="ctx_fieldact">'+button_destroy+'</div></div>');
+        $("#view_mapmodel").append('<div class="ctx_topic ctx_mapmodel"><div class="ctx_fieldname">'+propname+'</div><div class="ctx_fieldval"><input class="ctx_propvalues" id="txt_propvalues_'+propname+'" type="text" value="'+suggestions+'"></div><div class="ctx_fieldact">'+button_destroy+'</div></div>');
 
 
     }
@@ -1369,9 +1605,9 @@ function renderMapCard()
     var button_addnew = '<input type="button" class="btn_modelform" value="+" id="btn_addprop">';
 
     // adding new property
-    $("#view_mapmodel").append('<div class="ctx_topic" id="addmodelproperty"><div class="ctx_fieldname"><input type="text" id="model_newpropname"></div><div class="ctx_fieldval"><input type="text" value=""></div><div class="ctx_fieldact">'+button_addnew+'</div></div>');
+    $("#view_mapmodel").append('<div class="ctx_topic" id="addmodelproperty"><div class="ctx_fieldname"><input type="text" id="model_newpropname"></div><div class="ctx_fieldval"><input type="text" id="model_newpropvals" value=""></div><div class="ctx_fieldact">'+button_addnew+'</div></div>');
 
-
+    checkNewPropName();
 
 
 }
