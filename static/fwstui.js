@@ -247,29 +247,40 @@ function addProperty()
 {
 
     var newpropname = $("#model_newpropname").val();
-    if (!$("#model_newpropvals").val())
+    if (!$("#model_newpropname").val())
     {
         return;
     }
-    var rawpropvals = $("#model_newpropvals").val().split(";");
 
-    var newpropvals = [];
-    for (var i in rawpropvals)
-    {
-        var trimmed = $.trim(rawpropvals[i]);
-
-        if (trimmed != "")
-        {
-            newpropvals.push(trimmed);
-        }
-    }
-
-    if (newpropvals.length == 0)
+    if (!$("#model_newpropname").val())
     {
         newpropvals = "str";
     }
+    else
+    {
+        var rawpropvals = $("#model_newpropvals").val().split(";");
+
+        var newpropvals = [];
+        for (var i in rawpropvals)
+        {
+            var trimmed = $.trim(rawpropvals[i]);
+
+            if (trimmed != "")
+            {
+                newpropvals.push(trimmed);
+            }
+        }
+
+        if (newpropvals.length == 0)
+        {
+            newpropvals = "str";
+        }
+    }
+
 
     activemodel.properties[newpropname] = newpropvals;
+
+    console.log("Added property "+newpropname+": "+activemodel.properties[newpropname]);
 
     // we also save any other change that has been made on the same form
     $(".ctx_propvalues").each(setModelPropForm);

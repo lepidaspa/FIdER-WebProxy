@@ -689,7 +689,7 @@ def getAllEditables ():
 				meta_id = metadata['name']
 				maplist[proxy_id][meta_id] = []
 
-				mapfilenames = os.listdir(os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id))
+				mapfilenames = os.listdir(os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id))
 				for mapname in mapfilenames:
 					maplist[proxy_id][meta_id].append(mapname)
 
