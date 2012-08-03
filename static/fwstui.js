@@ -1363,12 +1363,34 @@ function setMapControlsEdit ()
 function hideDistance()
 {
     //TODO: placeholder, implement
+    $("#view_measure").empty();
 }
 
 function handleMeasure()
 {
     //TODO: placeholder, implement
     freeSelection();
+
+    //var geometry = event.geometry;
+    var units = event.units;
+
+    var precision;
+    if (units == 'm')
+    {
+        precision = 2;
+    }
+    else
+    {
+        precision = 3;
+    }
+
+    var measure = event.measure.toFixed(precision);
+
+    var measureinfo = "Distanza: "+measure+" "+units;
+    console.log(measureinfo);
+
+    $("#view_measure").append(measureinfo)
+
 }
 
 function resetViewDetail()
