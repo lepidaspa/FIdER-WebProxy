@@ -1366,7 +1366,7 @@ function hideDistance()
     $("#view_measure").empty();
 }
 
-function handleMeasure()
+function handleMeasure(event)
 {
     //TODO: placeholder, implement
     freeSelection();
