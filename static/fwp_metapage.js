@@ -41,10 +41,13 @@ var convmodelcats;
 // id of the map item being worked on in the sidebar, needed to keep state with the bindings
 var currentmap;
 
+var maps_remote;
+
 function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote, req_maps_st)
 {
 
     console.log(JSON.parse(req_remote));
+    maps_remote = JSON.parse(req_remote);
     $("#renderingstate").hide();
     $("#loadingstate").hide();
     $("#serverstate").hide();
@@ -52,7 +55,8 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote,
     $("#btn_reload").hide();
     $("#proxy_addmap").hide();
 
-    $("#waitspinner").hide();
+    $("#btn_reloadremote").hide();
+    $("#progspinner").hide();
 
     proxy_id = req_proxy_id;
     meta_id = req_meta_id;
@@ -91,6 +95,7 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote,
     $("#confirmuploadwfs").live('click', uploadFromWeb);
     $("#confirmsideloadST").live('click', sideloadFromST);
     $(".btn_confirmdelete").live('click', deleteMap);
+    $(".btn_refreshremote").live('click', refreshRemoteResource);
 
 
     $("#newmap_shapefile").click(renderNewShapeMask);
@@ -111,6 +116,8 @@ function renderMaps()
     shapedata = new Array();
 
     //todo: handle errors
+
+
 
     if (shapes.length > 0)
     {
@@ -156,7 +163,7 @@ function setLoadingState()
     //featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 1, strokeDashstyle: "solid"});
     //featurestylemap = new OpenLayers.StyleMap(featurestyle);
     $("#loadingstate").show();
-    $("#waitspinner").show();
+    $("#progspinner").show();
 
     proxymap_currentlayer.removeAllFeatures();
 }
@@ -178,7 +185,7 @@ function unsetLoadingState()
     }
 
 
-    $("#waitspinner").hide();
+    $("#progspinner").hide();
 
     $(".btn_focus").unbind();
     $(".btn_focus").click(focusSelMap);
@@ -192,6 +199,7 @@ function unsetLoadingState()
     $(".btn_convert").click(renderTranslationMask);
     $(".btn_remove").unbind();
     $(".btn_remove").click(renderRemoverMask);
+
 
 
     // activates map controls, removes the front layer
@@ -258,13 +266,27 @@ function renderMapCard (map_id)
         }
     }
 
-    var statsstring = '<div class="mapstats"><span class="mapname">'+mapname+'</span><br>Oggetti: ('+
+
+    var str_btn_refresh="";
+    if (maps_remote.indexOf(mapname) != -1)
+    {
+        console.log("Refreshable map: "+mapname);
+        str_btn_refresh = '<img alt="Aggiorna risorsa remota" class="btn_refreshremote btn_inline" id="btn_refreshremote_'+map_id+'" src="/static/resource/fwp_reload.png">';
+    }
+    else
+    {
+        console.log("Static map: "+mapname);
+    }
+
+
+    var statsstring = '<div class="mapstats"><span class="mapname">'+mapname+'</span> '+str_btn_refresh+'<br>Oggetti: ('+
             maplines + ' tratte/' +
             mappoints + ' accessi)</div>';
 
+
     var str_btn_focus = '<img alt="Evidenzia/Nascondi" class="btn_focus" id="btn_focus_'+map_id+'" src="/static/resource/fwp_focus.png">';
-    var str_btn_uploadfile = '<img alt="Aggiorna da shapefile" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
-    var str_btn_uploadwfs = '<img alt="Aggiorna da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
+    var str_btn_uploadfile = '<img alt="Carica da shapefile" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
+    var str_btn_uploadwfs = '<img alt="Carica da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
     var str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
     var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
     //var editlink = "/edit/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";
@@ -373,6 +395,8 @@ function renderUploadWFSMask()
 
 }
 
+
+
 function uploadFromFile ()
 {
 
@@ -423,6 +447,8 @@ function uploadFromFile ()
         container = "#map_"+i;
     }
 
+    $("#progspinner").show();
+
     $.ajax ({
         url: urlstring,
         data:   fd,
@@ -458,6 +484,49 @@ function uploadFromFile ()
     });
 
 }
+
+function refreshRemoteResource()
+{
+
+
+    var prefix = "btn_refreshremote_";
+
+    var form = $("#"+this.id).closest(".btn_refreshremote").prop("id");
+    var i = form.substr(prefix.length);
+
+    var map_id = parseInt(i);
+
+
+    var container = "#map_"+i;
+
+
+    closeAllMasks();
+
+    var urlstring = '/refreshmap/'+proxy_id+'/'+meta_id+'/'+shapes[map_id];
+
+    $("#progspinner").show();
+
+    $.ajax ({
+        url: urlstring,
+        async: true,
+        type: 'GET',
+        success: function(data) {
+            //alert ("COMPLETED");
+            postFeedbackMessage(data['success'], data['report'], container);
+            if (data['success'] == true)
+            {
+
+                rebuildShapeData(shapes[map_id]);
+            }
+        },
+        error: function (data)
+        {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
+        }
+    });
+
+}
+
 
 function uploadFromWeb ()
 {
@@ -507,7 +576,11 @@ function uploadFromWeb ()
     wfsparams['layer'] = $("#wfsmap").val();
 
 
+    $("#progspinner").show();
+
     //alert (JSON.stringify(wfsparams));
+
+
 
     $.ajax ({
         url: urlstring,
@@ -531,6 +604,9 @@ function uploadFromWeb ()
 
 
 }
+
+
+
 
 function sideloadFromST ()
 {
@@ -556,6 +632,8 @@ function sideloadFromST ()
         'map_id': requested,
         'saveto': saveto
     };
+
+    $("#progspinner").show();
 
     $.ajax ({
         url:    urlstring,
@@ -594,6 +672,8 @@ function rebuildShapeData (shape_id)
     urlstring = "/fwp/rebuild/"+proxy_id+"/"+meta_id+"/"+shape_id+"/";
 
     var container = "#currentops";
+
+    $("#progspinner").show();
 
     $.ajax ({
         url:            urlstring,
@@ -650,6 +730,8 @@ function deleteMap ()
         'shape_id': shapes[i]
     };
 
+    $("#progspinner").show();
+
     $.ajax({
         url: "/fwp/control/",
         async: true,
@@ -686,12 +768,15 @@ function renderTranslationMask ()
 
     var tables;
 
+    $("#progspinner").show();
+
     $.ajax({
         url: "/fwp/conversion/"+proxy_id+"/"+meta_id+"/"+shapes[i],
         async: false
     }).done(function (jsondata) {
 
-                tables = jsondata;
+            tables = jsondata;
+            $("#progspinner").hide();
      });
 
     //alert(JSON.stringify(tables));
@@ -767,6 +852,8 @@ function saveConversionTable()
 
     //alert(JSON.stringify(jsondata));
 
+    $("#progspinner").show();
+
 
     $.ajax ({
         url: "/fwp/maketable/",
@@ -786,6 +873,9 @@ function saveConversionTable()
 
 function postFeedbackMessage (success, report, widgetid)
 {
+
+    $("#progspinner").hide();
+
     var status = success;
     var message = report;
 
@@ -804,6 +894,9 @@ function postFeedbackMessage (success, report, widgetid)
     closeAllMasks();
     $(widgetid).append(feedbackmess);
 }
+
+
+
 
 function refreshTranslationTable ()
 {

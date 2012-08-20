@@ -13,7 +13,7 @@
 
 {% block navigation %}
 
-    <div id="metainfo"><div class="button_pre"><a href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a><a href="/fwp/proxy/{{ proxy_id }}/{{ meta_id }}" id="btn_reload"><img src="/static/resource/fwp_reload.png"></a></div>{{ proxy_name }}: {{ meta_id }}</div>
+    <div id="metainfo"><div class="button_pre"><a href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a></div>{{ proxy_name }}: {{ meta_id }}</div>
 
     <div id="minimap" class="cornermap"></div>
 
@@ -23,9 +23,13 @@
     <div id="loadingstate" class="statemess">Caricamento mappe</div>
     <div id="currentops" class="statemess"></div>
 
+    <div class="button wide" id="btn_reload"><a class="blocky textbutton" href="/fwp/proxy/{{ proxy_id }}/{{ meta_id }}">Aggiorna schermata</a></div>
+
     <div class="button wide" id="proxy_addmap">Nuova mappa: <span id="newmap_shapefile" class="blocky textbutton">FILE</span> / <span class="textbutton" id="newmap_wfs">WFS</span> / <span class="textbutton" id="newmap_st">Interna</span></div>
 
-    <div id="waitspinner"><img src="/static/resource/progressbar.gif"></div>
+
+
+    <div id="progspinner"><img src="/static/resource/progressbar.gif"></div>
 
     <div id="maplisting"></div>
 

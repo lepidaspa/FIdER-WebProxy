@@ -211,6 +211,7 @@ img.legend
 .button_pre
 {
     float:              left;
+    margin-right:       0.5em;
 
 }
 
@@ -275,4 +276,9 @@ tr
 #waitspinner
 {
     text-align:         center;
+}
+
+.btn_inline
+{
+    vertical-align: middle;
 }

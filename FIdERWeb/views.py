@@ -297,10 +297,69 @@ def proxy_create_conversion (request):
 
 	return HttpResponse(json.dumps(response_table_update), mimetype="application/json")
 
+def map_refresh_remote (request, **kwargs):
+	"""
+	Updates a SPECIFIC WFS resource on the proxy. Starts from a GET request
+	:param request:
+	:param kwargs: proxy_id, meta_id, shape_id
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['shape_id']
+
+	response_refresh_remote = {
+		'success': False,
+		'report': ""
+	}
+
+	try:
+		remotelist = proxy_core.getRemotesList (proxy_id)
+	except Exception as ex:
+		print "ERROR: %s " % ex
+
+		return HttpResponse(json.dumps(response_refresh_remote), mimetype="application/json")
+
+	foundmap = False
+	for item in remotelist:
+		conf_file = item['mapconf']
+		if meta_id == item['meta_id'] and map_id == conf_file[:-4]:
+			foundmap = True
+
+			conf_fp = open(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id, conf_file))
+			connect = json.load(conf_fp)
+			conf_fp.close()
+
+			response_wfsupdate = ProxyFS.uploadWFS (proxy_id, meta_id, map_id, connect)
+
+			print response_wfsupdate
+
+			if response_wfsupdate['success'] is True:
+				response_refresh_remote['report'] = "Mappa %s in %s/%s aggiornata correttamente." % (map_id, proxy_id, meta_id)
+
+			else:
+				response_refresh_remote['report'] = "Aggiornamento di %s in %s/%s fallito.<br>%s" % (map_id, proxy_id, meta_id, response_wfsupdate['report'])
+
+			# we found our map, no need to check the other conf files
+			break
+
+	if foundmap is True:
+		response_refresh_remote['success'] = response_wfsupdate['success']
+	else:
+		response_refresh_remote['report'] = "Impossibile trovare i dati di aggiornamento remoto per %s in %s/%s." % (map_id, proxy_id, meta_id)
+
+
+
+	print "Refresh result: %s" % response_refresh_remote
+
+	return HttpResponse(json.dumps(response_refresh_remote), mimetype="application/json")
+
+
 
 def proxy_refresh_remote (request, **kwargs):
 	"""
-	Updates ALL WFS (and remote) resources on this proxy. Starts from a GET request and does not return any response
+	Updates ALL WFS (and remote) resources on this proxy. Starts from a GET request
 	:param request:
 	:return:
 	"""
