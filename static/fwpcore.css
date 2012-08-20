@@ -16,6 +16,13 @@ input:disabled, select:disabled
 
 }
 
+#progspinner
+{
+    text-align:     center;
+    right:          auto;
+    left:           auto;
+}
+
 .cornermap
 {
     clear: both;
@@ -254,7 +261,7 @@ input, select
     background-color: #12b42b;
 }
 
-.feeback.fail
+.feedback.fail
 {
     background-color: #e9324c;
 
