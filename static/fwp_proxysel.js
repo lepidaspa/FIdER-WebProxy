@@ -26,6 +26,7 @@ function pageInit(jsonlisting)
     $("#proxybuilder").hide();
     $("#proxy_show_map").hide();
     $("#proxy_created").hide();
+    $("#progspinner").hide();
 
 
     proxies = jsonlisting;

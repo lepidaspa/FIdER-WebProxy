@@ -897,7 +897,7 @@ function create_CreateProxy ()
     var container = "#proxy_created";
 
 
-    // first we must re-check the proxy names, in case somebody create a proxy with the same name (that must be unique, though the actual identifier is the token provided by the server; except for this, all other validations have already been carried out and will NOT be repeated
+    // first we must re-check the proxy names, in case somebody create a proxy with the same name (that must be unique, though the actual identifier is the token provided by the server; except for this, all other validations have already been carried out and will NOT be repeated)
 
     var proxy_name = $("#newproxy_name").val();
 
@@ -1066,11 +1066,19 @@ function create_CreateProxy ()
         manifest['metadata'].push(currentmeta);
     }
 
-    alert(JSON.stringify(manifest));
+    //alert(JSON.stringify(manifest));
 
     // call the proxy creation function from ProxyFS/proxy_core via ajax
 
+    // ACTUAL PROXY CREATION
+
+    //TODO: PRIORITY: progress bar display
+
+    $("#progspinner").show();
+
     urlstring = "/fwp/create/";
+
+    postFeedbackMessage("inprogress", "Creazione proxy in corso.", container, true);
 
     $.ajax ({
         url: urlstring,
@@ -1080,13 +1088,27 @@ function create_CreateProxy ()
         type: 'POST',
         async: true,
         success: function(data) {
+
+            console.log("Proxy creation results: "+JSON.stringify(data));
             //alert ("COMPLETED");
-            postFeedbackMessage(data['success'], data['report'], container);
+            postFeedbackMessage(data['success'], data['report'], container, true);
+
+            if (data['success'] == true)
+            {
+
+                // AUTOREFRESH
+                window.location = window.location.pathname;
+            }
+
+            $("#progspinner").hide();
+
 
         },
         error: function (data)
         {
-            postFeedbackMessage("fail", "ERRORE AJAX: "+JSON.stringify(data), container)
+            postFeedbackMessage("fail", "ERRORE AJAX: "+JSON.stringify(data), container, true);
+            $("#progspinner").hide();
+
         }
     });
 
@@ -1096,8 +1118,14 @@ function create_CreateProxy ()
 
 
 //copied from fwp_metapage.js, removed closeAllMasks()
-function postFeedbackMessage (success, report, widgetid)
+function postFeedbackMessage (success, report, widgetid, cleanup)
 {
+
+    if (cleanup)
+    {
+        $(widgetid).empty()
+    }
+
     var status = success;
     var message = report;
 
@@ -1106,16 +1134,22 @@ function postFeedbackMessage (success, report, widgetid)
     {
         feedbackclass = "success";
     }
-    else
+    else if (status == false)
     {
         feedbackclass = "fail";
     }
+    else
+    {
+        feedbackclass = status;
+    }
 
-    alert("RISULTATO: "+message);
+    //alert("RISULTATO: "+message);
 
     var feedbackmess = '<div class="feedback '+feedbackclass+'">' +message+ '</div>';
 
+    //TODO: PRIORITY: check why does not display
 
     $(widgetid).append(feedbackmess);
+    $(widgetid).show();
 
 }

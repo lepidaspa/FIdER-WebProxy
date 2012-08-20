@@ -444,7 +444,7 @@ def proxy_create_new (request):
 
 		else:
 			success = False
-			report = "Creazione del proxy %s fallita, riprovare (%s).<br>Manifesto parziale %s" % (jsonmessage['name'], message, jsonmessage)
+			report = "Creazione del proxy %s fallita, riprovare.<br>(%s)" % (jsonmessage['name'], message)
 
 
 		result = {
