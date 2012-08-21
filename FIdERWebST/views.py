@@ -44,7 +44,11 @@ def uiview (request, **kwargs):
 	for metadata in manifest['metadata']:
 		meta_id = metadata['name']
 		proxy_meta.append(meta_id)
-		maplist[meta_id] = proxy_editables[proxy_id][meta_id]
+		try:
+			maplist[meta_id] = proxy_editables[proxy_id][meta_id]
+		except:
+			# we can have empty metadata
+			pass
 
 	#maplist_st = []
 	maplist_st = os.listdir(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone))

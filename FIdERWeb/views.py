@@ -150,6 +150,8 @@ def getModels ():
 	:return:
 	"""
 
+	print "Retrieving conversion table from server"
+
 	try:
 		jsonresponse = urllib2.urlopen(proxyconf.URL_CONVERSIONS)
 		convtable = json.load(jsonresponse)
@@ -701,10 +703,16 @@ def learnProxyType (manifest):
 	elif manifest['operations']['write'] != "none":
 		return "write"
 
-	else:
+	elif ( manifest['operations']['query']['geographic'] != "none" or
+		   manifest['operations']['query']['time'] != "none" or
+		   manifest['operations']['query']['bi'] != "none" or
+		   manifest['operations']['query']['inventory'] != "none" ):
 
-		# proxy cannot be None, so by exclusion it must be query
 		return "query"
+	else:
+		# local is a standalone-only proxy, non-federated
+		return "local"
+
 
 def proxy_get_all (request):
 	"""

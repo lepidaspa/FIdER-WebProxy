@@ -17,6 +17,8 @@ var shapedata;
 var manifest;
 var proxy_type;
 
+
+
 var minimap;
 
 var proxymap;
@@ -62,6 +64,8 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote,
     meta_id = req_meta_id;
     manifest = req_manifest;
 
+    proxy_type = getProxyType(manifest);
+
     shapes = jQuery.parseJSON(req_maps);
     maps_st = jQuery.parseJSON(req_maps_st);
     console.log("Maps from standalone: "+JSON.stringify(maps_st)+"\nfrom");
@@ -96,15 +100,55 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote,
     $("#confirmsideloadST").live('click', sideloadFromST);
     $(".btn_confirmdelete").live('click', deleteMap);
     $(".btn_refreshremote").live('click', refreshRemoteResource);
-
+    $("#newmap_chooserST").live('change', verifySTselect);
 
     $("#newmap_shapefile").click(renderNewShapeMask);
     $("#newmap_wfs").click(renderNewWFSMask);
     $("#newmap_st").click(renderNewSTMask);
 
 
+
 }
 
+function verifySTselect ()
+{
+    if ($("#newmap_chooserST").val() != "")
+    {
+        $("#confirmsideloadST").prop('disabled', false);
+    }
+    else
+    {
+        $("#confirmsideloadST").prop('disabled', true);
+    }
+}
+
+function getProxyType (manifest)
+{
+
+    //console.log("Checking proxy type");
+    //console.log(manifest['operations']);
+
+    if (manifest['operations']['read'] != 'none')
+    {
+        return 'read';
+    }
+    else if (manifest['operations']['write'] != 'none')
+    {
+        return 'write';
+    }
+    else if (manifest['operations']['query']['time'] != 'none' ||
+        manifest['operations']['query']['geographic'] != 'none' ||
+        manifest['operations']['query']['bi'] != 'none' ||
+        manifest['operations']['query']['inventory'] != 'none')
+    {
+        return 'query';
+    }
+    else
+    {
+        return 'local';
+    }
+
+}
 
 
 
@@ -287,7 +331,13 @@ function renderMapCard (map_id)
     var str_btn_focus = '<img alt="Evidenzia/Nascondi" class="btn_focus" id="btn_focus_'+map_id+'" src="/static/resource/fwp_focus.png">';
     var str_btn_uploadfile = '<img alt="Carica da shapefile" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
     var str_btn_uploadwfs = '<img alt="Carica da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
-    var str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
+    var str_btn_convert = "";
+    if (proxy_type != 'local')
+    {
+        // conversions are used for federation processes, so we do not need them on standalone proxies
+        str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
+    }
+
     var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
     //var editlink = "/edit/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";
     // TODO: set again to integrated map editor rather than standalone
@@ -336,6 +386,7 @@ function renderNewSTMask ()
     chooser.append('<input type="button" id="confirmsideloadST" value="Importa">');
 
     $("#proxy_addmap").append(chooser);
+    verifySTselect();
 
 
 }
@@ -476,6 +527,7 @@ function uploadFromFile ()
 
                 rebuildShapeData(torebuild);
             }
+
         },
         error: function (data)
         {
@@ -518,6 +570,7 @@ function refreshRemoteResource()
 
                 rebuildShapeData(shapes[map_id]);
             }
+
         },
         error: function (data)
         {
@@ -593,8 +646,9 @@ function uploadFromWeb ()
             if (data['success'] == true)
             {
 
-                //rebuildShapeData(shapes[map_id]);
+                rebuildShapeData(shapes[map_id]);
             }
+
         },
         error: function (data)
         {
@@ -611,12 +665,18 @@ function uploadFromWeb ()
 function sideloadFromST ()
 {
 
+
+
     var requested = $("#newmap_chooserST").val();
+
+    console.log("Sideloading map "+requested);
 
     if (!requested || requested == "")
     {
         return;
     }
+
+
 
     //TODO: add support for upload to a specific map name other than the original
 
@@ -625,7 +685,7 @@ function sideloadFromST ()
 
 
     //NOTE: saveto is a placeholder for saving to a different map
-    var saveto = map_id;
+    var saveto = requested;
     var params = {
         'proxy_id': proxy_id,
         'meta_id': meta_id,

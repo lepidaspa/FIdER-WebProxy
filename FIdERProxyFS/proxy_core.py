@@ -666,6 +666,31 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	return collection
 
 
+def learnProxyType (manifest):
+	"""
+	Reads the manifest dict and returns the type of proxy as Read, Write, Query
+	NOTE: duplicate from FiderWeb to avoid risk of cross-imports
+	:param manifest:
+	:return:
+	"""
+
+	if manifest['operations']['read'] != "none":
+		return "read"
+
+	elif manifest['operations']['write'] != "none":
+		return "write"
+
+	elif ( manifest['operations']['query']['geographic'] != "none" or
+		   manifest['operations']['query']['time'] != "none" or
+		   manifest['operations']['query']['bi'] != "none" or
+		   manifest['operations']['query']['inventory'] != "none" ):
+
+		return "query"
+	else:
+		# local is a standalone-only proxy, non-federated
+		return "local"
+
+
 def getAllEditables ():
 	"""
 	Returns a dict with proxy/meta/shape of only editable maps (queries excluded) in the hardproxy. Note that element with key ".name" in a proxy is not a meta but the name of the proxy (. char cannot be used in meta names)
@@ -680,7 +705,7 @@ def getAllEditables ():
 
 		proxy_id = manfile.split(".")[0]
 
-		if manifestdata['operations']['read'] != "none" or manifestdata['operations']['write'] != "none":
+		if learnProxyType(manifestdata) != 'query':
 
 			maplist[proxy_id] = {}
 			maplist[proxy_id]['.name'] = manifestdata['name']
