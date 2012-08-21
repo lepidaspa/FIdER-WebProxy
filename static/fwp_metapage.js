@@ -825,21 +825,37 @@ function renderTranslationMask ()
 
     closeAllMasks();
     $("#serverstate").show();
+    $("#progspinner").show();
 
     var tables;
+    var success;
 
-    $("#progspinner").show();
 
     $.ajax({
         url: "/fwp/conversion/"+proxy_id+"/"+meta_id+"/"+shapes[i],
         async: false
     }).done(function (jsondata) {
-
+            success = true;
             tables = jsondata;
-            $("#progspinner").hide();
-     });
+     }).fail(function ()
+        {
+            postFeedbackMessage(false, "Caricamento della tabella di riferimento fallito.", "#map_"+i);
+            success = false;
+        });
 
     //alert(JSON.stringify(tables));
+
+    $("#serverstate").hide();
+    $("#progspinner").hide();
+
+
+    if (success==false)
+    {
+
+        return;
+    }
+
+
 
     convtable = tables['shapetable']; // dict
     convsource = tables['shapedata']; // list
