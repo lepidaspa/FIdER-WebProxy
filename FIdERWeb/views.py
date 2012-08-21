@@ -8,6 +8,7 @@ import traceback
 import urllib2
 import os
 import sys
+import uuid
 import zipfile
 
 from django.http import HttpResponse
@@ -466,13 +467,37 @@ def proxy_create_new (request):
 		# creating the pre-manifest
 		jsonmessage = json.loads(request.POST['jsonmessage'])
 		premanifest = ArDiVa.Model(MessageTemplates.model_response_capabilities)
+
+
+
 		#TODO: check that BASEURL receives the correct value
 
-		print "SENT:",jsonmessage
-		print "PRE:",premanifest
+		#print "SENT:",jsonmessage
+		#print "PRE:",premanifest
+
+		#verify if the proxy is local or not (i.e. if all modes are none)
+		islocal = (
+			jsonmessage['operations']['read'] == 'none' and
+			jsonmessage['operations']['write'] == 'none' and
+			jsonmessage['operations']['query']['bi'] == 'none' and
+			jsonmessage['operations']['query']['geographic'] == 'none' and
+			jsonmessage['operations']['query']['inventory'] == 'none' and
+			jsonmessage['operations']['query']['time'] == 'none'
+		)
+
 
 		# Getting the token from the main  server
-		accepted, message = Components.getWelcomeFromServer()
+		# or creating a uuid locally
+
+		# note that we only get around the main server parts rather than rewriting the whole process for more consistent maintainance as local and federated proxies are functionally the same
+
+		if not islocal:
+			accepted, message = Components.getWelcomeFromServer()
+		else:
+			# local proxy are automatic
+			accepted = True
+
+			message = {'token': "local_"+str(uuid.uuid4()).replace("-","_")}
 
 		if accepted:
 			#assembling the manifest
@@ -481,7 +506,11 @@ def proxy_create_new (request):
 			jsonmessage['token'] = proxy_id
 			filledok, manifest = premanifest.fillSafely(jsonmessage)
 
-			approved, response = Components.sendProxyManifestRaw (json.dumps(manifest))
+
+			if not islocal:
+				approved, response = Components.sendProxyManifestRaw (json.dumps(manifest))
+			else:
+				approved = True
 
 			if approved:
 

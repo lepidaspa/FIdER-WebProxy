@@ -741,7 +741,7 @@ function create_CheckForSubmission()
     else
     {
 
-        //TODO: add error message saying meta cannot be parsed without a full proxy description
+        //TODO: add error message saying meta cannot be parsed without a full proxy description?
     }
 
 
@@ -993,11 +993,11 @@ function create_CreateProxy ()
         }
     };
 
-    if (opsmode != 'query')
+    if (opsmode != 'query' && opsmode != 'none')
     {
         opsdict[opsmode] = $("#"+ops_prefix+opsmode).val();
     }
-    else
+    else if (opsmode == 'query')
     {
         opsdict[opsmode]['inventory'] = $("#"+ops_prefix+opsmode+"_inv").val();
         opsdict[opsmode]['geographic'] = $("#"+ops_prefix+opsmode+"_geo").val();
@@ -1005,6 +1005,10 @@ function create_CreateProxy ()
         opsdict[opsmode]['bi'] = $("#"+ops_prefix+opsmode+'_bi').val();
 
         opsdict[opsmode]['signs'] = $("#"+ops_prefix+opsmode+'_bi').val() == "true";
+    }
+    else
+    {
+        //PLACEHOLDER: if the proxy has no mode, we can keep the template description
     }
 
     manifest['operations'] = opsdict;
