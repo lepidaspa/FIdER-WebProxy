@@ -402,7 +402,7 @@ function checkFileUpload()
     }
 
     // if the user is on the file selection, we launch the dialog (and have a callback to update the file upload field
-    if (upreq.split("/")[0] == ".file")
+    if (upreq == ".file")
     {
         $("#uploadfield").trigger('click');
     }
@@ -443,8 +443,24 @@ function updateUploadSelector ()
     var filename =  getFilenameFromPath($("#uploadfield").val());
 
     console.log("Chosen file "+filename);
-    $("#ctx_newmap_fileopt").text(filename);
-    $("#ctx_newmap_fileopt").val(".file/"+filename);
+
+    // cleaning up all options that are NOT the hint, then append
+    $('#ctx_newmap_file_grp').empty();
+
+    $('#ctx_newmap_file_grp').append('<option id="ctx_newmap_fileopt" value=".file">Seleziona...</option>');
+    if (filename != "")
+    {
+        $('#ctx_newmap_file_grp').append('<option id="ctx_newmap_filename" value=".file/'+filename+'">'+filename+'</option>');
+        $("#ctx_sel_newmap").val(".file/"+filename);
+    }
+    else
+    {
+        $("#ctx_sel_newmap").val("");
+    }
+
+
+    checkFileUpload();
+
 
 }
 
@@ -631,6 +647,10 @@ function trySaveMap ()
 function confirmSave (data, textStatus, jqXHR)
 {
 
+    //console.log("save process closed");
+    //console.log(data);
+    //console.log(textStatus);
+
     if (data['success'] == true)
     {
         reportFeedback(true, "Mappa salvata con successo");
@@ -640,6 +660,26 @@ function confirmSave (data, textStatus, jqXHR)
     {
         reportFeedback(false, "Salvataggio fallito: "+data['report']);
     }
+
+    // adding save  target to choosers if needed
+    var saveto = $("#ctx_saveto").val();
+    if (maps_st.indexOf(saveto) == -1)
+    {
+        maps_st.push(saveto);
+    }
+
+
+    var currentsel;
+    currentsel = $("#ctx_sel_newmap").val();
+    buildLoader();
+    $("#ctx_sel_newmap").val(currentsel);
+
+    currentsel = $("#ctx_sel_snapmap").val();
+    buildSnapChooser();
+    $("#ctx_sel_snapmap").val(currentsel);
+
+
+
     unlockContext();
 
 }
@@ -1097,7 +1137,7 @@ function buildContext()
         }
         else if (mapdesc[0] == '.file')
         {
-            contextdesc = 'Da file: '+activemap;
+            contextdesc = ': '+activemap;
         }
         else
         {
@@ -1162,7 +1202,7 @@ function buildLoader()
         '<option value="merge">Integra</option>' +
         '</select>';
 
-    var ctx_loadnew = $('<div class="ctx_fieldname">'+ctx_actionsel+'</div><div class="ctx_fieldval"><select id="ctx_sel_newmap"><option value=""></option><optgroup label="Da file"><option id="ctx_newmap_fileopt" value=".file">Seleziona...</option></optgroup></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newmap"></div>');
+    var ctx_loadnew = $('<div class="ctx_fieldname">'+ctx_actionsel+'</div><div class="ctx_fieldval"><select id="ctx_sel_newmap"><option value=""></option><optgroup id="ctx_newmap_file_grp" label="Da file"><option id="ctx_newmap_fileopt" value=".file">Seleziona...</option></optgroup></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newmap"></div>');
 
     var ctx_modelsel = $('<optgroup label="Modello"></optgroup>');
     for (var model_id in models)
@@ -1186,6 +1226,7 @@ function buildSnapChooser ()
     var ctx_snapchooser = $('<div class="ctx_fieldname">Allinea a</div><div class="ctx_fieldval"><select id="ctx_sel_snapmap"><option value=""></option></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newsnap"></div>');
     ctx_snapchooser.children('#ctx_sel_snapmap').append(buildMapList());
 
+    $("#view_shadow").empty();
     $("#view_shadow").append(ctx_snapchooser);
 }
 
