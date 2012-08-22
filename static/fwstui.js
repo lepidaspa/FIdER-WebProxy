@@ -134,6 +134,25 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
 
 }
 
+function preloadMap (req_meta, req_map)
+{
+    // preloads a map from the federated maps list
+    // fails silently if the map is not in the list
+
+    var mapstring = req_meta+"/"+req_map;
+    if (maplist.indexOf(mapstring) != -1)
+    {
+        $("#ctx_sel_newmap").val(req_meta+"/"+req_map);
+        $("#ctx_sel_newmap").change();
+        $("#btn_newmap").click();
+        checkSnapLoad();
+    }
+
+
+
+
+}
+
 function applyFilter()
 {
 
@@ -377,6 +396,9 @@ function unlockContext()
     $("#view_context select").prop('disabled', false);
     $("#view_context input").prop('disabled', false);
     checkSaveName();
+
+    // temporary fix for SnapMap button being activated even with an empty field after preloading a map
+    checkSnapLoad();
 
     //NOTE: bad
     if (activemodel)

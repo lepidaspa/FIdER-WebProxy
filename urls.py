@@ -66,12 +66,17 @@ urlpatterns = patterns('',
 
 	# standalone tool v2
 
-	url(r'^fwst/(?P<proxy_id>\w*)/$', fwstviews.uiview),
+
+
 	url(r'^fwst/upload/(?P<proxy_id>\w*)/$', fwstviews.uploadfile),
 	url(r'^fwst/maps/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.loadSTMap),
 	url(r'^fwst/save/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.saveSTMap),
 
-	url(r'^fwp/stimport', fwpviews.sideloadSTMap)
+	url(r'^fwp/stimport', fwpviews.sideloadSTMap),
+
+	url(r'^fwst/(?P<proxy_id>\w*)/$', fwstviews.uiview),
+	# same as before but with a preloaded map from the proxy federated selection
+	url(r'^fwst/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', fwstviews.uiview),
 
 
 

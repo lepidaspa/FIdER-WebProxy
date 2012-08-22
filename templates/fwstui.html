@@ -99,11 +99,13 @@
 
     <div id="view_map"></div>
 
+
+
 {% endblock %}
 
 {% block starterscript %}
     <script>
-        pageInit(
+        pageInit (
                 '{{ proxy_id }}',
                 {{ manifest }},
                 {{ proxy_meta }},
@@ -112,7 +114,17 @@
                 {{ models }}
         );
 
+    {% if sel_meta != None and sel_map != None %}
+        preloadMap ( '{{ sel_meta }}', '{{ sel_map }}');
+    {% endif %}
+
     </script>
+
+
+
+
+
+
 {% endblock %}
 
 {% block contextguide %}

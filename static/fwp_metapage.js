@@ -340,8 +340,7 @@ function renderMapCard (map_id)
 
     var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
     //var editlink = "/edit/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";
-    // TODO: set again to integrated map editor rather than standalone
-    var editlink = "/fwst/"+proxy_id;
+    var editlink = "/fwst/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";
     var str_btn_edit = '<a href="'+editlink+'"><img alt="Modifica" class="btn_edit" id="btn_edit_'+map_id+'" src="/static/resource/fwp_editmap.png"></a>';
 
     var mapactions = '<div class="mapactions">'+str_btn_focus+' '+str_btn_convert+'<br>'+str_btn_uploadfile+' '+str_btn_uploadwfs+'<br>'+str_btn_edit+' '+str_btn_remove+'</div>';

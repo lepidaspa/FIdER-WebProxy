@@ -35,6 +35,13 @@ def uiview (request, **kwargs):
 	# we always have a proxy_id since the standalone area is specific to each proxy.
 	proxy_id = kwargs['proxy_id']
 
+	try:
+		meta_id = kwargs['meta_id']
+		map_id = kwargs['shape_id']
+	except:
+		meta_id = None
+		map_id = None
+
 	manifest = proxy_core.getManifest(proxy_id)
 
 	proxy_name = manifest['name']
@@ -58,9 +65,9 @@ def uiview (request, **kwargs):
 
 	models = getModels()
 
-	return render_to_response ('fwstui.html', {'proxy_id': proxy_id, 'proxy_name': proxy_name, 'proxy_meta': SafeString(json.dumps(proxy_meta)), 'maps_fider': SafeString(json.dumps(maplist)), 'maps_st': SafeString(json.dumps(maplist_st)),  'models': SafeString(json.dumps(models)), 'manifest': SafeString(json.dumps(manifest))}, context_instance=RequestContext(request))
+	return render_to_response ('fwstui.html', {'proxy_id': proxy_id, 'proxy_name': proxy_name, 'proxy_meta': SafeString(json.dumps(proxy_meta)), 'maps_fider': SafeString(json.dumps(maplist)), 'maps_st': SafeString(json.dumps(maplist_st)),  'models': SafeString(json.dumps(models)), 'manifest': SafeString(json.dumps(manifest)), 'sel_meta': meta_id, 'sel_map': map_id}, context_instance=RequestContext(request))
 
-
+@csrf_exempt
 def loadSTMap (request, **kwargs):
 	"""
 	Loads a map from the standalone area
@@ -197,7 +204,7 @@ def normaliseMapName(namereq):
 	return cleanname
 
 
-
+@csrf_exempt
 def saveMapToST (uploaded, proxy_id, map_id):
 	"""
 	Tries to save the uploaded map to the standalone area of the proxy
