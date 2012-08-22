@@ -141,3 +141,8 @@
     left:               auto;
     right:              auto;
 }
+
+#btn_reloadpage, #btn_addconn
+{
+    font-weight:        bold;
+}

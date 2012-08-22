@@ -72,7 +72,22 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
 
 function registerModels(req_models)
 {
-    models = req_models;
+
+    if (!$.isEmptyObject(req_models))
+    {
+        console.log("Valid model list loaded");
+        models = req_models;
+    }
+    else
+    {
+        console.log("Missing valid model list");
+        models = null;
+        $("#proxy_addconn").empty();
+        postFeedbackMessage(false, "Impossibile accedere alle tabelle di conversione. Verificare la connessione con il federatore.", "#proxy_addconn");
+        $("#proxy_addconn").append('<span id="btn_reloadpage">Riprova</span>');
+        $("#btn_reloadpage").click(function () {window.location = window.location.pathname;});
+    }
+
 
     //alert(JSON.stringify(models));
 }
@@ -99,11 +114,15 @@ function renderQueries()
                 "DB: "+dbname+'@'+host+"<br>"+
                 "Vista: "+schema+view+'</div>';
 
+        var str_btn_convert = "";
+        if (models != null)
+        {
+            str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+id+'" src="/static/resource/fwp_convert.png"><br>';
+        }
 
-        var str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+id+'" src="/static/resource/fwp_convert.png">';
         var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+id+'" src="/static/resource/fwp_remove.png">';
 
-        var mapactions = '<div class="mapactions">'+str_btn_convert+'<br>'+str_btn_remove+'</div>';
+        var mapactions = '<div class="mapactions">'+str_btn_convert+str_btn_remove+'</div>';
 
         var mapcardstring = '<div class="mapcard" id="map_'+id+'">'+mapactions+statsstring+'<div class="quickcheck" id="details_'+id+'"></div></div>';
 

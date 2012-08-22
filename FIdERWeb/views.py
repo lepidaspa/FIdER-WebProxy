@@ -123,7 +123,11 @@ def metapage (request, **kwargs):
 
 	else:
 		template = 'fwp_querypage.html'
-		kwargs['models'] = SafeString(json.dumps(getModels()))
+		#Handling connection errors
+		try:
+			kwargs['models'] = SafeString(json.dumps(getModels()))
+		except:
+			kwargs['models'] = {}
 
 	#print "MAP DATA:\n",proxymaps,"\n***************************************************"
 
