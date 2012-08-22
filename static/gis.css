@@ -43,6 +43,11 @@ Graphics replacemente CSS for OpenLayers
     border-bottom:      1px solid #000000;
 }
 
+.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive:hover
+{
+    background-image: url("/static/gis-0.1/mActionToggleEditing.png");
+}
+
 
 .olControlEditingToolbar .olLabsControlDrawFeaturePointItemInactive
 {
@@ -56,25 +61,64 @@ Graphics replacemente CSS for OpenLayers
     border-bottom:      1px solid #000000;
 }
 
-.olControlEditingToolbar .olLabsControlDrawFeaturePathItemInactive {
+.olControlEditingToolbar .olLabsControlDrawFeaturePointItemInactive:hover
+{
+    background-image: url("/static/gis-0.1/mActionCapturePoint.png");
+}
+
+
+
+
+
+.olControlEditingToolbar .olLabsControlDrawFeaturePathItemInactive
+{
     background-image: url("/static/gis-0.1/mActionCaptureLine-inactive.png");
 
 }
 
-.olControlEditingToolbar .olLabsControlDrawFeaturePathItemActive {
+.olControlEditingToolbar .olLabsControlDrawFeaturePathItemActive
+{
     background-image: url("/static/gis-0.1/mActionCaptureLine.png");
     border-bottom:      1px solid #000000;
 }
 
-
-.olControlEditingToolbar .olLabsControlMeasureItemInactive {
-
-    background-image: url("/static/gis-0.1/mActionMeasure-inactive.png");
-
+.olControlEditingToolbar .olLabsControlDrawFeaturePathItemInactive:hover
+{
+    background-image: url("/static/gis-0.1/mActionCaptureLine.png");
 }
 
-.olControlEditingToolbar .olLabsControlMeasureItemActive {
 
+.olControlEditingToolbar .olLabsControlMeasureItemInactive
+{
+    background-image: url("/static/gis-0.1/mActionMeasure-inactive.png");
+}
+
+.olControlEditingToolbar .olLabsControlMeasureItemActive
+{
     background-image: url("/static/gis-0.1/mActionMeasureRed.png");
     border-bottom:      1px solid #000000;
+}
+
+.olControlEditingToolbar .olLabsControlMeasureItemInactive:hover
+{
+    background-image: url("/static/gis-0.1/mActionMeasureRed.png");
+}
+
+
+
+
+.olControlEditingToolbar .olLabsControlRebaseItemInactive
+{
+    background-image: url("/static/gis-0.1/mActionZoomToLayer-inactive.png");
+}
+
+.olControlEditingToolbar .olLabsControlRebaseItemActive
+{
+    background-image: url("/static/gis-0.1/mActionZoomToLayer.png");
+    border-bottom:      1px solid #000000;
+}
+
+.olControlEditingToolbar .olLabsControlRebaseItemInactive:hover
+{
+    background-image: url("/static/gis-0.1/mActionZoomToLayer.png");
 }

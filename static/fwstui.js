@@ -63,6 +63,7 @@ var snapcontrol;
 var measurecontrol;
 var editcontrol;
 var drawcontrol;
+var homecontrol;
 
 // panel containing the controls
 var panel;
@@ -1372,6 +1373,13 @@ function setMapControlsEdit ()
         }
     );
 
+    homecontrol = new OpenLayers.Control.Button(
+        {
+        displayClass: "olLabsControlRebase",
+            trigger: autoZoom,
+            title: "Reimposta inquadratura"
+    });
+
 
     measurecontrol = new OpenLayers.Control.Measure(
 
@@ -1398,7 +1406,7 @@ function setMapControlsEdit ()
     // setting panel-based controls
     panel.addControls([
         //new OpenLayers.Control.Navigation({title: "Navigate"}),
-        drawcontrol, editcontrol, measurecontrol
+        drawcontrol, editcontrol, measurecontrol, homecontrol
     ]);
 
     // binding controls to the map
@@ -1737,22 +1745,33 @@ function autoZoom (olmap)
      Checks if we have an active map and if it has a bbox. If not, zooms to the bbox of the proxy
      */
 
+    // used when called by the home button
+    if (!olmap)
+    {
+        olmap = mapview;
+    }
+
     //console.log("Checking bbox, map and proxy");
     //console.log(olmap);
-    if (activemap)
-    {
-        console.log(mapdata['bbox']);
-    }
+    //if (activemap)
+    //{
+    //    console.log(mapdata['bbox']);
+    //}
 
     console.log(proxy_bb);
 
     var zoomto = proxy_bb;
     if (activemap)
     {
-        if (mapdata.hasOwnProperty['bbox'])
+        try
         {
             zoomto = mapdata['bbox'];
         }
+        catch (exception)
+        {
+            //do nothing, we go with the original zoomto value
+        }
+
 
     }
 
