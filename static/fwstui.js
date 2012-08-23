@@ -761,11 +761,18 @@ function layerToJSON (layer, mapid)
         }
 
         // we do not specify an ID since the geoid is not actually relevant for our use and can change and/or be erased on merges.
-        jsondata['features'].push({
-            'type': "Feature",
-            'geometry': geom,
-            'properties': props
-        });
+
+        // safety check to avoid inconsistencies being introduced during editing by OpenLayers
+        if (geom['type'] == maptype)
+        {
+            jsondata['features'].push({
+                'type': "Feature",
+                'geometry': geom,
+                'properties': props
+            });
+        }
+
+
     }
 
     return jsondata;
@@ -1534,7 +1541,7 @@ function renderFeatureCard(caller)
     //var button_destroy = '<input type="image" src="/static/resource/fwp_remove.png" id="btn_destroyfeature">';
     var button_destroy = '<input type="button" value="Elimina" id="btn_destroyfeature">';
 
-    $("#view_feature").append('<div class="ctx_topic"><div class="ctx_fieldname">Elemento</div><div class="ctx_fieldval">'+getMapTypeName()+'</div><div class="ctx_fieldact">'+button_destroy+'</div></div>');
+    $("#view_feature").append('<div class="ctx_topic" id="ctx_deschead"><div class="ctx_fieldname">Elemento</div><div class="ctx_fieldval">'+getMapTypeName()+'</div><div class="ctx_fieldact">'+button_destroy+'</div></div>');
 
 
     console.log("Attributes:");
@@ -1570,14 +1577,6 @@ function renderFeatureCard(caller)
             '<div class="ctx_fieldval"><input type="text" value="'+propval+'" class="featureedit'+listclass+'" id="'+propprefix+propname+'" '+listref+'>'+
             '</div><div class="ctx_fieldact"></div></div>');
 
-        /* LEFT just in case, but we should be able to use datalist
-        if ($.isArray(activemodel['properties'][propname]))
-        {
-            console.log("Trying autocomplete on "+propprefix+propname);
-            console.log(activemodel['properties'][propname]);
-            console.log(cprop.children("#"+propprefix+propname));
-            cprop.find("#"+propprefix+propname).autocomplete({source: activemodel['properties'][propname]});
-        }*/
 
         cprop.children(".ctx_fieldval").prepend(datalist);
 

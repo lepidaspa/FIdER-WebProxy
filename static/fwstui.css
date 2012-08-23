@@ -113,3 +113,8 @@ hr
 {
     min-width:          24px;
 }
+
+#ctx_deschead
+{
+    font-weight:        bold;
+}
