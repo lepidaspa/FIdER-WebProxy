@@ -130,7 +130,6 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
 
     $(".ctx_propvalues").live("change mouseup keyup", setModelPropForm);
 
-    $("#btn_filter_apply").live("change", applyFilter);
 
 }
 
@@ -214,7 +213,7 @@ function resetFilterSuggestions()
     for (var i in vislayer.features)
     {
         var current = vislayer.features[i].attributes[propfilter];
-        if (current && current != "" && morechoices.indexOf(current) == -1)
+        if (current && current != "" && morechoices.indexOf(current) == -1 && choices.indexOf(current) == -1)
         {
             morechoices.push(current);
 
@@ -1691,6 +1690,11 @@ function freeSelection (caller)
 function renderFilterMask()
 {
 
+    var currentprop = $("#sel_filter_propname").val();
+    var currentfilter = $("#txt_filter_propvalue").val();
+    var isfiltering = $("#btn_filter_apply").prop("checked");
+
+
     $("#view_filter").empty();
 
     var chooser = $('<select id="sel_filter_propname"><option></option></select>');
@@ -1707,6 +1711,14 @@ function renderFilterMask()
     $("#view_filter").append(applyfilter);
 
 
+    console.log("re-setting filter mask options");
+    $("#sel_filter_propname").val(currentprop);
+    $("#txt_filter_propvalue").val(currentfilter);
+    $("#btn_filter_apply").prop("checked", isfiltering);
+
+    // and re-apply the filter since it could have been called after removing props or changing values
+    applyFilter();
+
 
 }
 
@@ -1715,9 +1727,7 @@ function renderFilterMask()
 
 function renderMapCard()
 {
-    renderFilterMask();
     // shows all the details about the current map
-    //TODO: implement
 
 
     // catch-all redraw: since renderMapCard is usually called after changes to the model, we can use this to redraw the filter widget
