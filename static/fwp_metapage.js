@@ -315,7 +315,7 @@ function renderMapCard (map_id)
     if (maps_remote.indexOf(mapname) != -1)
     {
         console.log("Refreshable map: "+mapname);
-        str_btn_refresh = '<img alt="Aggiorna risorsa remota" class="btn_refreshremote btn_inline" id="btn_refreshremote_'+map_id+'" src="/static/resource/fwp_reload.png">';
+        str_btn_refresh = '<img title="Aggiorna risorsa remota" class="btn_refreshremote btn_inline" id="btn_refreshremote_'+map_id+'" src="/static/resource/fwp_reload.png">';
     }
     else
     {
@@ -328,20 +328,20 @@ function renderMapCard (map_id)
             mappoints + ' accessi)</div>';
 
 
-    var str_btn_focus = '<img alt="Evidenzia/Nascondi" class="btn_focus" id="btn_focus_'+map_id+'" src="/static/resource/fwp_focus.png">';
-    var str_btn_uploadfile = '<img alt="Carica da shapefile" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
-    var str_btn_uploadwfs = '<img alt="Carica da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
+    var str_btn_focus = '<img title="Evidenzia/Nascondi" class="btn_focus" id="btn_focus_'+map_id+'" src="/static/resource/fwp_focus.png">';
+    var str_btn_uploadfile = '<img title="Carica da file" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
+    var str_btn_uploadwfs = '<img title="Carica da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
     var str_btn_convert = "";
     if (proxy_type != 'local')
     {
         // conversions are used for federation processes, so we do not need them on standalone proxies
-        str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
+        str_btn_convert = '<img title="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
     }
 
-    var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
+    var str_btn_remove = '<img title="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
     //var editlink = "/edit/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";
     var editlink = "/fwst/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";
-    var str_btn_edit = '<a href="'+editlink+'"><img alt="Modifica" class="btn_edit" id="btn_edit_'+map_id+'" src="/static/resource/fwp_editmap.png"></a>';
+    var str_btn_edit = '<a href="'+editlink+'"><img title="Modifica" class="btn_edit" id="btn_edit_'+map_id+'" src="/static/resource/fwp_editmap.png"></a>';
 
     var mapactions = '<div class="mapactions">'+str_btn_focus+' '+str_btn_convert+'<br>'+str_btn_uploadfile+' '+str_btn_uploadwfs+'<br>'+str_btn_edit+' '+str_btn_remove+'</div>';
 

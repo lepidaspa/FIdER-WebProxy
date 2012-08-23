@@ -117,10 +117,10 @@ function renderQueries()
         var str_btn_convert = "";
         if (models != null)
         {
-            str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+id+'" src="/static/resource/fwp_convert.png"><br>';
+            str_btn_convert = '<img title="Proprietà" class="btn_convert" id="btn_convert_'+id+'" src="/static/resource/fwp_convert.png"><br>';
         }
 
-        var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+id+'" src="/static/resource/fwp_remove.png">';
+        var str_btn_remove = '<img title="Elimina" class="btn_remove" id="btn_remove_'+id+'" src="/static/resource/fwp_remove.png">';
 
         var mapactions = '<div class="mapactions">'+str_btn_convert+str_btn_remove+'</div>';
 
