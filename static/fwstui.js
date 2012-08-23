@@ -74,6 +74,10 @@ var cfid;
 
 var propprefix = 'setfeatureprop_';
 
+// global to keep the filter request value in case the user changes the text but does not turn the filter on/off and there is a call to applyFilter
+var filtercriteria_propname;
+var filtercriteria_propval;
+
 function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fider, req_maps_st, req_models)
 {
 
@@ -124,11 +128,81 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     $(".btn_removeprop").live("click", removeProperty);
     $("#model_newpropname").live("change mouseup keyup", checkNewPropName);
     $("#btn_addprop").live("click", addProperty);
-    $("#btn_filter_apply").live("change mouseup", applyFilter);
+    $("#btn_filter_apply").live("change mouseup", applyFilterByClick);
 
     $("#sel_filter_propname").live("change", resetFilterSuggestions);
 
     $(".ctx_propvalues").live("change mouseup keyup", setModelPropForm);
+    $(".btn_extendpropval").live("click", extendPropVal);
+
+
+
+}
+
+function extendPropVal(caller)
+{
+
+    var prefix = "btn_extendpropval_";
+    var propname = caller.srcElement.id.substring(prefix.length);
+    var propval = $("#setfeatureprop_"+propname).val();
+
+    console.log("Extending value "+propval+" for property "+propname);
+
+
+    var featurelist = [];
+    if (filterlayer.features.length > 0)
+    {
+        for (var i in filterlayer.features)
+        {
+            featurelist.push (vislayer.getFeatureById(filterlayer.features[i]['attributes']['$clonedfrom']));
+        }
+
+    }
+    else
+    {
+        featurelist = vislayer.features;
+    }
+
+    for (var f in featurelist)
+    {
+        featurelist[f].attributes[propname] = propval;
+    }
+
+
+
+
+
+}
+
+function setExtenders()
+{
+    // sets the label and status (enabled/disabled) on the extendpropval buttons for better UI clarity (i.e. the user knows if he is going to extend the value to ALL objects or only to a selection
+
+    if ($("#btn_filter_apply").prop("checked"))
+    {
+
+        // extend to selection only
+        $(".btn_extendpropval").val('>>Selezione');
+
+        // extenders are active only if there are items to extend the value to (potentially, we do not check if they already have this value
+        if (filterlayer.features.length > 1)
+        {
+            $(".btn_extendpropval").prop('disabled', false);
+        }
+        else
+        {
+            $(".btn_extendpropval").prop('disabled', true);
+        }
+
+    }
+    else
+    {
+        //extend to ALL objects on map
+        $(".btn_extendpropval").val('>>Tutti');
+
+    }
+
+
 
 
 }
@@ -152,21 +226,41 @@ function preloadMap (req_meta, req_map)
 
 }
 
+function applyFilterByClick()
+{
+    //called when we apply/disable the filter via its own button, so we set the value of the global
+
+    var req = $("#btn_filter_apply").prop("checked");
+    if (req)
+    {
+        filtercriteria_propname = $("#sel_filter_propname").val();
+        filtercriteria_propval = $("#txt_filter_propvalue").val();
+    }
+    else
+    {
+        filtercriteria_propname = null;
+        filtercriteria_propval = null;
+    }
+    applyFilter();
+
+}
+
 function applyFilter()
 {
 
     var req = $("#btn_filter_apply").prop("checked");
+    filterlayer.destroyFeatures();
 
     if (!req)
     {
-        filterlayer.destroyFeatures();
+        setExtenders();
         return
     }
 
     // if the checkbox is activated, we (try) render the requested features
 
-    var propname = $("#sel_filter_propname").val();
-    var propval  = $("#txt_filter_propvalue").val();
+    var propname = filtercriteria_propname;
+    var propval  = filtercriteria_propval;
 
     var forcopy;
     if (propval.indexOf(";") == -1)
@@ -188,17 +282,27 @@ function applyFilter()
 
     if (forcopy && forcopy.length > 0)
     {
-        console.log("Copying features");
+        console.log("Copying features to highlight layer");
 
 
         for (var i in forcopy)
         {
-            console.log(forcopy);
-            filterlayer.addFeatures(forcopy[i].clone());
+            console.log(forcopy[i]);
+
+            // $clonedfrom is needed to trace back to the original feature  when working on the filter layer
+
+            var clonedfrom = forcopy[i].id;
+            console.log("Adding feature "+clonedfrom+"/"+forcopy[i].id);
+            var clonefeature = forcopy[i].clone();
+            clonefeature.attributes['$clonedfrom'] = clonedfrom;
+            filterlayer.addFeatures(clonefeature);
+
         }
 
 
     }
+
+    setExtenders();
 
 
 }
@@ -214,7 +318,12 @@ function resetFilterSuggestions()
     console.log("Updating filter suggestions for "+propfilter);
     if (!propfilter || propfilter=="")
     {
+        $("#btn_filter_apply").prop('disabled', true);
         return;
+    }
+    else
+    {
+        $("#btn_filter_apply").prop('disabled', false);
     }
 
     var choices = [];
@@ -763,6 +872,7 @@ function layerToJSON (layer, mapid)
         // we do not specify an ID since the geoid is not actually relevant for our use and can change and/or be erased on merges.
 
         // safety check to avoid inconsistencies being introduced during editing by OpenLayers
+        var badfeaturescount = 0;
         if (geom['type'] == maptype)
         {
             jsondata['features'].push({
@@ -771,6 +881,12 @@ function layerToJSON (layer, mapid)
                 'properties': props
             });
         }
+        else
+        {
+            badfeaturescount++;
+        }
+
+        console.log("Removed "+badfeaturescount+" incompatible features");
 
 
     }
@@ -1573,9 +1689,11 @@ function renderFeatureCard(caller)
               propval = feature['attributes'][propname];
         }
 
+        var button_extend = '<input type="button" class="btn_extendpropval" value="Estendi" id="btn_extendpropval_'+propname+'">';
+
         var cprop = $('<div class="ctx_topic"><div class="ctx_fieldname">'+propname+'</div>' +
             '<div class="ctx_fieldval"><input type="text" value="'+propval+'" class="featureedit'+listclass+'" id="'+propprefix+propname+'" '+listref+'>'+
-            '</div><div class="ctx_fieldact"></div></div>');
+            '</div><div class="ctx_fieldact">'+button_extend+'</div></div>');
 
 
         cprop.children(".ctx_fieldval").prepend(datalist);
@@ -1585,6 +1703,7 @@ function renderFeatureCard(caller)
     }
 
     //$("#view_feature").append(featurecard);
+    setExtenders();
 
 }
 
@@ -1642,7 +1761,7 @@ function setModelPropForm ()
 }
 
 
-function freeSelection (caller)
+function freeSelection ()
 {
     // applies changes to the properties of the current object
     // (so we avoid a change for every keypress)
@@ -1698,6 +1817,10 @@ function freeSelection (caller)
 
     $("#statemessage").empty();
     cfid = null;
+
+
+    // added here so if we modify the geometry we don't leave a trace on the highlight
+    applyFilter();
 
 
 }
