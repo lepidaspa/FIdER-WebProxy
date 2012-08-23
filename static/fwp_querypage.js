@@ -57,8 +57,8 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
     var bbox = (manifest['area']);
     zoomToBBox(minimap, bbox);
 
-
-    renderQueries();
+    // moved to registerModels() flow, otherwise it always fails to show the conversion table editor
+    //renderQueries();
 
     $("#btn_addconn").click(renderNewConnMask);
     $(".btn_remove").live("click",renderRemoverMask);
@@ -87,6 +87,8 @@ function registerModels(req_models)
         $("#proxy_addconn").append('<span id="btn_reloadpage">Riprova</span>');
         $("#btn_reloadpage").click(function () {window.location = window.location.pathname;});
     }
+
+    renderQueries();
 
 
     //alert(JSON.stringify(models));
