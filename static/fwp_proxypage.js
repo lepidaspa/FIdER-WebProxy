@@ -32,7 +32,7 @@ function pageInit(req_id, req_manifest)
         manifest['operations']['query']['inventory'] == 'none')
     {
         console.log("Creating access for standalone");
-        $('<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'">Area Standalone</a></div>').insertAfter("#minimap");
+        $('<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'">Gestione mappe</a></div>').insertAfter("#minimap");
     }
 
     //alert(JSON.stringify(manifest['metadata']));

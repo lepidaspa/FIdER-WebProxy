@@ -1324,7 +1324,7 @@ function buildMapList ()
 
     var container = $("<select><option></option></select>");
 
-    var ctx_mapsel = $('<optgroup label="Area Standalone"></optgroup>');
+    var ctx_mapsel = $('<optgroup label="Archivio"></optgroup>');
     for (var m in maps_st)
     {
         ctx_mapsel.append('<option value=".st/'+maps_st[m]+'">'+maps_st[m]+'</option>');
