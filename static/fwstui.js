@@ -168,7 +168,23 @@ function applyFilter()
     var propname = $("#sel_filter_propname").val();
     var propval  = $("#txt_filter_propvalue").val();
 
-    var forcopy = vislayer.getFeaturesByAttribute(propname, propval);
+    var forcopy;
+    if (propval.indexOf(";") == -1)
+    {
+        forcopy = vislayer.getFeaturesByAttribute(propname, propval);
+    }
+    else
+    {
+        // multiple selection (but on one field only)
+        forcopy = [];
+        var propvals = propval.split(";");
+        for (var i in propvals)
+        {
+            forcopy = forcopy.concat(vislayer.getFeaturesByAttribute(propname, propvals[i]));
+        }
+
+    }
+
 
     if (forcopy && forcopy.length > 0)
     {
