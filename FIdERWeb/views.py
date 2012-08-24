@@ -764,6 +764,65 @@ def getProxyManifest (proxy_id):
 
 
 @csrf_exempt
+def reviewPostGIS (request, **kwargs):
+	"""
+	returns the current conversion table for a specific query adapted to the currently available columns of the DB *in case* the db can be accessed, otherwise it takes the description in the file
+	:param request:
+	:return:
+	"""
+
+
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	try:
+		conv_fp = open (os.path.join(proxyconf.baseproxypath, proxy_id, "conf", "mappings", meta_id, map_id))
+		pretable = json.load(conv_fp)
+		conv_fp.close()
+	except:
+		pretable = None
+
+	conn_fp = open (os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id))
+	conndesc= json.load(conn_fp)
+	conn_fp.close()
+
+	conndata = conndesc['connection']
+	querydata = conndesc['query']
+
+	workingdb = False
+	try:
+		sqldata = proxy_query.probePostGIS(conndata, querydata['view'], querydata['schema'])
+		if len(sqldata) > 0:
+			workingdb = True
+	except Exception, ex:
+		#it is not relevant if the DB is down or has no data in it (the latter is arguably much worse)
+		pass
+
+	#TODO: switch conversion tables to the new models?
+	convtable = {}
+	if workingdb:
+		for columndata in sqldata:
+
+			if columndata[0] in pretable.keys():
+				convtable[columndata[0]] = pretable[columndata[0]]
+			else:
+				convtable[columndata[0]] = []
+	else:
+		if pretable is not None:
+			convtable = pretable
+
+	response_review = {
+		'success': workingdb,
+		'report': convtable
+	}
+
+	return HttpResponse(json.dumps(response_review), mimetype="application/json")
+
+
+
+@csrf_exempt
 def probePostGIS (request):
 	"""
 	Performs a basic query to according to the parmaters received by POST to a PostGIS db server and returns the structure of the table
@@ -830,7 +889,7 @@ def registerquery (request, **kwargs):
 	try:
 		proxy_query.registerQuery (proxy_id, meta_id, cid, conn, convert)
 		response_register['success'] = True
-		response_register['report'] = "Connessione a db aggiunta con successo."
+		response_register['report'] = "Connessione registrata con successo."
 	except Exception as ex:
 		response_register['report'] = "ERRORE: %s" % ex
 

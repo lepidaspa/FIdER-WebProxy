@@ -49,6 +49,7 @@ urlpatterns = patterns('',
 	url(r'^fwp/proxylist/', fwpviews.proxy_get_all),
 	url(r'^fwp/create/', fwpviews.proxy_create_new),
 	url(r'^fwp/newqueryconn/', fwpviews.probePostGIS),
+	url(r'^fwp/reviewqueryconn/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<map_id>\w*)/$$', fwpviews.reviewPostGIS),
 	url(r'^fwp/registerquery/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.registerquery),
 	url(r'^edit/mapslist/', editviews.getMapsList),
 

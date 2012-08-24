@@ -64,6 +64,7 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
     $(".btn_remove").live("click",renderRemoverMask);
     $(".btn_confirmdelete").live("click",deleteMap);
 
+    $(".btn_convert").live('click', editExistingTranslation);
 
 
 }
@@ -172,12 +173,6 @@ function renderNewConnMask()
 
 }
 
-function configConnection()
-{
-
-    var conn_id = cc_id;
-
-}
 
 function closeAllMasks()
 {
@@ -242,25 +237,57 @@ function createNewConnection()
     });
 
 
-    // if successful, saving the basic info about it
-
-
-    // opening the connection edit mask in the new connection area with the data taken from the test
-    configConnection();
-
-    // after we set that up, we save the basic data
-
 
 }
 
-function showTranslation (map_id)
+function editExistingTranslation (caller)
 {
 
+    var prefix = "btn_convert_";
+    var query_id = caller.srcElement.id.substring(prefix.length);
+    console.log("Editing conversions for "+query_id);
 
+    var urlstring = "/fwp/reviewqueryconn/"+proxy_id+"/"+meta_id+"/"+query_id;
+
+    $.ajax ({
+        url: urlstring,
+        async: true,
+        type: 'GET',
+        success: function(data) {
+            if (data['success'])
+            {
+
+                renderTranslationMask(query_id, data['report']);
+                // no message, we only render the mask
+                //postFeedbackMessage(data['success'], "Connessione riuscita, recupero tabelle di conversione.", "#details_"+query_id);
+
+            }
+            else
+            {
+                if ($.isEmptyObject(data['report']))
+                {
+                    //TODO: message for missing conversion table file AND failure on the DB
+
+                    postFeedbackMessage(data['success'], "Impossibile ottenere la tabella di conversione.", "#details_"+query_id);
+                }
+                else
+                {
+                    //TODO: message for failure on the DB but we display what is available
+                    renderTranslationMask(query_id, data['report']);
+                    postFeedbackMessage(data['success'], "Impossibile collegarsi al database per una lista completa dei campi.", "#details_"+query_id);
+                }
+            }
+        },
+        error: function () {
+            postFeedbackMessage(data['success'], "Impossibile ottenere la tabella di conversione.", "#details_"+query_id);
+        }
+
+
+
+    });
 
 
 }
-
 
 
 function renderRemoverMask()
@@ -320,13 +347,73 @@ function deleteMap ()
 }
 
 
+function renderTranslationMask (query_id, jsonconv)
+{
+    // creates a widget interface to convert foreign fields to our model
+    // when updating an OLD connection
+    closeAllMasks();
 
+    var xlatemask = '<div class="formmask" id="editxlate_new"></div>';
+
+    var convtable =  '<div class="maskfield"><div class="colhead masksubfield">Campo</div><div class="masksubfield colhead">Ricerca su</div></div>';
+
+    var fieldselect_ops = '<option value=""></option>';
+    for (var key in jsonconv)
+    {
+        //console.log(i);
+        //console.log(jsonconv[i]);
+
+        // note: conv table fields are : name, can be null, datatype (not sure if really useful, definitions are very vague)
+        fieldselect_ops += '<option value="'+key+'">'+key+'</option>';
+
+
+
+    }
+
+
+    var typeselect = '<div id="select_objtype"><label for="objtype">Tipologia</label> <select id="objtype">';
+    for (var m in models)
+    {
+        typeselect += '<option value="'+m+'">'+m+'</option>';
+
+        for (var f in models[m])
+        {
+            convtable += '<div class="maskfield typefield typefieldlist_'+m+'"><div class="masksubfield">'+f+'</div><div class="masksubfield colhead"><select class=" fieldtype_'+m+' fieldconv_'+f+' fieldselect" id="fieldconversion_'+f+'">'+fieldselect_ops+'</select></div></div>';
+        }
+
+        convtable += '<div class="maskfield typefield typefieldlist_'+m+'"><div class="masksubfield">Geometria</div><div class="masksubfield colhead"><select class="fieldtype_'+m+' fieldconv_geometry fieldselect" id="fieldconversion_geometry">'+fieldselect_ops+'</select></div></div>';
+
+    }
+    typeselect += '</select></div>';
+
+
+    convtable +=  '<input type="button" id="newconn_save" value="Conferma"></div>';
+
+
+    currentconn = queries[query_id];
+    $("#details_"+query_id).append(xlatemask);
+    renderConnSummary("#editxlate_new");
+    $("#editxlate_new").append(typeselect);
+    $("#editxlate_new").append(convtable);
+
+
+
+    $("select#objtype").unbind();
+    $("select#objtype").change(filterConversionFields);
+    $("select#objtype").trigger("change");
+    $("select.fieldselect").unbind();
+    $("select.fieldselect").change(checkConversions);
+    $("#newconn_save").unbind();
+    $("#newconn_save").click(saveNewConnection);
+
+
+}
 
 
 function editTranslation(ffields)
 {
     // creates a widget interface to set the conversion of foreign fields in our model fields
-
+    // when creating a NEW connection
     closeAllMasks();
 
     var xlatemask = '<div class="formmask" id="editxlate_new"></div>';
@@ -356,7 +443,7 @@ function editTranslation(ffields)
     typeselect += '</select></div>';
 
 
-    convtable +=             '<input type="button" id="newconn_save" value="Crea"></div>';
+    convtable +=             '<input type="button" id="newconn_save" value="Conferma"></div>';
 
 
 
