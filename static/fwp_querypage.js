@@ -31,6 +31,7 @@ var models;
 function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
 {
 
+    unsetLoadingState();
     $("#renderingstate").hide();
     $("#loadingstate").hide();
     $("#serverstate").hide();
@@ -69,7 +70,19 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
 
 }
 
+function setLoadingState()
+{
+    //activates the spinner, nothing else
+    $("#progspinner").show();
+}
 
+function unsetLoadingState()
+{
+    // hides the spinner
+    $("#progspinner").hide();
+
+
+}
 
 function registerModels(req_models)
 {
@@ -84,7 +97,7 @@ function registerModels(req_models)
         console.log("Missing valid model list");
         models = null;
         $("#proxy_addconn").empty();
-        postFeedbackMessage(false, "Impossibile accedere alle tabelle di conversione. Verificare la connessione con il federatore.", "#proxy_addconn");
+        postFeedbackMessage(false, "Impossibile accedere ai modelli federati. Verificare la connessione con il federatore.", "#proxy_addconn");
         $("#proxy_addconn").append('<span id="btn_reloadpage">Riprova</span>');
         $("#btn_reloadpage").click(function () {window.location = window.location.pathname;});
     }
@@ -213,12 +226,17 @@ function createNewConnection()
 
     //alert("Probing: "+JSON.stringify(connectiondata));
 
+    setLoadingState();
+
     $.ajax ({
         url: urlstring,
         async: true,
         data: {jsonmessage: JSON.stringify(connectiondata)},
         type: 'POST',
         success: function(data) {
+
+            unsetLoadingState();
+
             if (data['success'])
             {
                 //postFeedbackMessage(data['success'], "Connessione riuscita, recupero tabelle di conversione.", "#proxy_addconn");
@@ -230,6 +248,10 @@ function createNewConnection()
             {
                 postFeedbackMessage(data['success'], data['report'], "#proxy_addconn");
             }
+        },
+        error: function () {
+            unsetLoadingState();
+            postFeedbackMessage(false, "Connessione al database fallita.", "#proxy_addconn");
         }
 
 
@@ -249,14 +271,19 @@ function editExistingTranslation (caller)
 
     var urlstring = "/fwp/reviewqueryconn/"+proxy_id+"/"+meta_id+"/"+query_id;
 
+    setLoadingState();
+
     $.ajax ({
         url: urlstring,
         async: true,
         type: 'GET',
         success: function(data) {
+
+            unsetLoadingState();
+
             if (data['success'])
             {
-
+                console.log("Full conversion retrieval");
                 renderTranslationMask(query_id, data['report']);
                 // no message, we only render the mask
                 //postFeedbackMessage(data['success'], "Connessione riuscita, recupero tabelle di conversione.", "#details_"+query_id);
@@ -267,18 +294,21 @@ function editExistingTranslation (caller)
                 if ($.isEmptyObject(data['report']))
                 {
                     //TODO: message for missing conversion table file AND failure on the DB
-
+                    console.log("No file on filesystem, db is unreachable.");
                     postFeedbackMessage(data['success'], "Impossibile ottenere la tabella di conversione.", "#details_"+query_id);
                 }
                 else
                 {
                     //TODO: message for failure on the DB but we display what is available
+                    console.log("Retrieved from filesystem, db is unreachable.");
                     renderTranslationMask(query_id, data['report']);
-                    postFeedbackMessage(data['success'], "Impossibile collegarsi al database per una lista completa dei campi.", "#details_"+query_id);
+                    postFeedbackMessage(data['success'], "Impossibile collegarsi al database per una lista completa dei campi.", "#details_"+query_id, true);
                 }
             }
         },
-        error: function () {
+        error: function (data) {
+
+            unsetLoadingState();
             postFeedbackMessage(data['success'], "Impossibile ottenere la tabella di conversione.", "#details_"+query_id);
         }
 
@@ -326,6 +356,9 @@ function deleteMap ()
         'shape_id': i
     };
 
+    setLoadingState();
+
+
     $.ajax({
         url: "/fwp/control/",
         async: true,
@@ -333,10 +366,12 @@ function deleteMap ()
         type: 'POST',
         success: function(data)
         {
+            unsetLoadingState();
             postFeedbackMessage(data['success'], data['report'], container);
         },
         error: function (data)
         {
+            unsetLoadingState();
             postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container);
         }
     });
@@ -558,20 +593,30 @@ function saveNewConnection ()
     var urlstring = "/fwp/registerquery/"+proxy_id+"/"+meta_id+"/";
     var container = "#proxy_addconn";
 
+    setLoadingState();
+
     $.ajax ({
         url: urlstring,
         data:   {jsonmessage: JSON.stringify(jsondata)},
         async: true,
         type: 'POST',
         success: function(data) {
-            //alert ("SUCCESS");
+
+            // we do NOT unset the loading state so it is clear to the user that the operation is still running, even if it is just for the autorefresh
+            //unsetLoadingState();
+
+            //we put the message anyway just in case there's anything to delay the refresh;
             postFeedbackMessage(data['success'], data['report'], container);
-            //TODO: add page reload, the function will be very quick anyway since it only works locally
+
+
+            // AUTOREFRESH
+            window.location = window.location.pathname;
         },
         error: function (data)
         {
+            unsetLoadingState();
             //alert ("FAIL");
-            postFeedbackMessage(false, "ERROR: "+JSON.stringify(data), container);
+            postFeedbackMessage(false, "ERRORE: "+JSON.stringify(data), container);
 
         }
     });
@@ -613,8 +658,10 @@ function zoomToBBox (olmap, bbox)
 }
 
 
-function postFeedbackMessage (success, report, widgetid)
+function postFeedbackMessage (success, report, widgetid, dontcloseall)
 {
+
+
 
     var feedbackclass;
     if (success)
@@ -628,6 +675,10 @@ function postFeedbackMessage (success, report, widgetid)
 
     var feedbackmess = '<div class="feedback '+feedbackclass+'">' +report+ '</div>';
 
-    closeAllMasks();
+    if (typeof dontcloseall != 'undefined' && !dontcloseall)
+    {
+        closeAllMasks();
+    }
+
     $(widgetid).append(feedbackmess);
 }
