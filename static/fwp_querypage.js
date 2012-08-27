@@ -401,8 +401,6 @@ function renderTranslationMask (query_id, jsonconv)
         // note: conv table fields are : name, can be null, datatype (not sure if really useful, definitions are very vague)
         fieldselect_ops += '<option value="'+key+'">'+key+'</option>';
 
-
-
     }
 
 
@@ -440,6 +438,9 @@ function renderTranslationMask (query_id, jsonconv)
     $("select.fieldselect").change(checkConversions);
     $("#newconn_save").unbind();
     $("#newconn_save").click(saveNewConnection);
+
+
+
 
 
 }

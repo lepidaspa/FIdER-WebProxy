@@ -212,6 +212,8 @@ function preloadMap (req_meta, req_map)
     // preloads a map from the federated maps list
     // fails silently if the map is not in the list
 
+    console.log("Trying to preload map "+req_meta+"/"+req_map);
+
     var mapstring = req_meta+"/"+req_map;
     if (maplist.indexOf(mapstring) != -1)
     {

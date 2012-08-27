@@ -36,11 +36,11 @@ def uiview (request, **kwargs):
 	proxy_id = kwargs['proxy_id']
 
 	try:
-		meta_id = kwargs['meta_id']
-		map_id = kwargs['shape_id']
+		req_meta_id = kwargs['meta_id']
+		req_map_id = kwargs['shape_id']
 	except:
-		meta_id = None
-		map_id = None
+		req_meta_id = None
+		req_map_id = None
 
 	manifest = proxy_core.getManifest(proxy_id)
 
@@ -65,7 +65,7 @@ def uiview (request, **kwargs):
 
 	models = getModels()
 
-	return render_to_response ('fwstui.html', {'proxy_id': proxy_id, 'proxy_name': proxy_name, 'proxy_meta': SafeString(json.dumps(proxy_meta)), 'maps_fider': SafeString(json.dumps(maplist)), 'maps_st': SafeString(json.dumps(maplist_st)),  'models': SafeString(json.dumps(models)), 'manifest': SafeString(json.dumps(manifest)), 'sel_meta': meta_id, 'sel_map': map_id}, context_instance=RequestContext(request))
+	return render_to_response ('fwstui.html', {'proxy_id': proxy_id, 'proxy_name': proxy_name, 'proxy_meta': SafeString(json.dumps(proxy_meta)), 'maps_fider': SafeString(json.dumps(maplist)), 'maps_st': SafeString(json.dumps(maplist_st)),  'models': SafeString(json.dumps(models)), 'manifest': SafeString(json.dumps(manifest)), 'sel_meta': req_meta_id, 'sel_map': req_map_id}, context_instance=RequestContext(request))
 
 @csrf_exempt
 def loadSTMap (request, **kwargs):
