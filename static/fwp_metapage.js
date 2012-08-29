@@ -17,7 +17,7 @@ var shapedata;
 var manifest;
 var proxy_type;
 
-
+var maptypes = {};
 
 var minimap;
 
@@ -45,11 +45,17 @@ var currentmap;
 
 var maps_remote;
 
-function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote, req_maps_st)
+
+// models provided by the main server for conversion; they are loaded at the start and "follow" until the user reloads. If there are no models, some functions will be disabled
+var models;
+
+function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote, req_maps_st, req_models)
 {
 
     console.log(JSON.parse(req_remote));
     maps_remote = JSON.parse(req_remote);
+
+    $("#conversion").hide();
     $("#renderingstate").hide();
     $("#loadingstate").hide();
     $("#serverstate").hide();
@@ -107,8 +113,31 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote,
     $("#newmap_st").click(renderNewSTMask);
 
 
+    $(".btn_focus").live('click', focusSelMap);
+    $(".btn_uploadfile").live('click', renderUploadFileMask);
+    $(".btn_uploadwfs").live('click', renderUploadWFSMask);
+    $(".btn_convert").live('click', renderConvMask);
+    $(".btn_remove").live('click', renderRemoverMask);
+
+
 
 }
+
+function registerModels (req_models)
+{
+    if (!req_models || jQuery.isEmptyObject(req_models))
+    {
+        $(".btn_convert").unbind();
+        $(".btn_convert").hide();
+        postFeedbackMessage(false, "Nessun modello disponibile. La funzione di traduzione di modelli e valori non è attiva.<br><a href='#'>Ricarica</a>", "#proxy_addmap");
+        models = null;
+        return;
+    }
+
+    models = req_models;
+
+}
+
 
 function verifySTselect ()
 {
@@ -231,6 +260,8 @@ function unsetLoadingState()
 
     $("#progspinner").hide();
 
+    /*
+
     $(".btn_focus").unbind();
     $(".btn_focus").click(focusSelMap);
 
@@ -244,7 +275,7 @@ function unsetLoadingState()
     $(".btn_remove").unbind();
     $(".btn_remove").click(renderRemoverMask);
 
-
+    */
 
     // activates map controls, removes the front layer
     proxymap.addControl(new OpenLayers.Control.Navigation());
@@ -302,10 +333,18 @@ function renderMapCard (map_id)
         var ctype = shapedata[map_id]['features'][i]['geometry']['type'];
         if ((ctype == 'LineString') || (ctype == 'MultiLineString'))
         {
+            if (!maptypes[map_id])
+            {
+                maptypes[map_id] = "LineString";
+            }
             maplines++;
         }
         else if ((ctype == 'Point') || (ctype == 'MultiPoint'))
         {
+            if (!maptypes[map_id])
+            {
+                maptypes[map_id] = "Point";
+            }
             mappoints++;
         }
     }
@@ -421,6 +460,9 @@ function renderUploadFileMask()
     $("#map_"+i).append(uploadtable);
 
 }
+
+
+
 
 function renderUploadWFSMask()
 {
@@ -955,11 +997,11 @@ function postFeedbackMessage (success, report, widgetid)
     var message = report;
 
     var feedbackclass;
-    if (status == true)
+    if (status === true)
     {
         feedbackclass = "success";
     }
-    else
+    else if (status === false)
     {
         feedbackclass = "fail";
     }

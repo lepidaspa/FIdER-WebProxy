@@ -124,10 +124,13 @@ def metapage (request, **kwargs):
 	else:
 		template = 'fwp_querypage.html'
 		#Handling connection errors
-		try:
-			kwargs['models'] = SafeString(json.dumps(getModels()))
-		except:
-			kwargs['models'] = {}
+
+
+	# models are loaded at start for both
+	try:
+		kwargs['models'] = SafeString(json.dumps(getModels()))
+	except:
+		kwargs['models'] = {}
 
 	#print "MAP DATA:\n",proxymaps,"\n***************************************************"
 
@@ -148,16 +151,29 @@ def proxy_loadmap (request, **kwargs):
 
 	return HttpResponse(jsondata, mimetype="application/json")
 
+def proxy_getModels (request):
+	"""
+	Returns a json with the main server models and acceptable values
+	:param request:
+	:return:
+	"""
+
+	#TODO: decide whether to return NULL or error (500) in case of error in getModels
+
+	return HttpResponse(json.dumps(getModels()), mimetype="application/json")
+
+
+
 def getModels ():
 	"""
 	Get the list of fields for conversion from the main server
 	:return:
 	"""
 
-	print "Retrieving conversion table from server"
+	print "Retrieving conversion table from server %s" % proxyconf.URL_MODELS
 
 	try:
-		jsonresponse = urllib2.urlopen(proxyconf.URL_CONVERSIONS)
+		jsonresponse = urllib2.urlopen(proxyconf.URL_MODELS)
 		convtable = json.load(jsonresponse)
 		print "Received conversion table from server: %s" % convtable
 
@@ -174,6 +190,61 @@ def getModels ():
 		raise
 
 	return convtable
+
+
+
+def getConversionInfo (request, **kwargs):
+	"""
+	Returns a json with the conversion table for a given map and the list of fields for that map
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs["proxy_id"]
+	meta_id = kwargs["meta_id"]
+	shape_id = kwargs["shape_id"]
+
+	# loading pre-existing conversion; should include modelid and actual conversion structure as fields with corresponding field and value conversion
+	try:
+		mapconv = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
+		print "Received conversion table: %s" % mapconv
+		if mapconv is None:
+			mapconv = {}
+	except Exception as ex:
+		print "Error when loading shape conversion table: %s" % ex
+		mapconv = {}
+
+	# very simple check to be sure the conversion table has the correct structure, i.e. is in the most recent format
+	if not (mapconv.has_key('modelid') and mapconv.has_key('fields')):
+		print "Conversion table is in the wrong format"
+		mapconv = {}
+
+	# creating the full list of fields for this map
+	sourcefields = []
+	if learnProxyType(getProxyManifest(proxy_id)) != 'query':
+		mapdata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, shape_id, False)
+		for feature in mapdata ['features']:
+			for property in feature['properties'].keys():
+				if property not in sourcefields:
+					sourcefields.append(property)
+	else:
+		sourcefields = proxy_query.getPGStruct(proxy_id, meta_id, shape_id)
+
+	args = {
+		"mapfields" : sourcefields,
+		"conversion" : mapconv,
+	}
+
+	print "Retrieved conversion structure:",args
+
+	return HttpResponse(json.dumps(args), mimetype="application/json")
+
+
+
+
+
+
 
 
 

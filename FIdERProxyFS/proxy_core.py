@@ -766,6 +766,7 @@ def getConversionTable (proxy_id, meta_id, shape_id):
 		try:
 			return json.load(open(tablepath))
 		except Exception as ex:
+			print "Error while accessing conversion table for %s.%s.%s: %s" % (proxy_id, meta_id, shape_id, ex.message)
 			raise ConversionTableAccessException ("Error while accessing conversion table for %s.%s.%s: %s" % (proxy_id, meta_id, shape_id, ex.message))
 
 

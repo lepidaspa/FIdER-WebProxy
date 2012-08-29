@@ -1,0 +1,360 @@
+/**
+ * Created with PyCharm.
+ * User: drake
+ * Date: 8/27/12
+ * Time: 4:50 PM
+ * To change this template use File | Settings | File Templates.
+ */
+
+
+function bindConvControls ()
+{
+    // sets the bindings for the various selectors in the conversion creation form
+
+    $(".valueconv_addfield").die();
+    $(".valueconv_addfield").live('click', addValueConversionItem);
+    $(".valueconv_removefield").die();
+    $(".valueconv_removefield").live('click', removeValueConversionItem);
+    $("#conversion_typeto").die();
+    $("#conversion_typeto").live('change', filterConversionFields);
+    filterConversionFields();
+
+    $("#convtable_close").die();
+    $("#convtable_close").live('click', closeConvTable);
+    $("#convtable_submit").die();
+    $("#convtable_submit").live('click', saveConvTable);
+
+
+}
+
+
+function renderConvMask()
+{
+
+    // Mask for values conversion
+
+    $("#convtable_fields tbody").remove();
+
+    var prefix = "btn_convert_";
+    var i = parseInt(this.id.substr(prefix.length));
+    currentmap = i;
+    var maptype = maptypes[currentmap];
+
+    closeAllMasks();
+    $("#serverstate").show();
+    $("#progspinner").show();
+
+    var tables = null;
+    var success;
+
+
+    $.ajax({
+        url: "/fwp/conversion/"+proxy_id+"/"+meta_id+"/"+shapes[i],
+        async: false
+    }).done(function (jsondata) {
+
+            success = true;
+            console.log("Retrieved conversion data");
+            console.log(jsondata);
+            tables = jsondata;
+
+            if (jsondata.hasOwnProperty("model") && jsondata.hasOwnProperty("fields"))
+            {
+                // should only be temporary, since in time there should be no tables of the old version, and non-existing tables should not be flagged as errors.
+
+
+            }
+            /*
+             else if (!$.isEmptyObject(jsondata))
+             {
+             // message posted as warning to let the user know why the fields are empty even if they may have been filled before
+             postFeedbackMessage(null, "La tabella di riferimento esistente non è compatibile col formato attuale.", "#map_"+i);
+             }
+             */
+
+
+
+        }).fail(function ()
+        {
+            // message posted as warning to let the user know why the fields are empty even if they may have been filled before
+            postFeedbackMessage(null, "Impossibile caricare i dati della mappa per la conversione.", "#map_"+i);
+            success = false;
+        });
+
+    //alert(JSON.stringify(tables));
+
+    $("#serverstate").hide();
+    $("#progspinner").hide();
+
+
+    if (success==false)
+    {
+        return;
+    }
+
+    // 1. render the layout
+
+
+    // 1.1 unhide and switch places with the map widget
+    $("#proxymap").hide();
+    $("#conversion").removeClass("inhiding");
+    $("#conversion").show();
+
+    // 1.2 build the table rows for ALL allowed models, then will hide/show according to the main chooser widget
+    $("#conversion_typeto").empty();
+
+    for (var modelid in models)
+    {
+
+        if (models[modelid]['objtype'] != maptype )
+        {
+            continue;
+        }
+
+        // 1.2.1 model type selector
+
+        $("#conversion_typeto").append('<option value="'+modelid+'">'+models[modelid]['name']+'</option>');
+
+        var fields = Object.keys(models[modelid]['properties']);
+
+        var model_tb = $('<tbody id="conversion_fields_'+modelid+'"></tbody>');
+
+        for (var i in fields)
+        {
+
+            var sourcefields_selector = $('<select class="sel_sourcefield" id="sel_sourcefield_'+fields[i]+'"></select>');
+            sourcefields_selector.append('<option value="">(non usato)</option>');
+            for (var f in tables['mapfields'])
+            {
+                sourcefields_selector.append('<option value="'+tables['mapfields'][f]+'">'+tables['mapfields'][f]+'</option>');
+            }
+
+            // extendable widget for adding conversion
+            var valueconv_widget = $('<div class="valueconversion" id="valueconversion_'+fields[i]+'"></div>');
+            if ($.isArray(models[modelid]['properties'][fields[i]]))
+            {
+                valueconv_widget.append('<div class="valueconv_row"><div class="cell"><input type="button" class="valueconv_addfield" value="+"></div><div class="cell"></div><div class="cell"></div></div>');
+            }
+
+            var fieldhtml = $("<tr></tr>");
+            fieldhtml.append('<td>'+fields[i]+'</td>');
+            fieldhtml.append($('<td></td>').append(sourcefields_selector));
+            fieldhtml.append($('<td></td>').append(valueconv_widget));
+
+            //console.log(fieldhtml);
+
+            model_tb.append(fieldhtml);
+        }
+
+        $("#convtable_fields").append(model_tb);
+
+    }
+
+
+
+
+
+
+
+
+    // 2. bindings (consider declaring only once in caller page)
+    bindConvControls();
+
+
+
+    // 3. fill the layout with values from the existing model, if applicable
+    // (moved after the bindings so we can use the event system)
+
+    if (!$.isEmptyObject(tables['conversion']))
+    {
+        var modelid = tables['conversion'][modelid];
+        $("#conversion_typeto").change(modelid);
+
+        // TODO: implement, placeholder
+
+    }
+}
+
+
+function addValueConversionItem (launcher)
+{
+
+    var caller = $(launcher.srcElement);
+
+    var prefix;
+
+    prefix = "valueconversion_";
+    var propname = caller.closest(".valueconversion").attr('id').substring(prefix.length);
+
+    prefix = "conversion_fields_";
+    var modelid = caller.closest("tbody").attr('id').substring(prefix.length);
+
+    var choices = models[modelid]['properties'][propname];
+
+    if (!$.isArray(choices))
+    {
+        // note: we should never get here anyway
+        return;
+    }
+
+    var conversionwidget = $('<div class="valueconv_row"><div class="cell"><input type="text" class="valueconv_valuefrom" value=""></div><div class="cell"><select class="valueconv_valueto"></select></div><div class="cell"><input type="button" class="valueconv_removefield" value="-"></div></div>');
+    for (var i in choices)
+    {
+        conversionwidget.find(".valueconv_valueto").append('<option value="'+choices[i]+'">'+choices[i]+'</option>');
+    }
+
+
+    caller.closest(".valueconv_row").before(conversionwidget);
+
+}
+
+function removeValueConversionItem (launcher)
+{
+    $(launcher.srcElement).closest(".valueconv_row").remove();
+
+}
+
+
+function filterConversionFields ()
+{
+    var currentfilter = $("#conversion_typeto").val();
+
+    var fullid = "conversion_fields_"+currentfilter;
+
+    $('#convtable_fields tbody[id!='+fullid+']').hide();
+    $("#"+fullid).show();
+
+}
+
+function closeConvTable()
+{
+
+    // hides the conversion table widget and redisplays the map widget if applicable
+
+    //TODO: placeholder, implement
+
+}
+
+function saveConvTable()
+{
+
+    console.log("Saving current conversions");
+
+
+    // saves the current conversion setting
+
+    var conversion = { "modelid": "", "fields": {}};
+
+
+    // find the model currently in use
+
+    var modelid = $("#conversion_typeto").val();
+
+    conversion ['modelid'] = modelid;
+
+
+    var prefix;
+    prefix = "conversion_fields_";
+    var convsection = $("#"+prefix+modelid);
+
+    console.log("Converting fields for model id "+modelid);
+    console.log(convsection.find("tr"));
+
+    var convfields = {};
+    convsection.find("tr").each (
+        function ()
+        {
+
+            var selector = $(this).find(".sel_sourcefield");
+
+            prefix = "sel_sourcefield_";
+
+            var fieldto = selector.attr("id").substring(prefix.length);
+            var fieldfrom = selector.val();
+
+            if (fieldfrom == "")
+            {
+                // nothing to map or convert
+                return;
+            }
+            else
+            {
+                convfields[fieldfrom] = { "to": fieldto, "values": {} };
+            }
+
+
+
+            console.log("Mapping "+fieldfrom+" to "+fieldto);
+
+            var vconvtable = $(this).find("#valueconversion_"+fieldto);
+
+            console.log(vconvtable);
+
+
+            vconvtable.find(".valueconv_row").each (
+                function ()
+                {
+                    if ($(this).find(".valueconv_addfield").size()>0)
+                    {
+                        // skipping the + button row
+                        return;
+                    }
+
+                    var valuefrom = String($(this).find(".valueconv_valuefrom").val());
+                    var valueto = String($(this).find(".valueconv_valueto").val());
+
+                    console.log("Mapping "+fieldfrom+":"+fieldto+" with "+valuefrom+" to "+valueto);
+
+                    convfields[fieldfrom]["values"][valuefrom] = valueto;
+                }
+
+
+            );
+
+
+        }
+    );
+    conversion['fields'] = convfields;
+
+
+    console.log("Compiled conversion data");
+    console.log(conversion);
+
+
+    // saving to filesystem
+
+    var jsondata = {};
+
+    jsondata['convtable'] = conversion;
+
+    jsondata ['proxy_id']  = proxy_id;
+    jsondata ['meta_id'] =  meta_id;
+    jsondata ['shape_id'] = shapes[currentmap];
+
+    $("#progspinner").show();
+
+
+    $.ajax ({
+        url: "/fwp/maketable/",
+        async: true,
+        data: {jsonmessage: JSON.stringify(jsondata)},
+        type: 'POST',
+        success: function(data) {
+            //alert ("COMPLETED");
+            postFeedbackMessage(data['success'], data['report'], "#map_"+currentmap);
+
+            if (proxy_type != 'query')
+            {
+                rebuildShapeData(shapes[currentmap]);
+            }
+
+            $("#progspinner").hide();
+
+
+        }
+    });
+
+
+
+
+}

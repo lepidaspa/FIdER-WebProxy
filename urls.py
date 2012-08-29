@@ -36,9 +36,14 @@ urlpatterns = patterns('',
 
 
 	#urls for self-ops, called by the proxy
+
+	# Field VALUE translation
+	url(r'^fwp/valueconv/$', fwpviews.proxy_getModels),
+	# Field NAME translation
 	url(r'^fwp/maketable/', fwpviews.proxy_create_conversion),
 	url(r'^fwp/maps/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.proxy_loadmap),
-	url(r'^fwp/conversion/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.component_shapefile_table),
+	#OLDurl(r'^fwp/conversion/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.component_shapefile_table),
+	(r'^fwp/conversion/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.getConversionInfo),
 	url(r'^fwp/upload/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_uploadmap),
 	url(r'^fwp/upload/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.proxy_uploadmap),
 	url(r'^fwp/download/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_uploadwfs),
@@ -60,7 +65,14 @@ urlpatterns = patterns('',
 	url(r'^fwp/$', fwpviews.proxysel),
 	url(r'^edit/update/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', editviews.implementchanges),
 
+
+
+
+
+
+
 	# standalone tool section
+	#TODO: remove, deprecated
 	url(r'^st/(?P<proxy_id>\w*)/$', stviews.uiview),
 	url(r'^st/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', stviews.loadSTMap),
 	url(r'^stsave/(?P<proxy_id>\w*)/$', stviews.saveMap),

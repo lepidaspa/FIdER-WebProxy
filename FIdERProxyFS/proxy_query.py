@@ -284,6 +284,24 @@ def makeConnectString (conndata):
 	return connstring
 
 
+def getPGStructure (proxy_id, meta_id, query_id):
+	"""
+	Finds the columns structure for a specific registered query
+	:param proxy_id:
+	:param meta_id:
+	:param query_id:
+	:return:
+	"""
+
+	# loads the connection info from filesystem, then returns probePostGIS
+
+	conn_fp = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, query_id)
+	connconfig = json.load(conn_fp)
+	conn_fp.close()
+
+	return probePostGIS(connconfig['connection'], connconfig['query']['view'], connconfig['query']['schema'])
+
+
 
 def probePostGIS (conndata, table, schema=""):
 	"""

@@ -8,7 +8,9 @@
 
 {% block headers %}
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_metapage.css">
-    <script language="JavaScript" src="{{ STATIC_URL }}fwp_metapage.js"></script>
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_metaconvert.css">
+
+<script language="JavaScript" src="{{ STATIC_URL }}fwp_metapage.js"></script>
 {% endblock %}
 
 {% block navigation %}
@@ -27,8 +29,6 @@
 
     <div class="button wide" id="proxy_addmap">Nuova mappa: <span id="newmap_shapefile" class="blocky textbutton">FILE</span> / <span class="textbutton" id="newmap_wfs">WFS</span> / <span class="textbutton" id="newmap_st">Interna</span></div>
 
-
-
     <div id="progspinner"><img src="/static/resource/progressbar.gif"></div>
 
     <div id="maplisting"></div>
@@ -39,7 +39,9 @@
 
     <div id="proxymap"></div>
 
-
+<div id="conversion" class="inhiding">
+    {% include "fwp_metaconvert.html" %}
+</div>
 
 
 
@@ -49,6 +51,7 @@
 {% block starterscript %}
     <script>
         pageInit('{{ proxy_id }}', '{{ meta_id }}', {{ manifest }}, '{{ maps }}', '{{ remote }}', '{{ maps_st }}');
+        registerModels ( {{ models }} )
     </script>
 {% endblock %}
 
