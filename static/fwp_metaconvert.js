@@ -122,7 +122,7 @@ function renderConvMask()
         for (var i in fields)
         {
 
-            var sourcefields_selector = $('<select class="sel_sourcefield" id="sel_sourcefield_'+fields[i]+'"></select>');
+            var sourcefields_selector = $('<select class="sel_sourcefield" id="sel_sourcefield_'+modelid+"_"+fields[i]+'"></select>');
             sourcefields_selector.append('<option value="">(non usato)</option>');
             for (var f in tables['mapfields'])
             {
@@ -130,13 +130,13 @@ function renderConvMask()
             }
 
             // extendable widget for adding conversion
-            var valueconv_widget = $('<div class="valueconversion" id="valueconversion_'+fields[i]+'"></div>');
+            var valueconv_widget = $('<div class="valueconversion" id="valueconversion_'+modelid+"_"+fields[i]+'"></div>');
             if ($.isArray(models[modelid]['properties'][fields[i]]))
             {
                 valueconv_widget.append('<div class="valueconv_row"><div class="cell"><input type="button" class="valueconv_addfield" value="+"></div><div class="cell"></div><div class="cell"></div></div>');
             }
 
-            var fieldhtml = $("<tr></tr>");
+            var fieldhtml = $('<tr class="tr_'+modelid+'_'+fields[i]+'"></tr>');
             fieldhtml.append('<td>'+fields[i]+'</td>');
             fieldhtml.append($('<td></td>').append(sourcefields_selector));
             fieldhtml.append($('<td></td>').append(valueconv_widget));
@@ -165,10 +165,57 @@ function renderConvMask()
     // 3. fill the layout with values from the existing model, if applicable
     // (moved after the bindings so we can use the event system)
 
+    console.log("Pre-filling the conversion table");
+    console.log(tables['conversion']);
+
     if (!$.isEmptyObject(tables['conversion']))
     {
-        var modelid = tables['conversion'][modelid];
-        $("#conversion_typeto").change(modelid);
+        var modelid = tables['conversion']['modelid'];
+        $("#conversion_typeto").val(modelid);
+        $("#conversion_typeto").change();
+
+
+        var path_model = $('#conversion_fields_'+modelid);
+
+        var fields = tables['conversion']['fields'];
+        for (var i in fields)
+        {
+            console.log("prefilling field "+fields[i]['to']+" with "+i);
+            var fieldfrom = i;
+            var fieldto = fields[i]['to'];
+
+            var path_field = path_model.find(".tr_"+modelid+"_"+fieldto);
+            console.log(path_field);
+
+            path_field.find("#sel_sourcefield_"+modelid+"_"+fieldto).val(fieldfrom);
+
+            if (!$.isEmptyObject(fields[i]['values']))
+            {
+                var mappings = Object.keys(fields[i]['values']);
+                console.log("Applying values translations");
+                console.log(mappings);
+
+                var valueconvwidget = path_field.find("#valueconversion_"+modelid+"_"+fieldto);
+                var addfieldbutton = valueconvwidget.find("input.valueconv_addfield");
+
+                for (var n = 0; n < mappings.length; n++)
+                {
+                    addfieldbutton.click();
+
+
+                    $(valueconvwidget.find(".valueconv_valuefrom").get(n)).val(mappings[n]);
+                    $(valueconvwidget.find(".valueconv_valueto").get(n)).val(fields[i]['values'][mappings[n]]);
+
+
+                }
+
+
+
+            }
+
+
+
+        }
 
         // TODO: implement, placeholder
 
@@ -179,15 +226,15 @@ function renderConvMask()
 function addValueConversionItem (launcher)
 {
 
-    var caller = $(launcher.srcElement);
+    var caller = $(launcher.target);
 
     var prefix;
 
-    prefix = "valueconversion_";
-    var propname = caller.closest(".valueconversion").attr('id').substring(prefix.length);
-
     prefix = "conversion_fields_";
     var modelid = caller.closest("tbody").attr('id').substring(prefix.length);
+
+    prefix = "valueconversion_"+modelid+"_";
+    var propname = caller.closest(".valueconversion").attr('id').substring(prefix.length);
 
     var choices = models[modelid]['properties'][propname];
 
@@ -267,7 +314,7 @@ function saveConvTable()
 
             var selector = $(this).find(".sel_sourcefield");
 
-            prefix = "sel_sourcefield_";
+            prefix = "sel_sourcefield_"+modelid+"_";
 
             var fieldto = selector.attr("id").substring(prefix.length);
             var fieldfrom = selector.val();
@@ -286,7 +333,7 @@ function saveConvTable()
 
             console.log("Mapping "+fieldfrom+" to "+fieldto);
 
-            var vconvtable = $(this).find("#valueconversion_"+fieldto);
+            var vconvtable = $(this).find("#valueconversion_"+modelid+"_"+fieldto);
 
             console.log(vconvtable);
 

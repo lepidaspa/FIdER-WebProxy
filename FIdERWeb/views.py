@@ -201,6 +201,8 @@ def getConversionInfo (request, **kwargs):
 	:return:
 	"""
 
+	print "Retrieving conversion table..."
+
 	proxy_id = kwargs["proxy_id"]
 	meta_id = kwargs["meta_id"]
 	shape_id = kwargs["shape_id"]
