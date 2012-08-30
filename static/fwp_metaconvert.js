@@ -6,6 +6,8 @@
  * To change this template use File | Settings | File Templates.
  */
 
+var geomfield = 'Geometria';
+
 
 function bindConvControls ()
 {
@@ -23,6 +25,34 @@ function bindConvControls ()
     $("#convtable_close").live('click', closeConvTable);
     $("#convtable_submit").die();
     $("#convtable_submit").live('click', saveConvTable);
+
+    $(".sel_sourcefield").die();
+    if (proxy_type == 'query')
+    {
+        $(".sel_sourcefield").live('change', checkValidConvSet);
+    }
+
+}
+
+function checkValidConvSet()
+{
+
+    var modelid = $("#conversion_typeto").val();
+
+    // checks if the current conversions have a value set for the geometry field
+    if (proxy_type == "query")
+    {
+        var selectorid = "#sel_sourcefield_"+modelid+"_"+geomfield;
+
+        if ($(selectorid).val()=="")
+        {
+            $("#convtable_submit").prop('disabled', true);
+        }
+        else
+        {
+            $("#convtable_submit").prop('disabled', false);
+        }
+    }
 
 
 }
@@ -116,6 +146,10 @@ function renderConvMask()
         $("#conversion_typeto").append('<option value="'+modelid+'">'+models[modelid]['name']+'</option>');
 
         var fields = Object.keys(models[modelid]['properties']);
+        if (proxy_type == 'query')
+        {
+            fields.push(geomfield);
+        }
 
         var model_tb = $('<tbody id="conversion_fields_'+modelid+'"></tbody>');
 
@@ -219,6 +253,13 @@ function renderConvMask()
 
 
     }
+
+    if (proxy_type == "query")
+    {
+        checkValidConvSet();
+    }
+
+
 }
 
 
