@@ -30,11 +30,12 @@ def getReverseConversion (proxy_id, meta_id, map_id):
 	:return:
 	"""
 
-	basetable = proxy_core.getConversionTable (proxy_id, meta_id, map_id)
+	basetable = (proxy_core.getConversionTable (proxy_id, meta_id, map_id))['conversion']['fields']
 	reversetable = {}
+
 	for key in basetable.keys():
 
-		reversetable [basetable[key][1]] = key
+		reversetable[basetable[key]['to']] = key
 
 
 	return reversetable
