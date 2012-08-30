@@ -788,16 +788,32 @@ def adaptGeoJson (jsondata, conversiontable=None):
 
 	newdict = {}
 	landing = jsondata[u'properties']
-	for keyfrom in landing:
-		if keyfrom in conversiontable:
-			# the first element in a conversion table entry is always the type of object, which is NOT needed here since we only want the name of the resulting new key
-			keyto = conversiontable[keyfrom][1]
-			newdict[keyto] = landing[keyfrom]
 
 
+	convlist = conversiontable['fields']
+
+	for itemfrom in convlist:
+		applies = True
+		if landing.has_key(itemfrom):
+			# use original value or conversion
+			cvalue = landing[itemfrom]
+			if convlist[itemfrom]['values'].has_key(cvalue):
+				cvalue = convlist[itemfrom]['values'][cvalue]
+		else:
+			try:
+				# use default value if we have this value in the model but not in the property set
+				cvalue = convlist[itemfrom]['values']['']
+			except:
+				applies = False
+				pass
+		if applies:
+			newdict[convlist[itemfrom]['to']] = cvalue
+
+	forcedlist = conversiontable['forcedfields']
+	for itemto in forcedlist:
+		newdict[itemto] = forcedlist[itemto]['']
 
 	jsondata['properties'] = newdict
-
 
 	return jsondata
 
