@@ -295,7 +295,7 @@ def getPGStructure (proxy_id, meta_id, query_id):
 
 	# loads the connection info from filesystem, then returns probePostGIS
 
-	conn_fp = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, query_id)
+	conn_fp = open(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, query_id))
 	connconfig = json.load(conn_fp)
 	conn_fp.close()
 
@@ -341,14 +341,13 @@ def probePostGIS (conndata, table, schema=""):
 	return fields
 
 
-def registerQuery (proxy_id, meta_id, map_id, data_conn, data_conv):
+def registerQuery (proxy_id, meta_id, map_id, data_conn):
 	"""
 	Creates two json files, one in maps/mirror with the connection data and one in conf/mappings with the conversion table.
 	:param proxy_id:
 	:param meta_id:
 	:param map_id:
 	:param data_conn:
-	:param data_conv:
 	:return:
 	"""
 
@@ -359,10 +358,11 @@ def registerQuery (proxy_id, meta_id, map_id, data_conn, data_conv):
 	json.dump(data_conn, fp_connection)
 	fp_connection.close()
 
+	"""
 	fp_conversion = open(loc_conv_table, 'w+')
 	json.dump(data_conv, fp_conversion)
 	fp_conversion.close()
-
+	"""
 	#TODO: return meaningful value
 
 	return

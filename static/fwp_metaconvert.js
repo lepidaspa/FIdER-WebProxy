@@ -36,9 +36,24 @@ function renderConvMask()
     $("#convtable_fields tbody").remove();
 
     var prefix = "btn_convert_";
-    var i = parseInt(this.id.substr(prefix.length));
-    currentmap = i;
-    var maptype = maptypes[currentmap];
+    var mapidx = this.id.substr(prefix.length);
+
+    var destination;
+
+    if (proxy_type != "query")
+    {
+        var i = parseInt(mapidx);
+        currentmap = i;
+        var maptype = maptypes[currentmap];
+        destination = shapes[i];
+    }
+    else
+    {
+        currentmap = mapidx;
+        destination = mapidx;
+    }
+
+
 
     closeAllMasks();
     $("#serverstate").show();
@@ -48,8 +63,9 @@ function renderConvMask()
     var success;
 
 
+
     $.ajax({
-        url: "/fwp/conversion/"+proxy_id+"/"+meta_id+"/"+shapes[i],
+        url: "/fwp/conversion/"+proxy_id+"/"+meta_id+"/"+destination+"/",
         async: false
     }).done(function (jsondata) {
 
@@ -57,22 +73,6 @@ function renderConvMask()
             console.log("Retrieved conversion data");
             console.log(jsondata);
             tables = jsondata;
-
-            if (jsondata.hasOwnProperty("model") && jsondata.hasOwnProperty("fields"))
-            {
-                // should only be temporary, since in time there should be no tables of the old version, and non-existing tables should not be flagged as errors.
-
-
-            }
-            /*
-             else if (!$.isEmptyObject(jsondata))
-             {
-             // message posted as warning to let the user know why the fields are empty even if they may have been filled before
-             postFeedbackMessage(null, "La tabella di riferimento esistente non è compatibile col formato attuale.", "#map_"+i);
-             }
-             */
-
-
 
         }).fail(function ()
         {
@@ -106,7 +106,7 @@ function renderConvMask()
     for (var modelid in models)
     {
 
-        if (models[modelid]['objtype'] != maptype )
+        if (proxy_type != "query" && models[modelid]['objtype'] != maptype )
         {
             continue;
         }
@@ -217,7 +217,6 @@ function renderConvMask()
 
         }
 
-        // TODO: implement, placeholder
 
     }
 }
@@ -376,7 +375,16 @@ function saveConvTable()
 
     jsondata ['proxy_id']  = proxy_id;
     jsondata ['meta_id'] =  meta_id;
-    jsondata ['shape_id'] = shapes[currentmap];
+
+    if (proxy_type != 'query')
+    {
+        jsondata ['shape_id'] = shapes[currentmap];
+    }
+    else
+    {
+        jsondata ['shape_id'] = currentmap;
+    }
+
 
     $("#progspinner").show();
 

@@ -231,7 +231,9 @@ def getConversionInfo (request, **kwargs):
 				if property not in sourcefields:
 					sourcefields.append(property)
 	else:
-		sourcefields = proxy_query.getPGStruct(proxy_id, meta_id, shape_id)
+		dbstructure = proxy_query.getPGStructure(proxy_id, meta_id, shape_id)
+		for field in dbstructure:
+			sourcefields.append(field[0])
 
 	args = {
 		"mapfields" : sourcefields,
@@ -951,7 +953,6 @@ def registerquery (request, **kwargs):
 	print "JSONDATA: "+str(jsondata)
 
 	conn = jsondata['connection']
-	convert = jsondata['conversion']
 	cid = jsondata['connection']['name']
 
 	response_register = {
@@ -960,7 +961,7 @@ def registerquery (request, **kwargs):
 	}
 
 	try:
-		proxy_query.registerQuery (proxy_id, meta_id, cid, conn, convert)
+		proxy_query.registerQuery (proxy_id, meta_id, cid, conn)
 		response_register['success'] = True
 		response_register['report'] = "Connessione registrata con successo."
 	except Exception as ex:
