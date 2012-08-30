@@ -7,7 +7,7 @@
  */
 
 var geomfield = 'Geometria';
-
+var forcevaluestring = "+";
 
 function bindConvControls ()
 {
@@ -158,6 +158,9 @@ function renderConvMask()
 
             var sourcefields_selector = $('<select class="sel_sourcefield" id="sel_sourcefield_'+modelid+"_"+fields[i]+'"></select>');
             sourcefields_selector.append('<option value="">(non usato)</option>');
+
+
+
             for (var f in tables['mapfields'])
             {
                 sourcefields_selector.append('<option value="'+tables['mapfields'][f]+'">'+tables['mapfields'][f]+'</option>');
@@ -167,6 +170,7 @@ function renderConvMask()
             var valueconv_widget = $('<div class="valueconversion" id="valueconversion_'+modelid+"_"+fields[i]+'"></div>');
             if ($.isArray(models[modelid]['properties'][fields[i]]))
             {
+                sourcefields_selector.prepend('<option value="'+forcevaluestring+'">(aggiungi)</option>');
                 valueconv_widget.append('<div class="valueconv_row"><div class="cell"><input type="button" class="valueconv_addfield" value="+"></div><div class="cell"></div><div class="cell"></div></div>');
             }
 
@@ -254,6 +258,45 @@ function renderConvMask()
 
     }
 
+    var added = tables['conversion']['forcedfields'];
+    var fieldfrom = forcevaluestring;
+    console.log("Forced fields addition");
+    console.log(added);
+    if (!$.isEmptyObject(added))
+    {
+
+        var path_model = $('#conversion_fields_'+modelid);
+
+        for (var i in added)
+        {
+
+            var fieldto = i;
+
+
+            var path_field = path_model.find(".tr_"+modelid+"_"+fieldto);
+            path_field.find("#sel_sourcefield_"+modelid+"_"+fieldto).val(fieldfrom);
+            var valueconvwidget = path_field.find("#valueconversion_"+modelid+"_"+fieldto);
+
+            var mappings = Object.keys(added[i]);
+
+            for (var n in mappings)
+            {
+
+                var valuefrom = mappings[n];
+                var valueto = added[i][mappings[n]];
+
+                var addfieldbutton = valueconvwidget.find("input.valueconv_addfield");
+                addfieldbutton.click();
+
+                $(valueconvwidget.find(".valueconv_valuefrom").get(n)).val(valuefrom);
+                $(valueconvwidget.find(".valueconv_valueto").get(n)).val(valueto);
+
+            }
+        }
+
+    }
+
+
     if (proxy_type == "query")
     {
         checkValidConvSet();
@@ -330,7 +373,7 @@ function saveConvTable()
 
     // saves the current conversion setting
 
-    var conversion = { "modelid": "", "fields": {}};
+    var conversion = { "modelid": "", "fields": {}, "forcedfields": {}};
 
 
     // find the model currently in use
@@ -348,6 +391,7 @@ function saveConvTable()
     console.log(convsection.find("tr"));
 
     var convfields = {};
+    var forcedfields = {};
     convsection.find("tr").each (
         function ()
         {
@@ -366,7 +410,17 @@ function saveConvTable()
             }
             else
             {
-                convfields[fieldfrom] = { "to": fieldto, "values": {} };
+
+                if (fieldfrom != forcevaluestring)
+                {
+                    convfields[fieldfrom] = { "to": fieldto, "values": {} };
+                }
+                else
+                {
+                    forcedfields[fieldto] = {};
+                }
+
+
             }
 
 
@@ -392,7 +446,15 @@ function saveConvTable()
 
                     console.log("Mapping "+fieldfrom+":"+fieldto+" with "+valuefrom+" to "+valueto);
 
-                    convfields[fieldfrom]["values"][valuefrom] = valueto;
+                    if (fieldfrom != forcevaluestring)
+                    {
+                        convfields[fieldfrom]["values"][valuefrom] = valueto;
+                    }
+                    else
+                    {
+                        forcedfields[fieldto][valuefrom] = valueto;
+                    }
+
                 }
 
 
@@ -401,7 +463,9 @@ function saveConvTable()
 
         }
     );
+
     conversion['fields'] = convfields;
+    conversion['forcedfields'] = forcedfields;
 
 
     console.log("Compiled conversion data");
