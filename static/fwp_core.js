@@ -10,7 +10,9 @@
 function bindContextGuideButton()
 {
     $("#guidebutton").live('mouseenter', showGuide);
+    $("#guidebutton").live('click', showGuide);
     $("#contextguide").live('mouseleave', hideGuide);
+    $("#contextguide").live('click', hideGuide);
 }
 
 
