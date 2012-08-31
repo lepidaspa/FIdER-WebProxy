@@ -39,6 +39,8 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
     $("#btn_reload").hide();
     $("#proxy_addmap").hide();
 
+    $("#conversion").hide();
+
     proxy_id = req_proxy_id;
     meta_id = req_meta_id;
     manifest = req_manifest;
