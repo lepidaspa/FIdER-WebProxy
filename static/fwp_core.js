@@ -11,7 +11,6 @@ function bindContextGuideButton()
 {
     $("#guidebutton").live('click', toggleGuide);
     $("#contextguide").live('click', hideGuide);
-    $("#contextguide").live('focusout', hideGuide);
 }
 
 

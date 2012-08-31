@@ -135,6 +135,7 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     $(".ctx_propvalues").live("change mouseup keyup", setModelPropForm);
     $(".btn_extendpropval").live("click", extendPropVal);
 
+    $("#hr_viewfilter").hide();
 
 
 }
@@ -511,6 +512,7 @@ function lockContext()
     $("#view_context input").prop('disabled', true);
 
     $("#progspinner").show();
+    $("#hr_stateview").show();
 
 }
 
@@ -1213,7 +1215,7 @@ function reportFeedback (positive, message)
         $("#statemessage").addClass("badnews");
     }
     $("#statemessage").text(message);
-
+    $("#hr_stateview").show();
 
 }
 
@@ -1245,6 +1247,7 @@ function uiReset()
 {
 
     $("#progspinner").hide();
+    $("#hr_stateview").hide();
 
     // rebuilds the UI elements; does NOT reinit the elements and variables
 
@@ -1262,6 +1265,7 @@ function uiReset()
     }
 
     $("#statemessage").empty();
+    $("#hr_stateview").hide();
 
     checkFileUpload();
     checkSnapLoad();
@@ -1818,6 +1822,7 @@ function freeSelection ()
     //console.log(mapview.getControlsBy('active', true));
 
     $("#statemessage").empty();
+    $("#hr_stateview").hide();
     cfid = null;
 
 
@@ -1836,6 +1841,7 @@ function renderFilterMask()
 
 
     $("#view_filter").empty();
+    $("#hr_viewfilter").hide();
 
     var chooser = $('<select id="sel_filter_propname"><option></option></select>');
     for (var i in Object.getOwnPropertyNames(activemodel.properties))
@@ -1849,6 +1855,8 @@ function renderFilterMask()
     $("#view_filter").append(chooser);
     $("#view_filter").append(txtinput);
     $("#view_filter").append(applyfilter);
+    $("#hr_viewfilter").show();
+
 
 
     console.log("re-setting filter mask options");
