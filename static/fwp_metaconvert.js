@@ -6,7 +6,8 @@
  * To change this template use File | Settings | File Templates.
  */
 
-var geomfield = 'Geometria';
+var geomname = 'Geometria';
+var geomfield = 'geometry';
 var forcevaluestring = "+";
 
 function bindConvControls ()
@@ -156,6 +157,16 @@ function renderConvMask()
         for (var i in fields)
         {
 
+            var fname;
+            if (fields[i] == geomfield)
+            {
+                fname = geomname;
+            }
+            else
+            {
+                fname = fields[i];
+            }
+
             var sourcefields_selector = $('<select class="sel_sourcefield" id="sel_sourcefield_'+modelid+"_"+fields[i]+'"></select>');
             sourcefields_selector.append('<option value="">(non usato)</option>');
 
@@ -175,8 +186,7 @@ function renderConvMask()
             }
 
             var fieldhtml = $('<tr class="tr_'+modelid+'_'+fields[i]+'"></tr>');
-            fieldhtml.append('<td>'+fields[i]+'</td>');
-            fieldhtml.append($('<td></td>').append(sourcefields_selector));
+            fieldhtml.append('<td>'+fname+'</td>').append(sourcefields_selector);
             fieldhtml.append($('<td></td>').append(valueconv_widget));
 
             //console.log(fieldhtml);

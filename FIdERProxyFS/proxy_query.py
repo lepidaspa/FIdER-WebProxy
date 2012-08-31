@@ -30,14 +30,19 @@ def getReverseConversion (proxy_id, meta_id, map_id):
 	:return:
 	"""
 
-	basetable = (proxy_core.getConversionTable (proxy_id, meta_id, map_id))['conversion']['fields']
+	basetable = (proxy_core.getConversionTable (proxy_id, meta_id, map_id))
+	print "Found table as follows"
+	print basetable
+
+
+	basetable = basetable['fields']
 	reversetable = {}
 
 	for key in basetable.keys():
 
 		reversetable[basetable[key]['to']] = key
 
-
+	print "Returning reverse table"
 	return reversetable
 
 
@@ -64,8 +69,6 @@ def makeQueryOnMeta (proxy_id, meta_id, json_raw):
 		raise Exception ("Messaggio non valido: %s" % messagemodel.log)
 
 
-	#TODO: add proxy_id and meta_id? HOW?
-
 	collection = {
 		"type": "FeatureCollection",
 		"features" : [],
@@ -81,18 +84,24 @@ def makeQueryOnMeta (proxy_id, meta_id, json_raw):
 	querypath = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id)
 	querylist = os.listdir(querypath)
 
-	print "trying to query on %s " % querylist
+	print "trying query on %s " % querylist
 
 	featureslist = []
 	for query in querylist:
+		print "Query "+str(query)+"\n"+str(jsonmessage)
 		try:
 			featureslist.extend(makeSelectFromJson(proxy_id, meta_id, query, jsonmessage))
+			print "Query "+str(query)+" successful"
 		except QueryFailedException:
+			print "Query "+str(query)+" failed (querywise)"
+			collection['properties']['errors'].append(query)
+		except Exception as ex:
+			print "Query "+str(query)+" failed (other)\n"+str(ex)
 			collection['properties']['errors'].append(query)
 
 	collection['features'] = featureslist
 
-	#print collection
+	print "Managed to complete request"
 
 	return json.dumps(collection)
 
@@ -128,6 +137,9 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 		columns.append(querybit['column'])
 
 	revtable = getReverseConversion(proxy_id, meta_id, map_id)
+
+	print "Retrieved reverse table for makeSelectFromJson"
+	print revtable
 
 	# if a column is missing, we return an empty list without checking the DB
 	if not all (map(revtable.has_key, columns)):
@@ -261,7 +273,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 
 
-	#print json.dumps(collection)
+	print "Found "+str(len(collection))+" elements"
 
 
 
