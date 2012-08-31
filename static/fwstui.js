@@ -709,6 +709,7 @@ function applyNewSnap (data, textStatus, jqXHR)
 {
 
     renderGeoJSONCollection(data, snaplayer, true);
+    $("#hr_stateview").hide()
     unlockContext();
 
 }
