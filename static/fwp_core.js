@@ -10,7 +10,7 @@
 function bindContextGuideButton()
 {
     $("#guidebutton").live('mouseenter', showGuide);
-    $("#guidebutton").live('mouseleave', hideGuide);
+    $("#contextguide").live('mouseleave', hideGuide);
 }
 
 
@@ -18,6 +18,7 @@ function showGuide()
 {
     console.log("opening context guide");
     $("#contextguide").show();
+    $("#guidebutton").hide();
 
 }
 
@@ -25,5 +26,5 @@ function hideGuide()
 {
     console.log("closing context guide");
     $("#contextguide").hide();
-
+    $("#guidebutton").show();
 }
