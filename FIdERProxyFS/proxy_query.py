@@ -21,6 +21,8 @@ class QueryFailedException (Exception):
 	pass
 
 
+
+
 def getReverseConversion (proxy_id, meta_id, map_id):
 	"""
 	Gets the fields conversion table, but with the values (our model) in place of the keys (external model)
@@ -138,6 +140,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	revtable = getReverseConversion(proxy_id, meta_id, map_id)
 
+
 	print "Retrieved reverse table for makeSelectFromJson"
 	print revtable
 
@@ -229,28 +232,33 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	cur.execute(querystring)
 
-	#cur.scroll(jsonmessage['offset'])
-
 	results = cur.fetchall()
 
 	cur.close()
 	conn.close()
 
-
-	# now we change the fields into a JSON structure
-	#print results
-	#print fields
-
-
-	#print "RESULTS RAW"
-	#print results
-
-	#print "RESULTING GEOJSON"
-
 	collection = []
 
 	#print "FIELDS: %s" % fields
 	#print "RESULTS: %s" % results
+
+	valuestable = proxy_core.getConversionTable(proxy_id, meta_id, map_id)
+
+	print "Received (linear) conv table %s" % valuestable
+
+	forced = valuestable['forcedfields']
+
+	print "Set forced values, moving to value conversion"
+	print "(revtable is now %s)" % revtable
+
+	fieldvalues = {}
+	for fedfield in revtable.keys():
+		clientfield = revtable[fedfield]
+		if len(valuestable['fields'][clientfield]['values']) > 0:
+			print "Adding %s to quick conv" % clientfield
+			fieldvalues[fedfield] = valuestable['fields'][clientfield]['values']
+
+	print "Quick conv table is %s " % fieldvalues
 
 	for row in results:
 
@@ -263,9 +271,16 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 		properties = {}
 
+		for key in forced.keys():
+			properties[key] = forced[key]['']
+
 		for field in fields:
 			if field != 'geometry':
-				properties[field] = row[fields.index(field)]
+				clientvalue = row[fields.index(field)]
+				if field in fieldvalues.keys() and clientvalue in fieldvalues[field]:
+					properties[field] = fieldvalues[field][clientvalue]
+				else:
+					properties[field] = clientvalue
 
 		data['properties'] = properties
 
@@ -275,6 +290,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	print "Found "+str(len(collection))+" elements"
 
+	print str(collection)
 
 
 	return collection
