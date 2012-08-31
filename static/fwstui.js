@@ -138,6 +138,66 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     $("#hr_viewfilter").hide();
 
 
+    initSearchBox();
+
+}
+
+function initSearchBox()
+{
+    $("#btn_geosearch").live('click', geosearch);
+}
+
+function geosearch()
+{
+
+
+
+
+    var jg;
+    var path = '/external/maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
+        + $('#search_geo_address').val()
+
+    console.log("Recentering map by search: "+path);
+
+
+    $.getJSON(path, function(gqdata){
+        console.log(gqdata);
+        if(gqdata.status == "OK"){
+            if (gqdata.results.length > 0){
+
+                console.log("Results found");
+
+                gq = new OpenLayers.Bounds();
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.southwest.lng,
+                    gqdata.results[0].geometry.viewport.southwest.lat).transform(proj_WGS84,
+                    proj_900913));
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.northeast.lng,
+                    gqdata.results[0].geometry.viewport.northeast.lat).transform(proj_WGS84,
+                    proj_900913));
+                mapview.zoomToExtent(gq);
+                closeFeedback();
+
+            }
+            else
+            {
+
+                console.log("No location found");
+                reportFeedback(false, "Impossibile individuare la locazione specificata.");
+                console.log(gqdata.results);
+            }
+        }
+        else
+        {
+            console.log("No location found");
+            reportFeedback(false, "Impossibile individuare la locazione specificata.");
+            console.log(gqdata.results);
+        }
+    });
+
+
+
 }
 
 function extendPropVal(caller)
@@ -1961,7 +2021,17 @@ function autoZoom (olmap)
 
 function zoomToBBox (olmap, bbox)
 {
+    console.log("Moving to");
+    console.log(bbox);
+
     var bounds = new OpenLayers.Bounds(bbox[0], bbox[1], bbox[2], bbox[3]).transform(new OpenLayers.Projection(proj_WGS84), olmap.getProjectionObject());
     olmap.zoomToExtent (bounds, true);
 
+}
+
+function closeFeedback()
+{
+
+    $("#statemessage").empty();
+    $("#hr_stateview").hide();
 }

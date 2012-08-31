@@ -1074,7 +1074,7 @@ def proxy_perform_query (request, **kwargs):
 	:return:
 	"""
 
-
+	print "**************\nRequest data: %s " % request.POST
 
 	proxy_id = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
@@ -1113,3 +1113,23 @@ def sideloadSTMap (request, **kwargs):
 
 
 	return HttpResponse(json.dumps(response_sideload), mimetype="application/json")
+
+
+
+def geosearch(request, path):
+	import httplib2
+	conn = httplib2.Http()
+
+
+	url = path
+
+	if request.method == 'GET':
+			url_ending = '%s?%s' % (url, request.GET.urlencode())
+			url = "http://" + url_ending
+			response, content = conn.request(url, request.method)
+	elif request.method == 'POST':
+			url = "http://" + url
+			data = request.POST.urlencode()
+			response, content = conn.request(url, request.method, data)
+	return HttpResponse(content, status = int(response['status']),
+mimetype = response['content-type'])
