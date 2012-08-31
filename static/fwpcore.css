@@ -159,6 +159,8 @@ a.backtrack
     overflow:           auto;
     padding-left:       8px;
     padding-right:      8px;
+    background-color:   #ffffff;
+    border-left:        1px solid #ff8800;
 
 }
 
@@ -196,8 +198,13 @@ img.legend
 {
     position:           absolute;
     top:                2.5em;
+
     left:               25%;
+    /*
+    changed to have the guide overlay rather than resize the functionality area
     right:              20%;
+    */
+    right:              0;
     bottom:             0;
 
     overflow:           auto;
@@ -288,3 +295,18 @@ tr
 {
     cursor:     pointer;
 }
+
+#guidebutton
+{
+    position:   absolute;
+    top:                0;
+    right:              0;
+    padding:        4px;
+
+    background-color:   #ffffff;
+
+    font-weight: bold;
+    font-size:  smaller;
+
+}
+

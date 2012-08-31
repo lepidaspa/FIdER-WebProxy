@@ -13,6 +13,9 @@
     <script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
     <script language="JavaScript" src="{{ STATIC_URL }}OpenLayers/OpenLayers.js"></script>
 
+    <script language="JavaScript" src="{{ STATIC_URL }}fwp_core.js"></script>
+
+
 
     {% block defaultcss %}
     <link rel="stylesheet" href="{{ STATIC_URL }}fwpcore.css">
@@ -36,15 +39,23 @@
     {% block navigation %}{% endblock %}
 </div>
 
+
 <div id="contextguide">
+
     {% block contextguide %}{% endblock %}
+</div>
+<div id="guidebutton">
+    Guida
 </div>
 
 
 
 
 
-
 </body>
+<script>
+    bindContextGuideButton();
+    hideGuide();
+</script>
 {% block starterscript %}{% endblock %}
 </html>
