@@ -9,10 +9,9 @@
 
 function bindContextGuideButton()
 {
-    $("#guidebutton").live('mouseenter', showGuide);
-    $("#guidebutton").live('click', showGuide);
-    $("#contextguide").live('mouseleave', hideGuide);
+    $("#guidebutton").live('click', toggleGuide);
     $("#contextguide").live('click', hideGuide);
+    $("#contextguide").live('focusout', hideGuide);
 }
 
 
@@ -20,7 +19,7 @@ function showGuide()
 {
     console.log("opening context guide");
     $("#contextguide").show();
-    $("#guidebutton").hide();
+    //$("#guidebutton").hide();
 
 }
 
@@ -28,5 +27,18 @@ function hideGuide()
 {
     console.log("closing context guide");
     $("#contextguide").hide();
-    $("#guidebutton").show();
+    //$("#guidebutton").show();
+}
+
+function toggleGuide()
+{
+    var guideoff = $("#contextguide").is(':hidden');
+    if (guideoff)
+    {
+        showGuide();
+    }
+    else
+    {
+        hideGuide();
+    }
 }

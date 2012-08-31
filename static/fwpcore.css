@@ -136,7 +136,7 @@ a.backtrack
     position:           absolute;
     top:                0;
     left:               8px;
-    right:              8px;
+    right:              0;
     height:             1.5em;
 
     padding-left:       4px;
@@ -152,10 +152,9 @@ a.backtrack
 {
 
     position:           absolute;
-    /*
+
     top:                2.5em;
-    */
-    top:                0;
+
     left:               80%;
     right:              0;
     bottom:             0;
@@ -215,7 +214,7 @@ img.legend
     padding:            0.5em;
 
     border-left:        1px solid #ff8800;
-    border-right:       1px solid #ff8800;
+    /*border-right:       1px solid #ff8800; */
 }
 
 .button_pre
@@ -304,7 +303,8 @@ tr
     position:   absolute;
     top:                0;
     right:              0;
-    padding:        4px;
+    padding-right:       8px;
+    padding-top:            8px;
 
     background-color:   #ffffff;
 
