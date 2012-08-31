@@ -118,3 +118,18 @@ hr
 {
     font-weight:        bold;
 }
+
+#statemessage.goodnews
+{
+    /*
+    color:              #ffffff;
+    background-color: #12b42b;
+    */
+}
+
+#statemessage.badnews
+{
+    color:              #ffffff;
+    background-color:   #e9324c;
+
+}

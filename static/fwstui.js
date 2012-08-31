@@ -797,6 +797,8 @@ function setNewMapModel (model_id, method)
     if (success)
     {
         setSaverHint(true);
+        $("#hr_stateview").hide();
+
     }
 
     unlockContext();
@@ -1110,7 +1112,6 @@ function applyNewMap (newdata, textStatus, jqXHR)
         }
 
     }
-
 
     unlockContext();
 
@@ -1904,14 +1905,15 @@ function renderFilterMask()
     $("#view_filter").empty();
     $("#hr_viewfilter").hide();
 
-    var chooser = $('<select id="sel_filter_propname"><option></option></select>');
+    var chooser = $('<div class="ctx_fieldname"><select id="sel_filter_propname"><option></option></select></div>');
     for (var i in Object.getOwnPropertyNames(activemodel.properties))
     {
         var current = Object.getOwnPropertyNames(activemodel.properties)[i];
-        chooser.append('<option value="'+current+'">'+current+'</option>');
+        chooser.find("#sel_filter_propname").append('<option value="'+current+'">'+current+'</option>');
     }
-    var txtinput = $('<input type=text id="txt_filter_propvalue" list="filter_suggested"><datalist id="filter_suggested"></datalist>');
-    var applyfilter = '<input type="checkbox" id="btn_filter_apply">';
+    var txtinput = $('<div class="ctx_fieldval"><input type=text id="txt_filter_propvalue" list="filter_suggested"><datalist id="filter_suggested"></datalist></div>');
+    var applyfilter = '<div class="ctx_fieldact"><input type="checkbox" id="btn_filter_apply"></div>';
+
 
     $("#view_filter").append(chooser);
     $("#view_filter").append(txtinput);
