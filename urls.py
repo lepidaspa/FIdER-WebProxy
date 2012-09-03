@@ -4,8 +4,7 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib import admin
 
 from FIdERWeb import views as fwpviews
-from FiderMapEdit import views as editviews
-from FIdERStandalone import views as stviews
+
 
 from FIdERWebST import views as fwstviews
 
@@ -56,26 +55,17 @@ urlpatterns = patterns('',
 	url(r'^fwp/newqueryconn/', fwpviews.probePostGIS),
 	url(r'^fwp/reviewqueryconn/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<map_id>\w*)/$$', fwpviews.reviewPostGIS),
 	url(r'^fwp/registerquery/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.registerquery),
-	url(r'^edit/mapslist/', editviews.getMapsList),
+	#url(r'^edit/mapslist/', editviews.getMapsList),
 
 	#urls for active operations, called by the clients
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
-	url(r'^edit/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', editviews.mapeditor),
 	url(r'^fwp/$', fwpviews.proxysel),
-	url(r'^edit/update/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', editviews.implementchanges),
 
 
 
 
 
-
-
-	# standalone tool section
-	#TODO: remove, deprecated
-	url(r'^st/(?P<proxy_id>\w*)/$', stviews.uiview),
-	url(r'^st/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', stviews.loadSTMap),
-	url(r'^stsave/(?P<proxy_id>\w*)/$', stviews.saveMap),
 
 	# standalone tool v2
 
