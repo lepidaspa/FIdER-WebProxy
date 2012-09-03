@@ -54,12 +54,15 @@
 {% block contextguide %}
 
     <div class="help">
-La mappa principale permette di visualizzare l'area di interesse geografico dei vari proxy. I proxy non visibili nella schermata attuale vengono indicati in grigio. È possibile cliccare sul nome di un proxy per passare alla pagina relativa.
+La mappa principale permette di visualizzare l'area di interesse geografico dei vari proxy. I proxy non visibili nell'area visibile sulla mappa vengono indicati in grigio. È possibile cliccare sul nome di un proxy per passare alla pagina relativa.
     <br><br>
-  Per creare un nuovo proxy è necessario inserire un nome, una data d'inizio validità e un metadato. Nel caso dei proxy query è necessario attivare anche almeno una delle tre modalità di query elencate.<br><br>Ogni metadato deve avere un nome unico (rispetto agli altri metadati dello stesso proxy). I nomi di proxy e metadati possono comprendere fino a 20 caratteri (sono ammesse le lettere dalla A alla Z maiuscole e minuscole, numeri e il simbolo underscore _ ).
+  Per creare un nuovo proxy è necessario inserire un nome, una data d'inizio validità e un metadato. Nel caso dei proxy query è necessario attivare anche almeno una delle tre modalità di query elencate.<br><br>Ogni metadato deve avere un nome unico (rispetto agli altri metadati dello stesso proxy). I nomi di proxy e metadati possono comprendere fino a 20 caratteri (sono ammesse le lettere dalla A alla Z maiuscole e minuscole, numeri e il simbolo underscore _ ).<br><br>
+        I proxy possono funzionare in modalità Lettura, Scrittura, Query e Standalone. I dati presenti nei proxy Standalone non entrano a far parte del processo di federazione.
     <br><br>
   Le  aree di interesse vengono rilevate automaticamente dall'inquadratura della minimappa.<br>
     Date e aree di interesse non specificate nella descrizione dei metadati verranno allineate a quelle del proxy. Se questi intervalli andranno oltre quelli specificati per il proxy nel suo complesso, verranno ridotti automaticamente per rientrare in quelli del proxy.<br>
-    Gli intervalli di tempo sono inclusivi della data di inizio ed esclusivi di quella di fine.
+    Gli intervalli di tempo sono inclusivi della data di inizio ed esclusivi di quella di fine.<br><br>
+
+        La struttura e le modalità di funzionamento di un proxy non possono essere modificati dopo la creazione.
     </div>
 {%  endblock %}
