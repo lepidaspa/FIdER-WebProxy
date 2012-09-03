@@ -379,6 +379,32 @@ def proxy_create_conversion (request):
 
 	return HttpResponse(json.dumps(response_table_update), mimetype="application/json")
 
+def proxy_maps_list (request, **kwargs):
+	"""
+	Returns a json object with the list of the maps available for the requested soft proxy
+	:param request:
+	:param kwargs: proxy_id, meta_id, shape_id
+	:return: dictionary with keys standalone for standalone area maps and meta for mirror area maps by meta name
+	"""
+
+	proxy_id = kwargs['proxy_id']
+
+	maplist = {'standalone': [], 'meta': {}}
+
+	metapath = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror)
+	metalist = os.listdir(metapath)
+
+	for cmeta in metalist:
+		maplist['meta'][cmeta] = os.listdir(os.path.join(metapath, cmeta))
+
+	maplist['standalone'] = os.listdir(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone))
+
+	return HttpResponse(json.dumps(maplist), mimetype="application/json")
+
+
+
+
+
 def map_refresh_remote (request, **kwargs):
 	"""
 	Updates a SPECIFIC WFS resource on the proxy. Starts from a GET request
