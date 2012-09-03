@@ -32,8 +32,14 @@ function pageInit(req_id, req_manifest)
         manifest['operations']['query']['inventory'] == 'none')
     {
         console.log("Creating access for standalone");
-        $('<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'">Gestione mappe</a></div>').insertAfter("#minimap");
+        $('<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'">Gestione mappe</a></div><div class="button wide" id="maps_dload"><span id="maps_dload_toggle">Scaricamento mappe</span></div>').insertAfter("#minimap");
+
+        renderMapDownloader();
+
+
     }
+
+
 
     //alert(JSON.stringify(manifest['metadata']));
 
@@ -63,11 +69,84 @@ function pageInit(req_id, req_manifest)
     buildProxyMap();
     renderMetaData();
 
-
-
+    $("#maps_dload_toggle").live('click', toggleDloadMask);
 
 
 }
+
+function toggleDloadMask()
+{
+    $("#maps_dload_sel").toggle();
+}
+
+function renderMapDownloader()
+{
+    var dloadmask = $('<div id="downloadermask"></div>');
+
+    //TODO: add ajax call and use result to fill the mapslist, THEN make the button visible
+
+    var urlstring = "/fwp/maplist/"+proxy_id;
+
+    $.ajax ({
+            url:    urlstring,
+            async:  true,
+            success:    buildMapList,
+            error:  function () {
+                postFeedbackMessage(false, "Impossibile recuperare la lista delle mappe scaricabili.", "#proxy_standalone");
+                hideDownloadOption();
+            }
+        });
+
+}
+
+function hideDownloadOption()
+{
+    $("#maps_dload").hide();
+}
+
+
+// pasted and adapted from fwstui.js
+function buildMapList (jsondata)
+{
+    // returns the optgroups of maps currently available as jQuery object
+
+    var maps_st = jsondata['standalone'];
+    var maps_fider = jsondata['meta'];
+
+    var container = $("<div id='maps_dload_sel'><select id='sel_maps_dload'><option></option></select></div>");
+
+    var ctx_mapsel = $('<optgroup label="Archivio"></optgroup>');
+    for (var m in maps_st)
+    {
+        ctx_mapsel.append('<option value=".st/'+maps_st[m]+'">'+maps_st[m]+'</option>');
+    }
+
+    container.find("#sel_maps_dload").append(ctx_mapsel);
+
+    for (var meta_id in maps_fider)
+    {
+
+        console.log("Adding maps for meta "+meta_id);
+        console.log(maps_fider[meta_id]);
+
+        var ctx_metamapsel = $('<optgroup label="'+meta_id+'"></optgroup>');
+        for (m in maps_fider[meta_id])
+        {
+
+            var map_id = maps_fider[meta_id][m];
+            ctx_metamapsel.append('<option value="'+meta_id+'/'+map_id+'">'+map_id+'</option>');
+        }
+
+        container.find("#sel_maps_dload").append(ctx_metamapsel);
+    }
+
+
+
+    $("#maps_dload").append(container);
+    $("#maps_dload_sel").hide();
+
+}
+
 
 function renderMetaData()
 {
