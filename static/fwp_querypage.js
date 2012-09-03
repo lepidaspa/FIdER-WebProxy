@@ -166,13 +166,13 @@ function renderNewConnMask()
     closeAllMasks();
 
     var connmask = '<div class="createquerystring formmask" id="editconn_new">' +
-            '<div class="maskfield"><div class="masksubfield">Name</div><div class="masksubfield"><input type="text" id="conn_name_new" name="conn_name_new"></div></div>' +
+            '<div class="maskfield"><div class="masksubfield">Nome</div><div class="masksubfield"><input type="text" id="conn_name_new" name="conn_name_new"></div></div>' +
             '<div class="maskfield"><div class="masksubfield">Host</div><div class="masksubfield"><input type="text" id="conn_host_new" name="conn_host_new"></div></div>' +
-            '<div class="maskfield"><div class="masksubfield">Port</div><div class="masksubfield"><input type="text" id="conn_port_new" name="conn_port_new"></div></div>' +
+            '<div class="maskfield"><div class="masksubfield">Porta</div><div class="masksubfield"><input type="text" id="conn_port_new" name="conn_port_new"></div></div>' +
             '<div class="maskfield"><div class="masksubfield">Database</div><div class="masksubfield"><input type="text" id="conn_db_new" name="conn_db_new"></div></div>' +
             '<div class="maskfield"><div class="masksubfield">Schema</div><div class="masksubfield"><input type="text" id="conn_schema_new" name="conn_schema_new"></div></div>' +
-            '<div class="maskfield"><div class="masksubfield">View</div><div class="masksubfield"><input type="text" id="conn_view_new" name="conn_view_new"></div></div>' +
-            '<div class="maskfield"><div class="masksubfield">User</div><div class="masksubfield"><input type="text" id="conn_user_new" name="conn_user_new"></div></div>' +
+            '<div class="maskfield"><div class="masksubfield">Vista</div><div class="masksubfield"><input type="text" id="conn_view_new" name="conn_view_new"></div></div>' +
+            '<div class="maskfield"><div class="masksubfield">Utente</div><div class="masksubfield"><input type="text" id="conn_user_new" name="conn_user_new"></div></div>' +
             '<div class="maskfield"><div class="masksubfield">Password</div><div class="masksubfield"><input type="text" id="conn_pass_new" name="conn_pass_new"></div></div>' +
             '' +
             '<input type="button" id="connect_new" value="Conferma">'+
