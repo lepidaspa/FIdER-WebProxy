@@ -137,9 +137,16 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
 
     $("#hr_viewfilter").hide();
 
+    $("#txt_filter_propvalue").live("change mouseup keyup", unsetFilterCheckbox);
 
     initSearchBox();
 
+}
+
+function unsetFilterCheckbox ()
+{
+    $("#btn_filter_apply").prop("checked", false);
+    setExtenders();
 }
 
 function initSearchBox()
@@ -260,6 +267,7 @@ function setExtenders()
     {
         //extend to ALL objects on map
         $(".btn_extendpropval").val('>>Tutti');
+        $(".btn_extendpropval").prop('disabled', false);
 
     }
 
@@ -1905,7 +1913,7 @@ function renderFilterMask()
     $("#view_filter").empty();
     $("#hr_viewfilter").hide();
 
-    var chooser = $('<div class="ctx_fieldname"><select id="sel_filter_propname"><option></option></select></div>');
+    var chooser = $('<div class="ctx_fieldname"><select id="sel_filter_propname"><option>Filtro</option></select></div>');
     for (var i in Object.getOwnPropertyNames(activemodel.properties))
     {
         var current = Object.getOwnPropertyNames(activemodel.properties)[i];
