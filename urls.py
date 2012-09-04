@@ -53,14 +53,16 @@ urlpatterns = patterns('',
 	url(r'^fwp/proxylist/', fwpviews.proxy_get_all),
 	url(r'^fwp/create/', fwpviews.proxy_create_new),
 	url(r'^fwp/newqueryconn/', fwpviews.probePostGIS),
-	url(r'^fwp/reviewqueryconn/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<map_id>\w*)/$$', fwpviews.reviewPostGIS),
+	url(r'^fwp/reviewqueryconn/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<map_id>\w*)/$', fwpviews.reviewPostGIS),
 	url(r'^fwp/registerquery/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.registerquery),
 	url(r'^fwp/maplist/(?P<proxy_id>\w*)/$', fwpviews.proxy_maps_list),
 
 	#urls for active operations, called by the clients
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
+	url(r'^fwp/get/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getSingleMap),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
 	url(r'^fwp/$', fwpviews.proxysel),
+
 
 
 

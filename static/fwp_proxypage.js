@@ -69,10 +69,25 @@ function pageInit(req_id, req_manifest)
     buildProxyMap();
     renderMetaData();
 
-    $("#maps_dload_toggle").live('click', toggleDloadMask);
-
+    $("#maps_dload_toggle ").live('click', toggleDloadMask);
+    $("#sel_maps_dload").live('change', tryDownloadMap);
 
 }
+
+function tryDownloadMap()
+{
+    var mapid = $("#sel_maps_dload").val();
+    if (typeof(mapid) == 'undefined' || !mapid || mapid == "" )
+    {
+        return;
+    }
+
+    var urlstring = "/fwp/get/"+proxy_id+"/"+mapid;
+    console.log("Downloading: "+urlstring);
+
+    window.open(urlstring);
+}
+
 
 function toggleDloadMask()
 {

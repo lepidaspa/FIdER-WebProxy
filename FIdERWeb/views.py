@@ -323,6 +323,31 @@ def component_shapefile_table (request, **kwargs):
 	return HttpResponse(json.dumps(args), mimetype="application/json")
 
 
+def proxy_getSingleMap (request, **kwargs):
+	"""
+	Returns a single map in geojson format
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	if meta_id == '.st':
+		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
+	else:
+		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id, map_id+".geojson")
+
+	fp = open(path)
+
+	response = HttpResponse(fp, mimetype="application/json")
+	response['Content-Disposition'] = 'attachment; filename=' + map_id+".geojson"
+
+	return response
+
+
 
 @csrf_exempt
 def proxy_create_conversion (request):
