@@ -6,15 +6,10 @@
 import json
 import urllib
 import urllib2
-import sys
-
-
 
 from FIdERProxyFS import proxy_config_core as conf
-from FIdERProxyFS import proxy_core
 from MarconiLabsTools import ArDiVa
 from Common.errors import *
-from Common import TemplatesModels
 import MarconiLabsTools
 
 __author__ = 'Antonio Vaccarino'
@@ -35,10 +30,12 @@ def createMessageFromTemplate (template, **customfields):
 
 	filledok, requestmsg = messagemodel.fillSafely(customfields)
 
+	print "Message creation result: %s" % filledok
+
 	if filledok is True:
 		return requestmsg
 	else:
-		print messagemodel.log
+		print "Failed creation details: %s" % messagemodel.log
 		raise RuntimeProxyException ("Failed to create valid %s %s message for proxy %s" % (template['message_type'], template['message_format'], customfields['token']))
 
 
@@ -98,30 +95,10 @@ def sendMessageToServer (jsonmessage, url, method, successreturns=None, failretu
 
 
 
-def sendProxyManifestRaw (jsonmanifest):
-	"""
-	Sends the manifest of a given soft proxy to the main server and returns the response
-	:param jsonmanifest:
-	:return:
-	"""
-
-	print "Expected replies for manifest send:\n%s\n%s" % (TemplatesModels.model_response_manifest_success, TemplatesModels.model_response_manifest_fail)
 
 
 
-	try:
-		return sendMessageToServer(jsonmanifest, conf.URL_WRITEMANIFEST, 'POST',  TemplatesModels.model_response_manifest_success, TemplatesModels.model_response_manifest_fail)
-	except Exception as ex:
-		return False, "Error while sending manifest to %s: %s" % (conf.URL_WRITEMANIFEST, str(ex))
 
-
-def sendProxyManifestFromFile (proxy_id):
-	"""
-	Sends the manifest of a given soft proxy to the main server and returns the response
-	:param proxy_id:
-	:return:
-	"""
-	return sendProxyManifestRaw(proxy_core.getManifest(proxy_id))
 
 
 def getWelcomeFromServer ():
@@ -166,3 +143,21 @@ def getConversionsFromServer ():
 		return False, "Error when requesting tables from %s: %s" % (conf.URL_DISCOVERY, errormess)
 
 	return True, conversiontable
+
+# gets the map models from the main server
+def getModelsFromServer():
+
+	try:
+		jsonresponse = urllib2.urlopen(conf.URL_MODELS)
+		models = json.load(jsonresponse)
+
+	except Exception as ex:
+		if isinstance(ex, urllib2.HTTPError):
+			errormess = ex.code
+		elif isinstance(ex, urllib2.URLError):
+			errormess = ex.reason
+		else:
+			errormess = ex.message
+		return False, "Error when requesting tables from %s: %s" % (conf.URL_MODELS, errormess)
+
+	return True, models

@@ -4,7 +4,6 @@
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
 import json
 import os
-from psycopg2.tests.testconfig import dbname
 import Common.TemplatesModels
 from FIdERProxyFS import proxy_core
 from MarconiLabsTools import ArDiVa
@@ -22,6 +21,8 @@ class QueryFailedException (Exception):
 	pass
 
 
+
+
 def getReverseConversion (proxy_id, meta_id, map_id):
 	"""
 	Gets the fields conversion table, but with the values (our model) in place of the keys (external model)
@@ -31,13 +32,19 @@ def getReverseConversion (proxy_id, meta_id, map_id):
 	:return:
 	"""
 
-	basetable = proxy_core.getConversionTable (proxy_id, meta_id, map_id)
+	basetable = (proxy_core.getConversionTable (proxy_id, meta_id, map_id))
+	print "Found table as follows"
+	print basetable
+
+
+	basetable = basetable['fields']
 	reversetable = {}
+
 	for key in basetable.keys():
 
-		reversetable [basetable[key][1]] = key
+		reversetable[basetable[key]['to']] = key
 
-
+	print "Returning reverse table"
 	return reversetable
 
 
@@ -64,8 +71,6 @@ def makeQueryOnMeta (proxy_id, meta_id, json_raw):
 		raise Exception ("Messaggio non valido: %s" % messagemodel.log)
 
 
-	#TODO: add proxy_id and meta_id? HOW?
-
 	collection = {
 		"type": "FeatureCollection",
 		"features" : [],
@@ -81,18 +86,24 @@ def makeQueryOnMeta (proxy_id, meta_id, json_raw):
 	querypath = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id)
 	querylist = os.listdir(querypath)
 
-	print "trying to query on %s " % querylist
+	print "trying query on %s " % querylist
 
 	featureslist = []
 	for query in querylist:
+		print "Query "+str(query)+"\n"+str(jsonmessage)
 		try:
 			featureslist.extend(makeSelectFromJson(proxy_id, meta_id, query, jsonmessage))
+			print "Query "+str(query)+" successful"
 		except QueryFailedException:
+			print "Query "+str(query)+" failed (querywise)"
+			collection['properties']['errors'].append(query)
+		except Exception as ex:
+			print "Query "+str(query)+" failed (other)\n"+str(ex)
 			collection['properties']['errors'].append(query)
 
 	collection['features'] = featureslist
 
-	#print collection
+	print "Managed to complete request"
 
 	return json.dumps(collection)
 
@@ -128,6 +139,10 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 		columns.append(querybit['column'])
 
 	revtable = getReverseConversion(proxy_id, meta_id, map_id)
+
+
+	print "Retrieved reverse table for makeSelectFromJson"
+	print revtable
 
 	# if a column is missing, we return an empty list without checking the DB
 	if not all (map(revtable.has_key, columns)):
@@ -217,28 +232,33 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	cur.execute(querystring)
 
-	#cur.scroll(jsonmessage['offset'])
-
 	results = cur.fetchall()
 
 	cur.close()
 	conn.close()
 
-
-	# now we change the fields into a JSON structure
-	#print results
-	#print fields
-
-
-	#print "RESULTS RAW"
-	#print results
-
-	#print "RESULTING GEOJSON"
-
 	collection = []
 
 	#print "FIELDS: %s" % fields
 	#print "RESULTS: %s" % results
+
+	valuestable = proxy_core.getConversionTable(proxy_id, meta_id, map_id)
+
+	print "Received (linear) conv table %s" % valuestable
+
+	forced = valuestable['forcedfields']
+
+	print "Set forced values, moving to value conversion"
+	print "(revtable is now %s)" % revtable
+
+	fieldvalues = {}
+	for fedfield in revtable.keys():
+		clientfield = revtable[fedfield]
+		if len(valuestable['fields'][clientfield]['values']) > 0:
+			print "Adding %s to quick conv" % clientfield
+			fieldvalues[fedfield] = valuestable['fields'][clientfield]['values']
+
+	print "Quick conv table is %s " % fieldvalues
 
 	for row in results:
 
@@ -251,9 +271,16 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 		properties = {}
 
+		for key in forced.keys():
+			properties[key] = forced[key]['']
+
 		for field in fields:
 			if field != 'geometry':
-				properties[field] = row[fields.index(field)]
+				clientvalue = row[fields.index(field)]
+				if field in fieldvalues.keys() and clientvalue in fieldvalues[field]:
+					properties[field] = fieldvalues[field][clientvalue]
+				else:
+					properties[field] = clientvalue
 
 		data['properties'] = properties
 
@@ -261,8 +288,9 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 
 
-	#print json.dumps(collection)
+	print "Found "+str(len(collection))+" elements"
 
+	print str(collection)
 
 
 	return collection
@@ -283,6 +311,24 @@ def makeConnectString (conndata):
 	#params =  'port=5432 password=lepidalabs user=labs host=195.62.186.196 dbname=geodb '
 
 	return connstring
+
+
+def getPGStructure (proxy_id, meta_id, query_id):
+	"""
+	Finds the columns structure for a specific registered query
+	:param proxy_id:
+	:param meta_id:
+	:param query_id:
+	:return:
+	"""
+
+	# loads the connection info from filesystem, then returns probePostGIS
+
+	conn_fp = open(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, query_id))
+	connconfig = json.load(conn_fp)
+	conn_fp.close()
+
+	return probePostGIS(connconfig['connection'], connconfig['query']['view'], connconfig['query']['schema'])
 
 
 
@@ -324,14 +370,13 @@ def probePostGIS (conndata, table, schema=""):
 	return fields
 
 
-def registerQuery (proxy_id, meta_id, map_id, data_conn, data_conv):
+def registerQuery (proxy_id, meta_id, map_id, data_conn):
 	"""
 	Creates two json files, one in maps/mirror with the connection data and one in conf/mappings with the conversion table.
 	:param proxy_id:
 	:param meta_id:
 	:param map_id:
 	:param data_conn:
-	:param data_conv:
 	:return:
 	"""
 
@@ -342,10 +387,11 @@ def registerQuery (proxy_id, meta_id, map_id, data_conn, data_conv):
 	json.dump(data_conn, fp_connection)
 	fp_connection.close()
 
+	"""
 	fp_conversion = open(loc_conv_table, 'w+')
 	json.dump(data_conv, fp_conversion)
 	fp_conversion.close()
-
+	"""
 	#TODO: return meaningful value
 
 	return

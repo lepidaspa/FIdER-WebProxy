@@ -17,6 +17,30 @@ These functions can call ProxyFS and proxy_core to actually perform the operatio
 
 import proxy_config_core as proxyconf
 
+def learnProxyType (manifest):
+	"""
+	Reads the manifest dict and returns the type of proxy as Read, Write, Query
+	NOTE: duplicate from FiderWeb to avoid risk of cross-imports
+	:param manifest:
+	:return:
+	"""
+
+	if manifest['operations']['read'] != "none":
+		return "read"
+
+	elif manifest['operations']['write'] != "none":
+		return "write"
+
+	elif ( manifest['operations']['query']['geographic'] != "none" or
+		   manifest['operations']['query']['time'] != "none" or
+		   manifest['operations']['query']['bi'] != "none" or
+		   manifest['operations']['query']['inventory'] != "none" ):
+
+		return "query"
+	else:
+		# local is a standalone-only proxy, non-federated
+		return "local"
+
 def getProxyType (proxy_id):
 	"""
 	Opens the manifest and returns the type of manifest
@@ -26,16 +50,7 @@ def getProxyType (proxy_id):
 
 	manifest = proxy_core.getManifest(proxy_id)
 
-	if manifest['operations']['read'] != "none":
-		return "read"
-
-	elif manifest['operations']['write'] != "none":
-		return "write"
-
-	else:
-
-		# proxy cannot be None, so by exclusion it must be query
-		return "query"
+	return learnProxyType(manifest)
 
 
 def deleteMap (proxy_id, meta_id, shape_id):

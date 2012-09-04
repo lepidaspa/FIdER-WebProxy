@@ -3,6 +3,9 @@
 
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+from exceptions import Exception
+import Common.TemplatesModels
+import FIdERProxyFS.proxy_config_core as conf
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -26,11 +29,15 @@ from Common import TemplatesModels
 from FIdERProxyFS import proxy_lock
 import proxy_config_core as conf
 from FIdERFLL import validate_fields
+from Common.Components import createMessageFromTemplate, sendMessageToServer
 
 
 def getManifest (proxy_id):
 
-	return json.load(open(os.path.join(conf.baseproxypath,proxy_id,conf.path_manifest)))
+	return json.load(open(os.path.join(conf.basemanifestpath, proxy_id+".manifest")))
+
+
+	#return json.load(open(os.path.join(conf.baseproxypath,proxy_id,conf.path_manifest)))
 
 def makeSoftProxy (proxy_id, manifest):
 	"""
@@ -55,10 +62,13 @@ def makeSoftProxy (proxy_id, manifest):
 	os.makedirs(os.path.join(basepath, "locks"))
 
 
+
 	#creating directories for data
 	os.makedirs(os.path.join(basepath, "next"))
 	os.makedirs(os.path.join(basepath, conf.path_geojson))
 	os.makedirs(os.path.join(basepath, conf.path_mirror))
+	os.makedirs(os.path.join(basepath, conf.path_standalone))
+
 
 	#TODO: remove after cleaning up any code that leads to this file
 	fp_manifest = open(os.path.join(basepath,conf.path_manifest),'w+')
@@ -223,6 +233,7 @@ def handleReadFull (proxy_id):
 	for meta_id in buildReadList(proxy_id):
 		meta_dict [meta_id] = locker.performLocked(assembleMetaJson, proxy_id, meta_id)
 
+	print "Read performed"
 
 	template = TemplatesModels.model_response_read_full
 	customfields = {
@@ -235,6 +246,8 @@ def handleReadFull (proxy_id):
 
 	responsemsg = createMessageFromTemplate(template, **customfields)
 
+
+	print "RESULT: %s features " % len(responsemsg)
 	#NOTE that the read happens as a HTTPResponse, so we only return the json for Django to send back, rather than handling the HTTPConnection ourselves
 
 	return json.dumps(responsemsg)
@@ -292,6 +305,7 @@ def verifyShapeArchiveStructure (filedata, filename=None):
 	try:
 		zipfp = zipfile.ZipFile(filedata)
 	except Exception as ex:
+		print "Exception in zip loading: %s" % ex
 		return False
 
 	ext_mandatory_shape = {
@@ -306,7 +320,12 @@ def verifyShapeArchiveStructure (filedata, filename=None):
 		"mid": False
 	}
 
+	ext_mandatory_json = {
+		"geojson": False
+	}
+
 	for candidatepath in zipfp.namelist():
+		#print "Checking candidate path %s" % candidatepath
 		#checking that no file unpacks to a different directory
 		if "/" in candidatepath:
 			return False
@@ -316,13 +335,17 @@ def verifyShapeArchiveStructure (filedata, filename=None):
 				ext_mandatory_shape[cext] = True
 			if ext_mandatory_minfo.has_key(cext):
 				ext_mandatory_minfo[cext] = True
+			if ext_mandatory_json.has_key(cext):
+				ext_mandatory_json[cext] = True
 
 		if filename is not None:
 			if candidatepath.split(".")[0] != filename:
+				print "Archive/data filename mismatch"
 				return False
 
-	if not (all(ext_mandatory_shape.values() or all(ext_mandatory_minfo.values()))):
+	if not (all(ext_mandatory_shape.values()) or all(ext_mandatory_minfo.values()) or all(ext_mandatory_json.values())):
 		return False
+
 
 
 	return True
@@ -393,7 +416,7 @@ def handleUpsert (proxy_id, meta_id, shape_id):
 				ext_mandatory_json[cext] = True
 			#removed strict check on accepted fie types
 
-	print ext_mandatory_shape, ext_mandatory_minfo
+	print ext_mandatory_shape, ext_mandatory_minfo, ext_mandatory_json
 	if not (all(ext_mandatory_shape.values()) or all(ext_mandatory_minfo.values()) or all(ext_mandatory_json.values()) ):
 		raise InvalidShapeArchiveException ("Mandatory file missing in shape archive %s (should contain .shp, .shx, .dbf and .prj for shape file OR .mif and .mid for mapinfo OR .geojson for geojson)" % shape_id)
 
@@ -450,6 +473,8 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	:return: geojson feature data
 	"""
 
+	#gdal.SetConfigOption('GML_INVERT_AXIS_ORDER_IF_LAT_LONG', 'NO')
+
 	#TODO: debug only, remove if not needed (error 1 on empty geoms)
 	ogr.UseExceptions()
 
@@ -495,7 +520,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 		print "Getting datasource from shape path %s" % path_shape
 		#print "Datasource raw data: %s " % open(path_shape, "r").read()
-		datasource = ogr.Open(path_shape)
+		datasource = ogr.Open(str(path_shape))
 		print "EXTRACTING DATASOURCE SRS DATA:"
 		print "****>"+str(datasource)
 	except Exception as ex:
@@ -539,6 +564,9 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		print "Layer %s has %s features with spatial ref %s" % (layer, layer.GetFeatureCount(), sSRS)
 
 
+
+
+
 		feature = layer.GetNextFeature()
 		while feature is not None:
 		#for f in range (0, layer.GetFeatureCount()):
@@ -567,7 +595,9 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 
 			# fixed to output actual dict
 
+			#print "DEBUG: exporting %s to JSON" % feature
 			jsondata = json.loads(feature.ExportToJson())
+			#print "DEBUG: exported %s" % jsondata
 
 			#print "feature.exportToJson outputs "+str(type(jsondata))
 
@@ -636,9 +666,34 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	return collection
 
 
+def learnProxyType (manifest):
+	"""
+	Reads the manifest dict and returns the type of proxy as Read, Write, Query
+	NOTE: duplicate from FiderWeb to avoid risk of cross-imports
+	:param manifest:
+	:return:
+	"""
+
+	if manifest['operations']['read'] != "none":
+		return "read"
+
+	elif manifest['operations']['write'] != "none":
+		return "write"
+
+	elif ( manifest['operations']['query']['geographic'] != "none" or
+		   manifest['operations']['query']['time'] != "none" or
+		   manifest['operations']['query']['bi'] != "none" or
+		   manifest['operations']['query']['inventory'] != "none" ):
+
+		return "query"
+	else:
+		# local is a standalone-only proxy, non-federated
+		return "local"
+
+
 def getAllEditables ():
 	"""
-	Returns a dict with proxy/meta/shape of only editable maps (queries excluded) in the hardproxy
+	Returns a dict with proxy/meta/shape of only editable maps (queries excluded) in the hardproxy. Note that element with key ".name" in a proxy is not a meta but the name of the proxy (. char cannot be used in meta names)
 	:return:
 	"""
 
@@ -646,13 +701,25 @@ def getAllEditables ():
 
 	proxymanifests = os.listdir(conf.basemanifestpath)
 	for manfile in proxymanifests:
-		manifestdata = json.load(open(os.path.join(conf.baseproxypath, manfile)))
+		manifestdata = json.load(open(os.path.join(conf.basemanifestpath, manfile)))
 
-		if manifestdata['operations']['read'] != "none" or manifestdata['operations']['write'] != "none":
-			maplist[manfile.split(".")[0]] = {}
+		proxy_id = manfile.split(".")[0]
 
-	for proxy_id in maplist.keys():
+		if learnProxyType(manifestdata) != 'query':
 
+			maplist[proxy_id] = {}
+			maplist[proxy_id]['.name'] = manifestdata['name']
+
+			for metadata in manifestdata['metadata']:
+				meta_id = metadata['name']
+				maplist[proxy_id][meta_id] = []
+
+				mapfilenames = os.listdir(os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id))
+				for mapname in mapfilenames:
+					maplist[proxy_id][meta_id].append(mapname)
+
+
+	return maplist
 
 
 
@@ -699,6 +766,7 @@ def getConversionTable (proxy_id, meta_id, shape_id):
 		try:
 			return json.load(open(tablepath))
 		except Exception as ex:
+			print "Error while accessing conversion table for %s.%s.%s: %s" % (proxy_id, meta_id, shape_id, ex.message)
 			raise ConversionTableAccessException ("Error while accessing conversion table for %s.%s.%s: %s" % (proxy_id, meta_id, shape_id, ex.message))
 
 
@@ -720,16 +788,32 @@ def adaptGeoJson (jsondata, conversiontable=None):
 
 	newdict = {}
 	landing = jsondata[u'properties']
-	for keyfrom in landing:
-		if keyfrom in conversiontable:
-			# the first element in a conversion table entry is always the type of object, which is NOT needed here since we only want the name of the resulting new key
-			keyto = conversiontable[keyfrom][1]
-			newdict[keyto] = landing[keyfrom]
 
 
+	convlist = conversiontable['fields']
+
+	for itemfrom in convlist:
+		applies = True
+		if landing.has_key(itemfrom):
+			# use original value or conversion
+			cvalue = landing[itemfrom]
+			if convlist[itemfrom]['values'].has_key(cvalue):
+				cvalue = convlist[itemfrom]['values'][cvalue]
+		else:
+			try:
+				# use default value if we have this value in the model but not in the property set
+				cvalue = convlist[itemfrom]['values']['']
+			except:
+				applies = False
+				pass
+		if applies:
+			newdict[convlist[itemfrom]['to']] = cvalue
+
+	forcedlist = conversiontable['forcedfields']
+	for itemto in forcedlist:
+		newdict[itemto] = forcedlist[itemto]['']
 
 	jsondata['properties'] = newdict
-
 
 	return jsondata
 
@@ -1043,3 +1127,29 @@ def alterMapDetails (proxy_id, meta_id, shape_id, req_changelist, req_model=None
 
 	#print "Returning %s (%s)" % (success, objects)
 	return success, objects
+
+
+def sendProxyManifestRaw (jsonmanifest):
+	"""
+	Sends the manifest of a given soft proxy to the main server and returns the response
+	:param jsonmanifest:
+	:return:
+	"""
+
+	print "Expected replies for manifest send:\n%s\n%s" % (TemplatesModels.model_response_manifest_success, TemplatesModels.model_response_manifest_fail)
+
+
+
+	try:
+		return sendMessageToServer(jsonmanifest, conf.URL_WRITEMANIFEST, 'POST',  TemplatesModels.model_response_manifest_success, TemplatesModels.model_response_manifest_fail)
+	except Exception as ex:
+		return False, "Error while sending manifest to %s: %s" % (conf.URL_WRITEMANIFEST, str(ex))
+
+
+def sendProxyManifestFromFile (proxy_id):
+	"""
+	Sends the manifest of a given soft proxy to the main server and returns the response
+	:param proxy_id:
+	:return:
+	"""
+	return sendProxyManifestRaw(getManifest(proxy_id))

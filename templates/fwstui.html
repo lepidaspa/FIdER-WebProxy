@@ -1,0 +1,182 @@
+{% extends "fwpcore.html" %}
+
+{% block title %}
+    PIpER - Strumento Standalone
+{% endblock %}
+
+{% block headers %}
+    <script language="JavaScript" src="{{ STATIC_URL }}fwstui.js"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}moment.min.js"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
+
+
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwstui.css">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}gis.css">
+
+
+{% endblock %}
+
+{%  block servicebar %}
+
+{% endblock %}
+
+
+{% block navigation %}
+
+
+    <input type="file" id="uploadfield" accept="application/zip">
+
+
+
+    <div id="view_context">
+
+        <div class="ctx_topic" id="contextsummary">
+            <div id="backtracker"><div class="button_pre"><a title="Riepilogo proxy" href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a> {{ proxy_name }}</div></div>
+
+        </div>
+
+        <div class="ctx_topic" id="contextloader">
+
+        </div>
+
+        <div class="ctx_topic" id="contextsaver">
+
+        </div>
+
+
+
+        <div class="ctx_topic" id="view_shadow">
+
+        </div>
+
+        <div class="ctx_topic" id="view_goto">
+            <div class="ctx_fieldname">
+                <label for="search_geo_address">Vai a</label>
+            </div>
+            <div class="ctx_fieldval">
+                <input type="text" id="search_geo_address">
+            </div>
+            <div class="ctx_fieldact">
+                <input type="button" value="&gt;&gt;" id="btn_geosearch">
+            </div>
+
+        </div>
+
+    </div>
+
+    <hr id="hr_contextview">
+
+    <div id="statemessage">
+
+
+    </div>
+
+    <div id="progspinner">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <hr id="hr_stateview">
+
+
+
+    <div id="view_filter" class="ctx_topic">
+
+    </div>
+
+
+
+    <hr id="hr_viewfilter">
+
+
+    <div id="view_detail">
+
+        <div id="view_mapmodel">
+
+        </div>
+
+        <div id="view_feature">
+
+        </div>
+
+        <div id="view_measure">
+
+        </div>
+
+    </div>
+
+
+
+
+{% endblock %}
+
+{% block functionality %}
+
+    <div id="view_map"></div>
+
+
+
+{% endblock %}
+
+{% block starterscript %}
+    <script>
+        pageInit (
+                '{{ proxy_id }}',
+                {{ manifest }},
+                {{ proxy_meta }},
+                {{ maps_fider }},
+                {{ maps_st }},
+                {{ models }}
+        );
+
+    {% if sel_meta != None and sel_map != None %}
+        preloadMap ( '{{ sel_meta }}', '{{ sel_map }}');
+    {% endif %}
+
+    </script>
+
+
+
+
+
+
+{% endblock %}
+
+{% block contextguide %}
+
+        <div class="help">
+
+            È possibile lavorare su una nuova mappa selezionando Crea, oppure aggiungere ai dati e al modello corrente selezionando Integra.<br>I dati da aggiungere o caricare possono venire da un file esterno, da un metadato o dall'archivio interno della Gestione Mappe. Le mappe presenti nei metadati vengono caricate nella versione non-federata, ovvero con il modello originale del fornitore.<br>
+            È anche possibile selezionare un modello, nel qual caso la funzione Crea genererà una mappa vuota basata sul tipo di modello indicato, mentre la funzione Integra aggiungerà le definizioni del modello in questione (se compatibili) al modello già in uso.<br>
+            Non è in ogni caso possibile combinare modelli o mappe che usino strutture geometriche non congrue (linee con punti).<br>
+            È possibile indicare una mappa di riferimento a cui verranno allineati gli elementi creati o modificati sulla mappa in lavorazione. I dati della mappa di riferimento non vengono modificati né salvati con quelli della mappa in lavorazione.
+            <br><br>
+
+            Quando viene salvata, una mappa viene sempre salvata nell'archivio interno della Gestione mappe. Può essere federata dalla schermata di un metadato caricandola come mappa interna.<br><br>
+
+        Il selettore Filtro permette di scegliere un campo rispetto al quale evidenziare le strutture presenti sulla mappa indicando uno o più valori specifici divisi dal carattere punto e virgola. La funzione può essere attivata o disattivata dal riquadro di selezione.<br>
+        Il campo Vai a permette di indicare un indirizzo o una zona su cui centrare la mappa. In caso di indicazioni che si applicano a più di un contesto geografico, verrà usato il primo risultato della ricerca geografica.
+            <br><br>
+
+        La barra degli strumenti nell'area di lavoro fornisce le seguenti funzioni:<br>
+            <img alt="Crea linea" class="legend" src="/static/gis-0.1/mActionCaptureLine.png"> Crea una nuova linea<br>
+            <img alt="Crea punto" class="legend" src="/static/gis-0.1/mActionCapturePoint.png"> Crea un nuovo punto<br>
+            <img alt="Modifica elemento" class="legend" src="/static/gis-0.1/mActionToggleEditing.png"> Esamina o modifica un elemento esistente<br>
+            <img alt="Misura" class="legend" src="/static/gis-0.1/mActionMeasureRed.png"> Misura<br>
+            <img alt="Posizione iniziale" class="legend" src="/static/gis-0.1/mActionZoomToLayer.png"> Reimposta l'inquadratura<br>
+            <br>
+
+        Il pannello in basso a sinistra ha una funzione specifica a seconda che si stia lavorando sulla mappa o su un singolo elemento.<br>
+        Quando non ci sono elementi selezionati, il riquadro mostra la tipologia della mappa e permette di modificare la lista di campi presenti per ogni elemento geografico. È possibile aggiungere e rimuovere campi e indicare valori predefiniti, separati dal carattere punto e virgola.<br>
+        Quando si modifica un elemento geografico, è possibile eliminarlo dalla mappa, spostarlo o modificarne i valori rispetto al modello. I pulsanti Tutti o Selezione permettono di estendere il valore indicato per una data proprietà dell'elemento a tutti gli elementi attualmente evidenziati o a tutti gli elementi della mappa.
+
+
+
+
+
+
+
+
+
+
+        </div>
+{%  endblock %}

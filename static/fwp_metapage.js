@@ -12,9 +12,12 @@ var proj_900913 = "EPSG:900913";
 var proxy_id;
 var meta_id;
 var shapes;
+var maps_st;
 var shapedata;
 var manifest;
 var proxy_type;
+
+var maptypes = {};
 
 var minimap;
 
@@ -40,10 +43,19 @@ var convmodelcats;
 // id of the map item being worked on in the sidebar, needed to keep state with the bindings
 var currentmap;
 
-function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote)
+var maps_remote;
+
+
+// models provided by the main server for conversion; they are loaded at the start and "follow" until the user reloads. If there are no models, some functions will be disabled
+var models;
+
+function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote, req_maps_st, req_models)
 {
 
     console.log(JSON.parse(req_remote));
+    maps_remote = JSON.parse(req_remote);
+
+    $("#conversion").hide();
     $("#renderingstate").hide();
     $("#loadingstate").hide();
     $("#serverstate").hide();
@@ -51,11 +63,19 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote)
     $("#btn_reload").hide();
     $("#proxy_addmap").hide();
 
+    $("#btn_reloadremote").hide();
+    $("#progspinner").hide();
+
     proxy_id = req_proxy_id;
     meta_id = req_meta_id;
     manifest = req_manifest;
 
+    proxy_type = getProxyType(manifest);
+
     shapes = jQuery.parseJSON(req_maps);
+    maps_st = jQuery.parseJSON(req_maps_st);
+    console.log("Maps from standalone: "+JSON.stringify(maps_st)+"\nfrom");
+    console.log(req_maps_st);
 
     //alert(JSON.stringify(manifest['metadata']));
 
@@ -81,12 +101,83 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote)
 
     renderMaps();
 
+    $("#confirmuploadfile").live('click', uploadFromFile);
+    $("#confirmuploadwfs").live('click', uploadFromWeb);
+    $("#confirmsideloadST").live('click', sideloadFromST);
+    $(".btn_confirmdelete").live('click', deleteMap);
+    $(".btn_refreshremote").live('click', refreshRemoteResource);
+    $("#newmap_chooserST").live('change', verifySTselect);
 
     $("#newmap_shapefile").click(renderNewShapeMask);
     $("#newmap_wfs").click(renderNewWFSMask);
+    $("#newmap_st").click(renderNewSTMask);
+
+
+    $(".btn_focus").live('click', focusSelMap);
+    $(".btn_uploadfile").live('click', renderUploadFileMask);
+    $(".btn_uploadwfs").live('click', renderUploadWFSMask);
+    $(".btn_convert").live('click', renderConvMask);
+    $(".btn_remove").live('click', renderRemoverMask);
+
+
 
 }
 
+function registerModels (req_models)
+{
+    if (!req_models || jQuery.isEmptyObject(req_models))
+    {
+        $(".btn_convert").unbind();
+        $(".btn_convert").hide();
+        postFeedbackMessage(false, "Nessun modello disponibile. La funzione di traduzione di modelli e valori non è attiva.<br><a href='#'>Ricarica</a>", "#proxy_addmap");
+        models = null;
+        return;
+    }
+
+    models = req_models;
+
+}
+
+
+function verifySTselect ()
+{
+    if ($("#newmap_chooserST").val() != "")
+    {
+        $("#confirmsideloadST").prop('disabled', false);
+    }
+    else
+    {
+        $("#confirmsideloadST").prop('disabled', true);
+    }
+}
+
+function getProxyType (manifest)
+{
+
+    //console.log("Checking proxy type");
+    //console.log(manifest['operations']);
+
+    if (manifest['operations']['read'] != 'none')
+    {
+        return 'read';
+    }
+    else if (manifest['operations']['write'] != 'none')
+    {
+        return 'write';
+    }
+    else if (manifest['operations']['query']['time'] != 'none' ||
+        manifest['operations']['query']['geographic'] != 'none' ||
+        manifest['operations']['query']['bi'] != 'none' ||
+        manifest['operations']['query']['inventory'] != 'none')
+    {
+        return 'query';
+    }
+    else
+    {
+        return 'local';
+    }
+
+}
 
 
 
@@ -98,6 +189,8 @@ function renderMaps()
     shapedata = new Array();
 
     //todo: handle errors
+
+
 
     if (shapes.length > 0)
     {
@@ -143,6 +236,7 @@ function setLoadingState()
     //featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 1, strokeDashstyle: "solid"});
     //featurestylemap = new OpenLayers.StyleMap(featurestyle);
     $("#loadingstate").show();
+    $("#progspinner").show();
 
     proxymap_currentlayer.removeAllFeatures();
 }
@@ -153,6 +247,7 @@ function unsetLoadingState()
 
     $("#loadingstate").hide();
 
+
     // renders the maps
     for (var i = 0; i < shapedata.length; i++)
     {
@@ -162,6 +257,10 @@ function unsetLoadingState()
         //alert("Rendered "+shapes[i]);
     }
 
+
+    $("#progspinner").hide();
+
+    /*
 
     $(".btn_focus").unbind();
     $(".btn_focus").click(focusSelMap);
@@ -176,14 +275,12 @@ function unsetLoadingState()
     $(".btn_remove").unbind();
     $(".btn_remove").click(renderRemoverMask);
 
+    */
 
     // activates map controls, removes the front layer
     proxymap.addControl(new OpenLayers.Control.Navigation());
     proxymap.addControl(new OpenLayers.Control.PanZoomBar());
 
-    $("#confirmuploadfile").live('click', uploadFromFile);
-    $("#confirmuploadwfs").live('click', uploadFromWeb);
-    $(".btn_confirmdelete").live('click', deleteMap);
 
 
 
@@ -236,25 +333,54 @@ function renderMapCard (map_id)
         var ctype = shapedata[map_id]['features'][i]['geometry']['type'];
         if ((ctype == 'LineString') || (ctype == 'MultiLineString'))
         {
+            if (!maptypes[map_id])
+            {
+                maptypes[map_id] = "LineString";
+            }
             maplines++;
         }
         else if ((ctype == 'Point') || (ctype == 'MultiPoint'))
         {
+            if (!maptypes[map_id])
+            {
+                maptypes[map_id] = "Point";
+            }
             mappoints++;
         }
     }
 
-    var statsstring = '<div class="mapstats"><span class="mapname">'+mapname+'</span><br>Oggetti: ('+
+
+    var str_btn_refresh="";
+    if (maps_remote.indexOf(mapname) != -1)
+    {
+        console.log("Refreshable map: "+mapname);
+        str_btn_refresh = '<img title="Aggiorna risorsa remota" class="btn_refreshremote btn_inline" id="btn_refreshremote_'+map_id+'" src="/static/resource/fwp_reload.png">';
+    }
+    else
+    {
+        console.log("Static map: "+mapname);
+    }
+
+
+    var statsstring = '<div class="mapstats"><span class="mapname">'+mapname+'</span> '+str_btn_refresh+'<br>Oggetti: ('+
             maplines + ' tratte/' +
             mappoints + ' accessi)</div>';
 
-    var str_btn_focus = '<img alt="Evidenzia/Nascondi" class="btn_focus" id="btn_focus_'+map_id+'" src="/static/resource/fwp_focus.png">';
-    var str_btn_uploadfile = '<img alt="Aggiorna da shapefile" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
-    var str_btn_uploadwfs = '<img alt="Aggiorna da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
-    var str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
-    var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
-    var editlink = "/edit/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/"
-    var str_btn_edit = '<a href="'+editlink+'"><img alt="Modifica" class="btn_edit" id="btn_edit_'+map_id+'" src="/static/resource/fwp_editmap.png"></a>';
+
+    var str_btn_focus = '<img title="Evidenzia/Nascondi" class="btn_focus" id="btn_focus_'+map_id+'" src="/static/resource/fwp_focus.png">';
+    var str_btn_uploadfile = '<img title="Carica da file" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
+    var str_btn_uploadwfs = '<img title="Carica da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
+    var str_btn_convert = "";
+    if (proxy_type != 'local')
+    {
+        // conversions are used for federation processes, so we do not need them on standalone proxies
+        str_btn_convert = '<img title="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
+    }
+
+    var str_btn_remove = '<img title="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
+    //var editlink = "/edit/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";
+    var editlink = "/fwst/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";
+    var str_btn_edit = '<a href="'+editlink+'"><img title="Modifica" class="btn_edit" id="btn_edit_'+map_id+'" src="/static/resource/fwp_editmap.png"></a>';
 
     var mapactions = '<div class="mapactions">'+str_btn_focus+' '+str_btn_convert+'<br>'+str_btn_uploadfile+' '+str_btn_uploadwfs+'<br>'+str_btn_edit+' '+str_btn_remove+'</div>';
 
@@ -284,6 +410,25 @@ function renderNewWFSMask()
 
     $("#proxy_addmap").append(uploadtable);
 }
+
+function renderNewSTMask ()
+{
+    closeAllMasks();
+
+    var chooser = $('<div id="uploadSTMask" class="maskwidget"><select id="newmap_chooserST"><option value=""></option></select></div>');
+    for (var i in maps_st)
+    {
+        chooser.children("#newmap_chooserST").append('<option value="'+maps_st[i]+'">'+maps_st[i]+'</option>');
+    }
+
+    chooser.append('<input type="button" id="confirmsideloadST" value="Importa">');
+
+    $("#proxy_addmap").append(chooser);
+    verifySTselect();
+
+
+}
+
 
 function renderNewShapeMask ()
 {
@@ -316,6 +461,9 @@ function renderUploadFileMask()
 
 }
 
+
+
+
 function renderUploadWFSMask()
 {
 
@@ -338,6 +486,8 @@ function renderUploadWFSMask()
     $("#map_"+i).append(uploadtable);
 
 }
+
+
 
 function uploadFromFile ()
 {
@@ -389,6 +539,8 @@ function uploadFromFile ()
         container = "#map_"+i;
     }
 
+    $("#progspinner").show();
+
     $.ajax ({
         url: urlstring,
         data:   fd,
@@ -416,6 +568,7 @@ function uploadFromFile ()
 
                 rebuildShapeData(torebuild);
             }
+
         },
         error: function (data)
         {
@@ -424,6 +577,50 @@ function uploadFromFile ()
     });
 
 }
+
+function refreshRemoteResource()
+{
+
+
+    var prefix = "btn_refreshremote_";
+
+    var form = $("#"+this.id).closest(".btn_refreshremote").prop("id");
+    var i = form.substr(prefix.length);
+
+    var map_id = parseInt(i);
+
+
+    var container = "#map_"+i;
+
+
+    closeAllMasks();
+
+    var urlstring = '/refreshmap/'+proxy_id+'/'+meta_id+'/'+shapes[map_id];
+
+    $("#progspinner").show();
+
+    $.ajax ({
+        url: urlstring,
+        async: true,
+        type: 'GET',
+        success: function(data) {
+            //alert ("COMPLETED");
+            postFeedbackMessage(data['success'], data['report'], container);
+            if (data['success'] == true)
+            {
+
+                rebuildShapeData(shapes[map_id]);
+            }
+
+        },
+        error: function (data)
+        {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
+        }
+    });
+
+}
+
 
 function uploadFromWeb ()
 {
@@ -473,7 +670,11 @@ function uploadFromWeb ()
     wfsparams['layer'] = $("#wfsmap").val();
 
 
+    $("#progspinner").show();
+
     //alert (JSON.stringify(wfsparams));
+
+
 
     $.ajax ({
         url: urlstring,
@@ -486,8 +687,9 @@ function uploadFromWeb ()
             if (data['success'] == true)
             {
 
-                //rebuildShapeData(shapes[map_id]);
+                rebuildShapeData(shapes[map_id]);
             }
+
         },
         error: function (data)
         {
@@ -497,6 +699,67 @@ function uploadFromWeb ()
 
 
 }
+
+
+
+
+function sideloadFromST ()
+{
+
+
+
+    var requested = $("#newmap_chooserST").val();
+
+    console.log("Sideloading map "+requested);
+
+    if (!requested || requested == "")
+    {
+        return;
+    }
+
+
+
+    //TODO: add support for upload to a specific map name other than the original
+
+    var urlstring = "/fwp/stimport/";
+    var container = "#proxy_addmap";
+
+
+    //NOTE: saveto is a placeholder for saving to a different map
+    var saveto = requested;
+    var params = {
+        'proxy_id': proxy_id,
+        'meta_id': meta_id,
+        'map_id': requested,
+        'saveto': saveto
+    };
+
+    $("#progspinner").show();
+
+    $.ajax ({
+        url:    urlstring,
+        data:   params,
+        async:  true,
+        type:   'POST',
+        success: function (data) {
+            postFeedbackMessage(data['success'], data['report'], container);
+
+            rebuildShapeData(saveto);
+
+        },
+        error:  function (data) {
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container)
+        }
+
+    });
+
+
+
+}
+
+
+
+
 
 function rebuildShapeData (shape_id)
 {
@@ -510,6 +773,8 @@ function rebuildShapeData (shape_id)
     urlstring = "/fwp/rebuild/"+proxy_id+"/"+meta_id+"/"+shape_id+"/";
 
     var container = "#currentops";
+
+    $("#progspinner").show();
 
     $.ajax ({
         url:            urlstring,
@@ -566,6 +831,8 @@ function deleteMap ()
         'shape_id': shapes[i]
     };
 
+    $("#progspinner").show();
+
     $.ajax({
         url: "/fwp/control/",
         async: true,
@@ -587,130 +854,20 @@ function deleteMap ()
 }
 
 
-function renderTranslationMask ()
-{
-    // todo: implement pre-compiled table, store values
-
-
-    var prefix = "btn_convert_";
-    var i = parseInt(this.id.substr(prefix.length));
-
-    currentmap = i;
-
-    closeAllMasks();
-    $("#serverstate").show();
-
-    var tables;
-
-    $.ajax({
-        url: "/fwp/conversion/"+proxy_id+"/"+meta_id+"/"+shapes[i],
-        async: false
-    }).done(function (jsondata) {
-
-                tables = jsondata;
-     });
-
-    //alert(JSON.stringify(tables));
-
-    convtable = tables['shapetable']; // dict
-    convsource = tables['shapedata']; // list
-    convmodel = tables['conversion']; // dict of category:list
-
-    convmodelcats = new Array();
-
-
-    var modelcat;
-    for (modelcat in convmodel)
-    {
-        convmodelcats.push(modelcat);
-    }
-    //alert(JSON.stringify(convmodelcats));
-
-    // selector to choose which kind of infrastructure we are dealing with
-    var catselect = '<label for="convtable_catselect">Tipologia</label> <select id="convtable_catselect">';
-    for (var c = 0; c < convmodelcats.length; c++)
-    {
-        catselect += '<option value="'+c+'">'+convmodelcats[c]+'</option>';
-    }
-    catselect += '</select>';
-
-    // conversion table widget
-
-
-    var ctwidget= renderTranslationTable();
-    var ctsavebutton = '<input type="button" name="saveconversion" id="saveconversion_'+i+'" value="Salva conversione">'
-
-    var ctdiv = '<div class="convtablemask maskwidget" id="convtable_'+i+'">'+ catselect + ctwidget + ctsavebutton +'</div>';
-
-    $("#convtable_table").remove();
-    $("#map_"+i).append(ctdiv);
-
-    $("#convtable_catselect").unbind();
-    $("#convtable_catselect").change(refreshTranslationTable);
-    $("#saveconversion_"+i).unbind();
-    $("#saveconversion_"+i).click(saveConversionTable);
-
-    $("#serverstate").hide();
-
-}
-
-function saveConversionTable()
-{
-
-    var jsondata = {};
-
-    jsondata['convtable'] = {};
-
-    var selid = $("#convtable_catselect").val();
-    var category = $("#convtable_catselect option[value='"+selid+"']").text();
-
-
-    jsondata ['proxy_id']  = proxy_id;
-    jsondata ['meta_id'] =  meta_id;
-    jsondata ['shape_id'] = shapes[currentmap];
-
-
-    for (var i = 0; i < convsource.length; i++)
-    {
-        var convfrom = convsource[i];
-        var convto = $("#mapping_"+i).val();
-        if (convto!='')
-        {
-            jsondata['convtable'][convfrom] = [category, convto];
-            //alert(convfrom+" TO "+convto);
-        }
-    }
-
-    //alert(JSON.stringify(jsondata));
-
-
-    $.ajax ({
-        url: "/fwp/maketable/",
-        async: true,
-        data: {jsonmessage: JSON.stringify(jsondata)},
-        type: 'POST',
-            success: function(data) {
-                //alert ("COMPLETED");
-                postFeedbackMessage(data['success'], data['report'], "#map_"+currentmap);
-                rebuildShapeData(shapes[currentmap]);
-            }
-    });
-
-
-
-}
-
 function postFeedbackMessage (success, report, widgetid)
 {
+
+    $("#progspinner").hide();
+
     var status = success;
     var message = report;
 
     var feedbackclass;
-    if (status == true)
+    if (status === true)
     {
         feedbackclass = "success";
     }
-    else
+    else if (status === false)
     {
         feedbackclass = "fail";
     }
@@ -721,94 +878,6 @@ function postFeedbackMessage (success, report, widgetid)
     $(widgetid).append(feedbackmess);
 }
 
-function refreshTranslationTable ()
-{
-    $("#convtable_table").remove();
-    var ctwidget= renderTranslationTable();
-
-    //$("#convtable_"+currentmap).append(ctwidget);
-
-    $("#saveconversion_"+currentmap).before(ctwidget);
-
-}
-
-
-
-
-function renderTranslationTable()
-{
-    // creates the translation table HTML widget according to the selected category
-    var selid = $("#convtable_catselect").val();
-    //alert(selid);
-    if (!selid)
-    {
-        selid = 0;
-    }
-
-    var i;
-
-    // here we create only the options list, not the whole select widget as we need the ID of the original element we are converting
-    //alert (selid+" -> "+JSON.stringify(convsource));
-
-
-    var tablestr = '<table id="convtable_table">';
-
-    var convopts = '';
-    var selopt = '';
-    var currentcat = convmodelcats[selid];
-    var currentitemconv = '';
-    for (i = 0; i < convsource.length; i++)
-    {
-        tablestr += '<tr><td>' +
-                convsource[i] +
-                '</td><td>' +
-                '<select id="mapping_'+i+'">';
-
-        // if this property already belongs to the conversion table
-        if (convsource[i] in convtable)
-        {
-            // if the category in the existing conversion table is the same we are checking now
-            if (convtable[convsource[i]][0] == currentcat)
-            {
-                currentitemconv = convtable[convsource[i]][1];
-            }
-            else
-            {
-                currentitemconv = null;
-            }
-        }
-        else
-        {
-            currentitemconv = null;
-        }
-
-        convopts = '<option value="">Non usato</option>';
-        for (var s = 0; s < convmodel[currentcat].length; s++)
-        {
-            if (currentitemconv == convmodel[currentcat][s])
-            {
-                //alert("SELECTED "+convmodel[currentcat][s]+" for "+convsource[i]);
-                selopt = ' selected="selected"';
-            }
-            else
-            {
-                selopt = '';
-            }
-
-            convopts += '<option value="'+convmodel[currentcat][s]+'"'+selopt+'>'+convmodel[currentcat][s]+'</option>';
-        }
-        //alert(tablestr.length);
-
-        tablestr += convopts + '</select></td></tr>';
-    }
-    tablestr += '</table>';
-
-
-    return tablestr;
-
-
-
-}
 
 function closeAllMasks()
 {
