@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+from django.core.servers.basehttp import FileWrapper
+from io import StringIO
 
 import json
+import tempfile
 import traceback
 import urllib2
 import os
@@ -335,14 +338,19 @@ def proxy_getSingleMap (request, **kwargs):
 	meta_id = kwargs['meta_id']
 	map_id = kwargs['map_id']
 
+	mapdata = ""
+
 	if meta_id == '.st':
 		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
+		mapdata = json.load(open(path))
 	else:
-		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id, map_id+".geojson")
+		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id)
+		mapdata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, False)
 
-	fp = open(path)
 
-	response = HttpResponse(fp, mimetype="application/json")
+
+
+	response = HttpResponse(json.dumps(mapdata), mimetype="application/json")
 	response['Content-Disposition'] = 'attachment; filename=' + map_id+".geojson"
 
 	return response
