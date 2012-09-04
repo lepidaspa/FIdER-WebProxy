@@ -5,9 +5,6 @@
     <title>Catasto Federato - {% block title %}{% endblock %}</title>
 
 
-    {% block defaultcss %}
-    <link rel="stylesheet" href="{{ STATIC_URL }}fwpcore.css">
-    {% endblock %}
 
 
     <link rel="stylesheet" href="{{ STATIC_URL }}smoothness/jquery-ui-1.8.20.custom.css">
@@ -16,6 +13,13 @@
     <script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
     <script language="JavaScript" src="{{ STATIC_URL }}OpenLayers/OpenLayers.js"></script>
 
+    <script language="JavaScript" src="{{ STATIC_URL }}fwp_core.js"></script>
+
+
+
+    {% block defaultcss %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}fwpcore.css">
+    {% endblock %}
 
     {#  custom javascript and css for this specific page #}
     {% block headers %}{% endblock %}
@@ -24,7 +28,7 @@
 <body>
 
 <div id="servicebar">
-    {%  block servicebar %}utente FGfgh47 @ PIPER{% endblock %}
+    {%  block servicebar %}utente @ PIPER{% endblock %}
 </div>
 
 <div id="functionality">
@@ -35,15 +39,22 @@
     {% block navigation %}{% endblock %}
 </div>
 
+
 <div id="contextguide">
     {% block contextguide %}{% endblock %}
+</div>
+<div id="guidebutton">
+    Guida
 </div>
 
 
 
 
 
-
 </body>
+<script>
+    bindContextGuideButton();
+    hideGuide();
+</script>
 {% block starterscript %}{% endblock %}
 </html>

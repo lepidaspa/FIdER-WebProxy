@@ -1,0 +1,140 @@
+.ctx_fieldname, .ctx_fieldval, .ctx_fieldact
+{
+    display:            table-cell;
+    vertical-align:     middle;
+    padding-top:        1px;
+    padding-bottom:     1px;
+
+}
+
+.ctx_topic
+{
+    display:    table-row;
+
+}
+
+.ctx_fieldval
+{
+    padding-left:    2px;
+    padding-right:   2px;
+}
+
+.ctx_fieldval input, .ctx_fieldval select
+{
+
+    width:                  100%;
+    box-sizing:             border-box;
+    -webkit-box-sizing:     border-box;
+    -moz-box-sizing:        border-box;
+
+}
+
+input[type=image]
+{
+    border:         none;
+}
+
+#view_context, #view_mapmodel, #view_feature
+{
+    display:            table;
+    border-collapse:    collapse;
+}
+
+hr
+{
+    border:         none;
+    border-top:  1px solid #ff8800;
+}
+
+#progspinner
+{
+    text-align:     center;
+    right:          auto;
+    left:           auto;
+}
+
+#view_map
+{
+    position:       absolute;
+    top:            0;
+    bottom:         0;
+    left:           0;
+    right:          0;
+
+    padding:        0 8px 8px 8px;
+}
+
+#uploadfield
+{
+    position:       absolute;
+    right:          -300;
+    top:            -300;
+    visibility:     hidden;
+}
+
+#view_context *:disabled
+{
+    color:          #000000;
+    background:     #cccccc;
+}
+
+#contextsaver.savehint
+{
+    background-color: #e9324c;
+}
+
+
+.datalisted
+{
+    background-image:               url('/static/resource/fwp_dropdown.png');
+    background-position:            99% 50%;
+    background-repeat:              no-repeat;
+}
+
+
+#maptypedef
+{
+    font-weight:    bold;
+}
+
+
+
+#model_newpropname
+{
+    width:          6em;
+}
+
+#addmodelproperty
+{
+    border-top:         1px dashed #ff8800;
+}
+
+.btn_modelform
+{
+    min-width:          24px;
+}
+
+#ctx_deschead
+{
+    font-weight:        bold;
+}
+
+#statemessage.goodnews
+{
+    /*
+    color:              #ffffff;
+    background-color: #12b42b;
+    */
+}
+
+#statemessage.badnews
+{
+    color:              #ffffff;
+    background-color:   #e9324c;
+
+}
+
+#backtracker
+{
+    width:              100%;
+}

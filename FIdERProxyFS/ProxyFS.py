@@ -13,6 +13,8 @@ import os
 import json
 
 import ogr
+import gdal
+
 
 import Common
 from FIdERProxyFS import proxy_core
@@ -22,7 +24,6 @@ import proxy_lock
 from Common import TemplatesModels
 
 from Common.Components import sendMessageToServer
-
 """
 This module is called when a change happens in the filesystem (specifically in the upload directory, but the proxy checks anyway in case the fs monitor cannot filter before informing the proxy)
 """
@@ -309,6 +310,31 @@ def sendUpdatesWrite (proxy_id):
 		logEvent ("Failed to send updates for proxy %s (meta/timestamp list: %s)" % (proxy_id, updateslist), True)
 
 
+def sideloadST (proxy_id, meta_id, stmap_id, saveto_id):
+
+
+	uploadpath = os.path.join(conf.baseuploadpath, proxy_id, meta_id, saveto_id+".zip")
+	frompath = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, stmap_id)
+
+	with zipfile.ZipFile(uploadpath, 'w') as datazip:
+		datazip.write(frompath, stmap_id+".geojson")
+
+	print "Zipped data ok"
+
+	try:
+		handleFileEvent (uploadpath)
+		response_sideload = {
+			'success': True,
+			'report': 'Mappa %s importata correttamente. ' % stmap_id
+		}
+	except Exception as ex:
+		response_sideload = {
+			'success': False,
+			'report': 'Importazione di %s fallita. Causa: %s' % (stmap_id, ex)
+		}
+
+	return response_sideload
+
 
 def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 	"""
@@ -329,22 +355,34 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 	protocol, separator, url = connect['url'].partition("://")
 	authstring = ""
 	if connect['user'] not in (None, ""):
-		authstring = connect['user']+"@"
+		authstring = connect['user']
 		if connect['pass'] not in (None, ""):
-			authstring = connect['pass']+":"+authstring
+			authstring = authstring+":"+connect['pass']
+		authstring += "@"
 
 	connectstring = "WFS:"+protocol+separator+authstring+url
 	print connectstring,connect
 
+	gdal.SetConfigOption('GML_CONSIDER_EPSG_AS_URN', 'YES')
+	gdal.SetConfigOption('GML_INVERT_AXIS_ORDER_IF_LAT_LONG', 'YES')
+
+
 	driver = ogr.GetDriverByName('WFS')
 	try:
+
 		wfs = driver.Open(connectstring)
+		#rewfs = driver.CopyDataSource(wfs, "rewfs", options=["GML_INVERT_AXIS_ORDER_IF_LAT_LONG=YES"] )
+		#layer = wfs.CopyLayer(wfs.GetLayerByName(str(connect['layer'])),str(connect['layer']),  options=["GML_INVERT_AXIS_ORDER_IF_LAT_LONG=YES"])
+
 		layer = wfs.GetLayerByName(str(connect['layer']))
+
 	except Exception as ex:
 		print "Connection error: %s " % ex
 		# TODO: add logging
 		response_upload['report'] = "Connessione fallita o dati mancanti per l'indirizzo specificato."
 		return response_upload
+
+	print "Received WFS data"
 
 	gjfeatures = []
 	for feature in layer:
@@ -400,6 +438,9 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 			'success': False,
 			'report': ex
 		}
+
+
+	gdal.SetConfigOption('GML_INVERT_AXIS_ORDER_IF_LAT_LONG', None)
 
 
 	return response_upload

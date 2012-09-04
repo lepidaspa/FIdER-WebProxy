@@ -26,11 +26,12 @@ var currentconn;
 var models;
 
 
-
+var currentmap;
 
 function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
 {
 
+    unsetLoadingState();
     $("#renderingstate").hide();
     $("#loadingstate").hide();
     $("#serverstate").hide();
@@ -38,9 +39,13 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
     $("#btn_reload").hide();
     $("#proxy_addmap").hide();
 
+    $("#conversion").hide();
+
     proxy_id = req_proxy_id;
     meta_id = req_meta_id;
     manifest = req_manifest;
+
+    proxy_type = "query";
 
     queries = jQuery.parseJSON(req_maps);
 
@@ -57,22 +62,52 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps)
     var bbox = (manifest['area']);
     zoomToBBox(minimap, bbox);
 
-
-    renderQueries();
+    // moved to registerModels() flow, otherwise it always fails to show the conversion table editor
+    //renderQueries();
 
     $("#btn_addconn").click(renderNewConnMask);
     $(".btn_remove").live("click",renderRemoverMask);
     $(".btn_confirmdelete").live("click",deleteMap);
 
+    $(".btn_convert").live('click', renderConvMask);
 
 
 }
 
+function setLoadingState()
+{
+    //activates the spinner, nothing else
+    $("#progspinner").show();
+}
 
+function unsetLoadingState()
+{
+    // hides the spinner
+    $("#progspinner").hide();
+
+
+}
 
 function registerModels(req_models)
 {
-    models = req_models;
+
+    if (!$.isEmptyObject(req_models))
+    {
+        console.log("Valid model list loaded");
+        models = req_models;
+    }
+    else
+    {
+        console.log("Missing valid model list");
+        models = null;
+        $("#proxy_addconn").empty();
+        postFeedbackMessage(false, "Impossibile accedere ai modelli federati. Verificare la connessione con il federatore.", "#proxy_addconn");
+        $("#proxy_addconn").append('<span id="btn_reloadpage">Riprova</span>');
+        $("#btn_reloadpage").click(function () {window.location = window.location.pathname;});
+    }
+
+    renderQueries();
+
 
     //alert(JSON.stringify(models));
 }
@@ -99,11 +134,15 @@ function renderQueries()
                 "DB: "+dbname+'@'+host+"<br>"+
                 "Vista: "+schema+view+'</div>';
 
+        var str_btn_convert = "";
+        if (models != null)
+        {
+            str_btn_convert = '<img title="Proprietà" class="btn_convert" id="btn_convert_'+id+'" src="/static/resource/fwp_convert.png"><br>';
+        }
 
-        var str_btn_convert = '<img alt="Proprietà" class="btn_convert" id="btn_convert_'+id+'" src="/static/resource/fwp_convert.png">';
-        var str_btn_remove = '<img alt="Elimina" class="btn_remove" id="btn_remove_'+id+'" src="/static/resource/fwp_remove.png">';
+        var str_btn_remove = '<img title="Elimina" class="btn_remove" id="btn_remove_'+id+'" src="/static/resource/fwp_remove.png">';
 
-        var mapactions = '<div class="mapactions">'+str_btn_convert+'<br>'+str_btn_remove+'</div>';
+        var mapactions = '<div class="mapactions">'+str_btn_convert+str_btn_remove+'</div>';
 
         var mapcardstring = '<div class="mapcard" id="map_'+id+'">'+mapactions+statsstring+'<div class="quickcheck" id="details_'+id+'"></div></div>';
 
@@ -127,13 +166,13 @@ function renderNewConnMask()
     closeAllMasks();
 
     var connmask = '<div class="createquerystring formmask" id="editconn_new">' +
-            '<div class="maskfield"><div class="masksubfield">Name</div><div class="masksubfield"><input type="text" id="conn_name_new" name="conn_name_new"></div></div>' +
+            '<div class="maskfield"><div class="masksubfield">Nome</div><div class="masksubfield"><input type="text" id="conn_name_new" name="conn_name_new"></div></div>' +
             '<div class="maskfield"><div class="masksubfield">Host</div><div class="masksubfield"><input type="text" id="conn_host_new" name="conn_host_new"></div></div>' +
-            '<div class="maskfield"><div class="masksubfield">Port</div><div class="masksubfield"><input type="text" id="conn_port_new" name="conn_port_new"></div></div>' +
+            '<div class="maskfield"><div class="masksubfield">Porta</div><div class="masksubfield"><input type="text" id="conn_port_new" name="conn_port_new"></div></div>' +
             '<div class="maskfield"><div class="masksubfield">Database</div><div class="masksubfield"><input type="text" id="conn_db_new" name="conn_db_new"></div></div>' +
             '<div class="maskfield"><div class="masksubfield">Schema</div><div class="masksubfield"><input type="text" id="conn_schema_new" name="conn_schema_new"></div></div>' +
-            '<div class="maskfield"><div class="masksubfield">View</div><div class="masksubfield"><input type="text" id="conn_view_new" name="conn_view_new"></div></div>' +
-            '<div class="maskfield"><div class="masksubfield">User</div><div class="masksubfield"><input type="text" id="conn_user_new" name="conn_user_new"></div></div>' +
+            '<div class="maskfield"><div class="masksubfield">Vista</div><div class="masksubfield"><input type="text" id="conn_view_new" name="conn_view_new"></div></div>' +
+            '<div class="maskfield"><div class="masksubfield">Utente</div><div class="masksubfield"><input type="text" id="conn_user_new" name="conn_user_new"></div></div>' +
             '<div class="maskfield"><div class="masksubfield">Password</div><div class="masksubfield"><input type="text" id="conn_pass_new" name="conn_pass_new"></div></div>' +
             '' +
             '<input type="button" id="connect_new" value="Conferma">'+
@@ -142,20 +181,7 @@ function renderNewConnMask()
 
     $("#proxy_addconn").append(connmask);
 
-    /*
-     QUICK TESTING HACK
-     */
-    $("#conn_name_new").val("Testbed");
-    $("#conn_host_new").val("195.62.186.196");
-    $("#conn_port_new").val("5432");
-    $("#conn_db_new").val("geodb");
-    $("#conn_schema_new").val("reti");
-    $("#conn_view_new").val("f_links_ln");
-    $("#conn_user_new").val("labs");
-    $("#conn_pass_new").val("lepidalabs");
-    /*
-     TODO: REMOVE THE ABOVE HARDCODING
-     */
+
 
     $("#connect_new").unbind();
     $("#connect_new").click(createNewConnection);
@@ -164,12 +190,6 @@ function renderNewConnMask()
 
 }
 
-function configConnection()
-{
-
-    var conn_id = cc_id;
-
-}
 
 function closeAllMasks()
 {
@@ -183,6 +203,8 @@ function closeAllMasks()
 
 function createNewConnection()
 {
+
+
     // the number refers to the position in the cards list, -1 is a new one
     cc_id = 'new';
 
@@ -210,23 +232,36 @@ function createNewConnection()
 
     //alert("Probing: "+JSON.stringify(connectiondata));
 
+    setLoadingState();
+
     $.ajax ({
         url: urlstring,
         async: true,
         data: {jsonmessage: JSON.stringify(connectiondata)},
         type: 'POST',
         success: function(data) {
+
+            unsetLoadingState();
+
             if (data['success'])
             {
+
+                console.log("SQL probe successful");
+
                 //postFeedbackMessage(data['success'], "Connessione riuscita, recupero tabelle di conversione.", "#proxy_addconn");
                 currentconn = connectiondata;
-                editTranslation(data['report']);
+                saveConnection(currentconn);
+
 
             }
             else
             {
                 postFeedbackMessage(data['success'], data['report'], "#proxy_addconn");
             }
+        },
+        error: function () {
+            unsetLoadingState();
+            postFeedbackMessage(false, "Connessione al database fallita.", "#proxy_addconn");
         }
 
 
@@ -234,25 +269,107 @@ function createNewConnection()
     });
 
 
-    // if successful, saving the basic info about it
-
-
-    // opening the connection edit mask in the new connection area with the data taken from the test
-    configConnection();
-
-    // after we set that up, we save the basic data
-
 
 }
 
-function showTranslation (map_id)
+function saveConnection(currentconn)
 {
 
+    console.log("Saving connection data to filesystem");
+
+    var jsondata = {'connection': currentconn};
+    //alert(JSON.stringify(jsondata));
+
+    var urlstring = "/fwp/registerquery/"+proxy_id+"/"+meta_id+"/";
+    var container = "#proxy_addconn";
+
+    setLoadingState();
+
+    $.ajax ({
+        url: urlstring,
+        data:   {jsonmessage: JSON.stringify(jsondata)},
+        async: true,
+        type: 'POST',
+        success: function(data) {
+
+            // we do NOT unset the loading state so it is clear to the user that the operation is still running, even if it is just for the autorefresh
+            //unsetLoadingState();
+
+            //we put the message anyway just in case there's anything to delay the refresh;
+            postFeedbackMessage(data['success'], data['report']+"<br>Per accedere ai dati è necessario creare uno schema di conversione.", container);
 
 
+            // AUTOREFRESH
+            //window.location = window.location.pathname;
+        },
+        error: function (data)
+        {
+            unsetLoadingState();
+            //alert ("FAIL");
+            postFeedbackMessage(false, "ERRORE: "+JSON.stringify(data), container);
+
+        }
+    });
 
 }
 
+
+function editExistingTranslation (caller)
+{
+
+    var prefix = "btn_convert_";
+    var query_id = caller.srcElement.id.substring(prefix.length);
+    console.log("Editing conversions for "+query_id);
+
+    var urlstring = "/fwp/reviewqueryconn/"+proxy_id+"/"+meta_id+"/"+query_id;
+
+    setLoadingState();
+
+    $.ajax ({
+        url: urlstring,
+        async: true,
+        type: 'GET',
+        success: function(data) {
+
+            unsetLoadingState();
+
+            if (data['success'])
+            {
+                console.log("Full conversion retrieval");
+                // DEPRECATED renderTranslationMask(query_id, data['report']);
+                // no message, we only render the mask
+                //postFeedbackMessage(data['success'], "Connessione riuscita, recupero tabelle di conversione.", "#details_"+query_id);
+
+                //TODO: launch function for editing
+
+
+            }
+            else
+            {
+                if ($.isEmptyObject(data['report']))
+                {
+                    console.log("No file on filesystem, db is unreachable.");
+                    postFeedbackMessage(false, "Impossibile ottenere i dati per la conversione.", "#details_"+query_id);
+                }
+                else
+                {
+                    console.log("Retrieved from filesystem, db is unreachable.");
+                    // DEPRECATED renderTranslationMask(query_id, data['report']);
+                    postFeedbackMessage(false, "Impossibile ottenere i dati per la conversione.", "#details_"+query_id, true);
+                }
+            }
+        },
+        error: function (data) {
+
+            unsetLoadingState();
+            postFeedbackMessage(data['success'], "Impossibile ottenere i dati per la conversione.", "#details_"+query_id);
+
+        }
+
+    });
+
+
+}
 
 
 function renderRemoverMask()
@@ -291,6 +408,9 @@ function deleteMap ()
         'shape_id': i
     };
 
+    setLoadingState();
+
+
     $.ajax({
         url: "/fwp/control/",
         async: true,
@@ -298,10 +418,12 @@ function deleteMap ()
         type: 'POST',
         success: function(data)
         {
+            unsetLoadingState();
             postFeedbackMessage(data['success'], data['report'], container);
         },
         error: function (data)
         {
+            unsetLoadingState();
             postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container);
         }
     });
@@ -312,67 +434,6 @@ function deleteMap ()
 }
 
 
-
-
-
-function editTranslation(ffields)
-{
-    // creates a widget interface to set the conversion of foreign fields in our model fields
-
-    closeAllMasks();
-
-    var xlatemask = '<div class="formmask" id="editxlate_new"></div>';
-
-    var convtable =  '<div class="maskfield"><div class="colhead masksubfield">Campo</div><div class="masksubfield colhead">Ricerca su</div></div>';
-
-    var fieldselect_ops = '<option value=""></option>';
-    for (var i in ffields)
-    {
-        // note: conv table fields are : name, can be null, datatype (not sure if really useful, definitions are very vague)
-        fieldselect_ops += '<option value="'+ffields[i][0]+'">'+ffields[i][0]+'</option>';
-    }
-
-    var typeselect = '<div id="select_objtype"><label for="objtype">Tipologia</label> <select id="objtype">';
-    for (var m in models)
-    {
-        typeselect += '<option value="'+m+'">'+m+'</option>';
-
-        for (var f in models[m])
-        {
-            convtable += '<div class="maskfield typefield typefieldlist_'+m+'"><div class="masksubfield">'+f+'</div><div class="masksubfield colhead"><select class=" fieldtype_'+m+' fieldconv_'+f+' fieldselect" id="fieldconversion_'+f+'">'+fieldselect_ops+'</select></div></div>';
-        }
-
-        convtable += '<div class="maskfield typefield typefieldlist_'+m+'"><div class="masksubfield">Geometria</div><div class="masksubfield colhead"><select class="fieldtype_'+m+' fieldconv_geometry fieldselect" id="fieldconversion_geometry">'+fieldselect_ops+'</select></div></div>';
-
-    }
-    typeselect += '</select></div>';
-
-
-    convtable +=             '<input type="button" id="newconn_save" value="Crea"></div>';
-
-
-
-    if (cc_id == 'new')
-    {
-
-        $("#proxy_addconn").append(xlatemask);
-        renderConnSummary("#editxlate_new");
-        $("#editxlate_new").append(typeselect);
-        $("#editxlate_new").append(convtable);
-
-
-
-        $("select#objtype").unbind();
-        $("select#objtype").change(filterConversionFields);
-        $("select#objtype").trigger("change");
-        $("select.fieldselect").unbind();
-        $("select.fieldselect").change(checkConversions);
-        $("#newconn_save").unbind();
-        $("#newconn_save").click(saveNewConnection);
-    }
-
-
-}
 
 function checkConversions()
 {
@@ -463,20 +524,30 @@ function saveNewConnection ()
     var urlstring = "/fwp/registerquery/"+proxy_id+"/"+meta_id+"/";
     var container = "#proxy_addconn";
 
+    setLoadingState();
+
     $.ajax ({
         url: urlstring,
         data:   {jsonmessage: JSON.stringify(jsondata)},
         async: true,
         type: 'POST',
         success: function(data) {
-            //alert ("SUCCESS");
+
+            // we do NOT unset the loading state so it is clear to the user that the operation is still running, even if it is just for the autorefresh
+            //unsetLoadingState();
+
+            //we put the message anyway just in case there's anything to delay the refresh;
             postFeedbackMessage(data['success'], data['report'], container);
-            //TODO: add page reload, the function will be very quick anyway since it only works locally
+
+
+            // AUTOREFRESH
+            window.location = window.location.pathname;
         },
         error: function (data)
         {
+            unsetLoadingState();
             //alert ("FAIL");
-            postFeedbackMessage(false, "ERROR: "+JSON.stringify(data), container);
+            postFeedbackMessage(false, "ERRORE: "+JSON.stringify(data), container);
 
         }
     });
@@ -518,8 +589,10 @@ function zoomToBBox (olmap, bbox)
 }
 
 
-function postFeedbackMessage (success, report, widgetid)
+function postFeedbackMessage (success, report, widgetid, dontcloseall)
 {
+
+
 
     var feedbackclass;
     if (success)
@@ -533,6 +606,10 @@ function postFeedbackMessage (success, report, widgetid)
 
     var feedbackmess = '<div class="feedback '+feedbackclass+'">' +report+ '</div>';
 
-    closeAllMasks();
+    if (typeof dontcloseall != 'undefined' && !dontcloseall)
+    {
+        closeAllMasks();
+    }
+
     $(widgetid).append(feedbackmess);
 }

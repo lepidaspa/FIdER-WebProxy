@@ -2,8 +2,12 @@ from django.conf.urls.defaults import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+
 from FIdERWeb import views as fwpviews
-from FiderMapEdit import views as editviews
+
+
+from FIdERWebST import views as fwstviews
+
 import settings
 
 admin.autodiscover()
@@ -25,12 +29,20 @@ urlpatterns = patterns('',
 	# urls for "passive" operations, called by the main server
 	url(r'^data/(?P<proxy_id>\w*)/', fwpviews.proxy_read_full),
 	url(r'^query/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/', fwpviews.proxy_perform_query),
+	url(r'^refreshmap/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.map_refresh_remote),
 	url(r'^refreshremote/(?P<proxy_id>\w*)/', fwpviews.proxy_refresh_remote),
 
+
+
 	#urls for self-ops, called by the proxy
+
+	# Field VALUE translation
+	url(r'^fwp/valueconv/$', fwpviews.proxy_getModels),
+	# Field NAME translation
 	url(r'^fwp/maketable/', fwpviews.proxy_create_conversion),
 	url(r'^fwp/maps/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.proxy_loadmap),
-	url(r'^fwp/conversion/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.component_shapefile_table),
+	#OLDurl(r'^fwp/conversion/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.component_shapefile_table),
+	(r'^fwp/conversion/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)', fwpviews.getConversionInfo),
 	url(r'^fwp/upload/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_uploadmap),
 	url(r'^fwp/upload/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.proxy_uploadmap),
 	url(r'^fwp/download/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_uploadwfs),
@@ -41,14 +53,36 @@ urlpatterns = patterns('',
 	url(r'^fwp/proxylist/', fwpviews.proxy_get_all),
 	url(r'^fwp/create/', fwpviews.proxy_create_new),
 	url(r'^fwp/newqueryconn/', fwpviews.probePostGIS),
+	url(r'^fwp/reviewqueryconn/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<map_id>\w*)/$', fwpviews.reviewPostGIS),
 	url(r'^fwp/registerquery/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.registerquery),
+	url(r'^fwp/maplist/(?P<proxy_id>\w*)/$', fwpviews.proxy_maps_list),
 
 	#urls for active operations, called by the clients
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
+	url(r'^fwp/get/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getSingleMap),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
-	url(r'^edit/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', editviews.mapeditor),
 	url(r'^fwp/$', fwpviews.proxysel),
-	url(r'^edit/update/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', editviews.implementchanges),
+
+
+
+
+
+	# standalone tool v2
+
+
+
+	url(r'^fwst/upload/(?P<proxy_id>\w*)/$', fwstviews.uploadfile),
+	url(r'^fwst/maps/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.loadSTMap),
+	url(r'^fwst/save/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.saveSTMap),
+
+	url(r'^fwp/stimport', fwpviews.sideloadSTMap),
+
+	url(r'^fwst/(?P<proxy_id>\w*)/$', fwstviews.uiview),
+	# same as before but with a preloaded map from the proxy federated selection
+	url(r'^fwst/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', fwstviews.uiview),
+	url(r'^external/(?P<path>.*)$', fwpviews.geosearch)
+
+
 
 )
 

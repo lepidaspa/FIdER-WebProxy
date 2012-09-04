@@ -1,0 +1,23 @@
+.valueconversion
+{
+    display:       table;
+    width:          100%;
+}
+
+.valueconv_row
+{
+    display:        table-row;
+}
+
+.cell
+{
+    display:        table-cell;
+    text-align:     left;
+}
+
+/*
+.cell input[type="text"], .cell select
+{
+    width:          98%;
+}
+*/

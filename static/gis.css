@@ -1,0 +1,124 @@
+/*
+Graphics replacemente CSS for OpenLayers
+*/
+
+
+.olControlEditingToolbar
+{
+    padding:            4px;
+    background-color:   #cccccc;
+    /*opacity:                0.5; */
+
+    border:                 1px solid #006400;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+}
+
+
+.olControlEditingToolbar .olButton
+{
+    width:                  24px;
+    height:                 24px;
+    background-position:    0 0;
+    margin:                 0 5px 0 0;
+    border:                 none;
+    padding-bottom:         4px;
+
+}
+
+
+.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive
+{
+    background-image: url("/static/gis-0.1/mActionToggleEditing-inactive.png");
+
+
+}
+
+.olControlEditingToolbar .olLabsControlModifyFeatureItemActive
+{
+
+    background-image: url("/static/gis-0.1/mActionToggleEditing.png");
+    border-bottom:      1px solid #000000;
+}
+
+.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive:hover
+{
+    background-image: url("/static/gis-0.1/mActionToggleEditing.png");
+}
+
+
+.olControlEditingToolbar .olLabsControlDrawFeaturePointItemInactive
+{
+    background-image: url("/static/gis-0.1/mActionCapturePoint-inactive.png");
+
+}
+
+.olControlEditingToolbar .olLabsControlDrawFeaturePointItemActive
+{
+    background-image: url("/static/gis-0.1/mActionCapturePoint.png");
+    border-bottom:      1px solid #000000;
+}
+
+.olControlEditingToolbar .olLabsControlDrawFeaturePointItemInactive:hover
+{
+    background-image: url("/static/gis-0.1/mActionCapturePoint.png");
+}
+
+
+
+
+
+.olControlEditingToolbar .olLabsControlDrawFeaturePathItemInactive
+{
+    background-image: url("/static/gis-0.1/mActionCaptureLine-inactive.png");
+
+}
+
+.olControlEditingToolbar .olLabsControlDrawFeaturePathItemActive
+{
+    background-image: url("/static/gis-0.1/mActionCaptureLine.png");
+    border-bottom:      1px solid #000000;
+}
+
+.olControlEditingToolbar .olLabsControlDrawFeaturePathItemInactive:hover
+{
+    background-image: url("/static/gis-0.1/mActionCaptureLine.png");
+}
+
+
+.olControlEditingToolbar .olLabsControlMeasureItemInactive
+{
+    background-image: url("/static/gis-0.1/mActionMeasure-inactive.png");
+}
+
+.olControlEditingToolbar .olLabsControlMeasureItemActive
+{
+    background-image: url("/static/gis-0.1/mActionMeasureRed.png");
+    border-bottom:      1px solid #000000;
+}
+
+.olControlEditingToolbar .olLabsControlMeasureItemInactive:hover
+{
+    background-image: url("/static/gis-0.1/mActionMeasureRed.png");
+}
+
+
+
+
+.olControlEditingToolbar .olLabsControlRebaseItemInactive
+{
+    background-image: url("/static/gis-0.1/mActionZoomToLayer-inactive.png");
+}
+
+.olControlEditingToolbar .olLabsControlRebaseItemActive
+{
+    background-image: url("/static/gis-0.1/mActionZoomToLayer.png");
+    border-bottom:      1px solid #000000;
+}
+
+.olControlEditingToolbar .olLabsControlRebaseItemInactive:hover
+{
+    background-image: url("/static/gis-0.1/mActionZoomToLayer.png");
+}

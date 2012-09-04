@@ -7,13 +7,17 @@
 
 
 {% block headers %}
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_querypage.css">
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_metaconvert.css">
+
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_querypage.css">
     <script language="JavaScript" src="{{ STATIC_URL }}fwp_querypage.js"></script>
+<script language="JavaScript" src="{{ STATIC_URL }}fwp_metaconvert.js"></script>
+<script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
 {% endblock %}
 
 {% block navigation %}
 
-    <div id="metainfo"><div class="button_pre"><a href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a><a href="/fwp/proxy/{{ proxy_id }}/{{ meta_id }}" id="btn_reload"><img src="/static/resource/fwp_reload.png"></a></div>{{ proxy_name }}: {{ meta_id }}</div>
+    <div id="metainfo"><div class="button_pre"><a title="Riepilogo proxy" href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a><a href="/fwp/proxy/{{ proxy_id }}/{{ meta_id }}" id="btn_reload"><img src="/static/resource/fwp_reload.png"></a></div>{{ proxy_name }}: {{ meta_id }}</div>
 
     <div id="minimap" class="cornermap"></div>
 
@@ -22,6 +26,9 @@
     <div id="renderingstate" class="statemess">Aggiornamento mappa</div>
     <div id="loadingstate" class="statemess">Caricamento dati</div>
     <div id="currentops" class="statemess"></div>
+
+    <div id="progspinner"><img src="/static/resource/progressbar.gif"></div>
+
 
     <div class="button wide" id="proxy_addconn"><span id="btn_addconn">Nuova connessione</span></div>
 
@@ -34,6 +41,9 @@
 
 
     <div id="infograph"></div>
+<div id="conversion" class="inhiding">
+    {% include "fwp_metaconvert.html" %}
+</div>
 
 
 
@@ -55,6 +65,18 @@
 
     <div class="help">
 
+    Il pulsante Nuova connessione permette di creare una nuova connessione a un database esterno. Nome è l'identificativo della connessione presso il proxy, gli altri campi sono tutti relativi al database a cui ci si collega.<br>
+        Una volta confermati i parametri di connessione, perché la connessione possa essere effettivamente usata dal federatore, è necessario creare una tabella di traduzione in cui indicare quali sono i campi usati nella vista indicata per la connessione e, se necessario, come vanno tradotti i valori che vengono forniti.<br>La tabella di traduzione deve sempre comprendere un valore per il campo Geometria.<br><br>
+
+        I pulsanti delle schede riassuntive delle connessioni forniscono le seguenti funzionalità:<br>
+        <img alt="Conversione" class="legend" src="/static/resource/fwp_convert.png"> Crea o modifica le regole di traduzione<br>
+        <img alt="Elimina" class="legend" src="/static/resource/fwp_remove.png"> Cancella la connessione dal metadato<br>
+
+
+
+    <br><br>
+        Quando si modificano le regole di traduzione di una connessione, la colonna di sinistra indica i campi del modello originale (selezionabile in alto) a cui vengono applicati i campi della fonte dati selezionata.<br>
+        Per alcuni campi i modelli forniti permettono di indicare uno o più valori predefiniti; in questo caso è possibile indicare dei valori sorgente che verranno automaticamente tradotti su questi valori di destinazione quando la mappa verrà trasformata per l'uso federato. Se la casella del valore sorgente è vuota, il suo valore destinazione verrà aggiunto a tutti gli elementi che ne sono privi come default.<br>
     </div>
 
 {%  endblock %}

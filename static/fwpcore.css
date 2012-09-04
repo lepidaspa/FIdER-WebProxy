@@ -4,11 +4,23 @@ body
     background-color:   #ffffff;
 }
 
+body.passive
+{
+    cursor: wait;
+}
+
 input:disabled, select:disabled
 {
     background-color:   #bbb7b9;
     color:              #ffffff;
 
+}
+
+#progspinner
+{
+    text-align:     center;
+    right:          auto;
+    left:           auto;
 }
 
 .cornermap
@@ -29,6 +41,7 @@ input:disabled, select:disabled
 .textbutton
 {
     font-weight:        bold;
+    cursor:             pointer;
 
 }
 
@@ -83,7 +96,7 @@ input [type=button]
     border:             1px solid #ff8800;
 }
 
-.button
+.button, .fbutton
 {
     color:              #ffffff;
     background-color:   #ff8800;
@@ -123,7 +136,7 @@ a.backtrack
     position:           absolute;
     top:                0;
     left:               8px;
-    right:              8px;
+    right:              0;
     height:             1.5em;
 
     padding-left:       4px;
@@ -139,13 +152,17 @@ a.backtrack
 {
 
     position:           absolute;
+
     top:                2.5em;
+
     left:               80%;
     right:              0;
     bottom:             0;
     overflow:           auto;
     padding-left:       8px;
     padding-right:      8px;
+    background-color:   #ffffff;
+    border-left:        1px solid #ff8800;
 
 }
 
@@ -183,8 +200,13 @@ img.legend
 {
     position:           absolute;
     top:                2.5em;
+
     left:               25%;
+    /*
+    changed to have the guide overlay rather than resize the functionality area
     right:              20%;
+    */
+    right:              0;
     bottom:             0;
 
     overflow:           auto;
@@ -192,12 +214,13 @@ img.legend
     padding:            0.5em;
 
     border-left:        1px solid #ff8800;
-    border-right:       1px solid #ff8800;
+    /*border-right:       1px solid #ff8800; */
 }
 
 .button_pre
 {
     float:              left;
+    margin-right:       0.5em;
 
 }
 
@@ -248,7 +271,7 @@ input, select
     background-color: #12b42b;
 }
 
-.feeback.fail
+.feedback.fail
 {
     background-color: #e9324c;
 
@@ -257,4 +280,37 @@ input, select
 tr
 {
     vertical-align:     top;
+}
+
+#waitspinner
+{
+    text-align:         center;
+}
+
+.btn_inline
+{
+    vertical-align: middle;
+}
+
+.btn_inline, .btn_focus, .btn_remove, .btn_convert, .btn_uploadfile,
+.btn_uploadwfs, .button, .fbutton, .btn_pre, .btn_reload, .btn_edit
+{
+    cursor:     pointer;
+}
+
+#guidebutton
+{
+    position:   absolute;
+    top:                0;
+    right:              0;
+    padding-right:       8px;
+    padding-top:            8px;
+
+    background-color:   #ffffff;
+
+    font-weight: bold;
+    font-size:  smaller;
+
+    cursor:         pointer;
+
 }

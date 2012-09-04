@@ -15,7 +15,7 @@
 
 {% block navigation %}
 
-    <div id="proxyinfo"><a href="/fwp/" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a>{{ proxy_name }}</div>
+    <div id="proxyinfo"><div class="button_pre"><a title="Selezione proxy" href="/fwp/" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a></div>{{ proxy_name }}</div>
 
     <div id="minimap" class="cornermap"></div>
 
@@ -24,7 +24,9 @@
 
 
 
-    <div id="metalisting"></div>
+
+
+<div id="metalisting"></div>
 
 {% endblock %}
 
@@ -41,7 +43,11 @@
 
     <div class="help">
         La mappa principale permette di visualizzare l'area di interesse geografico dei vari metadati. Passando il cursore su un metadato particolare, ne viene evidenziata l'area di interesse specifica.<br><br>
-    È possibile cliccare ul nome di un metadato per raggiungere la pagina con mappe relative.
+    È possibile cliccare sul nome di un metadato per raggiungere la pagina con le relative mappe.<br><br>
+
+        Il pulsante Gestione mappe (per i proxy in modalità Lettura, Scrittura e Standalone) permette di visualizzare tutte le mappe presenti sul proxy, modificarle e creare nuove mappe. Le mappe modificate e create nella Gestione mappe possono essere federate dalle schermate dei metadati.<br>
+
+
 
     </div>
 {%  endblock %}
