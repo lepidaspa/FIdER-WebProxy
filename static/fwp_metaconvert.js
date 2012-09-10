@@ -371,7 +371,11 @@ function closeConvTable()
 
     // hides the conversion table widget and redisplays the map widget if applicable
 
-    //TODO: placeholder, implement
+    $("#conversion").addClass("inhiding");
+    $("#conversion").hide();
+    $("#proxymap").show();
+
+
 
 }
 

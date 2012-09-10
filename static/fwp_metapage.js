@@ -120,7 +120,6 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote,
     $(".btn_remove").live('click', renderRemoverMask);
 
 
-
 }
 
 function registerModels (req_models)
