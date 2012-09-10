@@ -786,13 +786,15 @@ def adaptGeoJson (jsondata, conversiontable=None):
 	if isinstance(jsondata, (str, unicode)):
 		jsondata = json.loads(jsondata)
 
-	if conversiontable is None:
-		conversiontable = {}
+	if conversiontable is None or (not conversiontable.has_key('forcedfields')) or (not conversiontable.has_key('fields')):
+		conversiontable = {'forcedfields':{}, 'fields':{}}
 
 	newdict = {}
 	landing = jsondata[u'properties']
 
 	print "GeoJson adaptation flow start"
+
+	print "Using conversiontable:\n%s" % conversiontable
 
 
 	convlist = conversiontable['fields']
@@ -866,6 +868,8 @@ def rebuildShape (proxy_id, meta_id, shape_id, modified=True):
 	:param modified:
 	:return: dict, geojson data
 	"""
+
+	print "Rebuilding map (core routine) %s/%s/%s" % (proxy_id, meta_id, shape_id)
 
 	path_shape = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
 	if modified:
