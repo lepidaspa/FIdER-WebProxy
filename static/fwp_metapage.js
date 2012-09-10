@@ -131,6 +131,7 @@ function registerModels (req_models)
         $(".btn_convert").hide();
         postFeedbackMessage(false, "Nessun modello disponibile. La funzione di traduzione di modelli e valori non è attiva.<br><a href='#'>Ricarica</a>", "#proxy_addmap");
         models = null;
+
         return;
     }
 
@@ -371,7 +372,7 @@ function renderMapCard (map_id)
     var str_btn_uploadfile = '<img title="Carica da file" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
     var str_btn_uploadwfs = '<img title="Carica da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
     var str_btn_convert = "";
-    if (proxy_type != 'local')
+    if (proxy_type != 'local' && models != null)
     {
         // conversions are used for federation processes, so we do not need them on standalone proxies
         str_btn_convert = '<img title="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
