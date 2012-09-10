@@ -786,11 +786,18 @@ def adaptGeoJson (jsondata, conversiontable=None):
 	if isinstance(jsondata, (str, unicode)):
 		jsondata = json.loads(jsondata)
 
+
+
+
 	if conversiontable is None or (not conversiontable.has_key('forcedfields')) or (not conversiontable.has_key('fields')):
 		conversiontable = {'forcedfields':{}, 'fields':{}}
 
 	newdict = {}
-	landing = jsondata[u'properties']
+	try:
+		landing = jsondata[u'properties']
+	except:
+		landing = {}
+
 
 	print "GeoJson adaptation flow start"
 
