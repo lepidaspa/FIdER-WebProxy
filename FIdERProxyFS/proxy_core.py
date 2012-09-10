@@ -661,7 +661,10 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	collection['bbox'] = boundaries
 
 	if len(collection['features']) == 0:
+		print 'Could not retrieve any feature from map %s' % shape_id
 		raise Exception ('Could not retrieve any feature from map %s') % shape_id
+	else:
+		print "Retrieved %s features " % len(collection['features'])
 
 	return collection
 
@@ -788,6 +791,8 @@ def adaptGeoJson (jsondata, conversiontable=None):
 
 	newdict = {}
 	landing = jsondata[u'properties']
+
+	print "GeoJson adaptation flow start"
 
 
 	convlist = conversiontable['fields']

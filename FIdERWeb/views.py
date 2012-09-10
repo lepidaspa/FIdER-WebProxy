@@ -792,9 +792,11 @@ def proxy_uploadmap (request, **kwargs):
 
 		success, output = saveMapFile(upload, proxy_id, meta_id, shape_id)
 		if success:
+			print "Invio del file %s su %s per integrazione completato." % (upload.name, output)
 			response_upload['success'] = True
 			response_upload['report'] = "Invio del file %s su %s per integrazione completato." % (upload.name, output)
 		else:
+			print "Invio del file %s fallito. Causa: %s <br>" % (upload.name, output)
 			response_upload['report']= "Invio del file %s fallito. Causa: %s <br>" % (upload.name, output)
 
 
@@ -808,6 +810,8 @@ def proxy_rebuildmap (request, **kwargs):
 	proxy_id  = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
 	shape_id = kwargs['shape_id']
+
+	print "Rebuilding map %s/%s/%s" % (proxy_id, meta_id, shape_id)
 
 	try:
 		ProxyFS.handleFileEvent (os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
