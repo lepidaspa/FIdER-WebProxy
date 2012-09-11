@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+import shutil
 from django.core.servers.basehttp import FileWrapper
 from io import StringIO
 
@@ -1197,3 +1198,48 @@ def geosearch(request, path):
 			response, content = conn.request(url, request.method, data)
 	return HttpResponse(content, status = int(response['status']),
 mimetype = response['content-type'])
+
+
+def killProxy (request, **kwargs):
+	"""
+	Removes a proxy
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+
+
+	try:
+
+
+		print "Removing proxy %s" % proxy_id
+
+		datadir = os.path.join(proxyconf.baseproxypath, proxy_id)
+		uploaddir = os.path.join(proxyconf.baseuploadpath, proxy_id)
+		manifest = os.path.join(proxyconf.basemanifestpath, proxy_id+".manifest")
+
+		elements = 0
+
+		print "Removing data dir for proxy %s" % proxy_id
+		if os.path.exists (datadir):
+			elements+=1
+			shutil.rmtree(datadir)
+		print "Removing upload dir for proxy %s" % proxy_id
+		if os.path.exists (uploaddir):
+			elements+=1
+			shutil.rmtree(uploaddir)
+		print "Removing manifest file for proxy %s" % proxy_id
+		if os.path.exists(manifest):
+			elements+=1
+			os.remove(manifest)
+
+		if elements == 0:
+			raise Exception ("Proxy inesistente")
+
+	except Exception as ex:
+		return HttpResponse("Proxy %s non cancellato, causa %s" % (proxy_id, ex))
+
+
+	return HttpResponse("Proxy %s cancellato" % proxy_id)
