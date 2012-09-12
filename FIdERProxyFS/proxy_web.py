@@ -108,11 +108,12 @@ def deleteProxy (proxy_id):
 		if elements == 0:
 			raise Exception ("Proxy inesistente")
 
+		feedback ['success'] = True
+		feedback ['response'] = "Cancellazione del proxy confermata"
+
 	except Exception as ex:
 		feedback ['response'] = "Proxy %s non cancellato dal filesystem, causa %s" % (proxy_id, ex)
 
-	feedback ['success'] = True
-	feedback ['response'] = "Cancellazione del proxy confermata"
 
 	return feedback
 
