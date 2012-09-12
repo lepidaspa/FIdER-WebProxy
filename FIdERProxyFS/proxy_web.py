@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+import urllib2
 import os
 import shutil
 from FIdERProxyFS import proxy_core, proxy_lock
@@ -53,9 +54,74 @@ def getProxyType (proxy_id):
 	return learnProxyType(manifest)
 
 
+def deleteProxy (proxy_id):
+	"""
+	Deletes a softproxy from the hardproxy, called by proxy_controller
+	:param proxy_id:
+	:param meta_id:
+	:param shape_id:
+	:return:
+	"""
+
+	print "Deleting proxy %s" % proxy_id
+
+	feedback = {
+	'success': False,
+	'report': ""
+	}
+
+	if not (proxy_id.startswith("local_")):
+		url = proxyconf.MAINSERVER_LOC+"/broker/delete/"+proxy_id
+		try:
+			delete_response = urllib2.urlopen(url)
+			print "Deletion confirmed"
+
+		except (urllib2.HTTPError, urllib2.URLError) as ex:
+
+			feedback['report'] = "Cancellazione annullata dal federatore"
+			return feedback
+
+
+
+	try:
+		print "Removing proxy %s" % proxy_id
+
+		datadir = os.path.join(proxyconf.baseproxypath, proxy_id)
+		uploaddir = os.path.join(proxyconf.baseuploadpath, proxy_id)
+		manifest = os.path.join(proxyconf.basemanifestpath, proxy_id+".manifest")
+
+		elements = 0
+
+		print "Removing data dir for proxy %s" % proxy_id
+		if os.path.exists (datadir):
+			elements+=1
+			shutil.rmtree(datadir)
+		print "Removing upload dir for proxy %s" % proxy_id
+		if os.path.exists (uploaddir):
+			elements+=1
+			shutil.rmtree(uploaddir)
+		print "Removing manifest file for proxy %s" % proxy_id
+		if os.path.exists(manifest):
+			elements+=1
+			os.remove(manifest)
+
+		if elements == 0:
+			raise Exception ("Proxy inesistente")
+
+	except Exception as ex:
+		feedback ['response'] = "Proxy %s non cancellato dal filesystem, causa %s" % (proxy_id, ex)
+
+	feedback ['success'] = True
+	feedback ['response'] = "Cancellazione del proxy confermata"
+
+	return feedback
+
+
+
+
 def deleteMap (proxy_id, meta_id, shape_id):
 	"""
-	Deletes a single map from the proxy
+	Deletes a single map from the proxy, called by proxy_controller
 	:param proxy_id:
 	:param meta_id:
 	:param shape_id:
@@ -98,7 +164,6 @@ def deleteMap (proxy_id, meta_id, shape_id):
 			feedback['report'] = "Cancellazione della mappa %s completata." % shape_id
 		except Exception, ex:
 			feedback['report'] = 'Cancellazione interrotta: %s' % ex
-
 
 
 		try:

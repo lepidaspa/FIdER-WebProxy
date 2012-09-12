@@ -21,10 +21,10 @@ urlpatterns = patterns('',
     # url(r'^ProxyWeb/', include('ProxyWeb.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    #url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    url(r'^admin/', include(admin.site.urls)),
+    #url(r'^admin/', include(admin.site.urls)),
 
 	# urls for "passive" operations, called by the main server
 	url(r'^data/(?P<proxy_id>\w*)/', fwpviews.proxy_read_full),
