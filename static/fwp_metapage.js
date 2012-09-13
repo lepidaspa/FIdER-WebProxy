@@ -906,35 +906,21 @@ function closeAllMasks()
 function renderGeoJSON (shapedata, map, maplayer)
 {
 
-    //$("#renderingstate").show();
+    setTimeout(function () {
+
+        $("#renderingstate").show();
+    }, 0);
 
 
     var geojson_format = new OpenLayers.Format.GeoJSON({'externalProjection':new OpenLayers.Projection(proj_WGS84), 'internalProjection':map.getProjectionObject()});
 
-    /*
+
     var stringmap = JSON.stringify(shapedata);
     var formatmap = geojson_format.read(stringmap);
     maplayer.addFeatures(formatmap);
-    */
 
-    setTimeout(function () {
-        for (var f in shapedata['features'])
-        {
-            renderToMap(shapedata['features'][f], geojson_format, maplayer);
-        }
-    }, 0);
+    $("#renderingstate").hide();
 
-
-
-    //$("#renderingstate").hide();
-
-}
-
-function renderToMap (gjformatmap, geojson_format, maplayer)
-{
-
-    var formatmap = geojson_format.read(JSON.stringify(gjformatmap));
-    maplayer.addFeatures(formatmap);
 }
 
 

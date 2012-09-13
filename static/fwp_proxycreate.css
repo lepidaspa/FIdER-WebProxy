@@ -110,15 +110,6 @@
 
 
 
-/*
-#new_meta_table th, #new_meta_table td
-{
-    max-width:              100%;
-}
-*/
-
-
-
 #map_meta_new, #map_proxy_new
 {
 
@@ -145,9 +136,4 @@
 #create_actions
 {
     text-align: center;
-}
-
-#def_meta_new
-{
-
 }
