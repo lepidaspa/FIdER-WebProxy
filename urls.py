@@ -82,9 +82,6 @@ urlpatterns = patterns('',
 	url(r'^fwst/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', fwstviews.uiview),
 	url(r'^external/(?P<path>.*)/$', fwpviews.geosearch),
 
-	url(r'^fwp/delete/(?P<proxy_id>\w*)/$', fwpviews.killProxy)
-
-
 
 )
 
