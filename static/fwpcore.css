@@ -4,6 +4,12 @@ body
     background-color:   #ffffff;
 }
 
+a
+{
+    text-decoration: inherit;
+    color:          inherit;
+}
+
 body.passive
 {
     cursor: wait;
@@ -298,15 +304,39 @@ tr
     cursor:     pointer;
 }
 
+#servicetoolbar
+{
+    float:              right;
+    background-color:   #ffffff;
+    margin-right:       2px;
+}
+
+#servicetoolbar .tbbutton
+{
+    font-weight: bold;
+    font-size:  smaller;
+
+    background-color:   #ff8800;
+    color:              #ffffff;
+    padding:            2px 4px 2px 4px;
+    margin-left:        2px;
+
+    cursor:         pointer;
+}
+
 #guidebutton
 {
-    position:   absolute;
+    /*position:   absolute;
     top:                0;
     right:              0;
     padding-right:       8px;
     padding-top:            8px;
+    */
+    float:              right;
 
-    background-color:   #ffffff;
+    background-color:   #ff8800;
+    color:              #ffffff;
+    padding:            2px 4px 2px 4px;
 
     font-weight: bold;
     font-size:  smaller;

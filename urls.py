@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import patterns, include, url
+from django.views.generic.simple import redirect_to
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -7,6 +8,7 @@ from FIdERWeb import views as fwpviews
 
 
 from FIdERWebST import views as fwstviews
+from FIdERProxyFS import proxy_config_core
 
 import settings
 
@@ -83,6 +85,8 @@ urlpatterns = patterns('',
 	url(r'^external/(?P<path>.*)/$', fwpviews.geosearch),
 
 	url(r'^fwp/fed/owners/$', fwpviews.getProviders),
+	url(r'^fwp/fed/settings/$', redirect_to, {'url': proxy_config_core.URL_CONFIG})
+
 
 
 )
