@@ -72,6 +72,11 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote,
 
     proxy_type = getProxyType(manifest);
 
+    if (proxy_type == "read" || proxy_type == "write" || proxy_type == "query")
+    {
+        $("#newmap_st").hide();
+    }
+
     shapes = jQuery.parseJSON(req_maps);
     maps_st = jQuery.parseJSON(req_maps_st);
     console.log("Maps from standalone: "+JSON.stringify(maps_st)+"\nfrom");
@@ -128,7 +133,7 @@ function registerModels (req_models)
     {
         $(".btn_convert").unbind();
         $(".btn_convert").hide();
-        postFeedbackMessage(false, "Nessun modello disponibile. La funzione di traduzione di modelli e valori non è attiva.<br><a href='#'>Ricarica</a>", "#proxy_addmap");
+        postFeedbackMessage(false, "Nessun modello disponibile. La funzione di traduzione di modelli e valori non è attiva.<br><a class='reloadbutton' href='#'>Ricarica</a>", "#proxy_addmap");
         models = null;
 
         return;

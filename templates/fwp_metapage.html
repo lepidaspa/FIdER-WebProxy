@@ -29,7 +29,7 @@
 
     <div class="button wide" id="btn_reload"><a class="blocky textbutton" href="/fwp/proxy/{{ proxy_id }}/{{ meta_id }}">Aggiorna schermata</a></div>
 
-    <div class="button wide" id="proxy_addmap">Nuova mappa: <span id="newmap_shapefile" class="blocky textbutton">FILE</span> / <span class="textbutton" id="newmap_wfs">WFS</span> / <span class="textbutton" id="newmap_st">Interna</span></div>
+    <div class="button wide" id="proxy_addmap">Nuova mappa: <span id="newmap_shapefile" class="blocky textbutton">FILE</span> / <span class="textbutton" id="newmap_wfs">WFS</span> <span class="textbutton" id="newmap_st">/ Interna</span></div>
 
     <div id="progspinner"><img src="/static/resource/progressbar.gif"></div>
 
@@ -63,7 +63,7 @@
 
     <div class="help">
 
-    La mappa principale mostra una combinazione di tutte le mappe caricate per il metadato. È possibile caricare manualmente mappe da fonti file o web come aggiunta o sostituzione delle mappe già presenti, o importare mappe create internamente nella Gestione mappe.<br><br>
+    La mappa principale mostra una combinazione di tutte le mappe caricate per il metadato. È possibile caricare manualmente mappe da fonti file o web come aggiunta o sostituzione delle mappe già presenti, o importare mappe create internamente nella Gestione mappe (solo per le istanze Standalone).<br><br>
     I formati di file accettati sono archivi zip contenenti una singola mappa in formato Shapefile, Mapinfo o Geojson. Il nome dell'archivio deve corrispondere al nome del file della mappa e non contenere caratteri punto prima dell'estensione.<br><br>
     Le icone di ogni mappa forniscono le seguenti funzionalità:<br>
         <img alt="Evidenzia/Nascondi" class="legend" src="/static/resource/fwp_focus.png"> Evidenzia la mappa<br>
@@ -72,7 +72,7 @@
         <img alt="Carica da web" class="legend" src="/static/resource/fwp_uploadwfs.png"> Carica la mappa da un servizio web<br>
         <img alt="Modifica" class="legend" src="/static/resource/fwp_editmap.png"> Modifica la mappa<br>
         <img alt="Elimina" class="legend" src="/static/resource/fwp_remove.png"> Cancella la mappa dal metadato<br>
-        <img alt="Ricarica" class="legend" src="/static/resource/fwp_reload.png"> Ricarica la mappa dal fornitore (solo per le risorse esterne)<br><br>
+        <img alt="Ricarica" class="legend" src="/static/resource/fwp_reload.png"> Ricarica la mappa dall'archivio di origine (solo per le risorse esterne)<br><br>
 
         Quando si modificano le regole di traduzione di una mappa, la colonna di sinistra indica i campi del modello originale (selezionabile in alto) a cui vengono applicati i campi della fonte dati selezionata.<br>
         Per alcuni campi i modelli forniti permettono di indicare uno o più valori predefiniti; in questo caso è possibile indicare dei valori sorgente che verranno automaticamente tradotti su questi valori di destinazione quando la mappa verrà trasformata per l'uso federato. Se la casella del valore sorgente è vuota, il suo valore destinazione verrà aggiunto a tutti gli elementi che ne sono privi come default.<br>
