@@ -829,6 +829,9 @@ def proxy_rebuildmap (request, **kwargs):
 
 	try:
 		ProxyFS.handleFileEvent (os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
+		#quick hack for first time uploads
+		if shape_id == "undefined":
+			shape_id = ""
 		response_rebuild = {
 			'success': True,
 			'report': 'Mappa %s aggiornata.' % shape_id
