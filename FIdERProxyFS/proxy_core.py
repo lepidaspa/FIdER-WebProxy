@@ -162,8 +162,10 @@ def replicateDelete (proxy_id, meta_id, shape_id):
 
 	path_gj = os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id)
 
+
+
 	if not os.path.exists(path_gj):
-		raise Exception ("Data for %s/%s already deleted in the geojson section of proxy %s" % (meta_id, shape_id, proxy_id))
+		print ("WARNING: Data for %s/%s already deleted in the geojson section of proxy %s" % (meta_id, shape_id, proxy_id))
 	else:
 		#TODO: add specific handling of further exceptions or just push it up the ladder
 		os.remove(path_gj)
