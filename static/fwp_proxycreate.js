@@ -26,8 +26,11 @@ var metadata = {};
 var dateregex = new RegExp ("\\d{2}-\\d{2}-\\d{4}");
 
 
+
 function create_initForm()
 {
+
+    creationmode = true;
 
     if ((newmetamap == null) && (newproxymap == null))
     {
@@ -65,6 +68,18 @@ function create_initForm()
 
     create_CheckNewMetaInfo();
     create_CheckForSubmission();
+
+    if (proxycreationmode == "standalone")
+    {
+        $("#params_proxy").hide();
+        $("#params_standalone").show();
+
+    }
+    else if (proxycreationmode == "proxy")
+    {
+        $("#params_proxy").show();
+        $("#params_standalone").hide();
+    }
 
 
 }
@@ -261,9 +276,13 @@ function renderMetaList()
                 //alert("Index: "+i);
                 if (i == 2)
                 {
-                    str_bb += "<br>";
+                    str_bb += " ";
                 }
-                str_bb += " "+meta_bb[i].toFixed(5);
+                else
+                {
+                    str_bb += "&nbsp;";
+                }
+                str_bb += meta_bb[i].toFixed(5);
             }
         }
         else
@@ -368,6 +387,9 @@ function create_setNavControlsHere ()
 
 function backToMaps()
 {
+
+    creationmode = false;
+
     $("#proxy_builder").hide();
     $("#proxycreate_mask").hide();
 
@@ -383,6 +405,7 @@ function backToMaps()
 
     // we do this to properly reset the main map
     pageInit(proxies);
+
 
 }
 
@@ -621,15 +644,22 @@ function create_CheckForSubmission()
     }
 
     // IF the proxy is a query proxy, AT LEAST one type of query must be enabled beyond the 'none' level
-    var proxymode = $("#proxy_opsmode").val();
-    if (proxymode == "query")
+    // default to standalone tool
+    var proxymode = "none";
+    if (proxycreationmode == "proxy")
     {
-        // proxy_options_query_geo, proxy_options_query_inv, proxy_options_query_time, proxy_options_query_bi
-        if ( ($("#proxy_options_query_geo").val() == "none") && ($("#proxy_options_query_inv").val() == "none") && ($("#proxy_options_query_time").val() == "none") )
+        proxymode = $("#proxy_opsmode").val();
+        if (proxymode == "query")
         {
-            errors += 1;
+            // proxy_options_query_geo, proxy_options_query_inv, proxy_options_query_time, proxy_options_query_bi
+            if ( ($("#proxy_options_query_geo").val() == "none") && ($("#proxy_options_query_inv").val() == "none") && ($("#proxy_options_query_time").val() == "none") )
+            {
+                errors += 1;
+            }
         }
     }
+
+
 
     // The proxy MUST have a starting date, can be without an ending date if the specific checkbox is activated (permanent proxy)
     var proxydatefrom = $("#newproxy_datefrom").val();

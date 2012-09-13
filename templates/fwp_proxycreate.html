@@ -24,6 +24,16 @@
                         <input type="text" id="newproxy_name">
                     </div>
                 </div>
+
+                <div class="fieldmask">
+                    <div class="subfieldmask">
+                        Fornitore
+                    </div>
+                    <div class="subfieldmask">
+                        <input type="text" id="newproxy_provider">
+                    </div>
+                </div>
+
                 <div class="fieldmask">
                     <div class="subfieldmask">
                         Valido dal
@@ -43,10 +53,10 @@
 
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Area <input type="button" id="btn_trygeoloc_proxy" value="Inquadra">
+                        Area
                     </div>
-                    <div class="subfieldmask">
-                        <input type="text" id="newproxy_geoloc">
+                    <div class="subfieldmask geoloc_combo">
+                        <input type="text" id="newproxy_geoloc"> <img id="btn_trygeoloc_proxy" src="/static/resource/fwp_focus.png">
                     </div>
                 </div>
 
@@ -58,7 +68,13 @@
 
         <div id="ops_proxy_new" class="elementmask">
 
-            <div class="multifieldmask">
+            <div class="multifieldmask" id="params_standalone">
+                <div class="fieldmask" >
+                    ATTENZIONE: lo strumento standalone è un'entità funzionalmente autonoma e non prevede interazioni federate.
+                </div>
+            </div>
+
+            <div class="multifieldmask" id="params_proxy">
 
                 <div class="fieldmask">
                     <div class="subfieldmask">
@@ -69,14 +85,12 @@
                             <option value="read">Lettura</option>
                             <option value="write">Scrittura</option>
                             <option value="query">Query</option>
-                            <option value="none">Standalone</option>
+                            <!-- <option value="linker">Collegamento standalone</option> -->
                         </select>
+
                     </div>
                 </div>
 
-                <div class="fieldmask opsdetail_sel" id="proxy_opsmode_none">
-                    ATTENZIONE: questa modalità di funzionamento è completamente autonoma e non prevede interazioni federate.
-                </div>
 
 
                 <div class="fieldmask opsdetail_sel" id="proxy_opsmode_read">
@@ -177,7 +191,7 @@
         <table id="new_meta_table" class="elementmask">
 
             <tr>
-                <th class="newmeta_namefield">Nome</th><th class="newmeta_datefrom">Valido dal</th><th class="newmeta_dateto">Valido al</th><th class="newmeta_bb">Area</th><th class="newmeta_ctrldelete">Canc</th>
+                <th class="newmeta_namefield">Nome</th><th class="newmeta_datefrom">Valido dal</th><th class="newmeta_dateto">Valido al</th><th class="newmeta_bb">Area</th><th class="newmeta_ctrldelete">Cancella</th>
             </tr>
 
         </table>
@@ -222,10 +236,10 @@
 
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Area <input type="button" id="btn_trygeoloc_meta" value="Inquadra"> <input type="checkbox" id="newmeta_bbox_use" checked="checked">
+                        Area <input type="checkbox" id="newmeta_bbox_use" checked="checked">
                     </div>
-                    <div class="subfieldmask">
-                        <input type="text" id="newmeta_geoloc">
+                    <div class="subfieldmask geoloc_combo">
+                        <input type="text" id="newmeta_geoloc"> <img id="btn_trygeoloc_meta" src="/static/resource/fwp_focus.png">
                     </div>
 
                 </div>

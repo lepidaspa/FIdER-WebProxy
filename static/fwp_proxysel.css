@@ -18,6 +18,8 @@
     background-color:   #ff8800;
     color:      #ffffff;
     padding-left:       4px;
+
+    cursor:         pointer;
 }
 
 .subtab.unseltab

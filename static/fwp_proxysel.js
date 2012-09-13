@@ -19,6 +19,11 @@ var proj_900913 = "EPSG:900913";
 
 var proxynames = new Array();
 
+// string : "proxy" "standalone"
+var proxycreationmode = "";
+// if the user is creating a new instance or just looking at the map
+var creationmode = false;
+
 function pageInit(jsonlisting)
 {
 
@@ -30,6 +35,8 @@ function pageInit(jsonlisting)
 
     $("#tabsel_proxy").click(showSelProxy);
     $("#tabsel_standalone").click(showSelStandalone);
+
+
 
     proxies = jsonlisting;
     console.log(proxies);
@@ -63,6 +70,20 @@ function pageInit(jsonlisting)
 
     centerMapTo(defaultLon, defaultLat, 6);
 
+    if (proxycreationmode == "standalone")
+    {
+        proxycreationmode = "";
+        showSelStandalone();
+    }
+    else if (proxycreationmode == "proxy")
+    {
+        proxycreationmode = "";
+        showSelProxy();
+    }
+    else
+    {
+        showSelProxy();
+    }
 
 
 }
@@ -70,6 +91,15 @@ function pageInit(jsonlisting)
 function showSelProxy ()
 {
 
+    if (proxycreationmode == "proxy")
+    {
+        return;
+    }
+
+    hideCreationTabQuick();
+
+
+    proxycreationmode = "proxy";
     $("#tabsel_standalone").addClass("unseltab");
     $("#tabsel_proxy").removeClass("unseltab");
 
@@ -81,11 +111,21 @@ function showSelProxy ()
     $(".proxytype_query").show();
     $(".proxytype_read").show();
     $(".proxytype_write").show();
+
+
 }
 
 function showSelStandalone()
 {
 
+    if (proxycreationmode == "standalone")
+    {
+        return;
+    }
+
+    hideCreationTabQuick();
+
+    proxycreationmode = "standalone";
     $("#tabsel_standalone").removeClass("unseltab");
     $("#tabsel_proxy").addClass("unseltab");
 
@@ -97,6 +137,19 @@ function showSelStandalone()
     $(".proxytype_query").hide();
     $(".proxytype_read").hide();
     $(".proxytype_write").hide();
+
+
+}
+
+function hideCreationTabQuick()
+{
+
+    if (creationmode)
+    {
+        backToMaps();
+    }
+
+
 }
 
 function centerMapTo (lon, lat, zoom)
@@ -169,7 +222,7 @@ function buildProxyList ()
     $("#proxy_create_new").click(openProxyCreation);
     $("#standalone_create_new").click(openProxyCreation);
 
-    $("#tabsel_proxy").click();
+
 
 }
 

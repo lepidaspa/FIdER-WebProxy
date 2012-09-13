@@ -5,6 +5,16 @@
 
 }
 
+.geoloc_combo
+{
+    white-space: pre;
+}
+
+.geoloc_combo img
+{
+    vertical-align: text-bottom;
+}
+
 #proxycreate_mask *
 {
     font-size:               small;
