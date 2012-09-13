@@ -52,8 +52,6 @@ def proxysel (request):
 	:return:
 	"""
 
-	#TODO: replace with more complete version, to take into account query proxies too
-	#list_proxy = os.listdir(os.path.join(proxyconf.basemanifestpath))
 
 	proxydict = getManifests()
 
@@ -63,6 +61,9 @@ def proxysel (request):
 		proxies [proxy_id]['area'] = proxydict[proxy_id]['area']
 		proxies [proxy_id]['time'] = proxydict[proxy_id]['time']
 		proxies [proxy_id]['name'] = proxydict[proxy_id]['name']
+		proxies [proxy_id]['type'] = learnProxyType(proxydict[proxy_id])
+
+	print "Proxy listing:\n%s" % proxies
 
 
 	return render_to_response ('fwp_proxysel.html', {'proxies': SafeString(json.dumps(proxies))},

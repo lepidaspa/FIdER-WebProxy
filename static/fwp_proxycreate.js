@@ -52,6 +52,7 @@ function create_initForm()
     setOpsModeVisibility();
     $("#proxymap").hide();
     $("#proxy_create_new").hide();
+    $("#standalone_create_new").hide();
     $("#proxy_show_map").show();
 
     $("#btn_trygeoloc_proxy").live('click', geosearch);
@@ -371,6 +372,8 @@ function backToMaps()
     $("#proxycreate_mask").hide();
 
     $("#proxy_create_new").show();
+    $("#standalone_create_new").show();
+
     $("#proxy_show_map").hide();
 
     $("#proxymapcanvas").hide();
@@ -780,7 +783,10 @@ function create_CheckForSubmission()
     var str_warn_areas = warnings_areas.length > 0 ? "AUTOFIX BBOX: "+JSON.stringify(warnings_areas) : "";
     */
 
+    var report_pre_header = '<div class="sectionbanner" id="banner_report_pre">INFORMAZIONI</div>';
+
     $("#reports_pre").text(str_err_times+"\n"+str_err_areas+"\n"+str_warn_areas+"\n"+str_warn_times);
+    $("#reports_pre").prepend(report_pre_header);
 
     // overall check
     if (errors > 0)

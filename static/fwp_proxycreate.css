@@ -46,8 +46,8 @@
 
 .sectionbanner
 {
-    background-color:   #ff8800;
-    color:              #ffffff;
+    color:                       #ff8800;
+    background-color:              #ffffff;
     left:               6px;
     right:              6px;
     margin-bottom:      4px;
@@ -55,6 +55,13 @@
     font-weight:        bold;
 }
 
+#banner_report_pre
+{
+
+    margin-top:     -4px;
+    margin-left:    -4px;
+    margin-right:   -4px;
+}
 
 .fieldmask
 {

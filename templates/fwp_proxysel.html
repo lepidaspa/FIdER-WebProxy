@@ -13,8 +13,22 @@
 
 {% block navigation %}
 
+    <div class="tabbar">
+        <span class="subtab" id="tabsel_proxy">
+            PROXY
+        </span>
+        <span class="subtab" id="tabsel_standalone">
+            STRUMENTI STANDALONE
+        </span>
+    </div>
 
-    <div class="button wide" id="proxy_create_new">Crea nuovo proxy</div>
+    <div id="controls_proxy">
+        <div class="button wide" id="proxy_create_new">Crea nuova istanza</div>
+    </div>
+    <div id="controls_standalone">
+        <div class="button wide" id="standalone_create_new">Crea nuova istanza</div>
+    </div>
+
     <div class="button wide" id="proxy_show_map">Mappa principale</div>
 
     <div class="statemess" id="proxy_created"></div>

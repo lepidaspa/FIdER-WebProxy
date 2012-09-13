@@ -28,8 +28,11 @@ function pageInit(jsonlisting)
     $("#proxy_created").hide();
     $("#progspinner").hide();
 
+    $("#tabsel_proxy").click(showSelProxy);
+    $("#tabsel_standalone").click(showSelStandalone);
 
     proxies = jsonlisting;
+    console.log(proxies);
 
     buildProxyList();
 
@@ -60,6 +63,40 @@ function pageInit(jsonlisting)
 
     centerMapTo(defaultLon, defaultLat, 6);
 
+
+
+}
+
+function showSelProxy ()
+{
+
+    $("#tabsel_standalone").addClass("unseltab");
+    $("#tabsel_proxy").removeClass("unseltab");
+
+    $("#controls_standalone").hide();
+    $("#controls_proxy").show();
+
+    $(".proxytype_local").hide();
+
+    $(".proxytype_query").show();
+    $(".proxytype_read").show();
+    $(".proxytype_write").show();
+}
+
+function showSelStandalone()
+{
+
+    $("#tabsel_standalone").removeClass("unseltab");
+    $("#tabsel_proxy").addClass("unseltab");
+
+    $("#controls_standalone").show();
+    $("#controls_proxy").hide();
+
+    $(".proxytype_local").show();
+
+    $(".proxytype_query").hide();
+    $(".proxytype_read").hide();
+    $(".proxytype_write").hide();
 }
 
 function centerMapTo (lon, lat, zoom)
@@ -112,8 +149,10 @@ function buildProxyList ()
         }
 
 
+        var proxyclass = "proxytype_"+proxies[proxy_id]['type'];
 
-        var proxyentry = '<div class="nav_entry" id="proxies_'+proxy_id+'"><a href="/fwp/proxy/'+proxy_id+'">'+entry_name +'</a><br>'+entry_area+'<br>'+entry_time+'</div>';
+
+        var proxyentry = '<div class="nav_entry '+proxyclass+'" id="proxies_'+proxy_id+'"><a href="/fwp/proxy/'+proxy_id+'">'+entry_name +'</a><br>'+entry_area+'<br>'+entry_time+'</div>';
         $("#proxylisting").append(proxyentry);
 
     }
@@ -128,7 +167,9 @@ function buildProxyList ()
     $(".nav_entry").hover(showProxyArea, hideProxyArea);
 
     $("#proxy_create_new").click(openProxyCreation);
+    $("#standalone_create_new").click(openProxyCreation);
 
+    $("#tabsel_proxy").click();
 
 }
 
