@@ -671,6 +671,7 @@ function create_CheckForSubmission()
     }
 
 
+
     // The proxy MUST have a starting date, can be without an ending date if the specific checkbox is activated (permanent proxy)
     var proxydatefrom = $("#newproxy_datefrom").val();
     var proxydateto = $("#newproxy_dateto").val();
@@ -1113,7 +1114,13 @@ function create_CreateProxy ()
 
     var ops_prefix = "proxy_options_";
 
-    var opsmode = $("#proxy_opsmode").val();
+    var opsmode = "none";
+    if (proxycreationmode == "proxy")
+    {
+        opsmode = $("#proxy_opsmode").val();
+    }
+
+    console.log("CREATING AN INSTANCE WITH OPSMODE "+opsmode);
 
     var opsdict = {
         'read' : 'none',
@@ -1140,7 +1147,7 @@ function create_CreateProxy ()
 
         opsdict[opsmode]['signs'] = $("#"+ops_prefix+opsmode+'_bi').val() == "true";
     }
-    else
+    else if (opsmode == 'none')
     {
         //PLACEHOLDER: if the proxy has no mode, we can keep the template description
     }

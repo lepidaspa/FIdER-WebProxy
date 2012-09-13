@@ -898,7 +898,7 @@ def getManifests ():
 		proxylist[proxy_id] = json.load(fp_manifest)
 		fp_manifest.close()
 
-	print proxylist
+	#print proxylist
 	return proxylist
 
 

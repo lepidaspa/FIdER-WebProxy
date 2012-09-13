@@ -87,7 +87,98 @@ function pageInit(jsonlisting)
 
     populateOwners();
 
+    $(".btn_proxydelete").live("click", renderDeleteMask);
+}
 
+function renderDeleteMask ()
+{
+
+
+
+    var prefix = "btn_proxydelete_";
+    var i = this.id.substr(prefix.length);
+
+    console.log("Rendering delete mask for "+i);
+    closeAllMasks();
+
+
+    var removestring = '<div class="removemask maskwidget" id="remove_'+i+'">' +
+        'Confermi l\'eliminazione dell\'istanza?<br>(per confermare, scrivi "confermo la richiesta di eliminazione" nel riquadro di testo)<br>'+
+        '<input type="text" id="txt_confirmproxydelete">'+
+        '<input type="button" class="btn_confirmdelete" id="btn_confirmdelete_'+i+'" value="Elimina">' +
+        '<br>ATTENZIONE: questa azione non può essere annullata.' +
+        '</div>';
+
+
+    $("#txt_confirmproxydelete").unbind();
+    $("#txt_confirmproxydelete").live('keyup change click', checkRemoveConfirmation);
+    $(".btn_confirmdelete").unbind();
+    $("#btn_confirmdelete_"+i).live('click', deleteProxy);
+
+    $("#proxies_"+i).append(removestring);
+
+    checkRemoveConfirmation();
+
+}
+
+function deleteProxy()
+{
+
+
+    var prefix = "btn_confirmdelete_";
+    var i = this.id.substr(prefix.length);
+
+    console.log("Deleting proxy "+i);
+
+    closeAllMasks();
+
+    var container = "#proxies_"+i;
+
+    var controldict = {
+        'action': 'deleteproxy',
+        'proxy_id': i
+    };
+
+    $("#progspinner").show();
+
+    $.ajax({
+        url: "/fwp/control/",
+        async: true,
+        data: controldict,
+        type: 'POST',
+        success: function(data)
+        {
+            if (!data['report'] || data['report'] == "")
+            {
+                data['report'] = 'Proxy '+i+' cancellato'
+            }
+            $("#progspinner").hide();
+            postFeedbackMessage(data['success'], data['report'] , container);
+            window.location = window.location.pathname;
+
+        },
+        error: function (data)
+        {
+            $("#progspinner").hide();
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container);
+        }
+    });
+
+}
+
+
+function checkRemoveConfirmation()
+{
+    var required = "confermo la richiesta di eliminazione";
+    var confstring = $("#txt_confirmproxydelete").val();
+    if (confstring == required)
+    {
+        $(".btn_confirmdelete").prop('disabled', false);
+    }
+    else
+    {
+        $(".btn_confirmdelete").prop('disabled', true);
+    }
 }
 
 function populateOwners()
@@ -234,9 +325,9 @@ function buildProxyList ()
 
 
         var proxyclass = "proxytype_"+proxies[proxy_id]['type'];
+        var proxydelete = '<img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_'+proxy_id+'">';
 
-
-        var proxyentry = '<div class="nav_entry '+proxyclass+'" id="proxies_'+proxy_id+'"><a href="/fwp/proxy/'+proxy_id+'">'+entry_name +'</a><br>'+entry_area+'<br>'+entry_time+'</div>';
+        var proxyentry = '<div class="nav_entry '+proxyclass+'" id="proxies_'+proxy_id+'">'+proxydelete+'<a href="/fwp/proxy/'+proxy_id+'">'+entry_name +'</a><br>'+entry_area+'<br>'+entry_time+'</div>';
         $("#proxylisting").append(proxyentry);
 
     }
@@ -345,4 +436,9 @@ function showProxyList ()
     }
 
 
+}
+
+function closeAllMasks()
+{
+    $(".maskwidget").remove();
 }

@@ -30,7 +30,7 @@ def createMessageFromTemplate (template, **customfields):
 
 	filledok, requestmsg = messagemodel.fillSafely(customfields)
 
-	print "Message creation result: %s" % filledok
+	#print "Message creation result: %s" % filledok
 
 	if filledok is True:
 		return requestmsg
@@ -75,14 +75,14 @@ def sendMessageToServer (jsonmessage, url, method, successreturns=None, failretu
 	if successreturns is not None:
 		successmodel = ArDiVa.Model(successreturns)
 		canverify = True
-		print "Comparing %s to success model %s " % (jsonresponse, successmodel)
+		#print "Comparing %s to success model %s " % (jsonresponse, successmodel)
 
 		if successmodel.validateCandidate(jsonresponse):
 			succeeded = True
 	if failreturns is not None:
 		failmodel = ArDiVa.Model(failreturns)
 		canverify = True
-		print "Comparing %s to fail model %s " % (jsonresponse, failmodel)
+		#print "Comparing %s to fail model %s " % (jsonresponse, failmodel)
 
 	if failmodel.validateCandidate(jsonresponse):
 			succeeded = False

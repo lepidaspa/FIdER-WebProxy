@@ -895,12 +895,7 @@ function closeAllMasks()
     //$(".statemess").hide();
 
 
-    /*
-    $(".uploadfilemask").remove();
-    $(".uploadwfsmask").remove();
-    $(".convtablemask").remove();
-    $(".removemask").remove();
-    */
+
 }
 
 function renderGeoJSON (shapedata, map, maplayer)
