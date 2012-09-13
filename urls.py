@@ -65,13 +65,7 @@ urlpatterns = patterns('',
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
 	url(r'^fwp/$', fwpviews.proxysel),
 
-
-
-
-
 	# standalone tool v2
-
-
 
 	url(r'^fwst/upload/(?P<proxy_id>\w*)/$', fwstviews.uploadfile),
 	url(r'^fwst/maps/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.loadSTMap),
@@ -86,7 +80,7 @@ urlpatterns = patterns('',
 
 	url(r'^fwp/fed/owners/$', fwpviews.getProviders),
 	url(r'^fwp/fed/settings/$', redirect_to, {'url': proxy_config_core.URL_CONFIG}),
-	url(r'', redirect_to, {'url': "/fwp/"})
+	url(r'^?', redirect_to, {'url': "/fwp/"})
 
 
 
