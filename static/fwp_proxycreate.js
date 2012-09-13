@@ -93,6 +93,11 @@ function bindInputFields()
     $("#newproxy_name").change(create_CheckForSubmission);
 
 
+    $("#newproxy_provider").keyup(create_CheckForSubmission);
+    $("#newproxy_provider").mouseup(create_CheckForSubmission);
+    $("#newproxy_provider").change(create_CheckForSubmission);
+
+
     $("#newproxy_datefrom").datepicker( {onClose: create_CheckForSubmission, changeYear: true, dateFormat: "dd-mm-yy"});
     $("#newproxy_dateto").datepicker( {onClose: create_CheckForSubmission, changeYear: true, dateFormat: "dd-mm-yy"});
     $('#newproxy_dateto_use').change(switchProxyDateTo);
@@ -643,6 +648,12 @@ function create_CheckForSubmission()
         errors += 1;
     }
 
+    var proxyprovider = $("#newproxy_provider").val();
+    if (proxyprovider.length == 0)
+    {
+        errors += 1;
+    }
+
     // IF the proxy is a query proxy, AT LEAST one type of query must be enabled beyond the 'none' level
     // default to standalone tool
     var proxymode = "none";
@@ -658,7 +669,6 @@ function create_CheckForSubmission()
             }
         }
     }
-
 
 
     // The proxy MUST have a starting date, can be without an ending date if the specific checkbox is activated (permanent proxy)
@@ -1022,6 +1032,7 @@ function create_CreateProxy ()
     // first we must re-check the proxy names, in case somebody create a proxy with the same name (that must be unique, though the actual identifier is the token provided by the server; except for this, all other validations have already been carried out and will NOT be repeated)
 
     var proxy_name = $("#newproxy_name").val();
+    var proxy_provider = $("#newproxy_provider").val();
 
     var urlstring = "/fwp/proxylist";
 
@@ -1067,6 +1078,7 @@ function create_CreateProxy ()
     var manifest = {};
 
     manifest['name'] = proxy_name;
+    manifest['provider'] = proxy_provider;
 
     if (newproxymap.layers[1].features.length == 0)
     {

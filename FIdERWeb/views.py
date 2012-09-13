@@ -641,18 +641,29 @@ def proxy_create_new (request):
 
 			message = {'token': "local_"+str(uuid.uuid4()).replace("-","_")}
 
+
+
+
 		if accepted:
 			#assembling the manifest
 
 			proxy_id = message['token']
+			print "RECEIVED TOKEN %s" % proxy_id
 			jsonmessage['token'] = proxy_id
 			filledok, manifest = premanifest.fillSafely(jsonmessage)
 
 
 			if not islocal:
 				approved, response = Components.sendProxyManifestRaw (json.dumps(manifest))
+
+				print "RECEIVED RESPONSE FOR RAW MANIFEST: %s" % approved
+				print response
+
 			else:
 				approved = True
+
+
+
 
 			if approved:
 
@@ -1181,6 +1192,9 @@ def sideloadSTMap (request, **kwargs):
 
 	return HttpResponse(json.dumps(response_sideload), mimetype="application/json")
 
+def getProviders(request):
+
+	return HttpResponse(urllib2.urlopen(proxyconf.URL_PROVIDERS), mimetype="application/json")
 
 
 def geosearch(request, path):

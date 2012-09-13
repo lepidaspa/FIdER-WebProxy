@@ -10,6 +10,13 @@
     white-space: pre;
 }
 
+.datalisted
+{
+    background-image:               url('/static/resource/fwp_dropdown.png');
+    background-position:            99% 50%;
+    background-repeat:              no-repeat;
+}
+
 .geoloc_combo img
 {
     vertical-align: text-bottom;

@@ -10,6 +10,7 @@ __docformat__ = 'restructuredtext en'
 model_response_capabilities = {
 	"token": unicode,
 	"name": unicode,
+	"provider": unicode,
 	"message_type": (u'response',),
 	"message_format": (u'capabilities',),
 	"base_url": unicode,

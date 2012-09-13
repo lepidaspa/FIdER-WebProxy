@@ -85,8 +85,39 @@ function pageInit(jsonlisting)
         showSelProxy();
     }
 
+    populateOwners();
+
 
 }
+
+function populateOwners()
+{
+
+    var urlstring = "/fwp/fed/owners";
+
+    $.ajax ({
+        url: urlstring,
+        async: true,
+        success: function(data) {
+            $("#fed_providers").empty();
+
+            console.log("Providers request");
+            console.log(data);
+            try
+            {
+                for (var i in data)
+                {
+                    $("#fed_providers").append('<option value="'+data[i]+'">')
+                }
+            }
+            catch (err)
+            {
+                console.log(err);
+            }
+        }
+    });
+}
+
 
 function showSelProxy ()
 {
