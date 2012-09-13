@@ -296,6 +296,7 @@ function saveConnection(currentconn)
             //unsetLoadingState();
 
             //we put the message anyway just in case there's anything to delay the refresh;
+            unsetLoadingState();
             postFeedbackMessage(data['success'], data['report']+"<br>Per accedere ai dati è necessario creare uno schema di conversione.", container);
 
 
