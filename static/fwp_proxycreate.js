@@ -948,21 +948,21 @@ function geosearch(caller)
                     gqdata.results[0].geometry.viewport.northeast.lat).transform(proj_WGS84,
                     proj_900913));
                 cmap.zoomToExtent(gq);
-                closeFeedback();
+                cleanupFeedback("#proxy_created");
 
             }
             else
             {
 
                 console.log("No location found");
-                reportFeedback(false, "Impossibile individuare la locazione specificata.");
+                postFeedbackMessage(false, "Impossibile individuare la locazione specificata.", "#proxy_created", true);
                 console.log(gqdata.results);
             }
         }
         else
         {
             console.log("No location found");
-            reportFeedback(false, "Impossibile individuare la locazione specificata.");
+            postFeedbackMessage(false, "Impossibile individuare la locazione specificata.", "#proxy_created", true);
             console.log(gqdata.results);
         }
     });
@@ -1014,7 +1014,7 @@ function create_CreateProxy ()
         },
         error: function (data)
         {
-            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container);
+            postFeedbackMessage(false, "ERRORE: "+JSON.stringify(data), container);
             success = false;
         }
     });
@@ -1206,6 +1206,14 @@ function create_CreateProxy ()
 }
 
 
+
+function cleanupFeedback (widgetid)
+{
+    $(widgetid).empty();
+    $(widgetid).removeClass("success");
+    $(widgetid).removeClass("fail");
+
+}
 
 //copied from fwp_metapage.js, removed closeAllMasks()
 function postFeedbackMessage (success, report, widgetid, cleanup)
