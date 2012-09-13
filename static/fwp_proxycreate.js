@@ -54,6 +54,9 @@ function create_initForm()
     $("#proxy_create_new").hide();
     $("#proxy_show_map").show();
 
+    $("#btn_trygeoloc_proxy").live('click', geosearch);
+    $("#btn_trygeoloc_meta").live('click', geosearch);
+
 /*
     $("#tool_nav_proxy").click(create_setNavControlsHere);
     $("#tool_draw_proxy").click(create_setDrawControlsHere);
@@ -99,7 +102,26 @@ function bindInputFields()
 
     $("#proxy_create_confirm").click(create_CreateProxy);
 
+    $("#newmeta_bbox_use").live('change', setMetaAreaControls);
+
 }
+
+function setMetaAreaControls ()
+{
+    if ($('#newmeta_bbox_use').is(':checked'))
+    {
+        $("#btn_trygeoloc_meta").prop('disabled', false);
+        $("#newmeta_geoloc").prop('disabled', false);
+    }
+    else
+    {
+        $("#btn_trygeoloc_meta").prop('disabled', true);
+        $("#newmeta_geoloc").prop('disabled', true);
+    }
+
+
+}
+
 
 function create_RemoveMeta()
 {
@@ -882,6 +904,70 @@ function validateDateField (datestring)
 
 
     return ((datestring.match(dateregex)) &&  (parseInt(datestring.substr(0,2)) < 32) && (parseInt(datestring.substr(3,2)) < 13) );
+
+}
+
+
+function geosearch(caller)
+{
+
+    var cmap;
+    var geostring;
+    if (caller.srcElement.id == 'btn_trygeoloc_meta')
+    {
+        cmap = newmetamap;
+        geostring = $('#newmeta_geoloc').val();
+    }
+    else if  (caller.srcElement.id == 'btn_trygeoloc_proxy')
+    {
+        cmap = newproxymap;
+        geostring = $('#newproxy_geoloc').val();
+    }
+
+    var jg;
+    var path = '/external/maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
+        + geostring;
+
+    console.log("Recentering meta map by search: "+path);
+
+
+    $.getJSON(path, function(gqdata){
+        console.log(gqdata);
+        if(gqdata.status == "OK"){
+            if (gqdata.results.length > 0){
+
+                console.log("Results found");
+
+                gq = new OpenLayers.Bounds();
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.southwest.lng,
+                    gqdata.results[0].geometry.viewport.southwest.lat).transform(proj_WGS84,
+                    proj_900913));
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.northeast.lng,
+                    gqdata.results[0].geometry.viewport.northeast.lat).transform(proj_WGS84,
+                    proj_900913));
+                cmap.zoomToExtent(gq);
+                closeFeedback();
+
+            }
+            else
+            {
+
+                console.log("No location found");
+                reportFeedback(false, "Impossibile individuare la locazione specificata.");
+                console.log(gqdata.results);
+            }
+        }
+        else
+        {
+            console.log("No location found");
+            reportFeedback(false, "Impossibile individuare la locazione specificata.");
+            console.log(gqdata.results);
+        }
+    });
+
+
 
 }
 

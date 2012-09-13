@@ -4,6 +4,8 @@
 
 <div id="proxycreate_mask">
 
+    <div class="sectionbanner">PROXY</div>
+
     <div class="sectionmask" id="create_proxydef">
 
         <div id="map_proxy_new" class="elementmask">
@@ -16,7 +18,7 @@
 
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Nome
+                        Nome Proxy
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newproxy_name">
@@ -36,6 +38,15 @@
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newproxy_dateto">
+                    </div>
+                </div>
+
+                <div class="fieldmask">
+                    <div class="subfieldmask">
+                        Area <input type="button" id="btn_trygeoloc_proxy" value="Inquadra">
+                    </div>
+                    <div class="subfieldmask">
+                        <input type="text" id="newproxy_geoloc">
                     </div>
                 </div>
 
@@ -168,6 +179,8 @@
 
     </div>
 
+    <div class="sectionbanner">METADATI</div>
+
     <div class="sectionmask" id="create_metalist">
 
         <table id="new_meta_table" class="elementmask">
@@ -179,6 +192,7 @@
         </table>
 
     </div>
+
 
     <div class="sectionmask" id="create_metadef">
 
@@ -192,7 +206,7 @@
 
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Nome
+                        Nome Metadato
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newmeta_name">
@@ -217,14 +231,17 @@
 
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Area <input type="checkbox" id="newmeta_bbox_use" checked="checked">
+                        Area <input type="button" id="btn_trygeoloc_meta" value="Inquadra"> <input type="checkbox" id="newmeta_bbox_use" checked="checked">
+                    </div>
+                    <div class="subfieldmask">
+                        <input type="text" id="newmeta_geoloc">
                     </div>
 
                 </div>
 
                 <div class="fieldmask" id="newmeta_buttons">
                     <div class="subfieldmask">
-                        <input type="button" value="Aggiungi" id="newmeta_confirm">
+                        <input type="button" value="Aggiungi metadato" id="newmeta_confirm">
                     </div>
 
                 </div>

@@ -26,6 +26,8 @@
     border-width:           0;
 }
 
+
+
 .elementmask
 {
 
@@ -41,6 +43,18 @@
 
 
 }
+
+.sectionbanner
+{
+    background-color:   #ff8800;
+    color:              #ffffff;
+    left:               6px;
+    right:              6px;
+    margin-bottom:      4px;
+    text-align:         center;
+    font-weight:        bold;
+}
+
 
 .fieldmask
 {
@@ -133,4 +147,7 @@
     text-align: center;
 }
 
+#def_meta_new
+{
 
+}

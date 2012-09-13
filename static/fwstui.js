@@ -157,12 +157,9 @@ function initSearchBox()
 function geosearch()
 {
 
-
-
-
     var jg;
     var path = '/external/maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
-        + $('#search_geo_address').val()
+        + $('#search_geo_address').val();
 
     console.log("Recentering map by search: "+path);
 
