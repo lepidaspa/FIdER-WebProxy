@@ -906,10 +906,11 @@ function closeAllMasks()
 function renderGeoJSON (shapedata, map, maplayer)
 {
 
+    /*
     setTimeout(function () {
-
         $("#renderingstate").show();
     }, 0);
+    */
 
 
     var geojson_format = new OpenLayers.Format.GeoJSON({'externalProjection':new OpenLayers.Projection(proj_WGS84), 'internalProjection':map.getProjectionObject()});
@@ -919,8 +920,11 @@ function renderGeoJSON (shapedata, map, maplayer)
     var formatmap = geojson_format.read(stringmap);
     maplayer.addFeatures(formatmap);
 
-    $("#renderingstate").hide();
-
+    /*
+    setTimeout(function () {
+        $("#renderingstate").hide();
+    }, 0);
+    */
 }
 
 
