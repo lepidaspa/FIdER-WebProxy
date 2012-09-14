@@ -950,7 +950,8 @@ function renderGeoJSON (shapedata, map, maplayer)
 
     }
     console.log ("Rendered with "+render_errors.length+" errors");
-    console.log(render_errors);
+    console.log("Error sample:");
+    console.log(render_errors[0]);
 
 
     /*
