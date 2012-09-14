@@ -27,6 +27,9 @@ var dateregex = new RegExp ("\\d{2}-\\d{2}-\\d{4}");
 
 
 
+var tempgeoloc_proxy = null;
+var tempgeoloc_meta = null;
+
 function create_initForm()
 {
 
@@ -125,6 +128,28 @@ function bindInputFields()
 
     $("#newmeta_bbox_use").live('change', setMetaAreaControls);
 
+
+    $("#btn_cleangeoloc_proxy").live('click', cleanGeoloc);
+    $("#btn_cleangeoloc_meta").live('click', cleanGeoloc);
+
+}
+
+function cleanGeoloc ()
+{
+    var prefix = "btn_cleangeoloc_";
+    var context = this.id.substr(prefix.length);
+
+    if (context == 'meta')
+    {
+        tempgeoloc_meta = null;
+        renderbbox(tempgeoloc_meta, newmetamap, false);
+    }
+    else if (context == 'proxy')
+    {
+        tempgeoloc_proxy = null;
+        renderbbox(tempgeoloc_proxy, newproxymap, false);
+    }
+
 }
 
 function setMetaAreaControls ()
@@ -133,11 +158,15 @@ function setMetaAreaControls ()
     {
         $("#btn_trygeoloc_meta").prop('disabled', false);
         $("#newmeta_geoloc").prop('disabled', false);
+
     }
     else
     {
         $("#btn_trygeoloc_meta").prop('disabled', true);
         $("#newmeta_geoloc").prop('disabled', true);
+        $("#newmeta_geoloc").val("");
+        tempgeoloc_meta = null;
+        renderbbox(tempgeoloc_meta, newmetamap, false);
     }
 
 
@@ -954,9 +983,31 @@ function validateDateField (datestring)
 
 }
 
+function renderbbox (bounds, mapview, zoomto)
+{
+
+    var vectorlayer = mapview.layers[1];
+    vectorlayer.destroyFeatures();
+
+    if (bounds != null)
+    {
+        if (zoomto)
+        {
+            mapview.zoomToExtent(bounds);
+        }
+        var cfeature = new OpenLayers.Feature.Vector(bounds.toGeometry());
+
+        vectorlayer.addFeatures(cfeature);
+        console.log(bounds.toGeometry());
+        console.log(vectorlayer);
+    }
+
+
+}
 
 function geosearch(caller)
 {
+
 
     var cmap;
     var geostring;
@@ -970,6 +1021,7 @@ function geosearch(caller)
         cmap = newproxymap;
         geostring = $('#newproxy_geoloc').val();
     }
+
 
     var jg;
     var path = '/external/maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
@@ -986,6 +1038,7 @@ function geosearch(caller)
                 console.log("Results found");
 
                 gq = new OpenLayers.Bounds();
+
                 gq.extend(new
                     OpenLayers.LonLat(gqdata.results[0].geometry.viewport.southwest.lng,
                     gqdata.results[0].geometry.viewport.southwest.lat).transform(proj_WGS84,
@@ -994,7 +1047,26 @@ function geosearch(caller)
                     OpenLayers.LonLat(gqdata.results[0].geometry.viewport.northeast.lng,
                     gqdata.results[0].geometry.viewport.northeast.lat).transform(proj_WGS84,
                     proj_900913));
-                cmap.zoomToExtent(gq);
+
+
+
+                // moved inside renderbbox
+                //cmap.zoomToExtent(gq);
+
+                // using the data for either the proxy or the current meta
+                if (caller.srcElement.id == 'btn_trygeoloc_meta')
+                {
+                    console.log("Rendering meta bbox");
+                    tempgeoloc_meta = gq;
+                }
+                else if  (caller.srcElement.id == 'btn_trygeoloc_proxy')
+                {
+                    console.log("Rendering proxy bbox");
+                    tempgeoloc_proxy = gq;
+                }
+                renderbbox (gq, cmap, true);
+
+
                 cleanupFeedback("#proxy_created");
 
             }

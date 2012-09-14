@@ -10,6 +10,11 @@
     white-space: pre;
 }
 
+.imgbutton
+{
+    cursor:         pointer;
+}
+
 .datalisted
 {
     background-image:               url('/static/resource/fwp_dropdown.png');
