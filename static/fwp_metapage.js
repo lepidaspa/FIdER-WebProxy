@@ -226,9 +226,14 @@ function renderMaps()
 function checkShapesLoadingState()
 {
 
-
+    console.log("Checking for end of map loading");
     if (shapedata.length == shapes.length)
     {
+        console.log("Finished loading maps");
+        for (var mapkey in shapes)
+        {
+            console.log("Loaded map "+shapes[mapkey]);
+        }
         unsetLoadingState();
         $("#proxy_addmap").show();
     }
@@ -256,6 +261,7 @@ function unsetLoadingState()
     // renders the maps
     for (var i = 0; i < shapedata.length; i++)
     {
+        console.log("Rendering map "+shapes[i]);
         renderGeoJSON (shapedata[i], proxymap, proxymap_currentlayer);
 
         renderMapCard (i);
@@ -916,9 +922,36 @@ function renderGeoJSON (shapedata, map, maplayer)
     var geojson_format = new OpenLayers.Format.GeoJSON({'externalProjection':new OpenLayers.Projection(proj_WGS84), 'internalProjection':map.getProjectionObject()});
 
 
+    /*
     var stringmap = JSON.stringify(shapedata);
     var formatmap = geojson_format.read(stringmap);
     maplayer.addFeatures(formatmap);
+    */
+
+    var render_errors = [];
+    for (var i in shapedata['features'])
+    {
+        try
+        {
+            var info2d = shapedata['features'][i];
+            info2d['geometry']['coordinates'] = info2d['geometry']['coordinates'].slice(0,2);
+            var fstring = JSON.stringify(info2d);
+            var fmap = geojson_format.read(fstring);
+            maplayer.addFeatures(fmap);
+        }
+        catch (err)
+        {
+            if (render_errors.length < 100)
+            {
+                console.log(err);
+            }
+            render_errors.push(i);
+        }
+
+    }
+    console.log ("Rendered with "+render_errors.length+" errors");
+    console.log(render_errors);
+
 
     /*
     setTimeout(function () {
