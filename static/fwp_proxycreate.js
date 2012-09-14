@@ -748,16 +748,21 @@ function create_CheckForSubmission()
 
 
         var proxy_bb;
-        if (newproxymap.layers[1].features.length == 0)
+        if (tempgeoloc_proxy == null)
         {
-            //alert ("Using auto bb");
+            console.log ("Using PROXY auto bb");
             proxy_bb = newproxymap.getExtent().transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
         }
         else
         {
-            //alert ("Using given bb");
-            proxy_bb = newproxymap.layers[1].features[0].geometry.bounds.transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+            console.log ("Using PROXY drawn bb");
+            console.log(tempgeoloc_proxy.toArray());
+            proxy_bb = new OpenLayers.Bounds.fromArray(tempgeoloc_proxy.toArray());
+            proxy_bb.transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
+            proxy_bb = proxy_bb.toArray();
         }
+
+        console.log(proxy_bb);
 
 
 
@@ -769,6 +774,7 @@ function create_CheckForSubmission()
 
             if (meta_bb != null)
             {
+                console.log("Comparing "+meta_bb+" with "+proxy_bb);
                 var bbox_match = compareBboxArrays(meta_bb, proxy_bb);
             }
             else
@@ -835,8 +841,7 @@ function create_CheckForSubmission()
     }
     else
     {
-
-        //TODO: add error message saying meta cannot be parsed without a full proxy description?
+        // NOTHING, we simply keep the button greyed out, other warnings would be too intrusive.
     }
 
 
@@ -900,25 +905,20 @@ function compareBboxArrays (can_bb, ref_bb)
     var candidate = OpenLayers.Bounds.fromArray(can_bb);
     var reference = OpenLayers.Bounds.fromArray(ref_bb);
 
-
-    if (reference.intersectsBounds(candidate))
+    if (reference.containsBounds(candidate))
     {
-        //we have at least a partial match
-        if (reference.containsBounds(candidate))
-        {
-            // full containment
-            return 1;
-        }
-        else
-        {
-            // confirmed as partial
-            return 0;
-        }
+        // candidate is fully contained;
+        return 1;
+    }
+    else if (reference.intersectsBounds(candidate))
+    {
+        // candidate intersects
+        return 0;
     }
     else
     {
-        // no intersection/containment at all
-        return -1;
+        // candidate is entirely out
+        return -1
     }
 
 
