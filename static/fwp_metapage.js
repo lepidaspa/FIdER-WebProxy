@@ -933,11 +933,29 @@ function renderGeoJSON (shapedata, map, maplayer)
     {
         try
         {
+
             var info2d = shapedata['features'][i];
-            info2d['geometry']['coordinates'] = info2d['geometry']['coordinates'].slice(0,2);
+
+            var objtype = info2d['geometry']['type'];
+            if (objtype.toUpperCase() == "LINESTRING")
+            {
+
+                for (var pt in info2d['geometry']['coordinates'])
+                {
+                    info2d['geometry']['coordinates'][pt] = info2d['geometry']['coordinates'][pt].slice(0,2);
+                }
+
+            }
+            else if (objtype.toUpperCase() == "POINT")
+            {
+                info2d['geometry']['coordinates'] = info2d['geometry']['coordinates'].slice(0,2);
+
+            }
             var fstring = JSON.stringify(info2d);
             var fmap = geojson_format.read(fstring);
             maplayer.addFeatures(fmap);
+
+
         }
         catch (err)
         {
