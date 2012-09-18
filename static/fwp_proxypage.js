@@ -43,7 +43,7 @@ function pageInit(req_id, req_manifest)
         {
             function_access += '<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'">Gestione mappe</a></div>';
         }
-        function_access += '<div class="button wide" id="maps_dload"><span id="maps_dload_toggle">Scaricamento mappe</span></div>';
+        function_access += '<div class="button wide" id="maps_dload"><span id="maps_dload_toggle">Download mappe</span></div>';
 
         $(function_access).insertAfter("#minimap");
         renderMapDownloader();
