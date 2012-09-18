@@ -1246,7 +1246,7 @@ function renderGeoJSONCollection (jsondata, layer, cleanup)
     }
 
 
-
+    var geojson_format = new OpenLayers.Format.GeoJSON({'externalProjection':new OpenLayers.Projection(proj_WGS84), 'internalProjection':layer.map.getProjectionObject()});
     /* REPLACING WITH SAFER METHOD for undesidered geometries
     var stringmap = JSON.stringify(jsondata);
     var formatmap = gjformat.read(stringmap);
@@ -1263,7 +1263,7 @@ function renderGeoJSONCollection (jsondata, layer, cleanup)
             info2d['geometry']['coordinates'] = info2d['geometry']['coordinates'].slice(0,2);
             var fstring = JSON.stringify(info2d);
             var fmap = geojson_format.read(fstring);
-            maplayer.addFeatures(fmap);
+            layer.addFeatures(fmap);
         }
         catch (err)
         {
@@ -1276,8 +1276,12 @@ function renderGeoJSONCollection (jsondata, layer, cleanup)
 
     }
     console.log ("Rendered with "+render_errors.length+" errors");
-    console.log("Error sample:");
-    console.log(render_errors[0]);
+    if (render_errors.length > 0)
+    {
+        console.log("Error sample:");
+        console.log(render_errors[0]);
+    }
+
 
 
     if (cleanup !== true)
