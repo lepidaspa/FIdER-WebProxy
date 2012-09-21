@@ -99,12 +99,34 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote,
     //mapvis.events.register('moveend', mapvis, showProxyList);
     //mapvis.events.register('zoomend', null, filterProxies);
 
-    var bbox = (manifest['area']);
-    zoomToBBox(minimap, bbox);
+    var cmeta = -1;
+    for (var i = 0; i < manifest['metadata'].length; i++)
+    {
+        if (manifest['metadata'][i]['name'] == meta_id)
+        {
+            cmeta = i;
+            break;
+        }
+    }
+
+    console.log("Bounding box preset to current proxy");
+    var bbox = manifest['area'];
+    console.log(bbox);
+    if (cmeta != -1)
+    {
+        console.log("Setting bounding box to current meta");
+        bbox = manifest['metadata'][i]['area'];
+        console.log(bbox);
+    }
+
 
     buildMetaMap();
 
     renderMaps();
+
+    zoomToBBox(minimap, bbox);
+    zoomToBBox(proxymap, bbox);
+
 
     $("#confirmuploadfile").live('click', uploadFromFile);
     $("#confirmuploadwfs").live('click', uploadFromWeb);
