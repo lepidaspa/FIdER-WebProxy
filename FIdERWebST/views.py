@@ -177,6 +177,7 @@ def uploadfile (request, **kwargs):
 
 		try:
 			success, output = saveMapToST(upload, proxy_id, map_id)
+			print "Result for fwst upload:\n%s\n%s" % (success, output)
 			if success:
 				response_upload['success'] = True
 				response_upload['report'] = "Invio del file %s su %s per integrazione completato." % (map_id, output)
@@ -204,7 +205,6 @@ def normaliseMapName(namereq):
 	return cleanname
 
 
-@csrf_exempt
 def saveMapToST (uploaded, proxy_id, map_id):
 	"""
 	Tries to save the uploaded map to the standalone area of the proxy
@@ -229,7 +229,7 @@ def saveMapToST (uploaded, proxy_id, map_id):
 	desttemp = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, "."+map_id)
 	try:
 		os.makedirs(desttemp)
-	except:
+	except Exception as ex:
 		for cfile in os.listdir(desttemp):
 			os.remove(os.path.join(desttemp, cfile))
 

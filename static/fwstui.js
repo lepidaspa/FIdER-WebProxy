@@ -1012,7 +1012,7 @@ function uploadFileToStandalone()
 function checkCompleteUpload (data, textStatus, jqXHR)
 {
     // TODO: placeholder, implement
-    console.log("Reporting completed upload of the file in use");
+    console.log("Reporting (tentatively) completed upload of the file in use");
     //console.log(data);
 
     if (data['success'] == true)
@@ -1023,6 +1023,7 @@ function checkCompleteUpload (data, textStatus, jqXHR)
     }
     else
     {
+        console.log(data);
         reportFeedback(false, "Caricamento file fallito");
         unlockContext();
     }
@@ -1326,6 +1327,7 @@ function reportFeedback (positive, message)
         $("#statemessage").addClass("badnews");
     }
     $("#statemessage").text(message);
+    $("#statemessage").show();
     $("#hr_stateview").show();
 
 }
@@ -1532,7 +1534,7 @@ function buildMapWidget()
     var featurestylemap;
 
     // setting style
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#888888", strokeColor: "#888888", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#888888", strokeColor: "#888888", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 8});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     // adding the "background" layer
     snaplayer= new OpenLayers.Layer.Vector("Riferimento", {styleMap: featurestylemap});
