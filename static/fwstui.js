@@ -139,9 +139,83 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
 
     $("#txt_filter_propvalue").live("change mouseup keyup", unsetFilterCheckbox);
 
+    $("#xlate_move_x").live("change mouseup keyup", checkXlateFields);
+    $("#xlate_move_y").live("change mouseup keyup", checkXlateFields);
+    $("#btn_xlate").live("click", xlateMap);
+    checkXlateFields();
+
+
     initSearchBox();
 
 }
+
+function checkXlateFields()
+{
+
+    var offset_x = parseFloat($("#xlate_move_x").val());
+    var offset_y = parseFloat($("#xlate_move_y").val());
+
+    if (isNaN(offset_x) || isNaN(offset_y))
+    {
+        $("#btn_xlate").prop("disabled", true);
+        //console.log("disabling xlate button");
+    }
+    else
+    {
+        $("#btn_xlate").prop("disabled", false);
+        //console.log("enabling xlate button");
+    }
+
+}
+
+function xlateMap ()
+{
+
+    var offset_x = parseFloat($("#xlate_move_x").val());
+    var offset_y = parseFloat($("#xlate_move_y").val());
+
+    console.log("Trying translation by "+offset_x+","+offset_y);
+
+    if (isNaN(offset_x) || isNaN(offset_y))
+    {
+        $("#btn_xlate").prop("disabled", true);
+        //console.log("disabling xlate button");
+        return;
+    }
+
+    var f;
+    for (f in vislayer.features)
+    {
+        xlateFeature (vislayer.features[f], offset_x, offset_y);
+    }
+
+    for (f in filterlayer.features)
+    {
+        xlateFeature (filterlayer.features[f], offset_x, offset_y);
+    }
+
+    vislayer.redraw();
+    vislayer.refresh();
+    filterlayer.redraw();
+    filterlayer.refresh();
+
+    parseFloat($("#xlate_move_x").val(""));
+    parseFloat($("#xlate_move_y").val(""));
+    checkXlateFields();
+
+}
+
+function xlateFeature (feature, offset_x, offset_y)
+{
+
+    console.log("Feature move from");
+    console.log(feature);
+    feature.geometry.move(offset_x, offset_y);
+    console.log("Feature move to");
+    console.log(feature);
+
+}
+
 
 function unsetFilterCheckbox ()
 {
@@ -599,6 +673,8 @@ function unlockContext()
         setMapControlsEdit();
         renderMapCard();
     }
+
+    checkXlateFields();
 
     $("body").removeClass("passive");
 }

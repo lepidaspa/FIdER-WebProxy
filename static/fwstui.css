@@ -7,11 +7,19 @@
 
 }
 
+
+
 .ctx_topic
 {
     display:    table-row;
 
 }
+
+#mod_xlate, #view_goto
+{
+    border-top: 1px dashed #ff8800;
+}
+
 
 .ctx_fieldval
 {
