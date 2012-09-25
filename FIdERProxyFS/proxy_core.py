@@ -15,6 +15,7 @@ import os.path
 import os
 import sys
 import shutil
+import copy
 import zipfile
 import time
 import json
@@ -607,7 +608,7 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 			if normalise:
 				jsondata = adaptGeoJson(jsondata, convtable)
 
-			#TODO: handle more than point/linestring/multilinestring (currently it's implicit), move the bbox detection out of GeoJSON to the GEOMETRY element of the original feature
+			#TODO: convert Multi to several single entities with the same properties
 
 			positions = []
 
@@ -650,7 +651,20 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 				noid.append(len(collection['features']))
 
 
-			collection['features'].append(jsondata)
+			if ftype in ("LineString", "Point"):
+				collection['features'].append(jsondata)
+			elif ftype in ("MultiLineString", "MultiPoint"):
+				fitems = []
+				if ftype == "MultiLineString":
+					convtype = "LineString"
+				elif ftype == "MultiPoint":
+					convtype = "Point"
+				for fitem in fgeom:
+					jsonobj = copy.deepcopy (jsondata)
+					jsonobj['geometry']['type'] = convtype
+					jsonobj['geometry']['coordinates'] = fitem
+					collection['features'].append(jsonobj)
+
 
 			feature = layer.GetNextFeature()
 
@@ -884,7 +898,11 @@ def rebuildShape (proxy_id, meta_id, shape_id, modified=True):
 	if modified:
 		path_shape = os.path.join(path_shape, ".tmp")
 
-	shape_gj = convertShapePathToJson (path_shape, temp=True)
+	norm = True
+	if learnProxyType(getManifest(proxy_id)) == "local":
+		norm = False
+
+	shape_gj = convertShapePathToJson (path_shape, normalise=norm, temp=True)
 
 	return shape_gj
 
