@@ -184,6 +184,8 @@ def uploadfile (request, **kwargs):
 			else:
 				response_upload['report']= "Invio del file %s fallito. Causa: %s <br>" % (map_id, output)
 		except Exception as ex:
+			print "ST Uploading error"
+			print ex, ex.message
 			response_upload['report'] = "Caricamento fallito. Causa: %s <br>" % ex
 
 
@@ -240,7 +242,7 @@ def saveMapToST (uploaded, proxy_id, map_id):
 	mapdata = proxy_core.convertShapePathToJson(desttemp, normalise=False)
 
 	dest_fp = open(destpath, 'w+')
-	json.dump(mapdata, dest_fp)
+	json.dump(mapdata, dest_fp, encoding="latin-1")
 	shutil.rmtree(desttemp)
 
 
@@ -271,7 +273,7 @@ def saveSTMap (request, **kwargs):
 		path_tool = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone)
 
 		dest_fp = open(os.path.join(path_tool, map_id), 'w+')
-		json.dump(json.loads(mapdata), dest_fp)
+		json.dump(json.loads(mapdata), dest_fp, encoding="latin-1")
 		dest_fp.close()
 
 

@@ -599,12 +599,40 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 			# fixed to output actual dict
 
 			#print "DEBUG: exporting %s to JSON" % feature
-			jsondata = json.loads(feature.ExportToJson())
+			"""
+			print "Exporting feature to JSON"
+			print feature
+			rawjson = feature.ExportToJson()
+			print "Moving raw json to json dict"
+			jsondata = json.loads(rawjson)
 			#print "DEBUG: exported %s" % jsondata
+			"""
+			#print "Exporting feature to JSON"
+			#print feature.keys()
+			#print feature.items()
+			#print feature.geometry()
+			#jsondata = feature.ExportToJson(as_object=True)
+
+			#print jsondata
+
+			#print "Recreating obj struct"
+
+			jsondata = {}
+			jsondata['type'] = "Feature"
+
+			#print "Getting properties"
+			jsondata['properties'] = feature.items()
+
+			#print "Getting geometry"
+			jsondata['geometry'] = json.loads(feature.geometry().ExportToJson())
+
+			#print "Object recreated"
 
 			#print "feature.exportToJson outputs "+str(type(jsondata))
 
 			# we may want to keep to original "properties" elements
+
+
 			if normalise:
 				jsondata = adaptGeoJson(jsondata, convtable)
 
@@ -835,7 +863,8 @@ def adaptGeoJson (jsondata, conversiontable=None):
 				cvalue = convlist[itemfrom]['values']['']
 			except:
 				applies = False
-				pass
+
+
 		if applies:
 			newdict[convlist[itemfrom]['to']] = cvalue
 
@@ -918,9 +947,10 @@ def replicateShapeData (shapedata, proxy_id, meta_id, shape_id, modified=True):
 
 	try:
 		shape_fp = open (os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id), 'w+')
-		json.dump(shapedata, shape_fp)
+		json.dump(shapedata, shape_fp, encoding="latin-1")
 		shape_fp.close()
-	except:
+	except Exception as ex:
+		print "Error while saving: %s " % ex.message
 		#TODO: add more complex exception handling
 		raise
 
