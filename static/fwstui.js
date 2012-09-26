@@ -505,12 +505,10 @@ function resetFilterSuggestions()
         $("#txt_filter_propvalue").addClass("datalisted");
     }
 
-
-
-
-
-
 }
+
+
+
 
 function checkNewPropName ()
 {
@@ -591,8 +589,15 @@ function removeProperty()
 
 function destroyFeature()
 {
-    vislayer.removeFeatures(vislayer.getFeatureById(cfid));
-    vislayer.destroyFeatures(vislayer.getFeatureById(cfid));
+
+    var feature = vislayer.getFeatureById(cfid);
+    vislayer.removeFeatures([feature]);
+    vislayer.destroyFeatures([feature]);
+
+    editcontrol.deactivate();
+    editcontrol.activate();
+
+
     freeSelection();
 }
 
@@ -1991,6 +1996,10 @@ function freeSelection ()
 
             }
         );
+    }
+    else
+    {
+
     }
 
 

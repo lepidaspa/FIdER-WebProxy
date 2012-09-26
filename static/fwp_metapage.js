@@ -1008,6 +1008,8 @@ function renderGeoJSON (shapedata, map, maplayer)
 function buildMetaMap()
 {
 
+
+
     proxymap = new OpenLayers.Map('proxymap', {controls: []});
     proxymap.projection = proj_WGS84;
     proxymap.displayProjection = new OpenLayers.Projection(proj_WGS84);
@@ -1026,17 +1028,21 @@ function buildMetaMap()
     */
 
     // this layer is used to display
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 1, strokeDashstyle: "solid", pointRadius: 6});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    var clustering = new OpenLayers.Strategy.Cluster({distance: 20, threshold: 3});
+
     proxymap_currentlayer = new OpenLayers.Layer.Vector("Metadata", {styleMap: featurestylemap});
     proxymap.addLayer(proxymap_currentlayer);
 
 
     // this layer is used to display the selected map
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 1, strokeDashstyle: "solid", pointRadius: 6});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     proxymap_selectlayer = new OpenLayers.Layer.Vector("Metadata", {styleMap: featurestylemap});
     proxymap.addLayer(proxymap_selectlayer);
+
+
 
 
 }
