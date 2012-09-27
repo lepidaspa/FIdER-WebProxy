@@ -29,6 +29,7 @@ urlpatterns = patterns('',
     #url(r'^admin/', include(admin.site.urls)),
 
 	# urls for "passive" operations, called by the main server
+	url(r'^datarebuild/(?P<proxy_id>\w*)/', fwpviews.proxy_rebuildall),
 	url(r'^data/(?P<proxy_id>\w*)/', fwpviews.proxy_read_full),
 	url(r'^query/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/', fwpviews.proxy_perform_query),
 	url(r'^refreshmap/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.map_refresh_remote),

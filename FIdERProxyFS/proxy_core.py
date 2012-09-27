@@ -69,11 +69,12 @@ def makeSoftProxy (proxy_id, manifest, linkedto=None):
 	os.makedirs(os.path.join(basepath, conf.path_geojson))
 
 	if linkedto is None:
-		os.symlink(os.path.join(conf.baseproxypath, linkedto, conf.path_mirror), os.path.join(basepath, conf.path_mirror))
-	else:
-		linkerdict = { 'linkedto': linkedto}
-		json.dumps(linkerdict, open(os.path.join(basepath, conf.path_manifest, "linkedto.json"), 'w+'))
 		os.makedirs(os.path.join(basepath, conf.path_mirror))
+	else:
+		os.symlink(os.path.join(conf.baseproxypath, linkedto, conf.path_mirror), os.path.join(basepath, conf.path_mirror))
+		linkerdict = { 'linkedto': linkedto}
+		json.dumps(linkerdict, open(os.path.join(basepath, "conf", "linkedto.json"), 'w+'))
+
 
 	os.makedirs(os.path.join(basepath, conf.path_standalone))
 
@@ -959,13 +960,16 @@ def replicateShapeData (shapedata, proxy_id, meta_id, shape_id, modified=True):
 	"""
 
 	try:
-		shape_fp = open (os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id), 'w+')
+		destpath =  os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id)
+		shape_fp = open (destpath, 'w+')
 		json.dump(shapedata, shape_fp, encoding="latin-1")
 		shape_fp.close()
 	except Exception as ex:
 		print "Error while saving: %s " % ex.message
 		#TODO: add more complex exception handling
 		raise
+
+	print "Correctly updated %s/%s/%s to %s" % (proxy_id, meta_id, shape_id, destpath)
 
 	if modified:
 		# we replace the mirror directory contents with the .tmp directory
@@ -996,6 +1000,9 @@ def rebuildMeta (proxy_id, meta_id, upserts=None):
 	path_meta = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id)
 
 	shapelist = os.listdir(path_meta)
+
+	if upserts is None:
+		upserts = []
 
 	shapes_gj = {}
 	for shape_id in shapelist:

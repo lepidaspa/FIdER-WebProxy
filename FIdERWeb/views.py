@@ -787,6 +787,49 @@ def proxy_rebuildmeta (request, **kwargs):
 	pass
 
 
+def proxy_rebuildall (request, **kwargs):
+	"""
+	Rebuilds all maps in all metas in the proxy
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+
+	manifest = getProxyManifest(proxy_id)
+
+	result = {
+		'success': [],
+		'error': []
+	}
+
+	for cmeta in manifest['metadata']:
+		meta_id = cmeta['name']
+
+		mapdir = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id)
+		for mapfile in os.listdir(mapdir):
+			os.unlink(os.path.join(mapdir, mapfile))
+
+		try:
+			meta_data = proxy_core.rebuildMeta(proxy_id, meta_id)
+			print "Rebuilding %s" % meta_data.keys()
+			for shape_id in meta_data.keys():
+				print "Rebuilding map %s" % shape_id
+				#print meta_data[shape_id]
+				proxy_core.replicateShapeData(meta_data[shape_id], proxy_id, meta_id, shape_id, False)
+			result['success'].append(meta_id)
+			print "Rebuilt %s" % meta_id
+		except Exception as ex:
+			traceback.print_exc()
+
+			print "Failed to rebuild %s" % meta_id
+			result['error'].append(meta_id)
+
+	return HttpResponse(json.dumps(result), mimetype="application/json")
+
+
+
 
 @csrf_exempt
 def proxy_uploadmap (request, **kwargs):
@@ -932,6 +975,7 @@ def getManifests ():
 	proxylist = {}
 	for manifestfile in os.listdir(proxyconf.basemanifestpath):
 		proxy_id = manifestfile.partition(".manifest")[0]
+		print "Loading manifest for %s" % proxy_id
 		fp_manifest = open(os.path.join(proxyconf.basemanifestpath, manifestfile))
 		proxylist[proxy_id] = json.load(fp_manifest)
 		fp_manifest.close()
