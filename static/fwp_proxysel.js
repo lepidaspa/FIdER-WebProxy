@@ -88,7 +88,33 @@ function pageInit(jsonlisting)
     populateOwners();
 
     $(".btn_proxydelete").live("click", renderDeleteMask);
+    $(".btn_stfider").live("click", renderFederationMask);
 }
+
+
+function renderFederationMask ()
+{
+    var prefix = "btn_stfider_";
+    var i = this.id.substr(prefix.length);
+
+    console.log("Rendering federation mask for standalone "+i);
+    closeAllMasks();
+
+    var fiderstring = '<div class="fidermask maskwidget" id="fiderst_'+i+'">' +
+        'Federare l\'istanza?'+
+        '<input type="button" class="btn_confirmfider" id="btn_confirmfider_'+i+'" value="Federa">' +
+        '</div>';
+
+    $("#proxies_"+i).append(fiderstring);
+
+
+    $(".btn_confirmfider").unbind();
+    $("#btn_confirmfider_"+i).live('click', fiderSt);
+
+
+
+}
+
 
 function renderDeleteMask ()
 {
@@ -121,6 +147,49 @@ function renderDeleteMask ()
 
 }
 
+
+function fiderSt ()
+{
+    var prefix = "btn_confirmfider_";
+    var i = this.id.substr(prefix.length);
+
+    console.log("Adding standalone "+i+" to federation");
+
+    closeAllMasks();
+
+    var container = "#proxies_"+i;
+
+    var controldict = {
+        'linkedto': i
+    };
+
+    $("#progspinner").show();
+
+    $.ajax({
+        url: "/fwp/create/",
+        async: true,
+        data: controldict,
+        type: 'POST',
+        success: function(data)
+        {
+            if (!data['report'] || data['report'] == "")
+            {
+                data['report'] = 'Istanza '+i+' federata';
+            }
+            $("#progspinner").hide();
+            postFeedbackMessage(data['success'], data['report'] , container);
+            window.location = window.location.pathname;
+
+        },
+        error: function (data)
+        {
+            $("#progspinner").hide();
+            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container);
+        }
+    });
+
+}
+
 function deleteProxy()
 {
 
@@ -150,7 +219,7 @@ function deleteProxy()
         {
             if (!data['report'] || data['report'] == "")
             {
-                data['report'] = 'Proxy '+i+' cancellato'
+                data['report'] = 'Proxy '+i+' cancellato';
             }
             $("#progspinner").hide();
             postFeedbackMessage(data['success'], data['report'] , container);
@@ -325,9 +394,19 @@ function buildProxyList ()
 
 
         var proxyclass = "proxytype_"+proxies[proxy_id]['type'];
+
+        console.log("Adding proxy "+proxy_id+" of type "+proxies[proxy_id]['type']);
+        console.log(proxies[proxy_id]);
+
+        var stfider = "";
+        if (proxies[proxy_id]['type'] == "local")
+        {
+            stfider = '<img src="/static/resource/fwp_stfider.png" class="btn_stfider" id="btn_stfider_'+proxy_id+'">';
+        }
+
         var proxydelete = '<img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_'+proxy_id+'">';
 
-        var proxyentry = '<div class="nav_entry '+proxyclass+'" id="proxies_'+proxy_id+'">'+proxydelete+'<a href="/fwp/proxy/'+proxy_id+'">'+entry_name +'</a><br>'+entry_area+'<br>'+entry_time+'</div>';
+        var proxyentry = '<div class="nav_entry '+proxyclass+'" id="proxies_'+proxy_id+'">'+proxydelete+stfider+'<a href="/fwp/proxy/'+proxy_id+'">'+entry_name +'</a><br>'+entry_area+'<br>'+entry_time+'</div>';
         $("#proxylisting").append(proxyentry);
 
     }

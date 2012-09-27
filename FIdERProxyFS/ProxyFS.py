@@ -79,10 +79,10 @@ def logEvent (eventdata, iserror=False):
 		pass
 
 
-def createSoftProxy (proxy_id, manifest):
+def createSoftProxy (proxy_id, manifest, linkedto=None):
 
 	try:
-		proxy_core.makeSoftProxy(proxy_id, manifest)
+		proxy_core.makeSoftProxy(proxy_id, manifest, linkedto)
 	except Exception as ex:
 		traceback.print_exc()
 		return False, "Creazione del proxy %s fallita. Errore: %s" % (proxy_id, ex.message)

@@ -611,7 +611,19 @@ def proxy_create_new (request):
 	"""
 
 	print "Trying to create a new proxy"
-	print request.POST
+	if request.REQUEST.has_key("linkedto"):
+		linkedto = request.REQUEST['linkedto']
+		print "Creating from standalone %s" % linkedto
+		request = None
+	else:
+		print "Creating from premanifest"
+		print request.POST
+		linkedto = None
+
+	if request is None and linkedto is None:
+		raise Exception ("Missing manifest or linkage data for new proxy");
+
+
 
 	result = {
 		'success':  False,
@@ -621,10 +633,16 @@ def proxy_create_new (request):
 	try:
 
 		# creating the pre-manifest
-		jsonmessage = json.loads(request.POST['jsonmessage'])
+		if request is not None:
+			jsonmessage = json.loads(request.POST['jsonmessage'])
+		elif linkedto is not None:
+			jsonmessage = json.load(open(os.path.join(proxyconf.baseproxypath, proxyconf.basemanifestpath, linkedto+".manifest")))
+			jsonmessage['operations']['read'] = 'full'
+			#local proxies have no token in the manifest (it's never used anyway
+			#jsonmessage.pop('token')
+
+
 		premanifest = ArDiVa.Model(MessageTemplates.model_response_capabilities)
-
-
 
 		#TODO: check that BASEURL receives the correct value
 
@@ -682,7 +700,7 @@ def proxy_create_new (request):
 			if approved:
 
 
-				created, message = ProxyFS.createSoftProxy(proxy_id, manifest)
+				created, message = ProxyFS.createSoftProxy(proxy_id, manifest, linkedto)
 
 				if created:
 					success = True
@@ -708,6 +726,8 @@ def proxy_create_new (request):
 		}
 
 	except Exception as ex:
+
+		traceback.print_exc()
 		print (type(ex))
 		print ex
 		result = {
@@ -733,7 +753,8 @@ def proxy_controller (request):
 
 	actions = {
 		'delete': proxy_web.deleteMap,
-		'deleteproxy': proxy_web.deleteProxy
+		'deleteproxy': proxy_web.deleteProxy,
+		'fiderst': proxy_web.createStProxy
 	}
 
 	action = request.POST['action']

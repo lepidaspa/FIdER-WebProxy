@@ -40,7 +40,7 @@ def getManifest (proxy_id):
 
 	#return json.load(open(os.path.join(conf.baseproxypath,proxy_id,conf.path_manifest)))
 
-def makeSoftProxy (proxy_id, manifest):
+def makeSoftProxy (proxy_id, manifest, linkedto=None):
 	"""
 	Creates the filestructure for a softproxy using the chosen id and the manifest
 	:param proxy_id:
@@ -67,9 +67,15 @@ def makeSoftProxy (proxy_id, manifest):
 	#creating directories for data
 	os.makedirs(os.path.join(basepath, "next"))
 	os.makedirs(os.path.join(basepath, conf.path_geojson))
-	os.makedirs(os.path.join(basepath, conf.path_mirror))
-	os.makedirs(os.path.join(basepath, conf.path_standalone))
 
+	if linkedto is None:
+		os.symlink(os.path.join(conf.baseproxypath, linkedto, conf.path_mirror), os.path.join(basepath, conf.path_mirror))
+	else:
+		linkerdict = { 'linkedto': linkedto}
+		json.dumps(linkerdict, open(os.path.join(basepath, conf.path_manifest, "linkedto.json"), 'w+'))
+		os.makedirs(os.path.join(basepath, conf.path_mirror))
+
+	os.makedirs(os.path.join(basepath, conf.path_standalone))
 
 	#TODO: remove after cleaning up any code that leads to this file
 	fp_manifest = open(os.path.join(basepath,conf.path_manifest),'w+')
@@ -87,7 +93,8 @@ def makeSoftProxy (proxy_id, manifest):
 		os.makedirs (os.path.join(basepath, conf.path_remoteres, meta_id))
 		os.makedirs (os.path.join(uploadpath, meta_id))
 		os.makedirs (os.path.join(basepath, conf.path_geojson, meta_id))
-		os.makedirs (os.path.join(basepath, conf.path_mirror, meta_id))
+		if linkedto is None:
+			os.makedirs (os.path.join(basepath, conf.path_mirror, meta_id))
 
 
 

@@ -28,7 +28,7 @@
     color:              #ff8800;
 }
 
-.btn_proxydelete
+.btn_proxydelete, .btn_stfider
 {
     float:          right;
     cursor:         pointer;

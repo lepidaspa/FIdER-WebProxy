@@ -7,6 +7,7 @@ import os
 import shutil
 from FIdERProxyFS import proxy_core, proxy_lock
 
+
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
@@ -52,6 +53,7 @@ def getProxyType (proxy_id):
 	manifest = proxy_core.getManifest(proxy_id)
 
 	return learnProxyType(manifest)
+
 
 
 def deleteProxy (proxy_id):
@@ -157,10 +159,7 @@ def deleteMap (proxy_id, meta_id, shape_id):
 
 		# we may have done a partial removal earlier, so the file is not in the upload directory but is in the mirror and geojson dirs.
 
-
-
 		try:
-
 			locker.performLocked(proxy_core.handleDelete, proxy_id, meta_id, shape_id)
 			#proxy_core.handleDelete(proxy_id, meta_id, shape_id)
 			feedback['success'] = True
