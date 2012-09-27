@@ -41,7 +41,7 @@ function pageInit(req_id, req_manifest)
     {
         if (islocal)
         {
-            function_access += '<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'">Gestione mappe</a></div>';
+            function_access += '<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'">Lavorazione mappe</a></div>';
         }
         function_access += '<div class="button wide" id="maps_dload"><span id="maps_dload_toggle">Download mappe</span></div>';
 
@@ -235,6 +235,15 @@ function renderMetaData()
 
         $(".metadesc").hover(showSelArea, hideSelArea);
 
+    }
+
+    // adding a special metadata selection box for the internal archive of standalone instances
+
+
+    if (islocal)
+    {
+        metastring = '<div class="metadesc" id="meta_'+i+'"><a href="/fwp/proxy/'+proxy_id+'/.st/">Archivio Interno</a></div>';
+        $("#metalisting").append(metastring);
     }
 
 }

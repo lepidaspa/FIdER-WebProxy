@@ -52,8 +52,21 @@ var models;
 function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote, req_maps_st, req_models)
 {
 
-    console.log(JSON.parse(req_remote));
-    maps_remote = JSON.parse(req_remote);
+    proxy_id = req_proxy_id;
+    meta_id = req_meta_id;
+    manifest = req_manifest;
+
+    console.log("Opening metadata "+meta_id);
+
+    if (meta_id != '.st')
+    {
+        console.log(JSON.parse(req_remote));
+        maps_remote = JSON.parse(req_remote);
+    }
+    else
+    {
+        maps_remote = [];
+    }
 
     $("#conversion").hide();
     $("#renderingstate").hide();
@@ -66,21 +79,34 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote,
     $("#btn_reloadremote").hide();
     $("#progspinner").hide();
 
-    proxy_id = req_proxy_id;
-    meta_id = req_meta_id;
-    manifest = req_manifest;
+
 
     proxy_type = getProxyType(manifest);
 
     if (proxy_type == "read" || proxy_type == "write" || proxy_type == "query")
     {
-        $("#newmap_st").hide();
+        $("#newmap_st").remove();
     }
 
-    shapes = jQuery.parseJSON(req_maps);
+    if (meta_id == '.st')
+    {
+        $("#proxy_addmap").remove();
+    }
+
     maps_st = jQuery.parseJSON(req_maps_st);
-    console.log("Maps from standalone: "+JSON.stringify(maps_st)+"\nfrom");
-    console.log(req_maps_st);
+    if (meta_id == '.st')
+    {
+        console.log("Has "+maps_st.length+" archived maps");
+        shapes = maps_st;
+
+
+    }
+    else
+    {
+        shapes = jQuery.parseJSON(req_maps);
+    }
+    //console.log("Maps from standalone: "+JSON.stringify(maps_st)+"\nfrom");
+    //console.log(req_maps_st);
 
     //alert(JSON.stringify(manifest['metadata']));
 
@@ -208,27 +234,39 @@ function getProxyType (manifest)
 
 
 
-
 function renderMaps()
 {
 
     setLoadingState();
     shapedata = new Array();
 
-    //todo: handle errors
+    console.log("Loading maps from proxy");
+    console.log(shapes);
 
-
+    var baseurl = "";
+    if (meta_id != '.st')
+    {
+        baseurl = "/fwp/maps/"+proxy_id+"/"+meta_id+"/";
+    }
+    else
+    {
+        baseurl = "/fwst/maps/"+proxy_id+"/";
+    }
 
     if (shapes.length > 0)
     {
+
+        var urlstring = baseurl + shapes[i];
+
         for (var i = 0; i < shapes.length; i++)
         {
 
             $.ajax({
-                url: "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+shapes[i],
+                url: baseurl+shapes[i]+"/",
                 async: true
             }).done(function (jsondata) {
                         var shapename = jsondata['id'];
+                        console.log("Downloaded map "+shapename);
                         var map_id = shapes.indexOf(shapename);
                         shapedata[map_id] = jsondata;
                         //shapedata.push(jsondata);
@@ -249,6 +287,7 @@ function checkShapesLoadingState()
 {
 
     console.log("Checking for end of map loading");
+    console.log("("+shapedata.length+"/"+shapes.length+")");
     if (shapedata.length == shapes.length)
     {
         console.log("Finished loading maps");
@@ -401,8 +440,15 @@ function renderMapCard (map_id)
 
 
     var str_btn_focus = '<img title="Evidenzia/Nascondi" class="btn_focus" id="btn_focus_'+map_id+'" src="/static/resource/fwp_focus.png">';
-    var str_btn_uploadfile = '<img title="Carica da file" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
-    var str_btn_uploadwfs = '<img title="Carica da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
+
+    var str_btn_uploadfile = "";
+    var str_btn_uploadwfs = "";
+    if (meta_id != ".st")
+    {
+        str_btn_uploadfile = '<img title="Carica da file" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
+        str_btn_uploadwfs = '<img title="Carica da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
+    }
+
     var str_btn_convert = "";
     if (proxy_type != 'local' && models != null)
     {

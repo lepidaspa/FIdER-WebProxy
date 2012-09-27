@@ -32,14 +32,14 @@ __docformat__ = 'restructuredtext en'
 
 
 
-def error404test (request):
+def error404 (request):
 
 	htmldata = "<html><body>Error 404 test: </body></html>"
 	return HttpResponse(htmldata)
 
 
 
-def error500test (request):
+def error500 (request):
 	type, value, tb = sys.exc_info()
 	htmldata = "<html><body>Error 500 test: <br><pre>"+str(request)+"\n"+str(value)+"</pre><br> </body></html>"
 	print "ERROR: %s %s\n%s" % (type, value, tb)
@@ -92,43 +92,57 @@ def metapage (request, **kwargs):
 
 	proxy_id = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
+
 	manifest = getProxyManifest(proxy_id)
 
 	proxytype = learnProxyType(manifest)
 
 
-	if proxytype != 'query':
-		metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)
-
-		proxymaps = []
-		for mapfile in os.listdir(metadir):
-			proxymaps.append(mapfile)
-
-
-		remotedir = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id)
-		remotemaps = []
-		for conffile in os.listdir(remotedir):
-			remotemaps.append(conffile[:-4])
-
+	if proxytype == 'read' or proxytype == 'write' or proxytype == 'local':
 		maplist_st = os.listdir(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone))
+		if meta_id != '.st':
+			metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)
+
+			proxymaps = []
+			for mapfile in os.listdir(metadir):
+				proxymaps.append(mapfile)
 
 
-	else:
+			remotedir = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id)
+			remotemaps = []
+			for conffile in os.listdir(remotedir):
+				remotemaps.append(conffile[:-4])
+		else:
+			proxymaps = maplist_st
+
+
+
+
+	elif proxytype == 'query':
 		metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_mirror, meta_id)
 		proxymaps = {}
 		for mapfile in os.listdir(metadir):
 			proxymaps[mapfile] = json.load(open(os.path.join(metadir, mapfile)))
 
+
+
 	kwargs = {'proxy_id': proxy_id, 'proxy_name': manifest['name'], 'manifest': SafeString(json.dumps(manifest)), 'meta_id': meta_id, 'proxy_type': proxytype, 'maps': SafeString(json.dumps(proxymaps))}
 
-	if proxytype != 'query':
+
+	if proxytype == 'read' or proxytype == 'write':
 		template = 'fwp_metapage.html'
 		kwargs['remote'] = SafeString(json.dumps(remotemaps))
-		kwargs['maps_st'] = SafeString(json.dumps(maplist_st))
 
-	else:
+	elif proxytype == 'query':
 		template = 'fwp_querypage.html'
-		#Handling connection errors
+
+	elif proxytype == 'local':
+		template = 'fwp_metapage.html'
+		kwargs['maps_st'] = SafeString(json.dumps(maplist_st))
+		if meta_id != '.st':
+			kwargs['remote'] = SafeString(json.dumps(remotemaps))
+
+
 
 
 	# models are loaded at start for both

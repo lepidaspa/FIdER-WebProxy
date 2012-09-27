@@ -144,13 +144,19 @@ def handleDelete (proxy_id, meta_id, shape_id):
 	:return:
 	"""
 
-	path_mirror = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
+	if meta_id != '.st':
 
-	if not os.path.exists(path_mirror):
-		print "WARNING: Data for %s/%s already deleted in the mirror section of proxy %s" % (meta_id, shape_id, proxy_id)
+		path_mirror = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
+
+		if not os.path.exists(path_mirror):
+			print "WARNING: Data for %s/%s already deleted in the mirror section of proxy %s" % (meta_id, shape_id, proxy_id)
+		else:
+			#TODO: add specific handling of further exceptions or just push it up the ladder
+			shutil.rmtree(path_mirror)
+
 	else:
-		#TODO: add specific handling of further exceptions or just push it up the ladder
-		shutil.rmtree(path_mirror)
+		path_mapfile = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, shape_id)
+		os.remove(path_mapfile)
 
 def replicateDelete (proxy_id, meta_id, shape_id):
 	"""

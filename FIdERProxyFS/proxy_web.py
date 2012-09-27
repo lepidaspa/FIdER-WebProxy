@@ -129,6 +129,8 @@ def deleteMap (proxy_id, meta_id, shape_id):
 	:return:
 	"""
 
+	print "Requested deletion of map %s/%s/%s" % (proxy_id, meta_id, shape_id)
+
 	proxytype = getProxyType(proxy_id)
 
 
@@ -141,7 +143,7 @@ def deleteMap (proxy_id, meta_id, shape_id):
 
 
 
-	if proxytype != 'query':
+	if proxytype != 'query' and meta_id != ".st":
 
 		# we do not need to remove stuff in the geojson dir if the proxy is query
 
@@ -173,11 +175,20 @@ def deleteMap (proxy_id, meta_id, shape_id):
 			#proxy_core.replicateDelete(proxy_id, meta_id, shape_id)
 			feedback['success'] = True
 			feedback['report'] = "Cancellazione della mappa %s completata." % shape_id
-		except Exception, ex:
+		except Exception as ex:
+			feedback['report'] = "Cancellazione della mappa %s completata." % shape_id
+
+	elif meta_id == '.st':
+		try:
+			locker.performLocked(proxy_core.handleDelete, proxy_id, meta_id, shape_id)
+			feedback['success'] = True
+			feedback['report'] = "Cancellazione della mappa %s in archivio completata." % shape_id
+
+		except Exception as ex:
 			feedback['report'] = 'Cancellazione interrotta: %s' % ex
 
 
-	else:
+	elif proxytype == "query":
 		try:
 
 			target = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, shape_id)
@@ -185,8 +196,10 @@ def deleteMap (proxy_id, meta_id, shape_id):
 			#proxy_core.handleDelete(proxy_id, meta_id, shape_id)
 			feedback['success'] = True
 			feedback['report'] = "Cancellazione della mappa %s completata." % shape_id
-		except Exception, ex:
+		except Exception as ex:
 			feedback['report'] = 'Cancellazione interrotta: %s' % ex
+
+
 
 
 	return feedback

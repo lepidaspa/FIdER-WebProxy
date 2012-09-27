@@ -774,11 +774,11 @@ function tryLoadShadow ()
     var urlstring;
     if (meta_id == ".st")
     {
-        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id;
+        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id+"/";
     }
     else
     {
-        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id;
+        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id+"/";
     }
 
     $.ajax ({
@@ -953,7 +953,7 @@ function confirmSave (data, textStatus, jqXHR)
 
     if (data['success'] == true)
     {
-        reportFeedback(true, "Mappa salvata con successo");
+        reportFeedback(true, "Mappa salvata correttamente");
         setSaverHint(false);
     }
     else
@@ -1118,12 +1118,14 @@ function getUploadedMap (meta_id, map_id)
     var urlstring;
     if (meta_id == ".st")
     {
-        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id;
+        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id+"/";
     }
     else
     {
-        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id;
+        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id+"/";
     }
+
+    console.log("Loading: "+urlstring);
 
     $.ajax ({
         url:    urlstring,
@@ -1251,8 +1253,14 @@ function extractMapModel (jsondata)
     // we check for the model notation in the dict itself, to start with
     // if any element other than name is missing, we ignore this
     var validmodel = false;
+
+    //console.log("Extracting model from json data:");
+    //console.log(jsondata);
     if (jsondata.hasOwnProperty('model'))
     {
+
+        console.log("Has model:");
+        console.log(jsondata.model);
 
         if (jsondata.model.hasOwnProperty('objtype') && jsondata.model.hasOwnProperty('properties'))
         {
