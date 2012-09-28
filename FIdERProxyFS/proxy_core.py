@@ -468,7 +468,7 @@ def getCoreFile (path_mapdir):
 	:return:
 	"""
 
-	core_ext = ['shp', 'mif']
+	core_ext = ['shp', 'mif', 'geojson']
 	allfiles = os.listdir(path_mapdir)
 	#print "Seeking core file from %s" % allfiles
 	for cfile in allfiles:

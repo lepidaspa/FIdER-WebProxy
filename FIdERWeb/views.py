@@ -754,7 +754,7 @@ def proxy_controller (request):
 	actions = {
 		'delete': proxy_web.deleteMap,
 		'deleteproxy': proxy_web.deleteProxy,
-		'fiderst': proxy_web.createStProxy
+		#'fiderst': proxy_web.createStProxy
 	}
 
 	action = request.POST['action']
@@ -812,12 +812,14 @@ def proxy_rebuildall (request, **kwargs):
 			os.unlink(os.path.join(mapdir, mapfile))
 
 		try:
-			meta_data = proxy_core.rebuildMeta(proxy_id, meta_id)
-			print "Rebuilding %s" % meta_data.keys()
-			for shape_id in meta_data.keys():
+
+			mapslist = os.listdir (os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id))
+			print "Rebuilding %s" % mapslist
+			for shape_id in mapslist:
 				print "Rebuilding map %s" % shape_id
-				#print meta_data[shape_id]
-				proxy_core.replicateShapeData(meta_data[shape_id], proxy_id, meta_id, shape_id, False)
+				mapdata = proxy_core.rebuildShape(proxy_id, meta_id, shape_id, False)
+				mapdata['id'] = shape_id
+				proxy_core.replicateShapeData(mapdata, proxy_id, meta_id, shape_id, False)
 			result['success'].append(meta_id)
 			print "Rebuilt %s" % meta_id
 		except Exception as ex:
