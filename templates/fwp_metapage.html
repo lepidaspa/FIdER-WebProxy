@@ -17,7 +17,7 @@
 
 {% block navigation %}
 
-    <div id="metainfo"><div class="button_pre"><a title="Riepilogo proxy" href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a></div>{{ proxy_name }}:
+    <div id="metainfo"><div class="button_pre"><a title="Riepilogo proxy" href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a></div>{{ proxy_name }}{% if islinked %}(collegamento){% endif %}:
         {% if meta_id != ".st" %}
         {{ meta_id }}
         {% else %}
@@ -34,7 +34,8 @@
 
     <div class="button wide" id="btn_reload"><a class="blocky textbutton" href="/fwp/proxy/{{ proxy_id }}/{{ meta_id }}">Aggiorna schermata</a></div>
 
-    <div class="button wide" id="proxy_addmap">Nuova mappa: <span id="newmap_shapefile" class="blocky textbutton">FILE</span> / <span class="textbutton" id="newmap_wfs">WFS</span> <span class="textbutton" id="newmap_st">/ Interna</span></div>
+    {% if not islinked %}
+    <div class="button wide" id="proxy_addmap">Nuova mappa: <span id="newmap_shapefile" class="blocky textbutton">FILE</span> / <span class="textbutton" id="newmap_wfs">WFS</span> <span class="textbutton" id="newmap_st">/ Interna</span></div>{% endif %}
 
     <div id="progspinner"><img src="/static/resource/progressbar.gif"></div>
 
@@ -57,8 +58,8 @@
 
 {% block starterscript %}
     <script>
-        pageInit('{{ proxy_id }}', '{{ meta_id }}', {{ manifest }}, '{{ maps }}', '{{ remote }}', '{{ maps_st }}');
-        registerModels ( {{ models }} )
+        pageInit('{{ proxy_id }}', '{{ meta_id }}', {{ manifest }}, '{{ maps }}', '{{ remote }}', '{{ maps_st }}', '{{ islinked }}');
+        registerModels ( {{ models }} );
     </script>
 {% endblock %}
 

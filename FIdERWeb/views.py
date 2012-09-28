@@ -132,6 +132,8 @@ def metapage (request, **kwargs):
 	if proxytype == 'read' or proxytype == 'write':
 		template = 'fwp_metapage.html'
 		kwargs['remote'] = SafeString(json.dumps(remotemaps))
+		kwargs['islinked'] = ProxyFS.isLinkedProxy (proxy_id, manifest['name']);
+		print "%s is a linked proxy" % proxy_id
 
 	elif proxytype == 'query':
 		template = 'fwp_querypage.html'

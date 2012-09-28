@@ -215,7 +215,20 @@ def rebuildFullShapesList (proxy_id):
 			handleFileEvent (os.path.join (conf.baseuploadpath, proxy_id, meta_id, shape_id))
 
 
+def isLinkedProxy (ref_id, ref_name):
+	"""
+	returns whether the reference proxy is linked to another proxy (actually a standalone tool)
+	:return:
+	"""
 
+	for proxy_cmp in getProxyList():
+
+		name_cmp = proxy_core.getManifest(proxy_cmp)['name']
+
+		if ref_id != proxy_cmp and name_cmp == ref_name:
+			return True
+
+	return False
 
 def createMessageUpdatesRead (proxy_id, timestamp):
 	"""
@@ -448,16 +461,12 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 
 def getProxyList ():
 
-
 	#TODO: update to new system with centralised manifests
-	listing = os.listdir(os.path.join(conf.baseproxypath))
-	excludepath = ["log", "next", "locks", "proxies"]
+	manifests = os.listdir(os.path.join(conf.baseproxypath, "proxies"))
 
-	for excluded in excludepath:
-		try:
-			listing.remove(excluded)
-		except:
-			pass
+	listing = []
+	for proxymanfile in manifests:
+		listing.append(proxymanfile.split(".")[0])
 
 	return listing
 

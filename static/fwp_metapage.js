@@ -45,16 +45,21 @@ var currentmap;
 
 var maps_remote;
 
+// if the proxy is a linked proxy
+var islinked;
 
 // models provided by the main server for conversion; they are loaded at the start and "follow" until the user reloads. If there are no models, some functions will be disabled
 var models;
 
-function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote, req_maps_st, req_models)
+function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote, req_maps_st, req_islinked)
 {
 
     proxy_id = req_proxy_id;
     meta_id = req_meta_id;
     manifest = req_manifest;
+
+    islinked = req_islinked;
+    console.log("This proxy is linked? "+islinked);
 
     console.log("Opening metadata "+meta_id);
 
@@ -443,7 +448,7 @@ function renderMapCard (map_id)
 
     var str_btn_uploadfile = "";
     var str_btn_uploadwfs = "";
-    if (meta_id != ".st")
+    if (meta_id != ".st" && !islinked)
     {
         str_btn_uploadfile = '<img title="Carica da file" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
         str_btn_uploadwfs = '<img title="Carica da WFS" class="btn_uploadwfs" id="btn_uploadwfs_'+map_id+'" src="/static/resource/fwp_uploadwfs.png">';
@@ -456,7 +461,13 @@ function renderMapCard (map_id)
         str_btn_convert = '<img title="Proprietà" class="btn_convert" id="btn_convert_'+map_id+'" src="/static/resource/fwp_convert.png">';
     }
 
-    var str_btn_remove = '<img title="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
+    var str_btn_remove = "";
+    if (!islinked)
+    {
+        str_btn_remove = '<img title="Elimina" class="btn_remove" id="btn_remove_'+map_id+'" src="/static/resource/fwp_remove.png">';
+    }
+
+
 
     var str_btn_edit = "";
     if (proxy_type == 'local')

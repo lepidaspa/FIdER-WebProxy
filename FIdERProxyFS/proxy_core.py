@@ -166,6 +166,9 @@ def handleDelete (proxy_id, meta_id, shape_id):
 		path_mapfile = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, shape_id)
 		os.remove(path_mapfile)
 
+
+
+
 def replicateDelete (proxy_id, meta_id, shape_id):
 	"""
 	Removes the shapefile data from the gjs directory
