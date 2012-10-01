@@ -1372,7 +1372,6 @@ function postFeedbackMessage (success, report, widgetid, cleanup)
 
     var feedbackmess = '<div class="feedback '+feedbackclass+'">' +message+ '</div>';
 
-    //TODO: PRIORITY: check why does not display
 
     $(widgetid).append(feedbackmess);
     $(widgetid).show();

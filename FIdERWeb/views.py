@@ -799,38 +799,9 @@ def proxy_rebuildall (request, **kwargs):
 
 	proxy_id = kwargs['proxy_id']
 
-	manifest = getProxyManifest(proxy_id)
+	return HttpResponse (json.dumps(proxy_core.rebuildAllData(proxy_id)), mimetype="application/json")
 
-	result = {
-		'success': [],
-		'error': []
-	}
 
-	for cmeta in manifest['metadata']:
-		meta_id = cmeta['name']
-
-		mapdir = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id)
-		for mapfile in os.listdir(mapdir):
-			os.unlink(os.path.join(mapdir, mapfile))
-
-		try:
-
-			mapslist = os.listdir (os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id))
-			print "Rebuilding %s" % mapslist
-			for shape_id in mapslist:
-				print "Rebuilding map %s" % shape_id
-				mapdata = proxy_core.rebuildShape(proxy_id, meta_id, shape_id, False)
-				mapdata['id'] = shape_id
-				proxy_core.replicateShapeData(mapdata, proxy_id, meta_id, shape_id, False)
-			result['success'].append(meta_id)
-			print "Rebuilt %s" % meta_id
-		except Exception as ex:
-			traceback.print_exc()
-
-			print "Failed to rebuild %s" % meta_id
-			result['error'].append(meta_id)
-
-	return HttpResponse(json.dumps(result), mimetype="application/json")
 
 
 

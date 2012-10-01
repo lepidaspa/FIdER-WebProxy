@@ -81,13 +81,24 @@ def logEvent (eventdata, iserror=False):
 
 def createSoftProxy (proxy_id, manifest, linkedto=None):
 
+	success = True
+	message = manifest
+
 	try:
 		proxy_core.makeSoftProxy(proxy_id, manifest, linkedto)
 	except Exception as ex:
 		traceback.print_exc()
 		return False, "Creazione del proxy %s fallita. Errore: %s" % (proxy_id, ex.message)
 
-	return True, manifest
+	# only for linker proxies
+	if linkedto is not None:
+		databuildresult = proxy_core.rebuildAllData(proxy_id)
+		# creation succeeded but data import failed
+		if not databuildresult['success']:
+			success = False
+			message = "Creazione del proxy %s riuscita con importazione mappe incompleta. Metadati da verificare: %s" % (proxy_id, databuildresult['errors'],)
+
+	return success, message
 
 
 

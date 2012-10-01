@@ -6,6 +6,7 @@
 from exceptions import Exception
 import Common.TemplatesModels
 import FIdERProxyFS.proxy_config_core as conf
+import traceback
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -79,6 +80,7 @@ def makeSoftProxy (proxy_id, manifest, linkedto=None):
 	os.makedirs(os.path.join(basepath, conf.path_standalone))
 
 	#TODO: remove after cleaning up any code that leads to this file
+	# (old proxy manifest location)
 	fp_manifest = open(os.path.join(basepath,conf.path_manifest),'w+')
 	json.dump(manifest, fp_manifest)
 	fp_manifest.close()
@@ -96,6 +98,44 @@ def makeSoftProxy (proxy_id, manifest, linkedto=None):
 		os.makedirs (os.path.join(basepath, conf.path_geojson, meta_id))
 		if linkedto is None:
 			os.makedirs (os.path.join(basepath, conf.path_mirror, meta_id))
+
+
+def rebuildAllData (proxy_id):
+
+
+	manifest = getManifest(proxy_id)
+
+	result = {
+	'success': [],
+	'error': []
+	}
+
+	for cmeta in manifest['metadata']:
+		meta_id = cmeta['name']
+
+		mapdir = os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id)
+		for mapfile in os.listdir(mapdir):
+			os.unlink(os.path.join(mapdir, mapfile))
+
+		try:
+
+			mapslist = os.listdir (os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id))
+			print "Rebuilding %s" % mapslist
+			for shape_id in mapslist:
+				print "Rebuilding map %s" % shape_id
+				mapdata = rebuildShape(proxy_id, meta_id, shape_id, False)
+				mapdata['id'] = shape_id
+				replicateShapeData(mapdata, proxy_id, meta_id, shape_id, False)
+			result['success'].append(meta_id)
+			print "Rebuilt %s" % meta_id
+		except Exception as ex:
+			traceback.print_exc()
+
+			print "Failed to rebuild %s" % meta_id
+			result['error'].append(meta_id)
+
+	return result
+
 
 
 
@@ -653,7 +693,6 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 			if normalise:
 				jsondata = adaptGeoJson(jsondata, convtable)
 
-			#TODO: convert Multi to several single entities with the same properties
 
 			positions = []
 
