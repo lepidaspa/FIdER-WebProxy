@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+import json
 import urllib2
 import os
 import shutil
-from FIdERProxyFS import proxy_core, proxy_lock
+from FIdERProxyFS import proxy_core, proxy_lock, ProxyFS
 
 
 __author__ = 'Antonio Vaccarino'
@@ -72,6 +73,8 @@ def deleteProxy (proxy_id):
 	'report': ""
 	}
 
+	#TODO: reactivate, needed for full operation
+	"""
 	if not (proxy_id.startswith("local_")):
 		url = proxyconf.MAINSERVER_LOC+"/broker/delete/"+proxy_id
 		try:
@@ -82,7 +85,7 @@ def deleteProxy (proxy_id):
 
 			feedback['report'] = "Cancellazione annullata dal federatore"
 			return feedback
-
+	"""
 
 
 	try:
@@ -91,12 +94,18 @@ def deleteProxy (proxy_id):
 		datadir = os.path.join(proxyconf.baseproxypath, proxy_id)
 		uploaddir = os.path.join(proxyconf.baseuploadpath, proxy_id)
 		manifest = os.path.join(proxyconf.basemanifestpath, proxy_id+".manifest")
+		islinked = ProxyFS.isLinkedProxy(proxy_id, json.load(open(manifest))['name'])
 
 		elements = 0
 
 		print "Removing data dir for proxy %s" % proxy_id
 		if os.path.exists (datadir):
 			elements+=1
+
+			# first we remove the links
+			if islinked:
+				mirrordir = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror)
+				os.remove(mirrordir)
 			shutil.rmtree(datadir)
 		print "Removing upload dir for proxy %s" % proxy_id
 		if os.path.exists (uploaddir):
@@ -114,6 +123,7 @@ def deleteProxy (proxy_id):
 		feedback ['response'] = "Cancellazione del proxy confermata"
 
 	except Exception as ex:
+		print "Proxy %s non cancellato dal filesystem, causa %s" % (proxy_id, ex)
 		feedback ['response'] = "Proxy %s non cancellato dal filesystem, causa %s" % (proxy_id, ex)
 
 

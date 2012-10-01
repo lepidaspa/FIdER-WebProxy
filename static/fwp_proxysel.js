@@ -217,13 +217,30 @@ function deleteProxy()
         type: 'POST',
         success: function(data)
         {
-            if (!data['report'] || data['report'] == "")
+
+            if (data['success'])
             {
-                data['report'] = 'Proxy '+i+' cancellato';
+                if (!data['report'] || data['report'] == "")
+                {
+                    data['report'] = 'Proxy '+i+' eliminato';
+                }
             }
+            else
+            {
+                if (!data['report'] || data['report'] == "")
+                {
+                    data['report'] = 'Proxy '+i+' non eliminato';
+                }
+            }
+
             $("#progspinner").hide();
             postFeedbackMessage(data['success'], data['report'] , container);
-            window.location = window.location.pathname;
+            console.log(data['success']);
+            if (data['success'])
+            {
+                window.location = window.location.pathname;
+            }
+
 
         },
         error: function (data)
@@ -360,6 +377,38 @@ function reprojPoint (pointX, pointY)
     return new OpenLayers.Geometry.Point(reproj.lon, reproj.lat);
 }
 
+
+
+function isLinkedInstance (proxy_id)
+{
+    // checks if the instance with the requested id is a local/standalone instance and already has a linker proxy
+
+    var stprefix = 'local_';
+    if (proxy_id.substr(0, stprefix.length) != stprefix)
+    {
+        return false;
+    }
+
+    var proxy_name = proxies[proxy_id]['name'];
+
+    // linker proxies always have the same name as the standalone instance they are adding to the federation. Also, it is forbidden to manually create a proxy with the same name as an existing proxy or standalone instance
+
+    for (var cid in proxies)
+    {
+        if (cid == proxy_id)
+        {
+            continue;
+        }
+        else if (proxies[cid]['name'] == proxy_name)
+        {
+            return true;
+        }
+    }
+
+    return false;
+
+}
+
 function buildProxyList ()
 {
 
@@ -399,7 +448,7 @@ function buildProxyList ()
         console.log(proxies[proxy_id]);
 
         var stfider = "";
-        if (proxies[proxy_id]['type'] == "local")
+        if (proxies[proxy_id]['type'] == "local" && !isLinkedInstance(proxy_id))
         {
             stfider = '<img src="/static/resource/fwp_stfider.png" class="btn_stfider" id="btn_stfider_'+proxy_id+'">';
         }
