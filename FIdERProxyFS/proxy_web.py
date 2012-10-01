@@ -73,8 +73,7 @@ def deleteProxy (proxy_id):
 	'report': ""
 	}
 
-	#TODO: reactivate, needed for full operation
-	"""
+
 	if not (proxy_id.startswith("local_")):
 		url = proxyconf.MAINSERVER_LOC+"/broker/delete/"+proxy_id
 		try:
@@ -85,7 +84,7 @@ def deleteProxy (proxy_id):
 
 			feedback['report'] = "Cancellazione annullata dal federatore"
 			return feedback
-	"""
+
 
 
 	try:
