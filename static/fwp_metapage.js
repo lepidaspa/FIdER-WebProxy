@@ -428,26 +428,39 @@ function renderMapCard (map_id)
 
 
     var str_btn_refresh="";
+    var originstring = "";
     if (maps_remote.indexOf(mapname) != -1)
     {
+
+        originstring = "WFS";
         console.log("Refreshable map: "+mapname);
-        str_btn_refresh = '<img title="Aggiorna risorsa remota" class="btn_refreshremote btn_inline" id="btn_refreshremote_'+map_id+'" src="/static/resource/fwp_reload.png">';
+        str_btn_refresh = '<img title="Aggiorna risorsa WFS" class="btn_refreshremote btn_inline" id="btn_refreshremote_'+map_id+'" src="/static/resource/fwp_reload.png">';
     }
     else
     {
+        originstring = "Locale";
         console.log("Static map: "+mapname);
     }
 
-
-    var statsstring = '<div class="mapstats"><span class="mapname">'+mapname+'</span> '+str_btn_refresh+'<br>Oggetti: ('+
-            maplines + ' tratte/' +
-            mappoints + ' nodi)</div>';
+    var featurestring;
+    if (maplines > 0)
+    {
+        featurestring = ''+maplines+" tratte";
+    }
+    else if (mappoints > 0)
+    {
+        featurestring = ''+mappoints+" nodi";
+    }
+    var statsstring = '<div class="mapstats"><span class="mapname">'+mapname+'</span> '+str_btn_refresh+'<br>'+originstring+': '+featurestring+'</div>';
 
 
     var str_btn_focus = '<img title="Evidenzia/Nascondi" class="btn_focus" id="btn_focus_'+map_id+'" src="/static/resource/fwp_focus.png">';
 
     var str_btn_uploadfile = "";
     var str_btn_uploadwfs = "";
+
+
+
     if (meta_id != ".st" && !islinked)
     {
         str_btn_uploadfile = '<img title="Carica da file" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
@@ -472,7 +485,7 @@ function renderMapCard (map_id)
     var str_btn_edit = "";
     if (proxy_type == 'local')
     {
-        var editlink = "/fwst/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";;
+        var editlink = "/fwst/"+proxy_id+"/"+meta_id+"/"+shapes[map_id]+"/";
         str_btn_edit = '<a href="'+editlink+'"><img title="Modifica" class="btn_edit" id="btn_edit_'+map_id+'" src="/static/resource/fwp_editmap.png"></a>';
     }
 

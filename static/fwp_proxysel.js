@@ -453,7 +453,7 @@ function buildProxyList ()
             stfider = '<img src="/static/resource/fwp_stfider.png" class="btn_stfider" id="btn_stfider_'+proxy_id+'">';
         }
 
-        var proxydelete = '<img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_'+proxy_id+'">';
+        var proxydelete = '<img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_'+proxy_id+' alt="Elimina">';
 
         var proxyentry = '<div class="nav_entry '+proxyclass+'" id="proxies_'+proxy_id+'">'+proxydelete+stfider+'<a href="/fwp/proxy/'+proxy_id+'">'+entry_name +'</a><br>'+entry_area+'<br>'+entry_time+'</div>';
         $("#proxylisting").append(proxyentry);

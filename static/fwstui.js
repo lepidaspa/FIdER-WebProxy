@@ -52,6 +52,7 @@ var mapview;
 var vislayer;
 // vector layer used for alignment
 var snaplayer;
+var bitmaplayer;
 // vector layer used for highlighting features, goes UNDER vislayer and OVER snaplayer
 var filterlayer;
 // format used to translate and output coordinates from the map
@@ -202,6 +203,7 @@ function xlateMap ()
     parseFloat($("#xlate_move_x").val(""));
     parseFloat($("#xlate_move_y").val(""));
     checkXlateFields();
+    setSaverHint(true);
 
 }
 
@@ -321,7 +323,7 @@ function setExtenders()
     {
 
         // extend to selection only
-        $(".btn_extendpropval").val('>>Selezione');
+        $(".btn_extendpropval").val('>>Replica');
 
         // extenders are active only if there are items to extend the value to (potentially, we do not check if they already have this value
         if (filterlayer.features.length > 1)
@@ -336,11 +338,19 @@ function setExtenders()
     }
     else
     {
+        $(".btn_extendpropval").prop('disabled', true);
+    }
+
+
+    /* Removed, too risky
+    else
+    {
         //extend to ALL objects on map
         $(".btn_extendpropval").val('>>Tutti');
         $(".btn_extendpropval").prop('disabled', false);
 
     }
+    */
 
 
 
@@ -1622,6 +1632,12 @@ function buildMapWidget()
     var featurestyle;
     var featurestylemap;
 
+
+
+
+
+
+
     // setting style
     featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#888888", strokeColor: "#888888", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 8});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
@@ -1812,10 +1828,43 @@ function handleMeasure(event)
         precision = 3;
     }
 
-    var measure = event.measure.toFixed(precision);
+    console.log("Measure data");
+    //console.log(event);
+    //console.log(event.geometry.getBounds());
 
-    var measureinfo = "Distanza: "+measure+" "+units;
-    console.log(measureinfo);
+    var measure = event.measure.toFixed(precision);
+    var bbox = event.geometry.getBounds();
+
+    console.log(bbox);
+
+    var span_x = bbox['right'] - bbox ['left'];
+    var unitx = "m";
+    var precisionx = 2;
+    if (span_x > 1000)
+    {
+        span_x /= 1000;
+        unitx = "km";
+        precisionx = 3;
+    }
+
+    var span_y = bbox['top'] - bbox ['bottom'];
+    var unity = "m";
+    var precisiony = 2;
+    if (span_y > 1000)
+    {
+        span_y /= 1000;
+        unity = "km";
+        precisiony = 3;
+    }
+
+    var measureinfo = "<table>" +
+        "<tr><td>Distanza totale</td><td>"+measure+" "+units+"</td></tr>" +
+        "<tr><td>Ampiezza long.</td><td>"+span_x.toFixed(precisionx)+" "+unitx+"</td></tr>" +
+        "<tr><td>Ampiezza lat.</td><td>"+span_y.toFixed(precisiony)+" "+unity+"</td></tr>" +
+        "</table>";
+
+
+    console.log(measure);
 
     $("#view_measure").append(measureinfo)
 
