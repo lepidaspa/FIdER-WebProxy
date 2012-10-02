@@ -1097,10 +1097,9 @@ function buildMetaMap()
     proxymap.addLayer(proxymap_pastlayer);
     */
 
-    // this layer is used to display
+    // this layer is used to display the unselected maps
     featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
-    var clustering = new OpenLayers.Strategy.Cluster({distance: 20, threshold: 3});
 
     proxymap_currentlayer = new OpenLayers.Layer.Vector("Metadata", {styleMap: featurestylemap});
     proxymap.addLayer(proxymap_currentlayer);

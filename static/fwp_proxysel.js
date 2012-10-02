@@ -12,6 +12,9 @@ var mapvis;
 var mapvislayer = null;
 var mapvisformat;
 
+// summary layer with all the boxes
+var mapsumlayer = null;
+
 var defaultLon = 11.1;
 var defaultLat = 44.5;
 var proj_WGS84 = "EPSG:4326";
@@ -57,9 +60,22 @@ function pageInit(jsonlisting)
 
     mapvis.addLayer(osmlayer);
 
+    // render basic list
 
-    mapvislayer = new OpenLayers.Layer.Vector();
+    // this layer is used to display the unselected proxies
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.1, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    mapsumlayer = new OpenLayers.Layer.Vector("", {styleMap: featurestylemap});
+    mapvis.addLayer(mapsumlayer);
+    renderProxies();
+
+    // this layer is used to display the selected map
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6});
+    featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    mapvislayer = new OpenLayers.Layer.Vector("", {styleMap: featurestylemap});
     mapvis.addLayer(mapvislayer);
+
+
 
     //mapvis.addControl(new OpenLayers.Control.OverviewMap());
     mapvis.addControl(new OpenLayers.Control.Navigation());
@@ -485,6 +501,34 @@ function openProxyCreation()
 }
 
 
+function renderProxies()
+{
+    /*
+    Draws the bounding boxes for all the proxies and standalone, avoids the linked proxies as they are already represented by the standalone bboxes
+     */
+
+    for (proxy_id in proxies)
+    {
+        var bbox = proxies[proxy_id]['area'];
+        var points = [
+            reprojPoint(bbox[0], bbox[1]),
+            reprojPoint(bbox[2], bbox[1]),
+            reprojPoint(bbox[2], bbox[3]),
+            reprojPoint(bbox[0], bbox[3])
+        ];
+        var ring = new OpenLayers.Geometry.LinearRing(points);
+        var polygon = new OpenLayers.Geometry.Polygon([ring]);
+
+        var feature = new OpenLayers.Feature.Vector(polygon, {});
+
+
+        mapsumlayer.addFeatures([feature]);
+    }
+
+
+
+}
+
 function showProxyArea()
 {
 
@@ -507,8 +551,6 @@ function showProxyArea()
     var polygon = new OpenLayers.Geometry.Polygon([ring]);
 
     var feature = new OpenLayers.Feature.Vector(polygon, {});
-
-    //alert(bbox);
 
 
     mapvislayer.addFeatures([feature]);
