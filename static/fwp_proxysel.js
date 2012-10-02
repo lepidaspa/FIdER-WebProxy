@@ -70,7 +70,7 @@ function pageInit(jsonlisting)
     renderProxies();
 
     // this layer is used to display the selected map
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     mapvislayer = new OpenLayers.Layer.Vector("", {styleMap: featurestylemap});
     mapvis.addLayer(mapvislayer);
