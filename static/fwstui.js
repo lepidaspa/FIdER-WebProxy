@@ -52,7 +52,6 @@ var mapview;
 var vislayer;
 // vector layer used for alignment
 var snaplayer;
-var bitmaplayer;
 // vector layer used for highlighting features, goes UNDER vislayer and OVER snaplayer
 var filterlayer;
 // format used to translate and output coordinates from the map
@@ -1626,11 +1625,33 @@ function buildMapWidget()
     var baselayer = new OpenLayers.Layer.OSM();
     mapview.addLayer(baselayer);
 
+
+    //Base Maps from Google
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Satellite", {
+        type : google.maps.MapTypeId.SATELLITE
+    }));
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Physical", {
+        type : google.maps.MapTypeId.TERRAIN,
+        visibility : false
+    }));
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Streets", {
+        visibility : false
+    }));
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Hybrid", {
+        type : google.maps.MapTypeId.HYBRID,
+        visibility : false
+    }));
+
+
+
+
     // setting the format to translate geometries out of the map
     gjformat = new OpenLayers.Format.GeoJSON({'externalProjection': new OpenLayers.Projection(proj_WGS84), 'internalProjection': mapview.getProjectionObject()});
 
     var featurestyle;
     var featurestylemap;
+
+
 
 
 
@@ -1678,6 +1699,13 @@ function setMapControlsNav ()
     mapview.addControl(new OpenLayers.Control.Navigation());
     mapview.addControl(new OpenLayers.Control.PanZoomBar());
     mapview.addControl(new OpenLayers.Control.MousePosition());
+
+
+    mapview.addControl(new OpenLayers.Control.LayerSwitcher(
+        { displayClass: "olLabsLayerSwitcher" }
+    ));
+
+
 
 }
 
