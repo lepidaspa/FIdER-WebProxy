@@ -51,6 +51,8 @@ var islinked;
 // models provided by the main server for conversion; they are loaded at the start and "follow" until the user reloads. If there are no models, some functions will be disabled
 var models;
 
+var closerbutton = '<img src="/static/resource/fwp_closemasks.png" class="btn_closeallmasks" id="btn_closeallmasks" alt="Chiudi">';
+
 function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote, req_maps_st, req_islinked)
 {
 
@@ -177,6 +179,7 @@ function pageInit(req_proxy_id, req_meta_id, req_manifest, req_maps, req_remote,
     $(".btn_convert").live('click', renderConvMask);
     $(".btn_remove").live('click', renderRemoverMask);
 
+    $(".btn_closeallmasks").live('click', closeAllMasks);
 
 }
 
@@ -460,7 +463,8 @@ function renderMapCard (map_id)
     var str_btn_uploadwfs = "";
 
 
-
+    console.log(islinked);
+    console.log(meta_id)
     if (meta_id != ".st" && !islinked)
     {
         str_btn_uploadfile = '<img title="Carica da file" class="btn_uploadfile" id="btn_uploadfile_'+map_id+'" src="/static/resource/fwp_uploadfile.png">';
@@ -508,6 +512,7 @@ function renderNewWFSMask()
 
 
     var uploadtable = '<table class="uploadwfsmask maskwidget" id="uploadwfs_new">' +
+
             '<tr><td>URL</td><td><input type="text" id="mapsub" name="mapsub">' +
             '<tr><td>Mappa</td><td><input type="tet" id="wfsmap" name="wfsmap"></td>' +
             '<tr><td>Utente</td><td><input type="text" id="wfsuser" name="wfsuser"></td>' +
@@ -516,14 +521,16 @@ function renderNewWFSMask()
             '</table>';
 
 
-    $("#proxy_addmap").append(uploadtable);
+    var quickmask = '<div class="maskwidget">'+closerbutton+uploadtable+'</div>';
+
+    $("#proxy_addmap").append(quickmask);
 }
 
 function renderNewSTMask ()
 {
     closeAllMasks();
 
-    var chooser = $('<div id="uploadSTMask" class="maskwidget"><select id="newmap_chooserST"><option value=""></option></select></div>');
+    var chooser = $('<div id="uploadSTMask" class="maskwidget"> '+closerbutton +'<select id="newmap_chooserST"><option value=""></option></select></div>');
     for (var i in maps_st)
     {
         chooser.children("#newmap_chooserST").append('<option value="'+maps_st[i]+'">'+maps_st[i]+'</option>');
@@ -547,8 +554,9 @@ function renderNewShapeMask ()
             '<tr><td colspan=2><input type="button" id="confirmuploadfile" value="Carica"></td></tr>'+
             '</table>';
 
+    var quickmask = '<div class="maskwidget">'+closerbutton+uploadtable+'</div>';
 
-    $("#proxy_addmap").append(uploadtable);
+    $("#proxy_addmap").append(quickmask);
 }
 
 function renderUploadFileMask()
@@ -565,7 +573,10 @@ function renderUploadFileMask()
             '<tr><td colspan><input type="button" id="confirmuploadfile" value="Carica"></td></tr>'+
             '</table>';
 
-    $("#map_"+i).append(uploadtable);
+    var quickmask = '<div class="maskwidget">'+closerbutton+uploadtable+'</div>';
+
+    $("#map_"+i).append(quickmask);
+
 
 }
 
@@ -589,9 +600,9 @@ function renderUploadWFSMask()
             '<tr><td colspan=2><input type="button" id="confirmuploadwfs"  value="Carica"></td></tr>'+
             '</table>';
 
+    var quickmask = '<div class="maskwidget">'+closerbutton+uploadtable+'</div>';
 
-
-    $("#map_"+i).append(uploadtable);
+    $("#map_"+i).append(quickmask);
 
 }
 
@@ -914,6 +925,7 @@ function renderRemoverMask()
 
 
     var removestring = '<div class="removemask maskwidget" id="remove_'+i+'">' +
+        closerbutton +
             'Confermi l\'eliminazione della mappa?<br>' +
             '<input type="button" class="btn_confirmdelete" id="btn_confirmdelete_'+i+'" value="Elimina">' +
             '<br>ATTENZIONE: questa azione non può essere annullata.' +

@@ -27,6 +27,8 @@ var proxycreationmode = "";
 // if the user is creating a new instance or just looking at the map
 var creationmode = false;
 
+var closerbutton = '<img src="/static/resource/fwp_closemasks.png" class="btn_closeallmasks" id="btn_closeallmasks" alt="Chiudi">';
+
 function pageInit(jsonlisting)
 {
 
@@ -105,6 +107,9 @@ function pageInit(jsonlisting)
 
     $(".btn_proxydelete").live("click", renderDeleteMask);
     $(".btn_stfider").live("click", renderFederationMask);
+
+    $(".btn_closeallmasks").live('click', closeAllMasks);
+
 }
 
 
@@ -117,6 +122,7 @@ function renderFederationMask ()
     closeAllMasks();
 
     var fiderstring = '<div class="fidermask maskwidget" id="fiderst_'+i+'">' +
+        closerbutton+
         'Federare l\'istanza?'+
         '<input type="button" class="btn_confirmfider" id="btn_confirmfider_'+i+'" value="Federa">' +
         '</div>';
@@ -145,6 +151,7 @@ function renderDeleteMask ()
 
 
     var removestring = '<div class="removemask maskwidget" id="remove_'+i+'">' +
+        closerbutton+
         'Confermi l\'eliminazione dell\'istanza?<br>(per confermare, scrivi "confermo la richiesta di eliminazione" nel riquadro di testo)<br>'+
         '<input type="text" id="txt_confirmproxydelete">'+
         '<input type="button" class="btn_confirmdelete" id="btn_confirmdelete_'+i+'" value="Elimina">' +
@@ -469,7 +476,7 @@ function buildProxyList ()
             stfider = '<img src="/static/resource/fwp_stfider.png" class="btn_stfider" id="btn_stfider_'+proxy_id+'">';
         }
 
-        var proxydelete = '<img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_'+proxy_id+' alt="Elimina">';
+        var proxydelete = '<img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_'+proxy_id+'" alt="Elimina">';
 
         var proxyentry = '<div class="nav_entry '+proxyclass+'" id="proxies_'+proxy_id+'">'+proxydelete+stfider+'<a href="/fwp/proxy/'+proxy_id+'">'+entry_name +'</a><br>'+entry_area+'<br>'+entry_time+'</div>';
         $("#proxylisting").append(proxyentry);

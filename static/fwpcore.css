@@ -44,6 +44,13 @@ input:disabled, select:disabled
     clear:              both;
 }
 
+.btn_closeallmasks {
+    float:              right;
+    margin-right:       2px;
+    margin-top:         2px;
+    cursor:             pointer;
+}
+
 .textbutton
 {
     font-weight:        bold;
@@ -136,6 +143,8 @@ a.backtrack
     text-decoration: none;
     color:           #ffffff;
 }
+
+
 
 #servicebar
 {
