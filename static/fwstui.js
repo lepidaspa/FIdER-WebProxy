@@ -804,7 +804,7 @@ function applyNewSnap (data, textStatus, jqXHR)
 {
 
     renderGeoJSONCollection(data, snaplayer, true);
-    $("#hr_stateview").hide()
+    $("#hr_stateview").hide();
     unlockContext();
 
 }
@@ -1634,17 +1634,21 @@ function buildMapWidget()
 
     //Base Maps from Google
     mapview.addLayer(new OpenLayers.Layer.Google("Google Satellite", {
-        type : google.maps.MapTypeId.SATELLITE
+        type : google.maps.MapTypeId.SATELLITE,
+        numZoomLevels : 20
     }));
     mapview.addLayer(new OpenLayers.Layer.Google("Google Physical", {
         type : google.maps.MapTypeId.TERRAIN,
+
         visibility : false
     }));
     mapview.addLayer(new OpenLayers.Layer.Google("Google Streets", {
+        numZoomLevels : 20,
         visibility : false
     }));
     mapview.addLayer(new OpenLayers.Layer.Google("Google Hybrid", {
         type : google.maps.MapTypeId.HYBRID,
+        numZoomLevels : 20,
         visibility : false
     }));
 
