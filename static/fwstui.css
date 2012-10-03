@@ -27,6 +27,11 @@
     padding-right:   2px;
 }
 
+.ctx_header
+{
+    font-style:     italic;
+}
+
 .ctx_fieldval input, .ctx_fieldval select
 {
 

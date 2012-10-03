@@ -1203,6 +1203,11 @@ function applyNewMap (newdata, textStatus, jqXHR)
     if (canintegrate)
     {
         renderGeoJSONCollection(newdata, vislayer, cleanup);
+
+
+        mapview.zoomToExtent(vislayer.getDataExtent());
+
+
         integrateMapModel(mapmodel, cleanup);
         if (action == 'open')
         {
@@ -1403,6 +1408,7 @@ function renderGeoJSONCollection (jsondata, layer, cleanup)
     {
         setSaverHint(true);
     }
+
 
 
 }
@@ -1974,7 +1980,7 @@ function renderFeatureCard(caller)
               propval = feature['attributes'][propname];
         }
 
-        var button_extend = '<input type="button" class="btn_extendpropval" value="Estendi" id="btn_extendpropval_'+propname+'">';
+        var button_extend = '<input type="button" class="btn_extendpropval" value="Copia" id="btn_extendpropval_'+propname+'">';
 
         var cprop = $('<div class="ctx_topic"><div class="ctx_fieldname">'+propname+'</div>' +
             '<div class="ctx_fieldval"><input type="text" value="'+propval+'" class="featureedit'+listclass+'" id="'+propprefix+propname+'" '+listref+'>'+
@@ -2169,6 +2175,8 @@ function renderMapCard()
 
     // showing the map type
     $("#view_mapmodel").append('<div class="ctx_topic"><div class="ctx_fieldname">Tipologia</div><div class="ctx_fieldval"  id="maptypedef">'+getMapTypeName()+'</div>');
+
+    $("#view_mapmodel").append('<div class="ctx_topic"><div class="ctx_fieldname ctx_header">Campi</div><div class="ctx_fieldname ctx_header">Valori consigliati</div></div>');
 
     for (var propname in activemodel['properties'])
     {
