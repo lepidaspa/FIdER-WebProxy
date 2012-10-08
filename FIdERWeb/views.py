@@ -151,6 +151,7 @@ def metapage (request, **kwargs):
 
 	# models are loaded at start for both
 	try:
+
 		kwargs['models'] = SafeString(json.dumps(getModels()))
 	except:
 		kwargs['models'] = {}
