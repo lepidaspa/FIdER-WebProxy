@@ -508,11 +508,15 @@ function openProxyCreation()
 }
 
 
+
+
 function renderProxies()
 {
     /*
     Draws the bounding boxes for all the proxies and standalone, avoids the linked proxies as they are already represented by the standalone bboxes
      */
+
+    mapsumlayer.destroyFeatures();
 
     for (proxy_id in proxies)
     {

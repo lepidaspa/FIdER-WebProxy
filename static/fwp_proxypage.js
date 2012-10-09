@@ -41,7 +41,7 @@ function pageInit(req_id, req_manifest)
     {
         if (islocal)
         {
-            function_access += '<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'">Lavorazione mappe</a></div>';
+            function_access += '<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'/">Editor di mappe</a></div>';
         }
         function_access += '<div class="button wide" id="maps_dload"><span id="maps_dload_toggle">Download mappe</span></div>';
 
