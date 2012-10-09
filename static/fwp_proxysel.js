@@ -293,7 +293,7 @@ function checkRemoveConfirmation()
 function populateOwners()
 {
 
-    var urlstring = "/fwp/fed/owners";
+    var urlstring = "/fwp/fed/owners/";
 
     $.ajax ({
         url: urlstring,
