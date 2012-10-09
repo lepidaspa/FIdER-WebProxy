@@ -33,15 +33,25 @@ __docformat__ = 'restructuredtext en'
 
 
 def error404 (request):
+	"""
+	Standard 404 error template
+	:param request:
+	:return:
+	"""
 
-	htmldata = "<html><body>Error 404 test: </body></html>"
+	htmldata = "<html><body>Error 404 </body></html>"
 	return HttpResponse(htmldata)
 
 
 
 def error500 (request):
+	"""
+	Standard 500 error template
+	:param request:
+	:return:
+	"""
 	type, value, tb = sys.exc_info()
-	htmldata = "<html><body>Error 500 test: <br><pre>"+str(request)+"\n"+str(value)+"</pre><br> </body></html>"
+	htmldata = "<html><body>Error 500: <br><pre>"+str(request)+"\n"+str(value)+"</pre><br> </body></html>"
 	print "ERROR: %s %s\n%s" % (type, value, tb)
 	return HttpResponse(htmldata)
 
@@ -161,6 +171,12 @@ def metapage (request, **kwargs):
 	return render_to_response (template, kwargs, context_instance=RequestContext(request))
 
 def proxy_loadmap (request, **kwargs):
+	"""
+	Returns a map in geojson form from the proxy internal archive (no upload dir)
+	:param request:
+	:param kwargs:
+	:return:
+	"""
 
 	proxy_id = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
@@ -278,7 +294,7 @@ def getConversionInfo (request, **kwargs):
 
 def component_shapefile_table (request, **kwargs):
 	"""
-
+	Returns the conversion table for  specific shapefile according to its structure, available model etc.
 	:param request:
 	:param kwargs:
 	:return:
@@ -326,11 +342,7 @@ def component_shapefile_table (request, **kwargs):
 
 	conversionfrom = []
 	for feature in shapedata['features']:
-		#print "Feature: %s *** (%s)" % (feature, type(feature))
-		#print "Properties: %s " % feature['properties']
-		#for key in feature['properties'].keys():
-		#	if not conversionfrom.has_key (key):
-		#		conversionfrom[key] = str(type(feature['properties'][key])).split("'")[1]
+
 		for ckey in feature['properties'].keys():
 			if ckey not in conversionfrom:
 				conversionfrom.append(ckey)
@@ -573,6 +585,12 @@ def proxy_refresh_remote (request, **kwargs):
 
 @csrf_exempt
 def proxy_uploadwfs (request, **kwargs):
+	"""
+	Loads a map file from a WFS source into the system
+	:param request:
+	:param kwargs:
+	:return:
+	"""
 
 	response_upload = {
 		'success': False,
@@ -787,11 +805,6 @@ def proxy_controller (request):
 
 
 
-def proxy_rebuildmeta (request, **kwargs):
-	#TODO: placeholder, implement
-	pass
-
-
 def proxy_rebuildall (request, **kwargs):
 	"""
 	Rebuilds all maps in all metas in the proxy
@@ -875,7 +888,12 @@ def proxy_uploadmap (request, **kwargs):
 
 
 def proxy_rebuildmap (request, **kwargs):
-
+	"""
+	Rebuilds the geojson version of a single map in the geojson directory from the mirror directory, including the translation section
+	:param request:
+	:param kwargs:
+	:return:
+	"""
 
 	proxy_id  = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
@@ -965,8 +983,11 @@ def getManifests ():
 
 
 def getProxyManifest (proxy_id):
-
-	#TODO: move to proxy_core or ProxyFS, add error handling
+	"""
+	Returns the manifest of the specified softproxy from the manifests directory
+	:param proxy_id:
+	:return:
+	"""
 
 	filename = os.path.join(proxyconf.basemanifestpath, proxy_id+".manifest")
 	fp = open(filename, 'r')
@@ -1155,12 +1176,23 @@ def saveMapFile (uploaded, proxy_id, meta_id, shape_id=None):
 
 
 def set_access_control_headers(response):
+	"""
+	HTTP function to make the POST+FILES requests work on all browsers
+	:param response:
+	:return:
+	"""
+
 	response['Access-Control-Allow-Origin'] = '*'
 	response['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
 	response['Access-Control-Max-Age'] = 1000
 	response['Access-Control-Allow-Headers'] = '*'
 
+
+
 class HttpOptionsDecorator(object):
+	"""
+	HTTP decorator to make the POST+FILES requests work on all browsers
+	"""
 	def __init__(self, f):
 		self.f = f
 
@@ -1253,11 +1285,22 @@ def sideloadSTMap (request, **kwargs):
 	return HttpResponse(json.dumps(response_sideload), mimetype="application/json")
 
 def getProviders(request):
+	"""
+	Gets the full list of data providers from the main server
+	:param request:
+	:return:
+	"""
 
 	return HttpResponse(urllib2.urlopen(proxyconf.URL_PROVIDERS), mimetype="application/json")
 
 
 def geosearch(request, path):
+	"""
+	Performs an http request, used from Javascript for geocoding checks on Google
+	:param request:
+	:param path:
+	:return:
+	"""
 	import httplib2
 	conn = httplib2.Http()
 

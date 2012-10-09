@@ -10,6 +10,13 @@ from errors_msg import *
 from validate_fields import validateFieldAsBoundingBox
 
 def isBetween (value, limit_a, limit_b):
+	"""
+	Returns whether value is between limit_a and limit_b or not
+	:param value:
+	:param limit_a:
+	:param limit_b:
+	:return:
+	"""
 
 	if limit_b > limit_a:
 		top = limit_b
@@ -21,7 +28,12 @@ def isBetween (value, limit_a, limit_b):
 	return bottom <= value <= top
 
 def convertToPointBasedBoundingBox (bbox):
-	#convert a validated bounding box to one based on a double list, one per vertex
+	"""
+	convert a validated bounding box to one based on a double list, one per vertex
+	:param bbox:
+	:return:
+	"""
+
 	pbb = [[],[]]
 
 	for i in range (0, COORD_AXES_MODEL):
@@ -31,9 +43,16 @@ def convertToPointBasedBoundingBox (bbox):
 	return pbb
 
 def validatePointAsValidPosition (coordinates, bbox=None):
-	#Validates a field as a GeoJSON Position according to the number of axes defined in the constants.py file and against a given validated Bounding Box, if applicable
+	"""
+	Validates a field as a GeoJSON Position according to the number of axes defined in the constants.py file and against a given validated Bounding Box, if applicable
 
-	#we validate the coordinates as properly formed (with the number of axes specified as data model, COORD_AXES_MODEL) but we compare it to the bounding box with the number of axes relevant to the bounding box model (COORD_AXES_BBOX)
+	we validate the coordinates as properly formed (with the number of axes specified as data model, COORD_AXES_MODEL) but we compare it to the bounding box with the number of axes relevant to the bounding box model (COORD_AXES_BBOX)
+	:param coordinates:
+	:param bbox:
+	:return:
+	"""
+
+
 
 	if not ((isinstance(coordinates, list) and len(coordinates)==COORD_AXES_MODEL)):
 		return False
@@ -52,7 +71,13 @@ def validatePointAsValidPosition (coordinates, bbox=None):
 
 
 def validateFieldAsGJPoint (fielddata, bbox=None):
-	#Validates a coordinates field as a valid GeoJSON Point and against a given validated bounding box, if applicable.
+	"""
+	Validates a coordinates field as a valid GeoJSON Point and against a given validated bounding box, if applicable.
+	:param fielddata:
+	:param bbox:
+	:return:
+	"""
+
 
 	
 	if not (isinstance (fielddata, list)):
@@ -64,7 +89,13 @@ def validateFieldAsGJPoint (fielddata, bbox=None):
 	return True
 
 def validateFieldAsGJMultiPoint (fielddata, bbox=None):
-	#Validates a coordinates field as a valid GeoJSON MultiPoint and against a given validated bounding box,if applicable.
+	"""
+	Validates a coordinates field as a valid GeoJSON MultiPoint and against a given validated bounding box,if applicable.
+	:param fielddata:
+	:param bbox:
+	:return:
+	"""
+
 
 	
 	if not (isinstance (fielddata, list)):
@@ -77,7 +108,12 @@ def validateFieldAsGJMultiPoint (fielddata, bbox=None):
 	return True
 
 def validateFieldAsGJLineString (fielddata, bbox=None):
-	#Validates a coordinates field as a valid GeoJSON LineString and against a given validated bounding box, if applicable.
+	"""
+	Validates a coordinates field as a valid GeoJSON LineString and against a given validated bounding box, if applicable.
+	:param fielddata:
+	:param bbox:
+	:return:
+	"""
 
 	
 	if not (isinstance (fielddata, list)):
@@ -94,7 +130,12 @@ def validateFieldAsGJLineString (fielddata, bbox=None):
 	return True
 
 def validateFieldAsGJMultiLineString (fielddata, bbox=None):
-	#Validates a coordinates field as a valid GeoJSON MultiLineString and against a given validated bounding box, if applicable.
+	"""
+	Validates a coordinates field as a valid GeoJSON MultiLineString and against a given validated bounding box, if applicable.
+	:param fielddata:
+	:param bbox:
+	:return:
+	"""
 
 	
 	if not (isinstance (fielddata, list)):
@@ -107,7 +148,13 @@ def validateFieldAsGJMultiLineString (fielddata, bbox=None):
 	return True
 
 def validateFieldAsGJLinearRing (fielddata, bbox=None):
-	#Validates a coordinates field as a valid GeoJSON LinearRing and against a given validated bounding box, if applicable. Note that LinearRing is not used in itself, it is a specific condition of a LineString that is needed to handle Polygons
+	"""
+	Validates a coordinates field as a valid GeoJSON LinearRing and against a given validated bounding box, if applicable. Note that LinearRing is not used in itself, it is a specific condition of a LineString that is needed to handle Polygons
+	:param fielddata:
+	:param bbox:
+	:return:
+	"""
+
 
 	#Must be a valid line string
 	if not (validateFieldAsGJLineString(fielddata, bbox)):
@@ -127,7 +174,13 @@ def validateFieldAsGJLinearRing (fielddata, bbox=None):
 	return True
 
 def validateFieldAsGJPolygon (fielddata, bbox=None):
-	#Validates a coordinates field as a valid GeoJSON Polygon and against a given validated bounding box, if applicable.
+	"""
+	Validates a coordinates field as a valid GeoJSON Polygon and against a given validated bounding box, if applicable.
+	:param fielddata:
+	:param bbox:
+	:return:
+	"""
+
 
 	if not (isinstance (fielddata, list)):
 		return False
@@ -229,7 +282,13 @@ def containsPoint (linearring, point):
 	return isinside
 
 def containsLinearRing (external, internal):
-	#Checks if the internal linearring is contained in the external linearring, both having already been validated. Returns false if ANY point of internal is outside external, returns true if all points are inside or on the perimeter or on vertex (see containsPoint). CHECKED on *2D* only
+	"""
+	Checks if the internal linearring is contained in the external linearring, both having already been validated. Returns false if ANY point of internal is outside external, returns true if all points are inside or on the perimeter or on vertex (see containsPoint). CHECKED on *2D* only
+
+	:param external:
+	:param internal:
+	:return:
+	"""
 
 	for position in internal:
 		if not containsPoint (external, position):
@@ -239,8 +298,13 @@ def containsLinearRing (external, internal):
 
 
 def validateFieldAsGJMultiPolygon (fielddata, bbox=None):
+	"""
+	Validates a coordinates field as a valid GeoJSON Polygon and against a given validated bounding box, if applicable.
+	:param fielddata:
+	:param bbox:
+	:return:
+	"""
 
-	#Validates a coordinates field as a valid GeoJSON Polygon and against a given validated bounding box, if applicable.
 
 	if not (isinstance (fielddata, list)):
 		return False
@@ -267,9 +331,13 @@ def validateFieldAsGJGeometryCollection (fielddata, bbox=None):
 
 
 def validateFieldAsCrs (fielddata):
-	#Validates a field as a CRS definition dictionary
-	# does not actually check if the CRS is correct, only that the information
-	# is structured properly (fields, etc)
+	"""
+	Validates a field as a CRS definition dictionary
+	does not actually check if the CRS is correct, only that the information is structured properly (fields, etc)
+	:param fielddata:
+	:return:
+	"""
+
 
 	if not ((isinstance(fielddata, dict) and fielddata.has_key(FIELDNAME_GEOJSON_CRS_TYPE) and fielddata.has_key(FIELDNAME_GEOJSON_CRS_PROPERTIES))):
 		return False
@@ -296,9 +364,13 @@ def validateFieldAsCrs (fielddata):
 
 
 def validateMessageAsGeoJson (jsonmessage):
+	"""
+	This function validates a json message as GeoJSON data according to:
+	http://geojson.org/geojson-spec.html
+	:param jsonmessage:
+	:return:
+	"""
 
-	#This function validates a json message as GeoJSON data according to:
-	#http://geojson.org/geojson-spec.html
 
 	jsondata = parseJsonMessage (jsonmessage)
 

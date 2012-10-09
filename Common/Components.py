@@ -127,7 +127,10 @@ def getWelcomeFromServer ():
 
 #not used, currently it is handled by the shape table component
 def getConversionsFromServer ():
-
+	"""
+	Receives all the available federated conversion models from the main server
+	:return:
+	"""
 
 	try:
 		jsonresponse = urllib2.urlopen(conf.URL_CONVERSIONS)
@@ -146,6 +149,10 @@ def getConversionsFromServer ():
 
 # gets the map models from the main server
 def getModelsFromServer():
+	"""
+	Receives all the map models from the main server
+	:return:
+	"""
 
 	try:
 		jsonresponse = urllib2.urlopen(conf.URL_MODELS)
