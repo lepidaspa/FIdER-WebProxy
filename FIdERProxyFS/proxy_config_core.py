@@ -6,6 +6,11 @@ __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
 def loadConfFile(filepath):
+	"""
+	Loads a config file and skips the commented lines
+	:param filepath:
+	:return:
+	"""
 	print "Loading %s" % filepath
 	confdata = {}
 	fp = open(filepath)

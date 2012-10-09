@@ -35,11 +35,14 @@ from Common.Components import createMessageFromTemplate, sendMessageToServer
 
 
 def getManifest (proxy_id):
+	"""
+	Returns the manifest file for a specified softproxy
+	:param proxy_id:
+	:return:
+	"""
 
 	return json.load(open(os.path.join(conf.basemanifestpath, proxy_id+".manifest")))
 
-
-	#return json.load(open(os.path.join(conf.baseproxypath,proxy_id,conf.path_manifest)))
 
 def makeSoftProxy (proxy_id, manifest, linkedto=None):
 	"""
@@ -101,6 +104,11 @@ def makeSoftProxy (proxy_id, manifest, linkedto=None):
 
 
 def rebuildAllData (proxy_id):
+	"""
+	Rebuilds all maps in the softproxy from the mirror directory
+	:param proxy_id:
+	:return:
+	"""
 
 
 	manifest = getManifest(proxy_id)
@@ -358,6 +366,12 @@ def handleReadTimed (proxy_id, datestring):
 
 
 def verifyShapeArchiveStructure (filedata, filename=None):
+	"""
+	Checks that a map archive of an accepted type contains the correct elements. Mostly relevant for shapefiles
+	:param filedata:
+	:param filename:
+	:return:
+	"""
 
 
 	print "Verifying archived shape %s" % (filename)
