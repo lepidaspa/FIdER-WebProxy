@@ -227,6 +227,19 @@ function unsetFilterCheckbox ()
 function initSearchBox()
 {
     $("#btn_geosearch").live('click', geosearch);
+    $("#search_geo_address").bind('keyup', checkgeosearchEnter);
+}
+
+function checkgeosearchEnter(event)
+{
+
+    console.log("keyupevent on geosearch field: "+event.which);
+    if (event.which == 13)
+    {
+        console.log("geosearch launched by keyboard");
+        event.preventDefault();
+        geosearch();
+    }
 }
 
 function geosearch()
@@ -1582,7 +1595,7 @@ function buildLoader()
     // creates the mask to load/add files and models to the current map
 
     var ctx_actionsel = '<select id="sel_action_newmap">' +
-        '<option value="open">Nuovo/Carica</option>' +
+        '<option value="open">Nuovo</option>' +
         '<option value="merge">Aggiungi</option>' +
         '</select>';
 
@@ -1607,7 +1620,7 @@ function buildLoader()
 
 function buildSnapChooser ()
 {
-    var ctx_snapchooser = $('<div class="ctx_fieldname">Allinea a</div><div class="ctx_fieldval"><select id="ctx_sel_snapmap"><option value=""></option></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newsnap"></div>');
+    var ctx_snapchooser = $('<div class="ctx_fieldname">Riferimento</div><div class="ctx_fieldval"><select id="ctx_sel_snapmap"><option value=""></option></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newsnap"></div>');
     ctx_snapchooser.children('#ctx_sel_snapmap').append(buildMapList());
 
     $("#view_shadow").empty();

@@ -47,6 +47,12 @@ input[type=image]
     border:         none;
 }
 
+input[type=button]:active
+{
+    color:          #ffffff;
+    background-color:   #ff8800;
+}
+
 #view_context, #view_mapmodel, #view_feature
 {
     display:            table;
