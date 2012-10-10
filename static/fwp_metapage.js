@@ -264,13 +264,15 @@ function renderMaps()
     if (shapes.length > 0)
     {
 
-        var urlstring = baseurl + shapes[i]+"/";
 
         for (var i = 0; i < shapes.length; i++)
         {
 
+            var urlstring = baseurl + shapes[i]+"/";
+
+
             $.ajax({
-                url: baseurl+shapes[i]+"/",
+                url: urlstring,
                 async: true
             }).done(function (jsondata) {
                         var shapename = jsondata['id'];
