@@ -69,7 +69,7 @@ function pageInit(jsonlisting)
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     mapsumlayer = new OpenLayers.Layer.Vector("", {styleMap: featurestylemap});
     mapvis.addLayer(mapsumlayer);
-    renderProxies();
+    //renderAllProxies();
 
     // this layer is used to display the selected map
     featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
@@ -318,6 +318,16 @@ function populateOwners()
     });
 }
 
+function islocal (proxy_id)
+{
+    /*
+    Tells if the requested proxy is a standalone instance or not
+     */
+
+    var localprefix = "local_";
+
+    return proxy_id.substr(0, localprefix.length) == localprefix;
+}
 
 function showSelProxy ()
 {
@@ -342,6 +352,19 @@ function showSelProxy ()
     $(".proxytype_query").show();
     $(".proxytype_read").show();
     $(".proxytype_write").show();
+
+    var filteredproxylist = [];
+    for (var proxy_id in proxies)
+    {
+
+        if (!islocal(proxy_id))
+        {
+            filteredproxylist.push(proxy_id);
+        }
+    }
+    console.log("Rendering federated proxies ");
+    console.log(filteredproxylist);
+    renderProxies(filteredproxylist);
 
 
 }
@@ -369,6 +392,18 @@ function showSelStandalone()
     $(".proxytype_read").hide();
     $(".proxytype_write").hide();
 
+    var filteredproxylist = [];
+    for (var proxy_id in proxies)
+    {
+        if (islocal(proxy_id))
+        {
+            filteredproxylist.push(proxy_id);
+        }
+    }
+
+    console.log("Rendering standalone instances");
+    console.log(filteredproxylist);
+    renderProxies(filteredproxylist);
 
 }
 
@@ -510,16 +545,19 @@ function openProxyCreation()
 
 
 
-function renderProxies()
+function renderProxies (proxylist)
 {
+
     /*
-    Draws the bounding boxes for all the proxies and standalone, avoids the linked proxies as they are already represented by the standalone bboxes
+    Draws the bounding boxes for a selection of  proxies, proxylist being a list of proxy_ids
      */
 
     mapsumlayer.destroyFeatures();
 
-    for (proxy_id in proxies)
+    for (var i in proxylist)
     {
+        var proxy_id = proxylist[i];
+        console.log("Adding proxy "+proxy_id);
         var bbox = proxies[proxy_id]['area'];
         var points = [
             reprojPoint(bbox[0], bbox[1]),
@@ -535,6 +573,20 @@ function renderProxies()
 
         mapsumlayer.addFeatures([feature]);
     }
+
+
+
+}
+
+
+function renderAllProxies()
+{
+    /*
+    Draws the bounding boxes for all the proxies and standalone,
+     */
+
+    renderProxies (Object.getOwnPropertyNames(proxies));
+
 
 
 
