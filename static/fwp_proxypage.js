@@ -90,7 +90,7 @@ function tryDownloadMap()
         return;
     }
 
-    var urlstring = "/fwp/get/"+proxy_id+"/"+mapid;
+    var urlstring = "/fwp/get/"+proxy_id+"/"+mapid+"/";
     console.log("Downloading: "+urlstring);
 
     window.open(urlstring);
@@ -106,7 +106,7 @@ function renderMapDownloader()
 {
     var dloadmask = $('<div id="downloadermask"></div>');
 
-    var urlstring = "/fwp/maplist/"+proxy_id;
+    var urlstring = "/fwp/maplist/"+proxy_id+"/";
 
     $.ajax ({
             url:    urlstring,

@@ -1107,7 +1107,7 @@ function create_CreateProxy ()
     var proxy_name = $("#newproxy_name").val();
     var proxy_provider = $("#newproxy_provider").val();
 
-    var urlstring = "/fwp/proxylist";
+    var urlstring = "/fwp/proxylist/";
 
     var success = true;
     var newnameslist = new Array();

@@ -264,7 +264,7 @@ function renderMaps()
     if (shapes.length > 0)
     {
 
-        var urlstring = baseurl + shapes[i];
+        var urlstring = baseurl + shapes[i]+"/";
 
         for (var i = 0; i < shapes.length; i++)
         {
@@ -714,7 +714,7 @@ function refreshRemoteResource()
 
     closeAllMasks();
 
-    var urlstring = '/refreshmap/'+proxy_id+'/'+meta_id+'/'+shapes[map_id];
+    var urlstring = '/refreshmap/'+proxy_id+'/'+meta_id+'/'+shapes[map_id]+"/";
 
     $("#progspinner").show();
 
