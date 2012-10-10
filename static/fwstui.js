@@ -322,7 +322,7 @@ function setExtenders()
     {
 
         // extend to selection only
-        $(".btn_extendpropval").val('>>Replica');
+        $(".btn_extendpropval").val('Replica');
 
         // extenders are active only if there are items to extend the value to (potentially, we do not check if they already have this value
         if (filterlayer.features.length > 1)
@@ -1582,8 +1582,8 @@ function buildLoader()
     // creates the mask to load/add files and models to the current map
 
     var ctx_actionsel = '<select id="sel_action_newmap">' +
-        '<option value="open">Crea</option>' +
-        '<option value="merge">Integra</option>' +
+        '<option value="open">Nuovo/Carica</option>' +
+        '<option value="merge">Aggiungi</option>' +
         '</select>';
 
     var ctx_loadnew = $('<div class="ctx_fieldname">'+ctx_actionsel+'</div><div class="ctx_fieldval"><select id="ctx_sel_newmap"><option value=""></option><optgroup id="ctx_newmap_file_grp" label="Da file"><option id="ctx_newmap_fileopt" value=".file">Seleziona...</option></optgroup></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newmap"></div>');
@@ -1897,8 +1897,8 @@ function handleMeasure(event)
 
     var measureinfo = "<table>" +
         "<tr><td>Distanza totale</td><td>"+measure+" "+units+"</td></tr>" +
-        "<tr><td>Ampiezza long.</td><td>"+span_x.toFixed(precisionx)+" "+unitx+"</td></tr>" +
-        "<tr><td>Ampiezza lat.</td><td>"+span_y.toFixed(precisiony)+" "+unity+"</td></tr>" +
+        "<tr><td>Ampiezza est-ovest</td><td>"+span_x.toFixed(precisionx)+" "+unitx+"</td></tr>" +
+        "<tr><td>Ampiezza nord-sud</td><td>"+span_y.toFixed(precisiony)+" "+unity+"</td></tr>" +
         "</table>";
 
 
@@ -1984,7 +1984,7 @@ function renderFeatureCard(caller)
               propval = feature['attributes'][propname];
         }
 
-        var button_extend = '<input type="button" class="btn_extendpropval" value="Copia" id="btn_extendpropval_'+propname+'">';
+        var button_extend = '<input type="button" class="btn_extendpropval" value="Replica" id="btn_extendpropval_'+propname+'">';
 
         var cprop = $('<div class="ctx_topic"><div class="ctx_fieldname">'+propname+'</div>' +
             '<div class="ctx_fieldval"><input type="text" value="'+propval+'" class="featureedit'+listclass+'" id="'+propprefix+propname+'" '+listref+'>'+
