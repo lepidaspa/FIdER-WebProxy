@@ -81,6 +81,8 @@ var filtercriteria_propval;
 function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fider, req_maps_st, req_models)
 {
 
+    OpenLayers.Lang.setCode("it");
+
     proxy_id = req_proxy_id;
     proxy_manifest = req_proxy_manifest;
     proxy_meta = req_proxy_meta;
@@ -1736,9 +1738,26 @@ function setMapControlsNav ()
     mapview.addControl(new OpenLayers.Control.MousePosition());
 
 
-    mapview.addControl(new OpenLayers.Control.LayerSwitcher(
-        { displayClass: "olLabsLayerSwitcher" }
-    ));
+    //Inheriting of OpenLayers.Control.LayerSwitcher
+    ItaLayerSwitcher.prototype = new OpenLayers.Control.LayerSwitcher;           // Define sub-class
+    ItaLayerSwitcher.prototype.constructor = ItaLayerSwitcher;
+    function ItaLayerSwitcher()
+    {
+        OpenLayers.Control.LayerSwitcher.call(this, { displayClass: "olLabsLayerSwitcher"});                                         // derived constructor = call super-class constructor
+    };
+
+    ItaLayerSwitcher.prototype.loadContents = function()                                 // redefine Method
+    {
+        OpenLayers.Control.LayerSwitcher.prototype.loadContents.call(this);         // Call super-class method
+        this.baseLbl.innerHTML = 'Sfondi';                                   //change title for base layers
+        this.dataLbl.innerHTML = 'Livelli';                                   //change title for overlays (empty string "" is an option, too)
+    };
+
+    var switcher = new ItaLayerSwitcher();
+
+
+
+    mapview.addControl(switcher);
 
 
 
