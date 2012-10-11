@@ -128,6 +128,7 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     $("#btn_destroyfeature").live("click", destroyFeature);
 
     $(".btn_removeprop").live("click", removeProperty);
+    $(".btn_importpropval").live("click", importPropertyValue);
     $("#model_newpropname").live("change mouseup keyup", checkNewPropName);
     $("#btn_addprop").live("click", addProperty);
     $("#btn_filter_apply").live("change mouseup", applyFilterByClick);
@@ -593,6 +594,43 @@ function addProperty()
 
     // we also save any other change that has been made on the same form
     $(".ctx_propvalues").each(setModelPropForm);
+
+    renderMapCard();
+
+}
+
+function importPropertyValue ()
+{
+
+    var prefix = "btn_importpropval_";
+    var cid = $(this).prop('id');
+
+    var propname = cid.slice(prefix.length);
+
+    console.log("Importing prop vals for property "+propname);
+
+    var mapvalues = [];
+    for (var i in vislayer.features)
+    {
+        var current = vislayer.features[i].attributes[propname];
+        if (current && current != "" && mapvalues.indexOf(current) == -1)
+        {
+            mapvalues.push(current);
+        }
+
+    }
+
+    if (mapvalues.length > 0)
+    {
+        if (!$.isArray(activemodel['properties'][propname]))
+        {
+            activemodel['properties'][propname] = [];
+        }
+
+
+        activemodel['properties'][propname] = activemodel['properties'][propname].concat(mapvalues);
+    }
+
 
     renderMapCard();
 
@@ -2015,12 +2053,14 @@ function renderFeatureCard(caller)
         listclass = " datalisted";
 
         // choices from model
+        var modelvalues = [];
         if ($.isArray(activemodel['properties'][propname]))
         {
-
+            modelvalues = modelvalues.concat(activemodel['properties'][propname]);
             for (var i in activemodel['properties'][propname])
             {
                 datalist.append('<option value="'+activemodel['properties'][propname][i]+'"></option>');
+
             }
             console.log(datalist);
         }
@@ -2032,7 +2072,7 @@ function renderFeatureCard(caller)
         for (var i in vislayer.features)
         {
             var current = vislayer.features[i].attributes[propname];
-            if (current && current != "" && mapvalues.indexOf(current) == -1 && activemodel['properties'][propname].indexOf(current) == -1)
+            if (current && current != "" && mapvalues.indexOf(current) == -1 && modelvalues.indexOf(current) == -1)
             {
                 mapvalues.push(current);
                 datalist.append('<option value="'+current+'"></option>');
@@ -2255,6 +2295,7 @@ function renderMapCard()
     {
 
         var button_destroy = '<input type="button" class="btn_modelform btn_removeprop" value="-" id="btn_removeprop_'+propname+'">';
+        var button_import = '<input type="button" class="btn_modelform btn_importpropval" value="Importa" id="btn_importpropval_'+propname+'">';
         //var button_destroy = '<input type="image" src="/static/resource/fwp_remove.png" id="btn_removeprop_'+propname+'">';
 
         var suggestions = "";
@@ -2268,7 +2309,7 @@ function renderMapCard()
                 suggestions+=proprange[i]+";";
             }
         }
-        $("#view_mapmodel").append('<div class="ctx_topic ctx_mapmodel"><div class="ctx_fieldname">'+propname+'</div><div class="ctx_fieldval"><input class="ctx_propvalues" id="txt_propvalues_'+propname+'" type="text" value="'+suggestions+'"></div><div class="ctx_fieldact">'+button_destroy+'</div></div>');
+        $("#view_mapmodel").append('<div class="ctx_topic ctx_mapmodel"><div class="ctx_fieldname">'+propname+'</div><div class="ctx_fieldval"><input class="ctx_propvalues" id="txt_propvalues_'+propname+'" type="text" value="'+suggestions+'"></div><div class="ctx_fieldact">'+button_destroy+button_import+'</div></div>');
 
 
     }
