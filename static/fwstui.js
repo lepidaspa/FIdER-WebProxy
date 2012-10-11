@@ -288,6 +288,7 @@ function geosearch()
         }
     });
 
+    console.log("DEBUG: codewise after getJSON function, possibly waiting for return value");
 
 
 }
