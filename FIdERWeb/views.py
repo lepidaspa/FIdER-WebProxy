@@ -1305,6 +1305,8 @@ def geosearch(request, path):
 	conn = httplib2.Http()
 
 
+	print "Requesting external path %s" % path
+
 	url = path
 
 	if request.method == 'GET':
@@ -1315,5 +1317,7 @@ def geosearch(request, path):
 			url = "http://" + url
 			data = request.POST.urlencode()
 			response, content = conn.request(url, request.method, data)
+
+	print "Returning content on response %s:\n%s" % (response, content)
 	return HttpResponse(content, status = int(response['status']),
 mimetype = response['content-type'])

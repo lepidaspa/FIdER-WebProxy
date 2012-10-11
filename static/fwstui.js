@@ -421,7 +421,7 @@ function applyFilter()
         return
     }
 
-    // if the checkbox is activated, we (try) render the requested features
+    // if the checkbox is activated, we (try to) render the requested features
 
     var propname = filtercriteria_propname;
     var propval  = filtercriteria_propval;
@@ -1631,7 +1631,7 @@ function buildLoader()
 
 function buildSnapChooser ()
 {
-    var ctx_snapchooser = $('<div class="ctx_fieldname">Riferimento</div><div class="ctx_fieldval"><select id="ctx_sel_snapmap"><option value=""></option></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newsnap"></div>');
+    var ctx_snapchooser = $('<div class="ctx_fieldname">Allineamento</div><div class="ctx_fieldval"><select id="ctx_sel_snapmap"><option value=""></option></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newsnap"></div>');
     ctx_snapchooser.children('#ctx_sel_snapmap').append(buildMapList());
 
     $("#view_shadow").empty();
@@ -1697,7 +1697,7 @@ function buildMapWidget()
     featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#888888", strokeColor: "#888888", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 8});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     // adding the "background" layer
-    snaplayer= new OpenLayers.Layer.Vector("Riferimento", {styleMap: featurestylemap});
+    snaplayer= new OpenLayers.Layer.Vector("Allineamento", {styleMap: featurestylemap});
     //mapview.addLayer(snaplayer);
 
 
@@ -1705,7 +1705,7 @@ function buildMapWidget()
     featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#188E01", strokeColor: "#188E01", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     // adding the "background" layer
-    filterlayer = new OpenLayers.Layer.Vector("Ricerca", {styleMap: featurestylemap});
+    filterlayer = new OpenLayers.Layer.Vector("Filtro", {styleMap: featurestylemap});
     //mapview.addLayer(filterlayer);
 
 
