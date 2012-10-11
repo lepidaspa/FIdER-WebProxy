@@ -1085,7 +1085,7 @@ function buildSaver()
         defaultname = activemap;
     }
 
-    var savetypesel = '<select id="ctx_savewhat"><option value="data">mappa</option><option value="model">modello</option></select>';
+    var savetypesel = '<select id="ctx_savewhat" disabled><option value="data">mappa</option><option value="model">modello</option></select>';
 
     var savewidget = $('<div class="ctx_fieldname">Salva ('+savetypesel+')</div><div class="ctx_fieldval"><input id="ctx_saveto" type="text" value="'+defaultname+'"></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_savemap"></div>');
 
@@ -1988,19 +1988,43 @@ function renderFeatureCard(caller)
         var datalist = "";
         var listref = "";
         var listclass = "";
+
+        datalist = $('<datalist id="modprop_'+propname+'"></datalist>');
+        listref = ' list="modprop_'+propname+'"';
+        listclass = " datalisted";
+
+        // choices from model
         if ($.isArray(activemodel['properties'][propname]))
         {
-            datalist = $('<datalist id="modprop_'+propname+'"></datalist>');
-            listref = ' list="modprop_'+propname+'"';
-            listclass = " datalisted";
+
             for (var i in activemodel['properties'][propname])
             {
                 datalist.append('<option value="'+activemodel['properties'][propname][i]+'"></option>');
             }
             console.log(datalist);
-
-            //TODO: if range of values, add option to set a button to set the same property to ALL elements (very careful...)
         }
+
+        // choices from map
+
+        // mining the map on the fly
+        var mapvalues = [];
+        for (var i in vislayer.features)
+        {
+            var current = vislayer.features[i].attributes[propname];
+            if (current && current != "" && mapvalues.indexOf(current) == -1 && activemodel['properties'][propname].indexOf(current) == -1)
+            {
+                mapvalues.push(current);
+                datalist.append('<option value="'+current+'"></option>');
+            }
+
+            if (mapvalues.length > 100)
+            {
+                break;
+            }
+
+        }
+
+
 
         var propval = "";
         if (feature['attributes'].hasOwnProperty(propname))
