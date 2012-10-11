@@ -1794,7 +1794,8 @@ function setMapControlsEdit ()
 
     // Adding editing controls
     panel = new OpenLayers.Control.Panel({
-        displayClass: "olControlEditingToolbar"
+        displayClass: "olControlEditingToolbar",
+        allowDepress: true
     });
 
 

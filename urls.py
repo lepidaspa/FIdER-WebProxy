@@ -80,7 +80,7 @@ urlpatterns = patterns('',
 	url(r'^fwst/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', fwstviews.uiview),
 	url(r'^fwst/(?P<proxy_id>\w*)/(?P<meta_id>\.st)/(?P<shape_id>\w*)/$', fwstviews.uiview),
 
-	url(r'^external/(?P<path>.*)/$', fwpviews.geosearch),
+	url(r'^external/(?P<path>.*)$', fwpviews.geosearch),
 
 	url(r'^fwp/fed/owners/$', fwpviews.getProviders),
 	url(r'^fwp/fed/settings/$', redirect_to, {'url': proxy_config_core.URL_CONFIG}),
