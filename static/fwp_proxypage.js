@@ -63,16 +63,8 @@ function pageInit(req_id, req_manifest)
 
     minimap.addLayer(layer);
 
-    //mapvis.addControl(new OpenLayers.Control.OverviewMap());
-
-
-    //mapvis.events.register('moveend', mapvis, showProxyList);
-    //mapvis.events.register('zoomend', null, filterProxies);
-
-
     var bbox = (manifest['area']);
     zoomToBBox(minimap, bbox);
-
 
     buildProxyMap();
     renderMetaData();
@@ -138,7 +130,7 @@ function buildMapList (jsondata)
 
     if (islocal)
     {
-        var ctx_mapsel = $('<optgroup label="Archivio"></optgroup>');
+        var ctx_mapsel = $('<optgroup label="Area di lavorazione"></optgroup>');
         for (var m in maps_st)
         {
             ctx_mapsel.append('<option value=".st/'+maps_st[m]+'">'+maps_st[m]+'</option>');
@@ -242,7 +234,7 @@ function renderMetaData()
 
     if (islocal)
     {
-        metastring = '<div class="metadesc" id="meta_'+i+'"><a href="/fwp/proxy/'+proxy_id+'/.st/">Archivio Interno</a></div>';
+        metastring = '<div class="metadesc" id="meta_'+i+'"><a href="/fwp/proxy/'+proxy_id+'/.st/">Area di lavorazione</a></div>';
         $("#metalisting").append(metastring);
     }
 

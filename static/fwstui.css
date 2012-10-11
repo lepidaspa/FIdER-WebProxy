@@ -17,7 +17,7 @@
 
 #mod_xlate, #view_goto
 {
-    border-top: 1px dashed #ff8800;
+    border-top: 1px solid #ff8800;
 }
 
 
@@ -91,7 +91,7 @@ hr
     visibility:     hidden;
 }
 
-#view_context *:disabled
+#navigation *:disabled
 {
     color:          #000000;
     background:     #cccccc;
@@ -116,6 +116,10 @@ hr
     font-weight:    bold;
 }
 
+#btn_addprop
+{
+    color:          #000000;
+}
 
 
 #model_newpropname

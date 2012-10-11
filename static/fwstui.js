@@ -233,7 +233,7 @@ function initSearchBox()
 function checkgeosearchEnter(event)
 {
 
-    console.log("keyupevent on geosearch field: "+event.which);
+    //console.log("keyupevent on geosearch field: "+event.which);
     if (event.which == 13)
     {
         console.log("geosearch launched by keyboard");
@@ -687,6 +687,11 @@ function unlockContext()
     // re-enables interactions with the context area
     console.log("Re-enabling context after load");
     $("#progspinner").hide();
+
+    $("#mod_xlate").show();
+    $("#hr_shifter").show();
+
+
     $("#view_context select").prop('disabled', false);
     $("#view_context input").prop('disabled', false);
     checkSaveName();
@@ -1080,7 +1085,9 @@ function buildSaver()
         defaultname = activemap;
     }
 
-    var savewidget = $('<div class="ctx_fieldname">Salva</div><div class="ctx_fieldval"><input id="ctx_saveto" type="text" value="'+defaultname+'"></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_savemap"></div>');
+    var savetypesel = '<select id="ctx_savewhat"><option value="data">mappa</option><option value="model">modello</option></select>';
+
+    var savewidget = $('<div class="ctx_fieldname">Salva ('+savetypesel+')</div><div class="ctx_fieldval"><input id="ctx_saveto" type="text" value="'+defaultname+'"></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_savemap"></div>');
 
     $("#contextsaver").empty();
     $("#contextsaver").append(savewidget);
@@ -1479,6 +1486,8 @@ function uiReset()
     $("#progspinner").hide();
     $("#hr_stateview").hide();
 
+
+
     // rebuilds the UI elements; does NOT reinit the elements and variables
 
     //buildContext();
@@ -1496,6 +1505,8 @@ function uiReset()
 
     $("#statemessage").empty();
     $("#hr_stateview").hide();
+    $("#mod_xlate").hide();
+    $("#hr_shifter").hide();
 
     checkFileUpload();
     checkSnapLoad();
