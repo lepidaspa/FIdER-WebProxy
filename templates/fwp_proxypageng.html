@@ -1,0 +1,157 @@
+{% extends "fwpcore.html" %}
+
+
+{% block title %}
+Gestione dati e cataloghi
+{% endblock %}
+
+{% block headers %}
+
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_proxypage.css">
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_proxypageng.css">
+<script language="JavaScript" src="{{ STATIC_URL }}fwp_proxypageng.js"></script>
+
+{% endblock %}
+
+
+{% block navigation %}
+
+<div id="proxyinfo">
+
+    {% if proxy_type != 'local' %}
+        {% if proxy_type != 'linked' %}
+            Proxy
+        {% else %}
+            Proxy standalone
+        {% endif %}
+    {% else %}
+        Piattaforma standalone
+    {% endif %}
+
+    <span class="proxytitle">{{ proxy_name }}</span>
+
+</div>
+
+
+
+
+<div id="metalisting">
+
+    <table id="metalistinglayout">
+
+
+
+    {% for meta_id, maplist in proxy_maps.items %}
+
+        <tbody class="metadata">
+        <tr class="metainfo">
+
+        <td colspan="2" class="metatitle" id="metacard_{{ proxy_id }}-{{ meta_id }}">
+
+        {% if proxy_type != 'local' %}
+            {% if proxy_type != 'linked' %}
+                {% if proxy_type == 'query' %}
+                    <img src="{{ STATIC_URL }}resource/fwp_datasource-query.png">
+                    {% else %}
+                    <img src="{{ STATIC_URL }}resource/fwp_datasource-networked.png">
+                    {% endif %}
+                {% else %}
+                <img src="{{ STATIC_URL }}resource/fwp_datasource-networked.png">
+            {% endif %}
+        {% else %}
+                <img src="{{ STATIC_URL }}resource/fwp_datasource-local.png">
+        {% endif %}
+
+        {% if meta_id == ".st" %}
+            Area di lavorazione
+        {% else %}
+            {{ meta_id }}
+        {% endif %}
+
+        </td>
+        <td class="actionstd">
+            {% if proxy_type != 'linked' and proxy_type != 'local' and proxy_type != 'query' %}
+            <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_newfromfile.png" title="Nuova mappa da file">
+            <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova mappa da WFS">
+            {% else %}
+                {% if proxy_type == 'query' %}
+                    <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova connessione">
+                {% endif %}
+                {% if proxy_type == 'local' %}
+                    <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_newmapedit.png" title="Crea nuova mappa">
+                {% endif %}
+            {% endif %}
+        </td>
+
+        </tr>
+
+        </tbody>
+
+        <tbody class="metamaps">
+
+        {% for map_id, mapdata in maplist.items %}
+
+            <tr class="mapcard">
+                <td class="maptitle" id="mapcard_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">{{ map_id }}</td> <td>{{  mapdata.source }}</td>
+                <td class="actionstd">
+                    {% if proxy_type == 'local' and meta_id == '.st' %}
+                        <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa">
+                    {% endif %}
+                    {% if proxy_type != 'query' and mapdata.source != 'WFS' %}
+                        <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_downloadfile.png" title="Scarica mappa">
+                    {% endif %}
+                    {% if proxy_type != 'local' %}
+                        <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_convert.png" title="Modifica conversioni">
+                    {% endif %}
+                    <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_remove.png" title="Elimina">
+                </td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+
+
+
+    {% endfor %}
+
+    </table>
+
+
+
+
+
+
+
+
+
+</div>
+
+
+{% endblock %}
+
+
+{% block functionality %}
+
+<div id="proxymap"></div>
+
+
+{% endblock %}
+
+
+{% block contextguide %}
+
+<div class="help">
+    WORK IN PROGRESS
+
+
+
+</div>
+{%  endblock %}
+
+
+{% block starterscript %}
+<script>
+    pageInit('{{ proxy_id }}', {{ manifest }}, {{ mapsforjs }});
+</script>
+
+{% endblock %}

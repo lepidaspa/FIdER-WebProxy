@@ -1,0 +1,55 @@
+#metalisting
+{
+    width:          98%;
+}
+
+#metalistinglayout
+{
+    width:              100%;
+    border-collapse:    collapse;
+}
+
+td.actionstd
+{
+    text-align:     right;
+}
+
+.metamaps
+{
+    border-left:    1px solid #ff8800;
+    border-spacing: 8px 0;
+    border-bottom:  1px solid #ff8800;
+}
+
+.imgbutton
+{
+    cursor:         pointer;
+}
+
+tbody.metadata td.metatitle, tbody.metadata td.actionstd
+{
+    padding-top:    8px;
+    border-bottom:      1px dotted #cccccc;
+}
+
+.mapcard td.maptitle
+{
+    padding-left:       8px;
+}
+
+.metatitle
+{
+    font-weight:        bold;
+
+}
+
+#proxyinfo
+{
+    font-size:          medium;
+    font-weight:        bold;
+}
+
+tr
+{
+    width:              100%;
+}

@@ -2309,7 +2309,7 @@ function renderMapCard()
                 suggestions+=proprange[i]+";";
             }
         }
-        $("#view_mapmodel").append('<div class="ctx_topic ctx_mapmodel"><div class="ctx_fieldname">'+propname+'</div><div class="ctx_fieldval"><input class="ctx_propvalues" id="txt_propvalues_'+propname+'" type="text" value="'+suggestions+'"></div><div class="ctx_fieldact">'+button_destroy+button_import+'</div></div>');
+        $("#view_mapmodel").append('<div class="ctx_topic ctx_mapmodel"><div class="ctx_fieldname">'+propname+'</div><div class="ctx_fieldval"><input class="ctx_propvalues" id="txt_propvalues_'+propname+'" type="text" value="'+suggestions+'"></div><div class="ctx_fieldact">'+button_import+button_destroy+'</div></div>');
 
 
     }

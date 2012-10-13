@@ -471,6 +471,10 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 
 
 def getProxyList ():
+	"""
+	Returns a list of the softproxies on the hardproxy
+	:return:
+	"""
 
 	#TODO: update to new system with centralised manifests
 	manifests = os.listdir(os.path.join(conf.baseproxypath, "proxies"))
@@ -560,7 +564,6 @@ def getProxyStamps (precompiled=True, dated=False):
 				meta_stamped[proxy][meta] = ""
 
 	return meta_stamped
-
 
 if __name__ == "__main__":
 	handleFSChange (sys.argv[1])

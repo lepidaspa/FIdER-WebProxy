@@ -196,7 +196,7 @@ img.legend
     position:           absolute;
     top:                2.5em;
     left:               0;
-    right:              75%;
+    right:              72%;
     bottom:             0;
     overflow:           auto;
     padding-left:       8px;
@@ -215,7 +215,7 @@ img.legend
     position:           absolute;
     top:                2.5em;
 
-    left:               25%;
+    left:               28%;
     /*
     changed to have the guide overlay rather than resize the functionality area
     right:              20%;

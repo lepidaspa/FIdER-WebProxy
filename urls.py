@@ -65,6 +65,7 @@ urlpatterns = patterns('',
 	url(r'^fwp/get/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getSingleMap),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\.st)/$', fwpviews.metapage),
+
 	url(r'^fwp/$', fwpviews.proxysel),
 
 	# standalone tool v2
@@ -86,6 +87,7 @@ urlpatterns = patterns('',
 	url(r'^fwp/fed/settings/$', redirect_to, {'url': proxy_config_core.URL_CONFIG}),
 	#url(r'', redirect_to, {'url': "/fwp/"})
 
+	url(r'^fwp/proxyng/(?P<proxy_id>\w*)/$', fwpviews.proxypageng),
 
 
 

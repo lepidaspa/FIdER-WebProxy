@@ -94,6 +94,29 @@ def proxypage (request, **kwargs):
 
 
 
+def proxypageng (request, **kwargs):
+	"""
+	Shows the metadata and map selection, plus all proxy-specific actions.
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	manifest = getProxyManifest(proxy_id)
+
+	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, manifest)
+
+	mapsdata = proxy_core.getMapsSummary(proxy_id)
+
+	proxy_meta = mapsdata.keys()
+	proxy_mapsbymeta = {}
+	for meta_id in proxy_meta:
+		proxy_mapsbymeta [meta_id] = mapsdata[meta_id].keys()
+
+	print "Proxy maps data: %s " % proxy_mapsbymeta
+
+	return render_to_response ('fwp_proxypageng.html', {'proxy_id': proxy_id, 'manifest': SafeString(json.dumps(manifest)), 'proxy_name': manifest['name'], 'proxy_meta': proxy_meta, 'proxy_type': proxy_type, 'mapsbymeta': proxy_mapsbymeta, 'proxy_maps': mapsdata, 'mapsforjs': SafeString(json.dumps(mapsdata))}, context_instance=RequestContext(request))
+
+
 def metapage (request, **kwargs):
 	"""
 	Shows the meta selection screen for a selected proxy and any other proxy-specific option. Includes a small static view of the proxy bounding box

@@ -44,6 +44,150 @@ def getManifest (proxy_id):
 	return json.load(open(os.path.join(conf.basemanifestpath, proxy_id+".manifest")))
 
 
+def getMapFileStats(mappath):
+	"""
+	Loads a mapfile and returns map type (line/point), number of features, bbox if applicable
+	:param mappath:
+	:return:
+	"""
+
+	rawdata = json.load(open(mappath))
+
+	# we get the maptype from the model or from the first feature, inconsistencies should have already been checked
+	try:
+		maptype = rawdata['model']['objtype']
+	except:
+		maptype = rawdata['features'][0]['geometry']['type']
+
+	try:
+		bbox = rawdata['bbox']
+	except:
+		#note: should never happen since the transformation process adds it
+		bbox = None
+
+	try:
+		features = len(rawdata['features'])
+	except:
+		features = 0
+
+	return {'type': maptype, 'features': features, 'bbox': bbox}
+
+
+def getQueryInfo (proxy_id, meta_id, map_id):
+	"""
+	Returns generic info on the query with the same structure as getMapStats (essentially the objtype from the conversion, everything else is nulled out)
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:return:
+	"""
+
+
+	bbox = None
+	features = None
+	maptype = None
+
+	return {'type': maptype, 'features': features, 'bbox': bbox}
+
+
+def makeMapCard (proxy_id, meta_id, map_id, proxy_type):
+	"""
+
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:param proxy_type:
+	:return:
+	"""
+
+	if proxy_type == 'query':
+		mappath = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, map_id)
+	elif proxy_type != 'local' or meta_id != '.st':
+		mappath = os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, map_id)
+	else:
+		mappath = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, map_id)
+
+	mapsource = "File"
+	if proxy_type != 'query':
+		mapdata = getMapFileStats(mappath)
+		if isRemoteMap(proxy_id, meta_id, map_id):
+			mapsource = "WFS"
+	else:
+		mapsource = "Query"
+		mapdata = getQueryInfo (proxy_id, meta_id, map_id)
+
+	#TODO: add conn data for editing in query and WFS maps
+
+	mapcard = {
+		'name': map_id,
+		'source': mapsource,
+		'type': mapdata['type'],
+		'bbox': mapdata['bbox'],
+		'features': mapdata['features'],
+		'remotedata': None
+	}
+
+	return mapcard
+
+def isRemoteMap (proxy_id, meta_id, map_id):
+	"""
+
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:return: boolean
+	"""
+
+	return os.path.exists(os.path.join(conf.baseproxypath, proxy_id, conf.path_remoteres, meta_id, map_id+'.wfs'))
+
+def getMapsSummary (proxy_id):
+	"""
+	Returns a list of all the maps with their core stats (name, type, source, number of shapes),grouped by meta
+	:param proxy_id:
+	:return: dict
+	"""
+
+
+	wfslist = getRemotesList(proxy_id)
+	mapslist = {}
+
+	manifest = getManifest(proxy_id)
+	proxy_type = learnProxyTypeAdv(proxy_id, manifest)
+
+	basequerypath = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror)
+	basemapspath = os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson)
+
+
+	for metadata in manifest['metadata']:
+		meta_id = metadata['name']
+
+		mapslist[meta_id] = {}
+
+		if proxy_type == 'query':
+			mapspath = os.path.join (basequerypath, meta_id)
+		else:
+			mapspath = os.path.join (basemapspath, meta_id)
+		metamapslist = os.listdir(mapspath)
+
+		for map_id in metamapslist:
+
+			mapslist[meta_id][map_id] = makeMapCard(proxy_id, meta_id, map_id, proxy_type)
+
+
+	if proxy_type == 'local':
+
+		meta_id = ".st"
+		mapspath = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone)
+		stmapslist = os.listdir(mapspath)
+
+		mapslist [meta_id] = {}
+		for map_id in stmapslist:
+			mapslist[meta_id][map_id] = makeMapCard(proxy_id, meta_id, map_id, proxy_type)
+
+
+	return mapslist
+
+
 def makeSoftProxy (proxy_id, manifest, linkedto=None):
 	"""
 	Creates the filestructure for a softproxy using the chosen id and the manifest
@@ -783,6 +927,30 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	return collection
 
 
+def learnProxyTypeAdv (proxy_id, manifest):
+	"""
+	Returns the FUNCTIONAL proxy type, adding the specific case of the linked proxy
+	:param proxy_id:
+	:param manifest:
+	:return:
+	"""
+
+	baseproxytype = learnProxyType(manifest)
+	print "Found base proxy type %s " % baseproxytype
+	if baseproxytype in ('local', 'query'):
+		islinked = False
+	else:
+		islinked = isLinkedProxy(proxy_id, manifest['name'])
+
+	print "Proxy is linked? %s" % islinked
+
+	if islinked:
+		return 'linked'
+	else:
+		return baseproxytype
+
+
+
 def learnProxyType (manifest):
 	"""
 	Reads the manifest dict and returns the type of proxy as Read, Write, Query
@@ -807,6 +975,36 @@ def learnProxyType (manifest):
 		# local is a standalone-only proxy, non-federated
 		return "local"
 
+
+def isLinkedProxy (ref_id, ref_name):
+	"""
+	returns whether the reference proxy is linked to another proxy (actually a standalone tool)
+	:return:
+	"""
+
+	for proxy_cmp in getProxyList():
+
+		name_cmp = getManifest(proxy_cmp)['name']
+
+		if ref_id != proxy_cmp and name_cmp == ref_name:
+			return True
+
+	return False
+
+
+def getProxyList ():
+	"""
+	Returns a list of the softproxies on the hardproxy
+	:return:
+	"""
+
+	manifests = os.listdir(os.path.join(conf.baseproxypath, "proxies"))
+
+	listing = []
+	for proxymanfile in manifests:
+		listing.append(proxymanfile.split(".")[0])
+
+	return listing
 
 def getAllEditables ():
 	"""
@@ -837,6 +1035,8 @@ def getAllEditables ():
 
 
 	return maplist
+
+
 
 
 
