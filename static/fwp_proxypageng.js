@@ -65,7 +65,15 @@ function getBbox (meta_id, map_id)
     }
     catch (ex)
     {
-        return proxy_meta[meta_id]['area'];
+        try
+        {
+            return proxy_meta[meta_id]['area'];
+        }
+        catch (ex)
+        {
+            return proxy_man['area'];
+        }
+
     }
 
 }
