@@ -40,7 +40,7 @@ def getManifest (proxy_id):
 	:param proxy_id:
 	:return:
 	"""
-
+	print "Requested manifest for proxy %s" % proxy_id
 	return json.load(open(os.path.join(conf.basemanifestpath, proxy_id+".manifest")))
 
 
@@ -147,6 +147,7 @@ def getMapsSummary (proxy_id):
 	:return: dict
 	"""
 
+	print "Loading the map summary for proxy %s" % proxy_id
 
 	wfslist = getRemotesList(proxy_id)
 	mapslist = {}
