@@ -159,9 +159,19 @@ function removeDataSource ()
         maptype = "query";
     }
 
+    var deletefrom;
+    if (cmeta_id != '.st')
+    {
+        deletefrom = " dal catalogo " + cmeta_id + "?";
+    }
+    else
+    {
+        deletefrom = " dall'Area di lavorazione?";
+    }
+
     var removedetails = "" +
-        "<br>Eliminare i dati " + maptype + " " + map_id +
-        " dal catalogo " + cmeta_id + "?";
+        "<br>Eliminare i dati " + maptype + " " + map_id + deletefrom;
+
 
     $("#form_removesource").dialog("open");
     $("#dataremove_details").empty();
