@@ -62,6 +62,7 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $(".newdata").on('click', addNewSource);
 
     $("#newfile_chooser").change(checkCandidateFilename);
+    $(".removedata").on('click', removeDataSource);
 }
 
 function initForms ()
@@ -69,6 +70,7 @@ function initForms ()
     $("#form_newfile").dialog({
         autoOpen: false,
         modal: true,
+        closeOnEscape: false,
         width:  "auto",
         buttons: {
             "Annulla": {
@@ -83,32 +85,171 @@ function initForms ()
         }
     });
 
-    $("#progress_fileupload").dialog({
+    $("#progress_newdata").dialog({
         autoOpen: false,
-        modal: true
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        height: "auto"
     });
 
-
+    $("#progress_removal").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        height: "auto"
+    });
 
     $("#form_newwfs").dialog({
         autoOpen: false,
-        modal: true
+        modal: true,
+        closeOnEscape: false
     });
 
     $("#form_newquery").dialog({
         autoOpen: false,
-        modal: true
+        modal: true,
+        closeOnEscape: false
+    });
+
+    $("#form_removesource").dialog({
+        autoOpen:   false,
+        modal:      true,
+        width:      "auto",
+        closeOnEscape: false,
+        buttons: {
+            "Annulla": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Elimina": {
+                id : "form_removesource_confirm",
+                text: "Elimina",
+                click: applyDataRemove
+            }
+        }
     });
 
 }
 
 
+function removeDataSource ()
+{
+
+    console.log("Asking confirmation to remove data source "+this.id);
+
+    var prefix = 'remove_';
+    var dest = this.id.substr(prefix.length).split("-");
+
+    cmeta_id = dest[0];
+    var map_id = dest[1];
+
+    var maptype;
+    if ($(this).hasClass('remove_file'))
+    {
+        maptype = "shape";
+    }
+    else if ($(this).hasClass('remove_wfs'))
+    {
+        maptype = "WFS";
+    }
+    if ($(this).hasClass('remove_query'))
+    {
+        maptype = "query";
+    }
+
+    var removedetails = "" +
+        "<br>Eliminare i dati " + maptype + " " + map_id +
+        " dal catalogo " + cmeta_id + "?";
+
+    $("#form_removesource").dialog("open");
+    $("#dataremove_details").empty();
+    $("#dataremove_details").append(removedetails);
+
+    $("#form_removesource_confirm").attr('name', 'remove_'+cmeta_id+"-"+map_id);
+
+
+}
+
+
+function applyDataRemove()
+{
+
+    var prefix = 'remove_';
+    var dest = $("#form_removesource_confirm").attr('name').substr(prefix.length).split("-");
+
+    var meta_id = dest[0];
+    var map_id = dest[1];
+
+
+    console.log("Data removal requested for source "+meta_id+"/"+map_id);
+
+    var controldict = {
+        'action': 'delete',
+        'proxy_id': proxy_id,
+        'meta_id': meta_id,
+        'shape_id': map_id
+    };
+
+    console.log(controldict);
+
+    $("#form_removesource").dialog("close");
+    $("#progress_removal").dialog("open");
+    $("#progress_removal .progressinfo").hide();
+    $("#progspinner_removal").show();
+    $("#progress_stage_removereq").show();
+
+
+    $.ajax({
+        url: "/fwp/control/",
+        async: true,
+        data: controldict,
+        type: 'POST',
+        success: function(data)
+        {
+
+            $("#progress_stage_removereq").hide();
+            $("#progspinner_removal").hide();
+
+            if (data['success'] == true)
+            {
+                $("#progress_removal .progressinfo").hide();
+                $("#removalfinished_success").show();
+            }
+            else
+            {
+                $("#progress_removal .progressinfo").hide();
+                $("#removalfinished_fail").show();
+                $("#removalfail_explain").empty();
+                $("#removalfail_explain").append(data['report']);
+                $("#removalfail_explain").show();
+            }
+
+
+        },
+        error: function (data)
+        {
+            $("#progspinner_removal").hide();
+            $("#progress_removal .progressinfo").hide();
+            $("#progress_stage_removereq").hide();
+            $("#removalfinished_fail").show();
+            $("#removalfail_explain").empty();
+            $("#removalfail_explain").append(data['report']);
+            $("#removalfail_explain").show();
+
+
+        }
+    });
+
+
+
+}
 
 function addNewSource ()
 {
     /*
         TODO LIST (mode support):
-        - FILEUPLOAD            new_file
         - WFS                   new_wfs
         - QUERY                 new_query
     */
@@ -203,6 +344,86 @@ function checkCandidateFilename()
 
 function tryUploadNewFile()
 {
+
+    var filepath = $("#newfile_chooser").val();
+    var map_id = getMapIdFromPath(filepath);
+    var urlstring = "/fwp/upload/"+proxy_id+"/"+cmeta_id+"/";
+
+    // and now for some black magic...
+
+    var fd = new FormData();
+    fd.append('shapefile', $('#newfile_chooser')[0].files[0]);
+    $("#form_newfile").dialog("close");
+    $("#progress_newdata").dialog("open");
+    $("#progress_newdata .progressinfo").hide();
+    $("#progspinner_newdata").show();
+    $("#progress_stage_uploading").show();
+
+    $.ajax ({
+        url: urlstring,
+        data:   fd,
+        async: true,
+        processData:    false,
+        contentType:    false,
+        type: 'POST',
+        success: function(data) {
+            if (data['success'] == true)
+            {
+                $("#progress_newdata .progressinfo").hide();
+                rebuildShapeData(cmeta_id, map_id);
+            }
+            else
+            {
+                $("#progress_newdata .progressinfo").hide();
+                $("#progspinner_newdata").hide();
+                $("#uploadfinished_fail").show();
+                $("#uploadfail_explain").append(data['report']);
+                $("#uploadfail_explain").show();
+            }
+        },
+        error: function (data)
+        {
+            $("#progress_newdata .progressinfo").hide();
+            $("#progspinner_newdata").hide();
+            $("#uploadfinished_fail").show();
+            $("#uploadfail_explain").append(data['report']);
+            $("#uploadfail_explain").show();
+        }
+
+    });
+
+}
+
+function rebuildShapeData (meta_id, map_id)
+{
+
+    $("#progspinner_newdata").show();
+    $("#progress_stage_uploading").hide();
+    $("#progress_stage_adapting").show();
+
+    // launches an ajax request to the server for re-parsing a map in the upload directory
+
+    var urlstring;
+    urlstring = "/fwp/rebuild/"+proxy_id+"/"+meta_id+"/"+map_id+"/";
+
+    $.ajax ({
+        url:            urlstring,
+        async:          true,
+        success: function(data) {
+            $("#progspinner_newdata").hide();
+            $("#progress_newdata .progressinfo").hide();
+            $("#uploadfinished_success").show();
+
+        },
+        error: function (data)
+        {
+            $("#progress_newdata .progressinfo").hide();
+            $("#progspinner_newdata").hide();
+            $("#uploadfinished_fail").show();
+            $("#uploadfail_explain").append(data['report']);
+            $("#uploadfail_explain").show();
+        }
+    });
 
 
 

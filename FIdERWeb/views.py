@@ -902,8 +902,8 @@ def proxy_uploadmap (request, **kwargs):
 			response_upload['success'] = True
 			response_upload['report'] = "Invio del file %s su %s per integrazione completato." % (upload.name, output)
 		else:
-			print "Invio del file %s fallito. Causa: %s <br>" % (upload.name, output)
-			response_upload['report']= "Invio del file %s fallito. Causa: %s <br>" % (upload.name, output)
+			print "Invio del file %s fallito.<br>Causa: %s." % (upload.name, output)
+			response_upload['report']= "Invio del file %s fallito.<br>Causa: %s." % (upload.name, output)
 
 
 	return HttpResponse(json.dumps(response_upload), mimetype="application/json")

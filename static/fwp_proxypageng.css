@@ -83,7 +83,7 @@ td
     padding:        0 8px 8px 8px;
 }
 
-.formbriefing, .formwarning
+.formbriefing, .formwarning, #uploadfail_explain
 {
     width:          300px;
 }
@@ -92,3 +92,25 @@ td
 {
     width:          inherit;
 }
+
+.feedback_good
+{
+    border-bottom:         1px solid #009900;
+}
+
+.feedback_bad
+{
+    border-bottom:         1px solid #ff0000;
+}
+
+#progspinner_newdata
+{
+    text-align:     center;
+}
+
+.warninglabel
+{
+    font-weight:        bold;
+    font-style:         italic;
+}
+

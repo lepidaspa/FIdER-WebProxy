@@ -106,7 +106,7 @@ Gestione dati e cataloghi
                     {% if proxy_type != 'local' %}
                         <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_convert.png" title="Modifica conversioni">
                     {% endif %}
-                    <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_remove.png" title="Elimina">
+                    <img class="imgbutton removedata remove_{{ mapdata.source|lower }}" id="remove_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_remove.png" title="Elimina">
                 </td>
             </tr>
         {% endfor %}
@@ -135,25 +135,90 @@ Gestione dati e cataloghi
 
 {% block functionality %}
 
-<div id="form_newfile" title="Nuova mappa da file">
+
+<div id="form_removesource" title="Richiesta di eliminazione">
 
     <div class="formbriefing">
-    Il sistema accetta mappe in formato Shapefile, GeoJSON e MapInfo.<br>
-    I file della mappa devono essere inseriti in un archivio Zip unico con lo stesso nome dei file al suo interno.
-    </div>
-    <input type="file" id="newfile_chooser" name="newfile_chooser">
-
-    <div class="formwarning" id="warning_fileoverwrite">
-        <b>Attenzione</b>: esiste già una mappa con questo nome. Caricare questo file sovrascriverà i dati caricati in precedenza.
+        <span class="warninglabel">Attenzione</span>: i dati eliminati non possono essere recuperati.
     </div>
 
-    <div class="formwarning" id="warning_fileformatwrong">
-        <b>Attenzione</b>: il file selezionato non è nel formato corretto.
+    <div class="formbriefing" id="dataremove_details">
+        <!-- filled by script -->
     </div>
 
 </div>
 
-<div id="progress_fileupload" title="Caricamento nuova mappa">
+
+<div id="progress_removal" title="Procedura di eliminazione">
+
+    <div id="progspinner_removal">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_removereq">
+        Invio della richiesta di eliminazione...
+    </div>
+
+
+    <div class="progressinfo feedback_good" id="removalfinished_success">
+        Dati eliminati.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="removalfinished_fail">
+        Eliminazione dei dati fallita.
+        <div id="removalfail_explain">
+        </div>
+    </div>
+
+
+</div>
+
+
+<div id="form_newfile" title="Nuova mappa da file">
+
+    <div class="formbriefing">
+    Il sistema accetta mappe in formato Shapefile, GeoJSON e MapInfo.<br>
+    I file della mappa devono essere inseriti in un archivio Zip unico.
+    </div>
+    <input type="file" id="newfile_chooser" name="newfile_chooser">
+
+    <div class="formwarning" id="warning_fileoverwrite">
+        <span class="warninglabel">Attenzione</span>: esiste già una mappa con questo nome. Caricare questo file sovrascriverà i dati caricati in precedenza.
+    </div>
+
+    <div class="formwarning" id="warning_fileformatwrong">
+        <span class="warninglabel">Attenzione</span>: il file selezionato non è nel formato corretto.
+    </div>
+
+</div>
+
+
+
+
+<div id="progress_newdata" title="Caricamento e adattamento dati">
+
+    <div id="progspinner_newdata">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_uploading">
+        Caricamento dei dati in corso...
+    </div>
+
+    <div class="progressinfo" id="progress_stage_adapting">
+        Adattamento dei dati in corso...
+    </div>
+
+    <div class="progressinfo feedback_good" id="uploadfinished_success">
+        Dati caricati e adattati con successo.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="uploadfinished_fail">
+        Caricamento dati fallito.
+        <div id="uploadfail_explain">
+        </div>
+    </div>
+
 
 </div>
 

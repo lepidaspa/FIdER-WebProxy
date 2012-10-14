@@ -7,11 +7,27 @@ body
 .ui-widget
 {
     font-size:          small;
+    font-family:        sans-serif;
+    border:             none;
 }
 
 .ui-widget *
 {
     font-size:          small;
+}
+
+/* making background more standard */
+.ui-widget-header
+{
+    background:         #ff8800;
+    color:              #ffffff;
+    border:             none;
+}
+
+.ui-dialog-title
+{
+    font-size:          medium;
+    font-weight:        bold;
 }
 
 a
