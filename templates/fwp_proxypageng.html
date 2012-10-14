@@ -180,6 +180,7 @@ Gestione dati e cataloghi
     Il sistema accetta mappe in formato Shapefile, GeoJSON e MapInfo.<br>
     I file della mappa devono essere inseriti in un archivio Zip unico.
     </div>
+
     <input type="file" id="newfile_chooser" name="newfile_chooser">
 
     <div class="formwarning" id="warning_fileoverwrite">
@@ -223,7 +224,33 @@ Gestione dati e cataloghi
 </div>
 
 
-<div id="form_newwfs" title="Nuova mappa da fonte WFS"></div>
+<div id="form_newwfs" title="Nuova mappa da web">
+
+
+    <div class="formbriefing">
+        Il sistema accetta dati da servizi web WFS.
+    </div>
+
+    <table>
+
+        <tr><td>URL</td><td><input type="text" id="newremote_url"></tr>
+        <tr><td>Mappa</td><td><input type="tet" id="newremote_mapname"></td></tr>
+        <tr><td>Utente</td><td><input type="text" id="newremote_username"></td></tr>
+        <tr><td>Password</td><td><input type="password" id="newremote_password"></td></tr>
+
+    </table>
+
+    <div class="formwarning" id="warning_wfsoverwrite">
+        <span class="warninglabel">Attenzione</span>: esiste già una mappa con questo nome. Caricare questa fonte sovrascriverà i dati caricati in precedenza.
+    </div>
+
+</div>
+
+
+
+
+
+
 <div id="form_newquery" title="Nuova connessione a database"></div>
 
 

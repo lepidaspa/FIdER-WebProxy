@@ -61,7 +61,9 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
 
     $(".newdata").on('click', addNewSource);
 
+
     $("#newfile_chooser").change(checkCandidateFilename);
+    $("#newremote_mapname").on('mouseup keyup change', checkCandidateMapname);
     $(".removedata").on('click', removeDataSource);
 }
 
@@ -104,7 +106,19 @@ function initForms ()
     $("#form_newwfs").dialog({
         autoOpen: false,
         modal: true,
-        closeOnEscape: false
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Carica": {
+                id : "form_newwfs_upload",
+                text: "Carica",
+                click: tryUploadNewRemote
+            }
+        }
     });
 
     $("#form_newquery").dialog({
@@ -296,6 +310,19 @@ function addNewSource_File(callerid)
 
 }
 
+
+function addNewSource_WFS (callerid)
+{
+    var prefix = 'new_file_';
+    var dest = callerid.substr(prefix.length).split("-");
+
+    cmeta_id = dest[1];
+
+    $("#form_newwfs").dialog("open");
+    checkCandidateMapname();
+
+}
+
 function getMapIdFromPath (filepath)
 {
 
@@ -312,6 +339,72 @@ function getMapIdFromPath (filepath)
 
 }
 
+function isValidUrl (candidate)
+{
+    var prefix_https = "https://";
+    var prefix_http = "http://";
+
+    if (candidate.startsWith(prefix_http) || candidate.startsWith(prefix_https))
+    {
+        try
+        {
+            // TODO: implement more thorough check
+            var hostname = candidate.split("//")[1];
+            if (hostname.length > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        catch (ex)
+        {
+            return false;
+        }
+
+    }
+    else
+    {
+        return false;
+    }
+}
+
+function checkCandidateMapname()
+{
+    // same as checkCandidateFilename but for wfs, we are accessing  different elements hence the different function; plus we don't check the format
+    $("#warning_wfsoverwrite").hide();
+    var newmapname = $("#newremote_mapname").val();
+
+    if (newmapname.length == 0 || !isValidUrl($("#newremote_url").val()))
+    {
+        $("#form_newwfs_upload").prop("disabled", true);
+    }
+    else
+    {
+        $("#form_newwfs_upload").prop("disabled", false);
+    }
+
+    console.log("Verifying new remote map name "+newmapname+" compared to existing maps for meta "+cmeta_id);
+
+    var maplist = [];
+    for (var map_id in proxy_maps[cmeta_id])
+    {
+        maplist.push(map_id);
+    }
+
+
+    if (maplist.indexOf(newmapname) != -1)
+    {
+        console.log("Map id "+newmapname+" found in maplist ");
+        console.log(maplist);
+        $("#warning_wfsoverwrite").show();
+    }
+
+
+}
+
 function checkCandidateFilename()
 {
 
@@ -321,7 +414,7 @@ function checkCandidateFilename()
     var mapfilepath = $("#newfile_chooser").val();
     var mapfilename = getMapIdFromPath(mapfilepath);
 
-    console.log("Veryfing new filename "+mapfilepath+" ("+mapfilename+") compared to existing maps for meta "+cmeta_id);
+    console.log("Verifying new filename "+mapfilepath+" ("+mapfilename+") compared to existing maps for meta "+cmeta_id);
 
     var pathextension = mapfilepath.split(".");
 
@@ -342,12 +435,17 @@ function checkCandidateFilename()
 
     if (maplist.indexOf(mapfilename) != -1)
     {
-        console.log("Map id "+map_id+" found in maplist ");
+        console.log("Map id "+mapfilename+" found in maplist ");
         console.log(maplist);
         $( "#warning_fileoverwrite").show();
     }
 
     $("#form_newfile_upload").prop("disabled", false);
+
+}
+
+function tryUploadNewRemote()
+{
 
 }
 
