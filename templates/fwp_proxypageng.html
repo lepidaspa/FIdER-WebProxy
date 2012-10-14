@@ -47,9 +47,9 @@ Gestione dati e cataloghi
     {% for meta_id, maplist in proxy_maps.items %}
 
         <tbody class="metadata">
-        <tr class="metainfo">
+        <tr class="metainfo" id="metacard_{{ proxy_id }}-{{ meta_id }}">
 
-        <td colspan="2" class="metatitle" id="metacard_{{ proxy_id }}-{{ meta_id }}">
+        <td colspan="2" class="metatitle">
 
         {% if proxy_type != 'local' %}
             {% if proxy_type != 'linked' %}
@@ -74,14 +74,14 @@ Gestione dati e cataloghi
         </td>
         <td class="actionstd">
             {% if proxy_type != 'linked' and proxy_type != 'local' and proxy_type != 'query' %}
-            <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_newfromfile.png" title="Nuova mappa da file">
-            <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova mappa da WFS">
+            <img class="imgbutton newdata new_file" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_newfromfile.png" title="Nuova mappa da file">
+            <img class="imgbutton newdata new_wfs" id="new_wfs_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova mappa da WFS">
             {% else %}
                 {% if proxy_type == 'query' %}
-                    <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova connessione">
+                    <img class="imgbutton newdata new_query" id="new_query_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova connessione">
                 {% endif %}
                 {% if proxy_type == 'local' and meta_id == '.st' %}
-                    <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_newmapedit.png" title="Crea nuova mappa">
+                    <a href="/fwst/{{ proxy_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_newmapedit.png" title="Crea nuova mappa"></a>
                 {% endif %}
             {% endif %}
         </td>
@@ -94,11 +94,11 @@ Gestione dati e cataloghi
 
         {% for map_id, mapdata in maplist.items %}
 
-            <tr class="mapcard">
-                <td class="maptitle" id="mapcard_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">{{ map_id }}</td> <td>{{  mapdata.source }}</td>
+            <tr class="mapcard" id="mapcard_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">
+                <td class="maptitle">{{ map_id }}</td> <td>{{  mapdata.source }}</td>
                 <td class="actionstd">
                     {% if proxy_type == 'local' and meta_id == '.st' %}
-                        <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa">
+                        <a href="/fwst/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa"></a>
                     {% endif %}
                     {% if proxy_type != 'query' and mapdata.source != 'WFS' %}
                         <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_downloadfile.png" title="Scarica mappa">
@@ -134,6 +134,33 @@ Gestione dati e cataloghi
 
 
 {% block functionality %}
+
+<div id="form_newfile" title="Nuova mappa da file">
+
+    <div class="formbriefing">
+    Il sistema accetta mappe in formato Shapefile, GeoJSON e MapInfo.<br>
+    I file della mappa devono essere inseriti in un archivio Zip unico con lo stesso nome dei file al suo interno.
+    </div>
+    <input type="file" id="newfile_chooser" name="newfile_chooser">
+
+    <div class="formwarning" id="warning_fileoverwrite">
+        <b>Attenzione</b>: esiste già una mappa con questo nome. Caricare questo file sovrascriverà i dati caricati in precedenza.
+    </div>
+
+    <div class="formwarning" id="warning_fileformatwrong">
+        <b>Attenzione</b>: il file selezionato non è nel formato corretto.
+    </div>
+
+</div>
+
+<div id="progress_fileupload" title="Caricamento nuova mappa">
+
+</div>
+
+
+<div id="form_newwfs" title="Nuova mappa da fonte WFS"></div>
+<div id="form_newquery" title="Nuova connessione a database"></div>
+
 
 <div id="proxymap"></div>
 

@@ -4,6 +4,16 @@ body
     background-color:   #ffffff;
 }
 
+.ui-widget
+{
+    font-size:          small;
+}
+
+.ui-widget *
+{
+    font-size:          small;
+}
+
 a
 {
     text-decoration: inherit;

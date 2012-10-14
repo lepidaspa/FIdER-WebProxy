@@ -24,8 +24,13 @@ var proxymap_metalayer;
 var proxymap_activemeta;
 var proxymap_activemap;
 
+
+var cmeta_id;
+
 function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
 {
+
+    initForms();
 
     proxy_id = req_proxy_id;
     proxy_type = req_proxy_type;
@@ -46,7 +51,236 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
 
     buildMapWidget();
     populateMapWidget();
+
+
+    // TODO: solve flicker when moving between table cells
+    $(".metainfo").on('hover', highlightMeta);
+    $(".mapcard").on('hover', highlightMap);
+    $(".metainfo").on('mouseleave', clearHighlights);
+    $(".mapcard").on('mouseleave', clearHighlights);
+
+    $(".newdata").on('click', addNewSource);
+
+    $("#newfile_chooser").change(checkCandidateFilename);
 }
+
+function initForms ()
+{
+    $("#form_newfile").dialog({
+        autoOpen: false,
+        modal: true,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Carica": {
+                id : "form_newfile_upload",
+                text: "Carica",
+                click: tryUploadNewFile
+            }
+        }
+    });
+
+    $("#progress_fileupload").dialog({
+        autoOpen: false,
+        modal: true
+    });
+
+
+
+    $("#form_newwfs").dialog({
+        autoOpen: false,
+        modal: true
+    });
+
+    $("#form_newquery").dialog({
+        autoOpen: false,
+        modal: true
+    });
+
+}
+
+
+
+function addNewSource ()
+{
+    /*
+        TODO LIST (mode support):
+        - FILEUPLOAD            new_file
+        - WFS                   new_wfs
+        - QUERY                 new_query
+    */
+
+
+
+    if ($(this).hasClass('new_file'))
+    {
+        addNewSource_File(this.id);
+    }
+    else if ($(this).hasClass('new_wfs'))
+    {
+        addNewSource_WFS(this.id);
+    }
+    else if ($(this).hasClass('new_query'))
+    {
+        addNewSource_Query(this.id);
+    }
+
+}
+
+function addNewSource_File(callerid)
+{
+    var prefix = 'new_file_';
+    var dest = callerid.substr(prefix.length).split("-");
+
+    cmeta_id = dest[1];
+
+    $("#warning_fileoverwrite").hide();
+    $("#warning_fileformatwrong").hide();
+    $("#newfile_chooser").val(null);
+    $("#form_newfile_upload").prop("disabled", true);
+    $("#form_newfile").dialog("open");
+
+}
+
+function getMapIdFromPath (filepath)
+{
+
+    var splitpath = filepath.split("\\");
+    if (splitpath.length == 1)
+    {
+        splitpath = splitpath[0].split("/");
+    }
+
+    // removing any extensions too
+    var map_id= splitpath[splitpath.length-1].split(".")[0];
+
+    return map_id;
+
+}
+
+function checkCandidateFilename()
+{
+
+    $("#warning_fileoverwrite").hide();
+    $("#warning_fileformatwrong").hide();
+
+    var mapfilepath = $("#newfile_chooser").val();
+    var mapfilename = getMapIdFromPath(mapfilepath);
+
+    console.log("Veryfing new filename "+mapfilepath+" ("+mapfilename+") compared to existing maps for meta "+cmeta_id);
+
+    var pathextension = mapfilepath.split(".");
+
+    if (pathextension[pathextension.length-1] != 'zip')
+    {
+        console.log("New file has extension "+mapfilepath.split(".")[-1]);
+        $("#warning_fileformatwrong").show();
+        $("#form_newfile_upload").prop("disabled", true);
+        return;
+    }
+
+
+    var maplist = [];
+    for (var map_id in proxy_maps[cmeta_id])
+    {
+        maplist.push(map_id);
+    }
+
+    if (maplist.indexOf(mapfilename) != -1)
+    {
+        console.log("Map id "+map_id+" found in maplist ");
+        console.log(maplist);
+        $( "#warning_fileoverwrite").show();
+    }
+
+    $("#form_newfile_upload").prop("disabled", false);
+
+}
+
+
+function tryUploadNewFile()
+{
+
+
+
+}
+
+
+function addNewSource_WFS (callerid)
+{
+
+    var prefix = 'new_wfs_';
+    var dest = callerid.substr(prefix.length).split("-");
+
+    var dest_proxy = dest[0];
+    var dest_meta = dest[1];
+
+    $( "#form_newwfs" ).dialog( "open" );
+
+}
+
+function addNewSource_Query (callerid)
+{
+
+    var prefix = 'new_query_';
+    var dest = callerid.substr(prefix.length).split("-");
+
+    var dest_proxy = dest[0];
+    var dest_meta = dest[1];
+
+    $("#form_newquery").dialog("open");
+
+}
+
+
+
+
+function clearHighlights ()
+{
+    proxymap_activemeta.destroyFeatures();
+    proxymap_activemap.destroyFeatures();
+}
+
+function highlightMeta()
+{
+
+    var prefix = "metacard_";
+    var track_meta = this.id.substr(prefix.length).split("-");
+
+    //console.log("Id for metacard: "+this.id);
+    //console.log(track_meta);
+
+    proxymap_activemeta.destroyFeatures();
+    var bbox = getBbox (track_meta[1]);
+    proxymap_activemeta.addFeatures(bboxToFeature(bbox, proxymap));
+
+
+}
+
+function highlightMap()
+{
+
+    var prefix = "mapcard_";
+    var track_map = this.id.substr(prefix.length).split("-");
+
+    //console.log("Id for mapcard: "+this.id);
+    //console.log(track_map);
+
+    proxymap_activemap.destroyFeatures();
+    var bbox = getBbox (track_map[1], track_map[2]);
+    proxymap_activemap.addFeatures(bboxToFeature(bbox, proxymap));
+
+    proxymap_activemeta.destroyFeatures();
+    var bbox = getBbox (track_map[1]);
+    proxymap_activemeta.addFeatures(bboxToFeature(bbox, proxymap));
+
+
+}
+
+
 
 
 function getBbox (meta_id, map_id)
@@ -131,6 +365,8 @@ function buildMapWidget()
         numZoomLevels : 20
     }));
 
+
+
     var osmlayer = new OpenLayers.Layer.OSM();
     proxymap.addLayer(osmlayer);
 
@@ -171,8 +407,7 @@ function buildMapWidget()
     var switcher = new ItaLayerSwitcher();
     proxymap.addControl(switcher);
 
-    var bbox = (proxy_man['area']);
-    zoomToBBox(proxymap, bbox);
+    zoomToBBox(proxymap, proxy_man['area']);
 
 }
 
@@ -211,3 +446,13 @@ function bboxToFeature (bbox, olmap)
 
     return new OpenLayers.Feature.Vector(polygon, {});
 }
+
+
+
+
+
+
+
+
+
+

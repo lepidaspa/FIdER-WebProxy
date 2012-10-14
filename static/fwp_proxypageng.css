@@ -14,6 +14,7 @@ td.actionstd
     text-align:     right;
 }
 
+
 .metamaps
 {
     border-left:    1px solid #ff8800;
@@ -21,15 +22,26 @@ td.actionstd
     border-bottom:  1px solid #ff8800;
 }
 
+a img
+{
+    border:         none;
+}
+
 .imgbutton
 {
     cursor:         pointer;
+    border:         1px solid #ffffff;
+}
+
+.imgbutton:active
+{
+    border:         1px solid #ff8800;
 }
 
 tbody.metadata td.metatitle, tbody.metadata td.actionstd
 {
     padding-top:    8px;
-    border-bottom:      1px dotted #cccccc;
+    /*border-bottom:      1px dotted #cccccc; */
 }
 
 .mapcard td.maptitle
@@ -69,4 +81,14 @@ td
     right:          0;
 
     padding:        0 8px 8px 8px;
+}
+
+.formbriefing, .formwarning
+{
+    width:          300px;
+}
+
+#newfile_chooser
+{
+    width:          inherit;
 }
