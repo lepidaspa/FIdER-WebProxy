@@ -151,7 +151,7 @@ Gestione dati e cataloghi
 
 <div id="progress_removal" title="Procedura di eliminazione">
 
-    <div id="progspinner_removal">
+    <div class="progspinner" id="progspinner_removal">
         <img src="/static/resource/progressbar.gif">
     </div>
 
@@ -178,7 +178,8 @@ Gestione dati e cataloghi
 
     <div class="formbriefing">
     Il sistema accetta mappe in formato Shapefile, GeoJSON e MapInfo.<br>
-    I file della mappa devono essere inseriti in un archivio Zip unico.
+    I file della mappa devono essere inseriti in un archivio Zip unico.<br>
+    La mappa caricata deve contenere un solo tipo di oggetto geografico (tratta o punto).
     </div>
 
     <input type="file" id="newfile_chooser" name="newfile_chooser">
@@ -198,7 +199,7 @@ Gestione dati e cataloghi
 
 <div id="progress_newdata" title="Caricamento e adattamento dati">
 
-    <div id="progspinner_newdata">
+    <div class="progspinner" id="progspinner_newdata">
         <img src="/static/resource/progressbar.gif">
     </div>
 
@@ -220,12 +221,38 @@ Gestione dati e cataloghi
         </div>
     </div>
 
+</div>
+
+<div id="progress_newquery" title="Creazione di una nuova connessione">
+
+    <div class="progspinner" id="progspinner_newquery">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_probing">
+        Ricerca database in corso...
+    </div>
+
+    <div class="progressinfo" id="progress_stage_saving">
+        Salvataggio dati di connessione in corso...
+    </div>
+
+    <div class="progressinfo feedback_good" id="creationfinished_success">
+        Connessione creata correttamente.<br>
+        Per rendere disponibili i dati al sistema federato è necessario compilare la tabella di conversione.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="creationfinished_fail">
+        Connessione fallita.
+        <div id="creationfail_explain">
+        </div>
+    </div>
 
 </div>
 
 
-<div id="form_newwfs" title="Nuova mappa da web">
 
+<div id="form_newwfs" title="Nuova mappa da web">
 
     <div class="formbriefing">
         Il sistema accetta dati da servizi web WFS.
@@ -251,7 +278,40 @@ Gestione dati e cataloghi
 
 
 
-<div id="form_newquery" title="Nuova connessione a database"></div>
+<div id="form_newquery" title="Nuova connessione a database">
+
+    <div class="formbriefing">
+        Il sistema si collega a database PostgreSQL con supporto geografico PostGIS.<br>
+        Ogni vista deve contenere un solo tipo di oggetto geografico (tratta o punto).
+    </div>
+
+
+
+    <table id="newquerytable">
+
+        <tr><td>Nome</td><td><input type="text" id="conn_name_new" name="conn_name_new"></tr>
+
+        <tbody class="subsection">
+            <tr><td>Host</td><td><input type="text" id="conn_host_new" name="conn_host_new"></td></tr>
+            <tr><td>Porta</td><td><input type="text" id="conn_port_new" name="conn_port_new"></td></tr>
+            <tr><td>Utente</td><td><input type="text" id="conn_user_new" name="conn_user_new"></td></tr>
+            <tr><td>Password</td><td><input type="text" id="conn_pass_new" name="conn_pass_new"></td></tr>
+        </tbody>
+        <tbody class="subsection">
+            <tr><td>Database</td><td><input type="text" id="conn_db_new" name="conn_db_new"></td></tr>
+            <tr><td>Schema</td><td><input type="text" id="conn_schema_new" name="conn_schema_new"></td></tr>
+            <tr><td>Vista</td><td><input type="text" id="conn_view_new" name="conn_view_new"></td></tr>
+        </tbody>
+
+
+    </table>
+
+
+    <div class="formwarning" id="warning_queryoverwrite">
+        <span class="warninglabel">Attenzione</span>: esiste già una connessione con questo nome. Creare questa connessione sovrascriverà quella creata in precedenza.
+    </div>
+
+</div>
 
 
 <div id="proxymap"></div>

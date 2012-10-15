@@ -61,10 +61,18 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
 
     $(".newdata").on('click', addNewSource);
 
-
     $("#newfile_chooser").change(checkCandidateFilename);
     $("#newremote_mapname").on('mouseup keyup change', checkCandidateMapname);
     $(".removedata").on('click', removeDataSource);
+
+    $("#conn_name_new").on('mouseup keyup change', checkCandidateQueryparams);
+    $("#conn_host_new").on('mouseup keyup change', checkCandidateQueryparams);
+    $("#conn_port_new").on('mouseup keyup change', checkCandidateQueryparams);
+    $("#conn_db_new").on('mouseup keyup change', checkCandidateQueryparams);
+    $("#conn_schema_new").on('mouseup keyup change', checkCandidateQueryparams);
+    $("#conn_view_new").on('mouseup keyup change', checkCandidateQueryparams);
+
+
 }
 
 function initForms ()
@@ -88,6 +96,14 @@ function initForms ()
     });
 
     $("#progress_newdata").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        height: "auto"
+    });
+
+    $("#progress_newquery").dialog({
         autoOpen: false,
         modal: true,
         closeOnEscape: false,
@@ -124,7 +140,20 @@ function initForms ()
     $("#form_newquery").dialog({
         autoOpen: false,
         modal: true,
-        closeOnEscape: false
+        closeOnEscape: false,
+        width:  "auto",
+        height: "auto",
+        buttons: {
+            "Annulla": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Crea": {
+                id : "form_newquery_create",
+                text: "Carica",
+                click: tryCreateQuery
+            }
+        }
     });
 
     $("#form_removesource").dialog({
@@ -272,13 +301,6 @@ function applyDataRemove()
 
 function addNewSource ()
 {
-    /*
-        TODO LIST (mode support):
-        - WFS                   new_wfs
-        - QUERY                 new_query
-    */
-
-
 
     if ($(this).hasClass('new_file'))
     {
@@ -320,6 +342,21 @@ function addNewSource_WFS (callerid)
 
     $("#form_newwfs").dialog("open");
     checkCandidateMapname();
+
+}
+
+
+function addNewSource_Query (callerid)
+{
+
+    var prefix = 'new_query_';
+    var dest = callerid.substr(prefix.length).split("-");
+
+    console.log(callerid);
+    cmeta_id = dest[1];
+
+    $("#form_newquery").dialog("open");
+    checkCandidateQueryparams();
 
 }
 
@@ -376,6 +413,7 @@ function isValidUrl (candidate)
         return false;
     }
 }
+
 
 function checkCandidateMapname()
 {
@@ -514,11 +552,164 @@ function tryUploadNewRemote()
             $("#progress_newdata .progressinfo").hide();
             $("#progspinner_newdata").hide();
             $("#uploadfinished_fail").show();
-            $("#uploadfail_explain").append(data['report']);
-            $("#uploadfail_explain").show();        }
+            $("#uploadfail_explain").append(data);
+            $("#uploadfail_explain").show();
+        }
     });
 }
 
+
+
+function checkCandidateQueryparams()
+{
+
+    var queryname = $("#conn_name_new").val();
+    var host = $("#conn_host_new").val();
+    var port = $("#conn_port_new").val();
+    var db = $("#conn_db_new").val();
+    var schema = $("#conn_schema_new").val();
+    var view = $("#conn_view_new").val();
+
+    var notready = false;
+    $("#warning_queryoverwrite").hide();
+
+    if (queryname.length == 0)
+    {
+        notready = true;
+    }
+    else if (queryname.indexOf(" ")!=-1)
+    {
+        notready = true;
+    }
+    else
+    {
+
+        var maplist = [];
+        for (var map_id in proxy_maps[cmeta_id])
+        {
+            maplist.push(map_id);
+        }
+
+        if (maplist.indexOf(queryname) != -1)
+        {
+            $("#warning_queryoverwrite").show();
+        }
+
+    }
+
+    if (isNaN(port) || db.length == 0 || schema.length == 0 || view.length == 0 || host.length == 0)
+    {
+        notready = true;
+    }
+
+
+
+    $("#form_newquery_create").prop("disabled", notready);
+
+
+}
+
+
+function tryCreateQuery()
+{
+
+    var conn_name = $("#conn_name_new").val();
+
+    var conn_host = $("#conn_host_new").val();
+    var conn_port = $("#conn_port_new").val();
+    var conn_user = $("#conn_user_new").val();
+    var conn_pass = $("#conn_pass_new").val();
+
+    if (conn_user == "")
+    {
+        conn_user = null;
+    }
+    if (conn_pass == "")
+    {
+        conn_pass = null;
+    }
+
+    var conn_db = $("#conn_db_new").val();
+    var conn_schema = $("#conn_schema_new").val();
+    var conn_view = $("#conn_view_new").val();
+
+
+    // testing the connection (through Python) and retrieving the table structure
+    var urlstring = "/fwp/newqueryconn/";
+
+    var connectiondata = {
+        'name': conn_name,
+        'connection':
+        {
+            'host': conn_host,
+            'port': conn_port,
+            'dbname': conn_db,
+            'user': conn_user,
+            'password': conn_pass
+        },
+        'query':
+        {
+            'schema': conn_schema,
+            'view': conn_view
+        }
+
+
+    };
+
+
+    $("#form_newquery").dialog("close");
+    $("#progress_newquery").dialog("open");
+    $("#progress_newquery .progressinfo").hide();
+    $("#progspinner_newquery").show();
+    $("#progress_stage_probing").show();
+
+
+
+    $.ajax ({
+        url: urlstring,
+        async: true,
+        data: {jsonmessage: JSON.stringify(connectiondata)},
+        type: 'POST',
+        success: function(data) {
+
+
+            if (data['success'])
+            {
+
+                console.log("SQL probe successful");
+                $("#progress_newquery .progressinfo").hide();
+
+                saveConnection(connectiondata);
+
+            }
+            else
+            {
+
+                $("#progress_newquery .progressinfo").hide();
+                $("#progspinner_newquery").hide();
+                $("#creationfinished_fail").show();
+                $("#creationfail_explain").append(data['report']);
+                $("#creationfail_explain").show();
+
+            }
+        },
+        error: function (data) {
+
+            $("#progress_newquery .progressinfo").hide();
+            $("#progspinner_newquery").hide();
+            $("#creationfinished_fail").show();
+            $("#creationfail_explain").append(data);
+            $("#creationfail_explain").show();
+
+        }
+
+
+
+    });
+
+
+
+}
 
 function tryUploadNewFile()
 {
@@ -564,7 +755,7 @@ function tryUploadNewFile()
             $("#progress_newdata .progressinfo").hide();
             $("#progspinner_newdata").hide();
             $("#uploadfinished_fail").show();
-            $("#uploadfail_explain").append(data['report']);
+            $("#uploadfail_explain").append(data);
             $("#uploadfail_explain").show();
         }
 
@@ -598,7 +789,7 @@ function rebuildShapeData (meta_id, map_id)
             $("#progress_newdata .progressinfo").hide();
             $("#progspinner_newdata").hide();
             $("#uploadfinished_fail").show();
-            $("#uploadfail_explain").append(data['report']);
+            $("#uploadfail_explain").append(data);
             $("#uploadfail_explain").show();
         }
     });
@@ -607,20 +798,42 @@ function rebuildShapeData (meta_id, map_id)
 
 }
 
-function addNewSource_Query (callerid)
+
+function saveConnection(currentconn)
 {
 
-    var prefix = 'new_query_';
-    var dest = callerid.substr(prefix.length).split("-");
+    $("#progspinner_newquery").show();
+    $("#progress_stage_saving").show();
 
-    var dest_proxy = dest[0];
-    var dest_meta = dest[1];
+    console.log("Saving connection data to filesystem");
 
-    $("#form_newquery").dialog("open");
+    var jsondata = {'connection': currentconn};
+    var urlstring = "/fwp/registerquery/"+proxy_id+"/"+cmeta_id+"/";
+
+    $.ajax ({
+        url: urlstring,
+        data:   {jsonmessage: JSON.stringify(jsondata)},
+        async: true,
+        type: 'POST',
+        success: function(data) {
+            $("#progress_stage_saving").hide();
+            $("#progspinner_newquery").hide();
+            $("#progress_newdata .progressinfo").hide();
+            $("#creationfinished_success").show();
+
+        },
+        error: function (data)
+        {
+            $("#progress_newdata .progressinfo").hide();
+            $("#progress_stage_saving").hide();
+            $("#progspinner_newquery").hide();
+            $("#creationfinished_fail").show();
+            $("#creationfail_explain").append(data);
+            $("#creationfail_explain").show();
+        }
+    });
 
 }
-
-
 
 
 function clearHighlights ()
@@ -725,7 +938,10 @@ function populateMapWidget()
 function buildMapWidget()
 {
 
-    proxymap = new OpenLayers.Map('proxymap', {controls: []});
+    proxymap = new OpenLayers.Map('proxymap', {
+        controls: []
+    });
+
     proxymap.projection = proj_WGS84;
     proxymap.displayProjection = new OpenLayers.Projection(proj_WGS84);
 
@@ -773,6 +989,7 @@ function buildMapWidget()
 
     proxymap.addControl(new OpenLayers.Control.Navigation());
     proxymap.addControl(new OpenLayers.Control.PanZoomBar());
+
     //Inheriting of OpenLayers.Control.LayerSwitcher
     ItaLayerSwitcher.prototype = new OpenLayers.Control.LayerSwitcher;           // Define sub-class
     ItaLayerSwitcher.prototype.constructor = ItaLayerSwitcher;
@@ -831,13 +1048,4 @@ function bboxToFeature (bbox, olmap)
 
     return new OpenLayers.Feature.Vector(polygon, {});
 }
-
-
-
-
-
-
-
-
-
 
