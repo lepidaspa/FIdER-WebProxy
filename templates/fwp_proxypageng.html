@@ -101,7 +101,7 @@ Gestione dati e cataloghi
                         <a href="/fwst/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa"></a>
                     {% endif %}
                     {% if proxy_type != 'query' and mapdata.source != 'WFS' %}
-                        <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_downloadfile.png" title="Scarica mappa">
+                        <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_downloadfile.png" title="Esporta mappa">
                     {% endif %}
                     {% if proxy_type != 'local' %}
                         <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_convert.png" title="Modifica conversioni">
@@ -134,6 +134,7 @@ Gestione dati e cataloghi
 
 
 {% block functionality %}
+
 
 
 <div id="form_removesource" title="Richiesta di eliminazione">

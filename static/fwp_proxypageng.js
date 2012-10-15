@@ -1022,7 +1022,6 @@ function zoomToBBox (olmap, bbox)
 
 }
 
-
 function reprojPoint (pointX, pointY, olmap)
 {
     var reproj;
@@ -1032,7 +1031,6 @@ function reprojPoint (pointX, pointY, olmap)
 
     return new OpenLayers.Geometry.Point(reproj.lon, reproj.lat);
 }
-
 
 function bboxToFeature (bbox, olmap)
 {
