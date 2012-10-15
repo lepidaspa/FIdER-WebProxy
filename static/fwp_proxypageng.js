@@ -27,6 +27,13 @@ var proxymap_activemap;
 
 var cmeta_id;
 
+var conv_hasmodels;
+var conv_hastable;
+
+var conv_table;
+var conv_fields;
+var conv_models;
+
 function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
 {
 
@@ -64,6 +71,7 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $("#newfile_chooser").change(checkCandidateFilename);
     $("#newremote_mapname").on('mouseup keyup change', checkCandidateMapname);
     $(".removedata").on('click', removeDataSource);
+    $(".convert").on('click', loadConversionTable);
 
     $("#conn_name_new").on('mouseup keyup change', checkCandidateQueryparams);
     $("#conn_host_new").on('mouseup keyup change', checkCandidateQueryparams);
@@ -77,6 +85,9 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
 
 function initForms ()
 {
+
+    $("#form_setconversion").hide();
+
     $("#form_newfile").dialog({
         autoOpen: false,
         modal: true,
@@ -91,6 +102,20 @@ function initForms ()
                 id : "form_newfile_upload",
                 text: "Carica",
                 click: tryUploadNewFile
+            }
+        }
+    });
+
+    $("#progress_convdload").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        height: "auto",
+        buttons: {
+            "Chiudi": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
             }
         }
     });
@@ -176,6 +201,124 @@ function initForms ()
 
 }
 
+
+function loadConversionTable()
+{
+
+    conv_hasmodels = null;
+    conv_hastable = null;
+
+    var prefix = 'convert_';
+    var dest = this.id.substr(prefix.length).split("-");
+
+    var meta_id = dest[0];
+    var map_id = dest[1];
+
+
+    $("#progress_convdload").dialog("open");
+    $("#progress_convdload .progressinfo").hide();
+    $("#progspinner_convdload").show();
+    $("#progress_stage_convloading").show();
+
+    // loading the existing conversions and fields for this map
+
+    $.ajax({
+        url: "/fwp/conversion/"+proxy_id+"/"+meta_id+"/"+map_id+"/",
+        async: true
+    }).done(function (jsondata) {
+
+            if (conv_hasmodels !== false)
+            {
+                $("#progress_convdload .progressinfo").hide();
+                prepareConversions (jsondata);
+            }
+
+
+        }).fail(function (data)
+        {
+
+            $("#progress_convdload .progressinfo").hide();
+            $("#progspinner_convdload").hide();
+            $("#convdload_fail").show();
+            $("#convdloadfail_explain").val(data);
+            $("#convdloadfail_explain").show();
+
+        });
+
+    // loading the models available from the main server
+
+    $.ajax({
+        url: "/fwp/valueconv/",
+        async: true
+    }).done(function (jsondata) {
+
+            if (conv_hastable !== false)
+            {
+                $("#progress_convdload .progressinfo").hide();
+                prepareModels (jsondata);
+            }
+
+        }).fail(function (data)
+        {
+
+            $("#progress_convdload .progressinfo").hide();
+            $("#progspinner_convdload").hide();
+            $("#convdload_fail").show();
+            $("#convdloadfail_explain").val(data);
+            $("#convdloadfail_explain").show();
+
+        });
+
+}
+
+function prepareConversions (jsondata)
+{
+    conv_hastable = true;
+
+    console.log("Received existing conversions");
+    console.log(jsondata);
+
+    if (conv_hasmodels)
+    {
+        renderConvTable();
+    }
+
+}
+
+function prepareModels (jsondata)
+{
+    conv_hasmodels = true;
+
+    console.log("Received server models");
+    console.log(jsondata);
+
+
+    if (conv_hastable)
+    {
+        renderConvTable();
+    }
+
+}
+
+
+
+function renderConvTable (jsondata)
+{
+    // renders the conversion table for a jsondata set
+
+    $("#progress_convdload").dialog("close");
+
+
+    console.log("Rendering conversion table from data");
+    console.log(jsondata);
+
+    var convtable = $("#convtable_datasets");
+    convtable.empty();
+
+    var modelselector = $("#convtable_modelselect");
+
+
+}
 
 function removeDataSource ()
 {
@@ -972,7 +1115,7 @@ function buildMapWidget()
     proxymap.addLayer(osmlayer);
 
 
-    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.2, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "dash"});
+    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.2, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid"});
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
     proxymap_metalayer = new OpenLayers.Layer.Vector("Cataloghi", {styleMap: featurestylemap});
     proxymap.addLayer(proxymap_metalayer);

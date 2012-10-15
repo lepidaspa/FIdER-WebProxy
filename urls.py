@@ -61,6 +61,8 @@ urlpatterns = patterns('',
 	url(r'^fwp/maplist/(?P<proxy_id>\w*)/$', fwpviews.proxy_maps_list),
 
 	#urls for active operations, called by the clients
+
+	#old proxy page,to be removed
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
 	url(r'^fwp/get/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getSingleMap),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
@@ -88,7 +90,6 @@ urlpatterns = patterns('',
 	#url(r'', redirect_to, {'url': "/fwp/"})
 
 	url(r'^fwp/proxyng/(?P<proxy_id>\w*)/$', fwpviews.proxypageng),
-
 
 
 

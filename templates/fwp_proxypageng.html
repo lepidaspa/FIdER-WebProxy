@@ -42,8 +42,6 @@ Gestione dati e cataloghi
 
     <table id="metalistinglayout">
 
-
-
     {% for meta_id, maplist in proxy_maps.items %}
 
         <tbody class="metadata">
@@ -104,7 +102,7 @@ Gestione dati e cataloghi
                         <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_downloadfile.png" title="Esporta mappa">
                     {% endif %}
                     {% if proxy_type != 'local' %}
-                        <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_convert.png" title="Modifica conversioni">
+                        <img class="imgbutton convert convert_{{ mapdata.source|lower }}" id="convert_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_convert.png" title="Modifica conversioni">
                     {% endif %}
                     <img class="imgbutton removedata remove_{{ mapdata.source|lower }}" id="remove_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_remove.png" title="Elimina">
                 </td>
@@ -134,6 +132,53 @@ Gestione dati e cataloghi
 
 
 {% block functionality %}
+
+<div id="form_setconversion" title="Conversione campi e valori">
+
+<div id="modelselect">
+    <label for="convtable_modelselect">Modello di riferimento</label>
+    <select id="convtable_modelselect">
+
+    </select>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <td rowspan=2>Campo federato</td>
+            <td rowspan=2>Campo di origine</td>
+            <td colspan=3>Valori</td>
+        </tr>
+        <tr><td>Valore originale</td><td>Valore federato</td></tr>
+    </thead>
+
+    <tbody id="convtable_datasets">
+
+
+    </tbody>
+
+</table>
+
+</div>
+
+
+<div id="progress_convdload" title="Caricamento dati per la conversione">
+
+    <div class="progspinner" id="progspinner_convdload">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_convloading">
+        Caricamento tabelle di conversione...
+    </div>
+
+    <div class="progressinfo feedback_bad" id="convdload_fail">
+        Caricamento fallito.
+        <div id="convdloadfail_explain">
+        </div>
+    </div>
+
+</div>
 
 
 
@@ -193,9 +238,8 @@ Gestione dati e cataloghi
         <span class="warninglabel">Attenzione</span>: il file selezionato non è nel formato corretto.
     </div>
 
+
 </div>
-
-
 
 
 <div id="progress_newdata" title="Caricamento e adattamento dati">

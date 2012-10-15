@@ -214,6 +214,7 @@ def proxy_loadmap (request, **kwargs):
 
 	return HttpResponse(jsondata, mimetype="application/json")
 
+@csrf_exempt
 def proxy_getModels (request):
 	"""
 	Returns a json with the main server models and acceptable values
@@ -221,10 +222,9 @@ def proxy_getModels (request):
 	:return:
 	"""
 
-	#TODO: decide whether to return NULL or error (500) in case of error in getModels
+	# lets exceptions bubble up from getModels()
 
 	return HttpResponse(json.dumps(getModels()), mimetype="application/json")
-
 
 
 def getModels ():
@@ -250,7 +250,7 @@ def getModels ():
 		print "Error when requesting conversion table from %s: %s" % (proxyconf.URL_CONVERSIONS, errormess)
 
 		#todo: replace with handling at JS level
-		raise
+		raise Exception ("Tabella di conversione non ricevuta: %s" % errormess)
 
 	return convtable
 
