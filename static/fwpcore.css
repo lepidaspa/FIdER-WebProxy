@@ -30,6 +30,30 @@ body
     font-weight:        bold;
 }
 
+.ui-button
+{
+    border:             1px solid #ff8800;
+}
+
+.ui-button
+{
+    background:         #ffffff;
+    color:              #000000;
+}
+
+.ui-button:disabled
+{
+    background:         #bbb7b9;
+    color:              #000000;
+}
+
+.ui-button:active
+{
+    background:         #ff8800;
+    color:              #ffffff;
+}
+
+
 a
 {
     text-decoration: inherit;
@@ -127,7 +151,7 @@ input:disabled, select:disabled
 
 
 
-input [type=button]
+input[type=button]
 {
     color:              #ffffff;
     background-color:   #ff8800;

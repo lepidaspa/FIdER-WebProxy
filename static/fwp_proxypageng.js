@@ -339,12 +339,18 @@ function getMapIdFromPath (filepath)
 
 }
 
+
+function stringStartsWith (candidate, reference)
+{
+    return candidate.slice(0, reference.length) == reference;
+}
+
 function isValidUrl (candidate)
 {
     var prefix_https = "https://";
     var prefix_http = "http://";
 
-    if (candidate.startsWith(prefix_http) || candidate.startsWith(prefix_https))
+    if (stringStartsWith(candidate, prefix_http) || stringStartsWith(candidate, prefix_https))
     {
         try
         {
@@ -373,9 +379,11 @@ function isValidUrl (candidate)
 
 function checkCandidateMapname()
 {
-    // same as checkCandidateFilename but for wfs, we are accessing  different elements hence the different function; plus we don't check the format
+    // same as checkCandidateFilename but for WFS, we are accessing  different elements hence the different function; plus we don't check the format
     $("#warning_wfsoverwrite").hide();
     var newmapname = $("#newremote_mapname").val();
+
+    console.log("Verifying new remote map name "+newmapname+" compared to existing maps for meta "+cmeta_id);
 
     if (newmapname.length == 0 || !isValidUrl($("#newremote_url").val()))
     {
@@ -386,7 +394,7 @@ function checkCandidateMapname()
         $("#form_newwfs_upload").prop("disabled", false);
     }
 
-    console.log("Verifying new remote map name "+newmapname+" compared to existing maps for meta "+cmeta_id);
+
 
     var maplist = [];
     for (var map_id in proxy_maps[cmeta_id])
@@ -447,6 +455,68 @@ function checkCandidateFilename()
 function tryUploadNewRemote()
 {
 
+    var urlstring = "/fwp/download/"+proxy_id+"/"+cmeta_id+"/";
+
+
+    var wfsparams = {};
+
+
+
+    wfsparams['url'] = $("#newremote_url").val();
+    wfsparams['user'] = $("#newremote_username").val();
+    wfsparams['pass'] = $("#newremote_password").val();
+    wfsparams['layer'] = $("#newremote_mapname").val();
+
+    var map_id = wfsparams['layer'];
+
+    if (wfsparams['user'] == "")
+    {
+        wfsparams['user'] = null;
+    }
+    if (wfsparams['pass'] == "")
+    {
+        wfsparams['pass'] = null;
+    }
+
+
+
+    $("#form_newwfs").dialog("close");
+    $("#progress_newdata").dialog("open");
+    $("#progress_newdata .progressinfo").hide();
+    $("#progspinner_newdata").show();
+    $("#progress_stage_uploading").show();
+
+
+    $.ajax ({
+        url: urlstring,
+        data: wfsparams,
+        async: true,
+        type: 'POST',
+        success: function(data) {
+
+            if (data['success'] == true)
+            {
+                $("#progress_newdata .progressinfo").hide();
+                rebuildShapeData(cmeta_id, map_id);
+            }
+            else
+            {
+                $("#progress_newdata .progressinfo").hide();
+                $("#progspinner_newdata").hide();
+                $("#uploadfinished_fail").show();
+                $("#uploadfail_explain").append(data['report']);
+                $("#uploadfail_explain").show();
+            }
+
+        },
+        error: function (data)
+        {
+            $("#progress_newdata .progressinfo").hide();
+            $("#progspinner_newdata").hide();
+            $("#uploadfinished_fail").show();
+            $("#uploadfail_explain").append(data['report']);
+            $("#uploadfail_explain").show();        }
+    });
 }
 
 
@@ -534,20 +604,6 @@ function rebuildShapeData (meta_id, map_id)
     });
 
 
-
-}
-
-
-function addNewSource_WFS (callerid)
-{
-
-    var prefix = 'new_wfs_';
-    var dest = callerid.substr(prefix.length).split("-");
-
-    var dest_proxy = dest[0];
-    var dest_meta = dest[1];
-
-    $( "#form_newwfs" ).dialog( "open" );
 
 }
 
