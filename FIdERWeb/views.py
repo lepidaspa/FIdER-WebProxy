@@ -275,13 +275,14 @@ def getConversionInfo (request, **kwargs):
 		mapconv = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
 		print "Received conversion table: %s" % mapconv
 		if mapconv is None:
+			print "No conversion table for this map"
 			mapconv = {}
 	except Exception as ex:
 		print "Error when loading shape conversion table: %s" % ex
 		mapconv = {}
 
 	# very simple check to be sure the conversion table has the correct structure, i.e. is in the most recent format
-	if not (mapconv.has_key('modelid') and mapconv.has_key('fields')):
+	if mapconv != {} and not (mapconv.has_key('modelid') and mapconv.has_key('fields')):
 		print "Conversion table is in the wrong format"
 		mapconv = {}
 

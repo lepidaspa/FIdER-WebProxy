@@ -10,8 +10,8 @@
 var proj_WGS84 = "EPSG:4326";
 var proj_900913 = "EPSG:900913";
 
-var objtypes = { 'LineString': 'tratte', 'Points': 'punti'};
-
+var objtypestrings = { 'LineString': 'tratte', 'Point': 'punti'};
+var objtypes = [ 'LineString', 'Point' ];
 
 var proxy_id;
 var proxy_type;
@@ -26,6 +26,9 @@ var proxymap_activemap;
 
 
 var cmeta_id;
+// used essentially for the conversion table
+var cmap_id;
+
 
 var conv_hasmodels;
 var conv_hastable;
@@ -33,6 +36,10 @@ var conv_hastable;
 var conv_table;
 var conv_fields;
 var conv_models;
+
+
+var forcefieldstring = "+";
+
 
 function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
 {
@@ -80,6 +87,14 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $("#conn_schema_new").on('mouseup keyup change', checkCandidateQueryparams);
     $("#conn_view_new").on('mouseup keyup change', checkCandidateQueryparams);
 
+    $("#convtable_modelselect").live('change', renderConvTable);
+    $(".conv_addpreset").live('click', addConvPreset);
+    $(".valueconv_remove").live('click', removeConvPreset);
+    $(".valueconv_quit").live('click', closeConversionScreen);
+    $("#valueconv_save").live('click', saveConversionTable);
+
+    $("#fieldconv_geometry").live('change', checkGeometryConversion);
+
 
 }
 
@@ -119,6 +134,23 @@ function initForms ()
             }
         }
     });
+
+
+    $("#progress_convsave").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        height: "auto",
+        buttons: {
+            "Chiudi": {
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
+    });
+
+
 
     $("#progress_newdata").dialog({
         autoOpen: false,
@@ -211,8 +243,8 @@ function loadConversionTable()
     var prefix = 'convert_';
     var dest = this.id.substr(prefix.length).split("-");
 
-    var meta_id = dest[0];
-    var map_id = dest[1];
+    cmeta_id = dest[0];
+    cmap_id = dest[1];
 
 
     $("#progress_convdload").dialog("open");
@@ -223,7 +255,7 @@ function loadConversionTable()
     // loading the existing conversions and fields for this map
 
     $.ajax({
-        url: "/fwp/conversion/"+proxy_id+"/"+meta_id+"/"+map_id+"/",
+        url: "/fwp/conversion/"+proxy_id+"/"+cmeta_id+"/"+cmap_id+"/",
         async: true
     }).done(function (jsondata) {
 
@@ -278,9 +310,13 @@ function prepareConversions (jsondata)
     console.log("Received existing conversions");
     console.log(jsondata);
 
+    conv_fields = jsondata['mapfields'];
+    conv_table = jsondata['conversion'];
+
     if (conv_hasmodels)
     {
-        renderConvTable();
+        openConversionScreen();
+        renderConvSelection();
     }
 
 }
@@ -292,20 +328,195 @@ function prepareModels (jsondata)
     console.log("Received server models");
     console.log(jsondata);
 
+    conv_models = {};
+
+    var maptype =  proxy_maps[cmeta_id][cmap_id]['type'];
+
+    for (var model_id in jsondata)
+    {
+        if (jsondata[model_id]['federated'])
+        {
+            var modeltype = jsondata[model_id]['objtype'];
+            if (maptype == null || modeltype == maptype)
+            {
+                conv_models[model_id] = jsondata[model_id];
+
+                if (proxy_type == 'query')
+                {
+                    conv_models[model_id]['properties']['geometry']="str";
+                }
+            }
+
+        }
+    }
+
+
+    console.log("Rebuilt federated models list");
+    console.log(conv_models);
 
     if (conv_hastable)
     {
-        renderConvTable();
+        openConversionScreen();
+        renderConvSelection();
     }
 
 }
 
+function openConversionScreen()
+{
+    // hides the map widget to show the conversion widget
+    $("#proxymap").hide();
+    $("#form_setconversion").show();
+    $("#convtable_headers").hide();
+    $("#valueconv_save").hide();
+    $("#valueconv_quit").hide();
+
+}
+
+function saveConversionTable()
+{
+
+    // saves the current conversion setting
+
+    console.log("Saving conversion table");
 
 
-function renderConvTable (jsondata)
+    // UI dialog init
+    $("#progress_convsave").dialog("open");
+    $("#progress_convsave .progressinfo").hide();
+    $("#progspinner_convsave").show();
+    $("#progress_stage_convsaving").show();
+
+
+
+
+    var conversion = { "fields": {}, "forcedfields": {}};
+
+    // find the model currently in use
+
+    var model_id = $("#convtable_modelselect").val();
+
+    conversion ['modelid'] = model_id;
+
+
+    var fprefix;
+    fprefix = "fieldconv_";
+
+    var vprefix;
+    vprefix = "conv_preset_";
+
+    for (var fieldname in conv_models[model_id]['properties'])
+    {
+        var sourcefield = $("#"+fprefix+fieldname).val();
+
+        if (sourcefield =="")
+        {
+            continue;
+        }
+
+        var isforced = (sourcefield == forcefieldstring);
+
+        var valueconv = {};
+
+        var base = $("#"+vprefix+fieldname);
+
+        if (base.length == 0)
+        {
+            // skip if we are not in a field that allows for presets
+            // TODO: move this to the fieldname iterator, continuing if the property does not have an array under itself
+            continue;
+        }
+
+        var convrows = base.find('.valueconv_combo_'+fieldname);
+
+        // filling the value conversion dictionary
+        for (var i = 0; i < convrows.length; i++)
+        {
+            var convfrom = convrows[i].find('.valueconv_valuefrom').val();
+            var convto = convrows[i].find('.valueconv_valueto').val();
+
+            valueconv [convfrom] = convto;
+        }
+
+        // adding to the full conversion dict
+        if (isforced)
+        {
+            conversion['forcedfields'][fieldname] = valueconv;
+        }
+        else
+        {
+            conversion['fields'][sourcefield] = {
+                'to': fieldname,
+                'values': valueconv
+            }
+        }
+
+    }
+
+
+    // saving to filesystem
+
+    var jsondata = {};
+
+    jsondata['convtable'] = conversion;
+
+    jsondata ['proxy_id']  = proxy_id;
+    jsondata ['meta_id'] =  cmeta_id;
+    jsondata ['shape_id'] = cmap_id;
+
+
+
+
+    $.ajax ({
+        url: "/fwp/maketable/",
+        async: true,
+        data: {
+            jsonmessage: JSON.stringify(jsondata)
+        },
+        type: 'POST',
+        success: function(data) {
+
+            $("#progress_convsave .progressinfo").hide();
+            $("#progspinner_convsave").hide();
+            $("#convsave_success").show();
+
+            if (proxy_type != 'query')
+            {
+                rebuildShapeData(cmeta_id, cmap_id);
+            }
+
+            $("#progspinner").hide();
+
+
+        },
+        error: function (data) {
+
+            $("#progress_convsave .progressinfo").hide();
+            $("#progspinner_convsave").hide();
+            $("#convsave_fail").show();
+
+
+        }
+    });
+
+
+
+
+}
+
+function closeConversionScreen()
+{
+    //TODO: placeholder, implement
+    // empties the conversion widget and returns to map
+    $("#convtable_modelselect").empty();
+    $("#convtable_datasets").empty();
+    $("#form_setconversion").hide();
+    $("#proxymap").show();
+}
+
+function renderConvSelection (jsondata)
 {
     // renders the conversion table for a jsondata set
-
     $("#progress_convdload").dialog("close");
 
 
@@ -316,9 +527,155 @@ function renderConvTable (jsondata)
     convtable.empty();
 
     var modelselector = $("#convtable_modelselect");
+    modelselector.prop('disabled', false);
+
+    modelselector.empty();
+    modelselector.append('<option value=""></option>');
+
+    var modlist = [];
+    for (var model_id in conv_models)
+    {
+        modlist.push(model_id);
+        modelselector.append(
+            '<option value="'+model_id+'">'+conv_models[model_id]['name']+'</option>'
+        )
+    }
+
+    // TODO: handle autoselect in case a model was already registered
+
+    if (modlist.length == 1)
+    {
+        // preselecting and locking the result if there is only one model
+        modelselector.val(modlist[0]);
+        modelselector.change();
+        renderConvTable();
+        modelselector.prop('disabled', true);
+    }
 
 
 }
+
+
+function renderConvTable()
+{
+
+    // TODO: handle autoselect and fill for fields in case a model was already registered
+
+    // renders the conversion table according to the model_id chosen in the model selector
+    var model_id = $("#convtable_modelselect").val();
+
+    var convtable = $("#convtable_datasets");
+    convtable.empty();
+
+    if (model_id == "")
+    {
+        return;
+    }
+
+
+    var fields = conv_models[model_id]['properties'];
+
+
+    // metafields for forced values and unused property
+    var fieldchoice_add = '<option value="+">(aggiungi)</option>';
+    var fieldchoice_none = '<option value="">(nessuno)</option>';
+
+    // map fields list
+    var proplist = "";
+    for (var i in conv_fields)
+    {
+        proplist += '<option value="'+conv_fields[i]+'">'+conv_fields[i]+'</option>';
+    }
+
+    for (var field in fields)
+    {
+
+        var fieldname_friendly = field != 'geometry' ? field : 'Geometria';
+
+        var haspresetvalues = $.isArray(fields[field]);
+
+        var selopts = $('<select id="fieldconv_'+field+'"></select>');
+        selopts.append(fieldchoice_none);
+
+        if (haspresetvalues)
+        {
+            selopts.append(fieldchoice_add);
+        }
+
+        selopts.append(proplist);
+
+        //var seloptshtml = $('<div></div>').append(selopts.clone()).remove().html();
+
+        var fieldrow = $('<tr></tr>');
+        fieldrow.append('<td>'+fieldname_friendly+'</td>');
+        fieldrow.append($('<td></td>').append(selopts));
+
+
+        // adding fixed values, generator only to begin with
+        if (haspresetvalues)
+        {
+            var valuesconv = $('<table class="valueconvtable" cellpadding=0 cellspacing=0 id="conv_presets_'+field+'"><tbody></tbody>' +
+                '<tfoot><tr><td colspan="3"><input type="button" class="conv_addpreset" id="conv_addpreset_'+field+'" value="Aggiungi"></td></tr></tfoot>' +
+                '</table>');
+
+            fieldrow.append($('<td colspan=3 class="padless"></td>').append(valuesconv));
+
+        }
+
+        convtable.append(fieldrow);
+    }
+
+
+    $("#convtable_headers").show();
+    $("#valueconv_save").show();
+    $("#valueconv_save").prop('disabled', false);
+
+    $("#valueconv_quit").show();
+
+    $("#fieldconv_geometry").change();
+
+}
+
+function checkGeometryConversion()
+{
+    $("#valueconv_save").prop('disabled', $("#fieldconv_geometry").val() == "");
+}
+
+function removeConvPreset()
+{
+    $(this).closest("tr").remove();
+}
+
+function addConvPreset()
+{
+    var prefix = 'conv_addpreset_';
+    var model_id = $("#convtable_modelselect").val();
+    var fieldname = this.id.substr(prefix.length);
+
+    var population = "";
+    for (var i in conv_models[model_id]['properties'][fieldname])
+    {
+        population += '<option value="'+conv_models[model_id]['properties'][fieldname][i]+'">'+conv_models[model_id]['properties'][fieldname][i]+'</option>';
+    }
+
+    var fieldconvrow = $('<tr class="valueconv_combo_'+fieldname+'">' +
+            '<td class="halffield">' +
+                '<input type="text" class="valueconv_from">' +
+            '</td>' +
+            '<td class="halffield">' +
+                '<select class="valueconv_to">' +
+                    population+
+                '</select>' +
+            '</td>' +
+            '<td>' +
+                '<input type="button" class="valueconv_remove" value="Elimina">' +
+            '</td>' +
+        '</tr>');
+
+    $("#conv_presets_"+fieldname+">tbody").append(fieldconvrow);
+
+}
+
 
 function removeDataSource ()
 {

@@ -129,3 +129,59 @@ td
     border-top:          1px dashed #ff8800;
 }
 
+.halffield
+{
+    width:          40%;
+}
+
+.valueconvtable
+{
+    width:                  100%;
+    vertical-align:         top;
+    padding-top:            0;
+    margin-top:             0;
+    min-width:              100%;
+
+}
+
+.valueconvtable *
+{
+    white-space:nowrap;
+}
+
+.padless
+{
+    padding-top:            0;
+    padding-bottom:         0;
+    vertical-align:         top;
+}
+
+#form_setconversion_table *
+{
+    padding-top:            0;
+    padding-bottom:         0;
+    vertical-align:         top;
+    white-space:nowrap;
+
+}
+
+.mainfields
+{
+    vertical-align: bottom;
+}
+
+#modelselect
+{
+    margin-bottom:  8px;
+    margin-top:     8px;
+}
+
+#convtable_headers td
+{
+    font-weight:            bold;
+}
+
+#tablecontrols
+{
+    margin-top:             8px;
+}

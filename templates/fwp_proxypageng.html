@@ -7,7 +7,7 @@ Gestione dati e cataloghi
 
 {% block headers %}
 
-    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
+    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false" xmlns="http://www.w3.org/1999/html"></script>
     <script language="JavaScript" src="{{ STATIC_URL }}fwp_proxypageng.js"></script>
 
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_proxypage.css">
@@ -99,7 +99,7 @@ Gestione dati e cataloghi
                         <a href="/fwst/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa"></a>
                     {% endif %}
                     {% if proxy_type != 'query' and mapdata.source != 'WFS' %}
-                        <img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_downloadfile.png" title="Esporta mappa">
+                        <!--<img class="imgbutton" src="{{ STATIC_URL }}resource/proxy-upload-off.png" width="16" height="16" title="Esporta mappa">-->
                     {% endif %}
                     {% if proxy_type != 'local' %}
                         <img class="imgbutton convert convert_{{ mapdata.source|lower }}" id="convert_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_convert.png" title="Modifica conversioni">
@@ -133,7 +133,9 @@ Gestione dati e cataloghi
 
 {% block functionality %}
 
-<div id="form_setconversion" title="Conversione campi e valori">
+<div id="form_setconversion">
+
+<input type="button" value="Torna alla mappa" class="valueconv_quit">
 
 <div id="modelselect">
     <label for="convtable_modelselect">Modello di riferimento</label>
@@ -142,14 +144,21 @@ Gestione dati e cataloghi
     </select>
 </div>
 
-<table>
-    <thead>
+<table id="form_setconversion_table">
+
+    <thead id="convtable_headers" callpadding=0 cellspacing=0>
         <tr>
-            <td rowspan=2>Campo federato</td>
-            <td rowspan=2>Campo di origine</td>
-            <td colspan=3>Valori</td>
+            <td rowspan=2 class=mainfields>Campo federato</td>
+            <td rowspan=2 class=mainfields>Campo di origine</td>
+            <td class="padless">
+                <table  callpadding=0 cellspacing=0 class="valueconvtable"><tr>
+                    <td class="halffield">Valore di origine</td>
+                    <td class="halffield">Valore federato</td>
+                    <td></td>
+                </tr></table>
+            </td>
+
         </tr>
-        <tr><td>Valore originale</td><td>Valore federato</td></tr>
     </thead>
 
     <tbody id="convtable_datasets">
@@ -158,6 +167,12 @@ Gestione dati e cataloghi
     </tbody>
 
 </table>
+
+    <div id="tablecontrols">
+        <input type="button" class="valueconv_quit" value="Annulla">
+        <input type="button" id="valueconv_save" value="Salva la conversione">
+    </div>
+
 
 </div>
 
@@ -180,6 +195,28 @@ Gestione dati e cataloghi
 
 </div>
 
+
+<div id="progress_convsave" title="Salvataggio delle conversioni">
+
+    <div class="progspinner" id="progspinner_convsave">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_convsaving">
+        Salvataggio della tabella di conversione...
+    </div>
+
+    <div class="progressinfo feedback_good" id="convsave_success">
+        Salvataggio completato.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="convsave_fail">
+        Salvataggio fallito.
+        <div id="convsavefail_explain">
+        </div>
+    </div>
+
+</div>
 
 
 <div id="form_removesource" title="Richiesta di eliminazione">
