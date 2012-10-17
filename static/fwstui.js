@@ -12,8 +12,6 @@ var defaultobjtype = {
 };
 
 
-
-
 //TODO: remove, used only for setting the bounding box, which will be wrecked anyway as soon as we merge two maps and should be handled differently
 var mapdata;
 
@@ -1704,7 +1702,7 @@ function buildMapWidget()
     }));
     mapview.addLayer(new OpenLayers.Layer.Google("Google Physical", {
         type : google.maps.MapTypeId.TERRAIN,
-
+        numZoomLevels : 20,
         visibility : false
     }));
     mapview.addLayer(new OpenLayers.Layer.Google("Google Streets", {
@@ -1716,8 +1714,6 @@ function buildMapWidget()
         numZoomLevels : 20,
         visibility : false
     }));
-
-
 
 
     // setting the format to translate geometries out of the map

@@ -22,6 +22,56 @@ from Common import Components
 from FIdERProxyFS import proxy_core
 from FIdERProxyFS import proxy_config_core as proxyconf
 
+
+
+def mapvisng (request, **kwargs):
+	"""
+	Opens the map vis/edit function
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	manifest = proxy_core.getManifest(proxy_id)
+
+	vismode = kwargs['vismode']
+	# vismode must reflect one of these
+	validmodes = ["modeler", "mapview", "mapedit", "full"]
+	"""
+	Modes breakdown
+	- Modeler: edits the model of a single map, still requires loading the map (maybe with a few reductions) but does NOT show it.
+	- Mapview: views a single map, can select single elements and make filters but no changes are allowed
+	- Mapedit: edits a single map, can select elements make filters and changes. Can SAVE AS but not load other maps or create new maps
+	- Full: can do everything and allows to load and create as a starting point
+	"""
+
+	if vismode not in validmodes:
+		raise Exception ("Not a valid mode")
+	else:
+		if vismode != "full":
+			meta_id = kwargs['meta_id']
+			map_id = kwargs['map_id']
+		else:
+			meta_id = None
+			map_id = None
+
+
+	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, manifest)
+
+	mapsdata = proxy_core.getMapsSummary(proxy_id)
+
+	proxy_meta = mapsdata.keys()
+	proxy_mapsbymeta = {}
+	for meta_id in proxy_meta:
+		proxy_mapsbymeta [meta_id] = mapsdata[meta_id].keys()
+
+	print "Proxy maps data: %s " % proxy_mapsbymeta
+
+	return render_to_response ('mapvisng.html', {'proxy_id': proxy_id, 'meta_id': meta_id, 'map_id': map_id, 'manifest': SafeString(json.dumps(manifest)), 'mode': vismode, 'proxy_name': manifest['name'], 'proxy_meta': proxy_meta, 'proxy_type': proxy_type, 'mapsbymeta': proxy_mapsbymeta, 'proxy_maps': mapsdata, 'mapsforjs': SafeString(json.dumps(mapsdata))}, context_instance=RequestContext(request))
+
+
+
 def uiview (request, **kwargs):
 	"""
 	Loads the interface of the standalone tool
@@ -116,8 +166,6 @@ def getModels ():
 					'EndID': 'str',
 					'Infrastructure': ['TLC', 'Illuminazione', 'Rete elettrica', 'Rete idrica']
 				}
-
-
 			}
 	}
 

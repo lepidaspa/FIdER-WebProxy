@@ -1,0 +1,102 @@
+#opsmenu
+{
+    width:      100%;
+}
+
+.submenu, .menuopt
+{
+    margin-left:    1em;
+    cursor:         pointer;
+}
+
+.submenu:first-line:hover, .menuopt:hover
+{
+    text-decoration:        underline;
+}
+
+
+.flexmenu
+{
+    border-left:        1px solid #ff8800;
+    border-bottom:        1px solid #ff8800;
+}
+
+.submenu
+{
+    border-bottom:      1px dashed #cccccc;
+}
+
+.submenu:last-child
+{
+    border-bottom:  none;
+}
+
+
+#proxyinfo
+{
+    font-size:          medium;
+    font-weight:        bold;
+}
+
+
+.submenu
+{
+    font-weight:        bold;
+}
+
+
+.menuopt
+{
+    font-weight:        normal;
+}
+
+#mapview
+{
+    position:       absolute;
+    top:            0;
+    bottom:         0;
+    left:           0;
+    right:          0;
+
+    padding:        0 8px 8px 8px;
+}
+
+#newmap_load
+{
+    width:          100%;
+}
+
+
+
+.formbriefing, .formwarning, #uploadfail_explain, .progressinfo
+{
+    width:          400px;
+}
+
+#newfile_chooser
+{
+    width:          inherit;
+}
+
+.feedback_good
+{
+    border-bottom:         1px solid #009900;
+}
+
+.feedback_bad
+{
+    border-bottom:         1px solid #ff0000;
+}
+
+#uploadfield
+{
+    position:       absolute;
+    right:          -3000;
+    top:            -3000;
+    visibility:     hidden;
+}
+
+.warninglabel
+{
+    font-weight:   bold;
+}
