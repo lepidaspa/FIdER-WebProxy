@@ -56,6 +56,8 @@ def mapvisng (request, **kwargs):
 			meta_id = None
 			map_id = None
 
+	print "Launching *%s* with context %s/%s/%s" % (vismode, proxy_id, meta_id, map_id)
+
 
 	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, manifest)
 
@@ -63,8 +65,8 @@ def mapvisng (request, **kwargs):
 
 	proxy_meta = mapsdata.keys()
 	proxy_mapsbymeta = {}
-	for meta_id in proxy_meta:
-		proxy_mapsbymeta [meta_id] = mapsdata[meta_id].keys()
+	for cmeta_id in proxy_meta:
+		proxy_mapsbymeta [cmeta_id] = mapsdata[cmeta_id].keys()
 
 	print "Proxy maps data: %s " % proxy_mapsbymeta
 

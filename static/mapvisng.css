@@ -38,6 +38,12 @@
     font-weight:        bold;
 }
 
+#mapdetails
+{
+    font-size:          medium;
+    font-weight:        bold;
+    margin-top:         0.5em;
+}
 
 .submenu
 {
@@ -65,8 +71,6 @@
 {
     width:          100%;
 }
-
-
 
 .formbriefing, .formwarning, #uploadfail_explain, .progressinfo
 {
@@ -98,5 +102,27 @@
 
 .warninglabel
 {
-    font-weight:   bold;
+    font-weight:    bold;
+}
+
+
+#button_removefeature
+{
+    float:          right;
+}
+
+#featurecard
+{
+    border-top:     1px solid #ff8800;
+}
+
+#featuredesc
+{
+    margin-top:     0.5em;
+}
+
+#featuredesc thead
+{
+    font-weight:    bold;
+    text-align:     left;
 }

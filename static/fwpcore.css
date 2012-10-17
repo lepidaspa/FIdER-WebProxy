@@ -71,12 +71,14 @@ input:disabled, select:disabled
     color:              #ffffff;
 }
 
-#progspinner
+#progspinner, .progspinner
 {
     text-align:     center;
     right:          auto;
     left:           auto;
 }
+
+
 
 .cornermap
 {

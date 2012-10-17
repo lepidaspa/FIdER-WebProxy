@@ -1449,8 +1449,6 @@ function buildMapWidget()
     //Base Maps from Google
     proxymap.addLayer(new OpenLayers.Layer.Google("Google Physical", {
         type : google.maps.MapTypeId.TERRAIN,
-        numZoomLevels : 20,
-
         visibility : false
     }));
     proxymap.addLayer(new OpenLayers.Layer.Google("Google Streets", {

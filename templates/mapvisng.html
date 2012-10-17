@@ -58,6 +58,7 @@
 
 <div id="operations">
 
+
     {% if mode != 'mapview' %}
 
     <div class="flexmenu" id="opsmenu">
@@ -77,6 +78,7 @@
             <div class="submenu">Strumenti
                 <div class="menuopt" id="menu_geoshift">Sposta</div>
                 <div class="menuopt" id="menu_loadsnapmap">Carica riferimento</div>
+                <div class="menuopt" id="menu_filter">Filtra</div>
             </div>
         {% endif %}
         {% if mode == 'full' or mode == 'mapedit' %}
@@ -94,6 +96,37 @@
 </div>
 
 
+    <!-- map details, temporary -->
+    <div id="mapdetails">
+    {% if mode == 'mapview' or mode == 'mapedit' or model == 'modeledit' %}
+        <span class="proxytitle">{% if meta_id == ".st" %}Area di lavorazione{% else %}{{ meta_id }}{% endif %}: {{ map_id }}</span>
+    {% endif %}
+    </div>
+
+    <div id="featurecard">
+
+        {%  if mode == 'mapedit' or mode == 'full' %}
+            <input type="button" id="button_removefeature" value="Elimina oggetto">
+        {% endif %}
+
+        <div id="featuredetails"></div>
+
+
+        <table id="featuredesc">
+            <thead>
+                <tr>
+                    <td>Campo</td>
+                    <td>Valore</td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+
+
+    </div>
 
 
 
@@ -186,6 +219,10 @@
         Caricamento dei dati in corso...
     </div>
 
+    <div class="progressinfo" id="progress_stage_rendering">
+        Elaborazione mappa in corso...
+    </div>
+
     <div class="progressinfo feedback_good" id="maploadfinished_success">
         Dati caricati con successo.
     </div>
@@ -196,7 +233,16 @@
         </div>
     </div>
 
+
+
+    <div class="formwarning" id="warning_maploadrenderissues">
+        <span class="warninglabel">Attenzione</span>: alcuni oggetti della mappa hanno causato anomalie durante il processo di rendering.
+    </div>
+
+
 </div>
+
+
 
 
 

@@ -75,21 +75,22 @@ Graphics replacemente CSS for OpenLayers
 }
 
 
-.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive
+.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive,
+.olControlEditingToolbar .olLabsControlSelectFeatureItemInactive
 {
     background-image: url("/static/gis-0.1/mActionToggleEditing-inactive.png");
-
-
 }
 
-.olControlEditingToolbar .olLabsControlModifyFeatureItemActive
+.olControlEditingToolbar .olLabsControlModifyFeatureItemActive,
+.olControlEditingToolbar .olLabsControlSelectFeatureItemActive
 {
 
     background-image: url("/static/gis-0.1/mActionToggleEditing.png");
     border-bottom:      1px solid #000000;
 }
 
-.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive:hover
+.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive:hover,
+.olControlEditingToolbar .olLabsControlSelectFeatureItemInactive:hover
 {
     background-image: url("/static/gis-0.1/mActionToggleEditing.png");
 }
