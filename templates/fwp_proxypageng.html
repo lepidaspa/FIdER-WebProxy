@@ -82,7 +82,7 @@ Gestione dati e cataloghi
                     <img class="imgbutton newdata new_query" id="new_query_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova connessione">
                 {% endif %}
                 {% if proxy_type == 'local' and meta_id == '.st' %}
-                    <a href="/fwst/{{ proxy_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_newmapedit.png" title="Crea nuova mappa"></a>
+                    <!--<a href="/fwst/{{ proxy_id }}/"> --><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_newmapedit.png" title="Crea nuova mappa"><!--</a>-->
                 {% endif %}
             {% endif %}
         </td>
@@ -103,6 +103,7 @@ Gestione dati e cataloghi
                     {%  endif %}
                     {% if proxy_type == 'local' and meta_id == '.st' %}
                         <a href="/fwp/visng/mapedit/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa"></a>
+                        <a href="/fwp/visng/modeledit/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_modeledit.png" title="Modifica modello"></a>
                     {% endif %}
                     {% if proxy_type != 'query' and mapdata.source != 'WFS' %}
                         <!--<img class="imgbutton" src="{{ STATIC_URL }}resource/proxy-upload-off.png" width="16" height="16" title="Esporta mappa">-->

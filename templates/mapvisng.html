@@ -162,10 +162,10 @@
             <option value=".file" id="newmap_load_fromfile">Seleziona...</option>
         </optgroup>
 
-        {% for meta_id, maplist in proxy_maps.items %}
-            <optgroup label="{% if meta_id == ".st" %}Area di lavorazione{% else %}{{ meta_id }}{% endif %}">
+        {% for cmeta_id, maplist in proxy_maps.items %}
+            <optgroup label="{% if cmeta_id == ".st" %}Area di lavorazione{% else %}{{ cmeta_id }}{% endif %}">
                 {% for map_id, mapdata in maplist.items %}
-                <option value="{{ meta_id }}/{{ map_id }}">{{ map_id }}</option>
+                <option value="{{ cmeta_id }}/{{ map_id }}">{{ map_id }}</option>
                 {% endfor %}
             </optgroup>
         {% endfor %}
@@ -246,10 +246,57 @@
 </div>
 
 
+<div id="form_datasave" title="Salvataggio dati">
+
+    <div class="formbriefing">
+        Selezionare un nome per il salvataggio dei dati.<br>
+        I dati possono essere salvat nell'area di lavorazione (impostazione standard) o nell'archivio pubblico.
+    </div>
+
+    <div class="formbriefing">
+        <input type="text" value="{{ map_id }}" id="savemapto_filename">
+        <select id="savemapto_dest">
+            {% for cmeta_id, maplist in proxy_maps.items %}
+                <option value="{{ cmeta_id }}" {% if meta_id  == cmeta_id %}selected{% endif %}>{% if cmeta_id == ".st" %}Area di lavorazione{% else %}{{ cmeta_id }}{% endif %}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+
+    <div class="formwarning" id="warning_mapsaveoverwrite">
+        <span class="warninglabel">Attenzione</span>: esistono già dati con questo nome. I dati esistenti verranno sovrascritti.
+    </div>
+
+
+</div>
+
+
+<div id="progress_datasave" title="Salvataggio dati">
+
+    <div class="progspinner" id="progspinner_datasave">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_datasaving">
+        Salvataggio dei dati...
+    </div>
+
+    <div class="progressinfo feedback_good" id="datasave_success">
+        Salvataggio completato.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="datasave_fail">
+        Salvataggio fallito.
+        <div id="datasavefail_explain">
+        </div>
+    </div>
+
+</div>
 
 
 
-    <div id="modelview">
+
+<div id="modelview">
 
         <table id="modelstruct">
             <thead>

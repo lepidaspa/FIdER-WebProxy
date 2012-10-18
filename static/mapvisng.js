@@ -80,6 +80,9 @@ var filterlayer;
 var gjformat;
 
 
+// if this is the first load of the page;
+// (first loading screen is closed automatically)
+var firstload = true;
 
 function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_type, req_manifest, req_proxy_maps)
 {
@@ -158,7 +161,8 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
     $("#model_addnewprop").live('click', addModelProp);
     $(".textfield_modelpropvalue").live('change keyup mouseup', updateModelPropertyValue);
 
-
+    $("#savemapto_filename").live("change keyup mouseup", checkSaveMapOverwrite);
+    $("#savemapto_dest").live("change", checkSaveMapOverwrite);
 
 }
 
@@ -241,6 +245,32 @@ function initForms()
         width:  "auto"
     });
 
+    $("#progress_datasave").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto"
+    });
+
+
+
+    $("#form_datasave").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Salva": {
+                id : "form_newfile_confirmload",
+                text: "Salva",
+                click: trySaveMap
+            }
+        }
+    });
 
     // bindings for form-connected elements
     $("#newmap_load").live("change", verifyMapLoadSelection);
@@ -297,6 +327,30 @@ function funcSaveMap ()
 {
     //TODO: placeholder, implement
     console.log("opening map saving dialog");
+    $("#form_datasave").dialog("open");
+    $("#form_datasave .progressinfo").hide();
+
+    try
+    {
+        $("#savemapto_filename").val(map_id);
+    }
+    catch (err)
+    {
+        $("#savemapto_filename").val("");
+    }
+
+    $("#savemapto_filename").change();
+
+
+
+}
+
+function checkSaveMapOverwrite()
+{
+    //TODO: placeholder, implement
+    // put real check
+
+    $("#warning_mapsaveoverwrite").hide();
 }
 
 function funcGeoShift ()
@@ -340,6 +394,18 @@ function funcCreateFilter()
 
 // END OF MENU FUNCTIONS
 
+
+function trySaveMap ()
+{
+
+
+    //TODO: placeholder, implement
+
+
+
+
+}
+
 function tryLoadMap ()
 {
 
@@ -355,7 +421,7 @@ function tryLoadMap ()
     else
     {
         // load from instance
-        // TODO: placeholder, implement
+        // TODO: placeholder, implement as getLoadedMap
         // should simply need a getLoadedMap with the correct parameters
 
     }
@@ -502,6 +568,12 @@ function applyNewMap(newdata, textStatus, jqXHR)
     $("#maploadfinished_success").show();
 
 
+    if (firstload)
+    {
+        $("#progress_mapload").dialog("close");
+        firstload = false;
+    }
+
     if (vismode == 'modeledit')
     {
         funcShowModel();
@@ -518,7 +590,7 @@ function getMapModel (jsondata)
     var localprops = [];
 
     // first we need to determine the basic model
-    if (jsondata.hasOwnProperty('model'))
+    if (jsondata && jsondata.hasOwnProperty('model'))
     {
         localmodel = jsondata['model'];
         for (var propname in localmodel['properties'])
@@ -939,6 +1011,12 @@ function initMapWidget()
 
     mapview.addLayers([snaplayer, filterlayer, vislayer]);
 
+
+    if (vismode == "modeledit")
+    {
+        vislayer.setVisibility(false);
+    }
+
     autoZoom(mapview);
 
 
@@ -969,11 +1047,7 @@ function setMapControlsNav ()
 
     var switcher = new ItaLayerSwitcher();
 
-
-
     mapview.addControl(switcher);
-
-
 
 }
 
