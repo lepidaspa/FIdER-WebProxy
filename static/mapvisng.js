@@ -778,7 +778,7 @@ function addSetModelPropValue (propname, propvalue, rebuild)
 
     $("#valtable_"+propname).append('<div class="valtable_propvalue"><input type="text" class="textfield_modelpropvalue textfield_modelpropvalue_'+propname+'" value="'+propvalue+'"><input type="button" value="Elimina valore" class="button_modelremovepropvalue"></div>');
 
-    if (rebuild)
+    if (rebuild===true)
     {
         rebuildModelFromForm();
     }
@@ -945,9 +945,10 @@ function rebuildModelFromForm()
 
     modeldata['properties'] = newprops;
 
+    /*
     console.log("New model properties and values");
     console.log(modeldata);
-
+    */
 
 }
 
