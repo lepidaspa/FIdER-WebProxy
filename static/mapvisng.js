@@ -146,6 +146,7 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
 
     $(".autocombofield").live('click', openValueSelector);
     $(".autocombofield").live('change keyup mouseup', setPropertyValue);
+    $("#model_newpropname").live('change keyup mouseup', toggleAddModelProp);
     $("#autovalueselector").live('change', prefillPropertyValue);
     $("#autovalueselector").live('focusout', removeValueSelector);
     //TODO: better focus handling to remove autovalueselector
@@ -154,7 +155,8 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
     $(".button_modelremovepropvalue").live('click', removeModelPropValue);
     $(".button_modelimportpropvalue").live('click', importModelPropValue);
     $(".button_modelremoveprop").live('click', removeModelProp);
-
+    $("#model_addnewprop").live('click', addModelProp);
+    $(".textfield_modelpropvalue").live('change keyup mouseup', updateModelPropertyValue);
 
 
 
@@ -500,7 +502,7 @@ function applyNewMap(newdata, textStatus, jqXHR)
     $("#maploadfinished_success").show();
 
 
-    if (vismode = 'modeledit')
+    if (vismode == 'modeledit')
     {
         funcShowModel();
     }
@@ -664,14 +666,29 @@ function initModelWidget()
     var base = $("#modelstruct tbody");
     for (var propname in modeldata['properties'])
     {
-        base.append('<tr class="modelprop_widget">' +
+        base.append('<tr class="modelprop_widget" id="modelprop_widget_'+propname+'">' +
             '<td><i><b>' + propname + '</b></i></td>' +
             '<td><input id="modeladdpropvalue_'+propname+'" class="button_modeladdpropvalue" type="button" value="Aggiungi valore"></td>' +
             '<td><input id="modelimportpropvalue_'+propname+'" class="button_modelimportpropvalue" type="button" value="Importa i valori della mappa"></td>' +
             '<td><input type="button" class="button_modelremoveprop" id="modelremoveprop_'+propname+'" value="Elimina proprietà"></td>' +
             '</tr>' +
             '<tr><td></td><td colspan=2 class="modelprop_valtable" id="valtable_'+propname+'"></td><td></td></tr>');
+
+        var setvalues = modeldata['properties'][propname]
+
+        if ($.isArray(setvalues))
+        {
+            for (var i in setvalues)
+            {
+                addSetModelPropValue(propname, setvalues[i])
+            }
+
+        }
+
     }
+
+
+
 }
 
 function addModelPropValue ()
@@ -686,6 +703,8 @@ function addModelPropValue ()
 function addSetModelPropValue (propname, propvalue)
 {
     $("#valtable_"+propname).append('<div class="valtable_propvalue"><input type="text" class="textfield_modelpropvalue textfield_modelpropvalue_'+propname+'" value="'+propvalue+'"><input type="button" value="Elimina valore" class="button_modelremovepropvalue"></div>');
+    rebuildModelFromForm();
+
 }
 
 function removeModelPropValue ()
@@ -700,16 +719,23 @@ function removeModelProp ()
     rebuildModelFromForm();
 }
 
+function toggleAddModelProp()
+{
 
+    // activates or deactivates the button to add a new property to the model
+    $("#model_addnewprop").prop('disable', $("#model_newpropname").val()=="");
+}
 
 function addModelProp ()
 {
     //adds a new property to the model
 
+    console.log("Adding new model property");
+
     var newpropname = $("#model_newpropname").val();
     if (newpropname != null && newpropname != "" && !modeldata.properties.hasOwnProperty(newpropname))
     {
-        modeldata[newpropname] = "string";
+        modeldata.properties[newpropname] = "string";
     }
 
     // in this case we add to the model and re-render the whole table
@@ -775,21 +801,73 @@ function importModelPropValue ()
         addSetModelPropValue(propname, mappropvalues[i]);
     }
 
-
-
     rebuildModelFromForm();
 }
 
+function updateModelPropertyValue()
+{
+    // rebuilds only the single section of the model for this particular property
+
+    var base = $(this).closest(".modelprop_valtable");
+    var prefix = "valtable_";
+    var propname = base.id.substr(prefix.length);
+
+    var valuelist = $(".textfield_modelpropvalue_"+propname);
+
+    var vals = [];
+    for (var v = 0; v < valuelist.length; v++)
+    {
+        vals.push($(valuelist[v]).val());
+    }
+
+    modeldata['properties'][propname] = vals;
+
+    console.log("Updated model data for property "+propname);
+    console.log(modeldata['properties'][propname]);
+}
 
 function rebuildModelFromForm()
 {
 
     // rebuilds the property section of the model according to the contents of the model form
-    //TODO: placeholder, implement
 
-    //TODO: check the id of the element being modified, if it's a text input (i.e. value of a single property) we only run through the single property values so to avoid a high strain when modifying models made of huge quantities of data
+    var prefix = "modelprop_widget_";
+    var modelform = $(".modelprop_widget");
+    var newprops = {};
+    for (var i = 0; i < modelform.length; i++)
+    {
+        var cid = modelform[i].id;
+        var propname = cid.substr(prefix.length);
+
+        newprops[propname] = "string";
+
+        var valuelist = $(".textfield_modelpropvalue_"+propname);
+
+        var vals = [];
+        if (valuelist.length > 0)
+        {
+            for (var v = 0; v < valuelist.length; v++)
+            {
+                vals.push($(valuelist[v]).val());
+            }
+            newprops [propname] = vals;
+
+        }
+        else
+        {
+            if (modeldata['properties'].hasOwnProperty(propname) && !$.isArray(modeldata['properties']['propname']))
+            {
+                newprops[propname] = modeldata['properties'][propname];
+            }
+        }
 
 
+    }
+
+    modeldata['properties'] = newprops;
+
+    console.log("New model properties and values");
+    console.log(modeldata);
 
 
 }

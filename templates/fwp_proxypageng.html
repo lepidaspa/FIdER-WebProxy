@@ -21,6 +21,9 @@ Gestione dati e cataloghi
 
 <div id="proxyinfo">
 
+
+    <a title="Riepilogo istanza" href="/fwp/proxyng/{{ proxy_id }}/" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a>
+
     {% if proxy_type != 'local' %}
         {% if proxy_type != 'linked' %}
             Proxy
@@ -95,8 +98,11 @@ Gestione dati e cataloghi
             <tr class="mapcard" id="mapcard_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">
                 <td class="maptitle">{{ map_id }}</td> <td>{{  mapdata.source }}</td>
                 <td class="actionstd">
+                    {% if proxy_type != 'query' %}
+                    <a href="/fwp/visng/mapview/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_focus.png" title="Visualizza mappa"></a>
+                    {%  endif %}
                     {% if proxy_type == 'local' and meta_id == '.st' %}
-                        <a href="/fwst/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa"></a>
+                        <a href="/fwp/visng/mapedit/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa"></a>
                     {% endif %}
                     {% if proxy_type != 'query' and mapdata.source != 'WFS' %}
                         <!--<img class="imgbutton" src="{{ STATIC_URL }}resource/proxy-upload-off.png" width="16" height="16" title="Esporta mappa">-->
