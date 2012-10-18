@@ -752,7 +752,7 @@ function initModelWidget()
         {
             for (var i in setvalues)
             {
-                addSetModelPropValue(propname, setvalues[i])
+                addSetModelPropValue(propname, setvalues[i], true)
             }
 
         }
@@ -768,14 +768,21 @@ function addModelPropValue ()
     var prefix = "modeladdpropvalue_";
     var propname = this.id.substr(prefix.length);
 
-    addSetModelPropValue (propname, "");
+    addSetModelPropValue (propname, "", true);
 
 }
 
-function addSetModelPropValue (propname, propvalue)
+function addSetModelPropValue (propname, propvalue, rebuild)
 {
+
+
     $("#valtable_"+propname).append('<div class="valtable_propvalue"><input type="text" class="textfield_modelpropvalue textfield_modelpropvalue_'+propname+'" value="'+propvalue+'"><input type="button" value="Elimina valore" class="button_modelremovepropvalue"></div>');
-    rebuildModelFromForm();
+
+    if (rebuild)
+    {
+        rebuildModelFromForm();
+    }
+
 
 }
 
@@ -865,12 +872,12 @@ function importModelPropValue ()
 
     }
 
-    console.log("Values to add for "+propname);
-    console.log(mappropvalues);
+    //console.log("Values to add for "+propname);
+    //console.log(mappropvalues);
 
     for (var i in mappropvalues)
     {
-        addSetModelPropValue(propname, mappropvalues[i]);
+        addSetModelPropValue(propname, mappropvalues[i], false);
     }
 
     rebuildModelFromForm();
