@@ -126,3 +126,25 @@
     font-weight:    bold;
     text-align:     left;
 }
+
+/*
+.textfield_modelpropvalue
+{
+    width:      100%;
+}
+*/
+
+.modelprop_widget, #modelstruct tfoot
+{
+    border-top:     1px dashed #ff8800;
+}
+
+.modelprop_widget:first-child
+{
+    border-top:     none;
+}
+
+#modelstruct
+{
+    border-collapse:        collapse;
+}

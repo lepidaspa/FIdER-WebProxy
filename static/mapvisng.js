@@ -150,6 +150,14 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
     $("#autovalueselector").live('focusout', removeValueSelector);
     //TODO: better focus handling to remove autovalueselector
 
+    $(".button_modeladdpropvalue").live('click', addModelPropValue);
+    $(".button_modelremovepropvalue").live('click', removeModelPropValue);
+    $(".button_modelimportpropvalue").live('click', importModelPropValue);
+    $(".button_modelremoveprop").live('click', removeModelProp);
+
+
+
+
 }
 
 
@@ -320,7 +328,6 @@ function funcShowModel ()
     $("#modelstruct tbody").empty();
     initModelWidget();
 
-
 }
 
 function funcCreateFilter()
@@ -346,6 +353,9 @@ function tryLoadMap ()
     else
     {
         // load from instance
+        // TODO: placeholder, implement
+        // should simply need a getLoadedMap with the correct parameters
+
     }
 
 
@@ -481,8 +491,6 @@ function applyNewMap(newdata, textStatus, jqXHR)
 
     }
 
-
-
     // TODO: workaround to avoid full render
     renderGeoJSONCollection(newdata, vislayer);
     autoZoom();
@@ -519,6 +527,8 @@ function getMapModel (jsondata)
     else
     {
         localmodel ['objtype'] = jsondata['features'][0]['geometry']['type'];
+        localmodel ['properties'] = {};
+        localmodel ['name'] = null;
 
     }
 
@@ -649,22 +659,140 @@ function reportFailedDownload (xhr,err)
 function initModelWidget()
 {
 
+    // TODO: add autofill with current SET value (not map-based)
+
     var base = $("#modelstruct tbody");
     for (var propname in modeldata['properties'])
     {
-        var valtable = '<table id="modelpropvalues_'+propname+'">' +
-            '<tr><td colspan=2><input id="addmodelpropvalue_'+propname+'" class="button_modeladdpropvalue" type="button" value="Aggiungi valore"></td></tr>' +
-            '</table>';
-
-        base.append('<tr>' +
-            '<td rowspan="2">' + propname + '</td>' +
-            '<td></td>' +
-            '<td rowspan="2"><input type="button" class="button_modelremoveprop" id="modelremoveprop_'+propname+'" value="Elimina proprietà"></td>' +
+        base.append('<tr class="modelprop_widget">' +
+            '<td><i><b>' + propname + '</b></i></td>' +
+            '<td><input id="modeladdpropvalue_'+propname+'" class="button_modeladdpropvalue" type="button" value="Aggiungi valore"></td>' +
+            '<td><input id="modelimportpropvalue_'+propname+'" class="button_modelimportpropvalue" type="button" value="Importa i valori della mappa"></td>' +
+            '<td><input type="button" class="button_modelremoveprop" id="modelremoveprop_'+propname+'" value="Elimina proprietà"></td>' +
             '</tr>' +
-            '<tr><td id="valtable_'+propname+'"></td></tr>');
+            '<tr><td></td><td colspan=2 class="modelprop_valtable" id="valtable_'+propname+'"></td><td></td></tr>');
     }
 }
 
+function addModelPropValue ()
+{
+    var prefix = "modeladdpropvalue_";
+    var propname = this.id.substr(prefix.length);
+
+    addSetModelPropValue (propname, "");
+
+}
+
+function addSetModelPropValue (propname, propvalue)
+{
+    $("#valtable_"+propname).append('<div class="valtable_propvalue"><input type="text" class="textfield_modelpropvalue textfield_modelpropvalue_'+propname+'" value="'+propvalue+'"><input type="button" value="Elimina valore" class="button_modelremovepropvalue"></div>');
+}
+
+function removeModelPropValue ()
+{
+    $(this).closest(".valtable_propvalue").remove();
+    rebuildModelFromForm();
+}
+
+function removeModelProp ()
+{
+    $(this).closest(".modelprop_widget").remove();
+    rebuildModelFromForm();
+}
+
+
+
+function addModelProp ()
+{
+    //adds a new property to the model
+
+    var newpropname = $("#model_newpropname").val();
+    if (newpropname != null && newpropname != "" && !modeldata.properties.hasOwnProperty(newpropname))
+    {
+        modeldata[newpropname] = "string";
+    }
+
+    // in this case we add to the model and re-render the whole table
+    // TODO: consider reversing the process
+    funcShowModel();
+
+}
+
+function importModelPropValue ()
+{
+
+    var prefix = "modelimportpropvalue_";
+    var propname = this.id.substr(prefix.length);
+    // adds all non-already set values from the map in the form
+
+
+    var formpropvalues = [];
+    var mappropvalues = [];
+
+    try
+    {
+        var formvalues = $(".textfield_modelpropvalue_"+propname);
+        for (var v in formvalues)
+        {
+            var cval = formvalues[i].val();
+
+            if (cval != null && formpropvalues.indexOf(cval) == -1)
+            {
+                formpropvalues.push(cval);
+            }
+        }
+    }
+    catch (err)
+    {
+        // do nothing, no existing values set for this property
+    }
+
+
+    for (var f in vislayer.features)
+    {
+        try
+        {
+            var cval = vislayer.features[f]['attributes'][propname];
+        }
+        catch (err)
+        {
+            // feature does not have the requested property
+            continue;
+        }
+
+        if (cval != null && formpropvalues.indexOf(cval)==-1 && mappropvalues.indexOf(cval)==-1)
+        {
+            mappropvalues.push(cval);
+        }
+
+    }
+
+    console.log("Values to add for "+propname);
+    console.log(mappropvalues);
+
+    for (var i in mappropvalues)
+    {
+        addSetModelPropValue(propname, mappropvalues[i]);
+    }
+
+
+
+    rebuildModelFromForm();
+}
+
+
+function rebuildModelFromForm()
+{
+
+    // rebuilds the property section of the model according to the contents of the model form
+    //TODO: placeholder, implement
+
+    //TODO: check the id of the element being modified, if it's a text input (i.e. value of a single property) we only run through the single property values so to avoid a high strain when modifying models made of huge quantities of data
+
+
+
+
+}
 
 function initMapWidget()
 {
@@ -919,9 +1047,13 @@ function setMapControlsEdit()
 
 }
 
-function handleMeasure() {}
+function handleMeasure() {
+    //TODO: placeholder, implement
+}
 
-function hideDistance() {}
+function hideDistance() {
+    //TODO: placeholder, implement
+}
 
 function renderFeatureCard(caller)
 {
