@@ -122,10 +122,11 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
     initMenu();
     initForms();
 
-    if (vismode != 'modeler')
+    // TODO: move inside the clause and avoid rendering
+    initMapWidget();
+    if (vismode != 'modeledit')
     {
         console.log("Showing map widget");
-        initMapWidget();
         setMapControlsNav();
     }
     else
@@ -140,6 +141,7 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
         console.log("Starting loading "+meta_id+"/"+map_id);
         getUploadedMap(meta_id, map_id);
     }
+
 
 
     $(".autocombofield").live('click', openValueSelector);
@@ -301,20 +303,24 @@ function funcLoadSnap ()
 
 function funcShowMap ()
 {
-    //TODO: placeholder, implement
     console.log("switching to map display");
 
-
+    $("#modelstruct tbody").empty();
+    $("#modelview").hide();
+    $("#mapview").show();
 
 }
 
 function funcShowModel ()
 {
-    //TODO: placeholder, implement
     console.log("switching to model display");
 
     $("#mapview").hide();
-    $("#")
+    $("#modelview").show();
+    $("#modelstruct tbody").empty();
+    initModelWidget();
+
+
 }
 
 function funcCreateFilter()
@@ -461,17 +467,24 @@ function applyNewMap(newdata, textStatus, jqXHR)
 
     if (!loadmode_incremental)
     {
+
         resetMap();
         resetModel();
 
         modeldata = getMapModel(newdata);
 
         // set here because the result depends on the model
-        setMapControlsEdit();
+        if (vismode != 'modeledit')
+        {
+            setMapControlsEdit();
+        }
+
     }
 
+
+
+    // TODO: workaround to avoid full render
     renderGeoJSONCollection(newdata, vislayer);
-    //mapview.zoomToExtent(vislayer.getDataExtent());
     autoZoom();
 
     $("#progress_stage_rendering").hide();
@@ -479,7 +492,10 @@ function applyNewMap(newdata, textStatus, jqXHR)
     $("#maploadfinished_success").show();
 
 
-
+    if (vismode = 'modeledit')
+    {
+        funcShowModel();
+    }
 
 }
 
@@ -630,11 +646,28 @@ function reportFailedDownload (xhr,err)
 }
 
 
+function initModelWidget()
+{
+
+    var base = $("#modelstruct tbody");
+    for (var propname in modeldata['properties'])
+    {
+        var valtable = '<table id="modelpropvalues_'+propname+'">' +
+            '<tr><td colspan=2><input id="addmodelpropvalue_'+propname+'" class="button_modeladdpropvalue" type="button" value="Aggiungi valore"></td></tr>' +
+            '</table>';
+
+        base.append('<tr>' +
+            '<td rowspan="2">' + propname + '</td>' +
+            '<td></td>' +
+            '<td rowspan="2"><input type="button" class="button_modelremoveprop" id="modelremoveprop_'+propname+'" value="Elimina proprietà"></td>' +
+            '</tr>' +
+            '<tr><td id="valtable_'+propname+'"></td></tr>');
+    }
+}
+
 
 function initMapWidget()
 {
-
-
 
     OpenLayers.Lang.setCode("it");
     OpenLayers.ImgPath = "/static/OpenLayers/themes/dark/";
@@ -645,9 +678,6 @@ function initMapWidget()
     mapview = new OpenLayers.Map("mapview", {controls: []});
     mapview.projection = proj_WGS84;
     mapview.displayProjection = new OpenLayers.Projection(proj_WGS84);
-
-
-
 
     //Base Maps from Google
     mapview.addLayer(new OpenLayers.Layer.Google("Google Physical", {
@@ -703,20 +733,8 @@ function initMapWidget()
 
     mapview.addLayers([snaplayer, filterlayer, vislayer]);
 
-
-
     autoZoom(mapview);
 
-
-
-
-
-
-
-    // TODO: set controls according to vismode
-
-    // mapview has navigation and geocoding only
-    // model has no map widget so we do not care
 
 }
 

@@ -37,7 +37,7 @@ def mapvisng (request, **kwargs):
 
 	vismode = kwargs['vismode']
 	# vismode must reflect one of these
-	validmodes = ["modeler", "mapview", "mapedit", "full"]
+	validmodes = ["modeledit", "mapview", "mapedit", "full"]
 	"""
 	Modes breakdown
 	- Modeler: edits the model of a single map, still requires loading the map (maybe with a few reductions) but does NOT show it.

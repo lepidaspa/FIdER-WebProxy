@@ -4,7 +4,7 @@
 
 {% block title %}
 
-    {% if mode == 'modeler' %}
+    {% if mode == 'modeledit' %}
         Gestione modello
     {% endif %}
 
@@ -246,7 +246,30 @@
 
 
 
-    <div id="modelview"></div>
+    <div id="modelview">
+
+        <table id="modelstruct">
+            <thead>
+                <tr>
+                    <td>Campo</td>
+                    <td>Valori consigliati</td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td><input type="text" id="model_newpropname"></td>
+                    <td colspan=2><input type="button" id="model_addnewprop" value="Aggiungi proprietà"></td>
+                </tr>
+            </tfoot>
+
+        </table>
+
+
+    </div>
 
     <div id="mapview"></div>
 
