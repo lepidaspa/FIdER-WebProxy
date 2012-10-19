@@ -368,7 +368,7 @@ function funcShowMap ()
 {
     console.log("switching to map display");
 
-    $("#standalonebar").show();
+    //$("#standalonebar").show();
     $("#modelstruct tbody").empty();
     $("#modelview").hide();
     $("#mapview").show();
@@ -378,7 +378,7 @@ function funcShowMap ()
 function funcShowModel ()
 {
     console.log("switching to model display");
-    $("#standalonebar").hide();
+    //$("#standalonebar").hide();
     $("#mapview").hide();
     $("#modelview").show();
     $("#modelstruct tbody").empty();
@@ -738,12 +738,12 @@ function initModelWidget()
     for (var propname in modeldata['properties'])
     {
         base.append('<tr class="modelprop_widget" id="modelprop_widget_'+propname+'">' +
-            '<td><i><b>' + propname + '</b></i></td>' +
+            '<td><b>' + propname + '</b></td>' +
             '<td><input id="modeladdpropvalue_'+propname+'" class="button_modeladdpropvalue" type="button" value="Aggiungi valore"></td>' +
             '<td><input id="modelimportpropvalue_'+propname+'" class="button_modelimportpropvalue" type="button" value="Importa i valori della mappa"></td>' +
             '<td><input type="button" class="button_modelremoveprop" id="modelremoveprop_'+propname+'" value="Elimina proprietà"></td>' +
             '</tr>' +
-            '<tr><td></td><td colspan=2 class="modelprop_valtable" id="valtable_'+propname+'"></td><td></td></tr>');
+            '<tr id="modelproval_widget_'+propname+'"><td></td><td colspan=2 class="modelprop_valtable" id="valtable_'+propname+'"></td><td></td></tr>');
 
         var setvalues = modeldata['properties'][propname]
 
@@ -793,7 +793,12 @@ function removeModelPropValue ()
 
 function removeModelProp ()
 {
-    $(this).closest(".modelprop_widget").remove();
+
+    var prefix = "modelremoveprop_";
+    var propname = this.id.substr(prefix.length);
+
+    $("#modelprop_widget_"+propname).remove();
+    $("#modelpropval_widget_"+propname).remove();
     rebuildModelFromForm();
 }
 

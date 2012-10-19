@@ -3,15 +3,9 @@
     width:      100%;
 }
 
-.submenu, .menuopt
+.menuopt
 {
-    margin-left:    1em;
     cursor:         pointer;
-}
-
-.submenu:first-line:hover, .menuopt:hover
-{
-    text-decoration:        underline;
 }
 
 
@@ -64,7 +58,22 @@
     left:           0;
     right:          0;
 
-    padding:        0px 8px 8px 8px;
+    padding:        0 8px 8px 8px;
+    border-top:       1px solid #ff8800;
+
+}
+
+#modelview
+{
+    position:       absolute;
+    top:            24px;
+    bottom:         0;
+    left:           0;
+    right:          0;
+
+    padding:        8px;
+    border-top:       1px solid #ff8800;
+
 }
 
 #standalonebar
@@ -167,6 +176,11 @@
 .modelprop_widget:first-child
 {
     border-top:     none;
+}
+
+.modelprop_widget
+{
+    font-size:          small;
 }
 
 #modelstruct
