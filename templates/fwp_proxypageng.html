@@ -21,7 +21,6 @@ Gestione dati e cataloghi
 
 <div id="proxyinfo">
 
-
     {% if proxy_type != 'local' %}
         {% if proxy_type != 'linked' %}
             Proxy
@@ -80,7 +79,9 @@ Gestione dati e cataloghi
                     <img class="imgbutton newdata new_query" id="new_query_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova connessione">
                 {% endif %}
                 {% if proxy_type == 'local' and meta_id == '.st' %}
-                    <!--<a href="/fwst/{{ proxy_id }}/"> --><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_newmapedit.png" title="Crea nuova mappa"><!--</a>-->
+                        <img class="imgbutton newdata new_lines" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/visng_newmap_lines.png" title="Nuova mappa: tratte">
+                    <img class="imgbutton newdata new_points" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/visng_newmap_points.png" title="Nuova mappa: punti">
+                    <!--<a href="/fwp/visng/full/{{ proxy_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Area di lavorazione"></a> -->
                 {% endif %}
             {% endif %}
         </td>
@@ -94,14 +95,13 @@ Gestione dati e cataloghi
         {% for map_id, mapdata in maplist.items %}
 
             <tr class="mapcard" id="mapcard_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">
-                <td class="maptitle">{{ map_id }}</td> <td>{{  mapdata.source }}</td>
+                <td class="maptitle">{% if proxy_type != 'query' %}<!--<input type="checkbox" class="switchmapvis" id="mapvis_{{ meta_id }}-{{ map_id }}"> -->{% endif %}{{ map_id }}</td> <td>{{  mapdata.source }}</td>
                 <td class="actionstd">
                     {% if proxy_type != 'query' %}
                     <a href="/fwp/visng/mapview/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_focus.png" title="Visualizza mappa"></a>
                     {%  endif %}
                     {% if proxy_type == 'local' and meta_id == '.st' %}
                         <a href="/fwp/visng/mapedit/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa"></a>
-                        <a href="/fwp/visng/modeledit/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_modeledit.png" title="Modifica modello"></a>
                     {% endif %}
                     {% if proxy_type != 'query' and mapdata.source != 'WFS' %}
                         <!--<img class="imgbutton" src="{{ STATIC_URL }}resource/proxy-upload-off.png" width="16" height="16" title="Esporta mappa">-->
@@ -261,6 +261,28 @@ Gestione dati e cataloghi
 
 </div>
 
+
+<div id="progress_visload" title="Visualizzazione mappa">
+
+    <div class="progspinner" id="progspinner_visload">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_visloading">
+        Caricamento mappa...
+    </div>
+
+    <div class="progressinfo" id="progress_stage_visrendering">
+        Elaborazione mappa...
+    </div>
+
+    <div class="progressinfo feedback_bad" id="visload_fail">
+        Caricamento fallito.
+        <div id="visloadfail_explain">
+        </div>
+    </div>
+
+</div>
 
 <div id="form_newfile" title="Nuova mappa da file">
 

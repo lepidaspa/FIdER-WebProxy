@@ -173,7 +173,6 @@ def getModels ():
 
 	#TODO: add local "registered" models
 
-
 	hasmodels, models_fider = Components.getModelsFromServer()
 	if hasmodels:
 		for model_key in models_fider.keys():

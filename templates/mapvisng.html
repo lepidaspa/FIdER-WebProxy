@@ -62,38 +62,7 @@
 <div id="operations">
 
 
-    {% if mode != 'mapview' %}
-
-    <div class="flexmenu" id="opsmenu">
-
-        <div class="submenu">Mappa
-            {% if mode == 'full' %}
-            <div class="menuopt" id="menu_createnewmap">Nuova</div>
-            <div class="menuopt" id="menu_loadmap">Carica</div>
-            {% endif %}
-            {% if mode == 'full' or mode == 'mapedit' %}
-            <div class="menuopt" id="menu_integratemap">Combina mappa</div>
-            {% endif %}
-            <div class="menuopt" id="menu_integratemodel">Combina modello</div>
-            <div class="menuopt" id="menu_savemap">Salva</div>
-        </div>
-        {% if mode == 'full' or mode == 'mapedit' %}
-            <div class="submenu">Strumenti
-                <div class="menuopt" id="menu_geoshift">Sposta</div>
-                <div class="menuopt" id="menu_loadsnapmap">Carica riferimento</div>
-                <div class="menuopt" id="menu_filter">Filtra</div>
-            </div>
-        {% endif %}
-        {% if mode == 'full' or mode == 'mapedit' %}
-            <div class="submenu">Mostra
-                <div class="menuopt" id="menu_showmap">Mappa</div>
-                <div class="menuopt" id="menu_showmodel">Modello</div>
-            </div>
-        {% endif %}
-    </div>
-
-    {% endif %}
-
+    <!-- to be removed -->
 
 
 </div>
@@ -215,7 +184,7 @@
 <div id="progress_mapload" title="Caricamento dati">
 
     <div class="progspinner" id="progspinner_mapload">
-        <img src="/static/resource/progressbar.gif">
+        <img src="{{ STATIC_URL }}resource/progressbar.gif">
     </div>
 
     <div class="progressinfo" id="progress_stage_maploading">
@@ -321,6 +290,63 @@
 
     </div>
 
+
+    <div id="standalonebar">
+
+
+        <span id="appcontrolsbar">
+
+        {% if mode != 'mapview' %}
+
+            {% if mode == 'full' %}
+                <img src="{{ STATIC_URL }}resource/fwp_newmapedit.png" class="imgbutton" id="menu_createnewmap" title="Crea nuova mappa">
+                <img src="{{ STATIC_URL }}resource/fwp_editmap.png" class="imgbutton" id="menu_loadmap" title="Carica una mappa">
+            {% endif %}
+
+            {% if mode == 'full' or mode == 'mapedit' %}
+                <img src="{{ STATIC_URL }}resource/visng_menu_integratemap.png" class="imgbutton" id="menu_integratemap" title="Combina una mappa">
+            {% endif %}
+
+            <img src="{{ STATIC_URL }}resource/visng_menu_integratemodel.png" class="imgbutton" id="menu_integratemodel" title="Combina un modello">
+
+            {% if mode == 'full' or mode == 'mapedit' %}
+
+                <img src="{{ STATIC_URL }}resource/visng_layers.png" class="imgbutton" id="menu_loadsnapmap" title="Carica un riferimento">
+            {% endif %}
+
+            <img src="{{ STATIC_URL }}resource/visng_menu_savemap.png" class="imgbutton" id="menu_savemap" title="Salva">
+
+
+
+            {% if mode == 'full' or mode == 'mapedit' %}
+                <img src="{{ STATIC_URL }}resource/visng_menu_geoshift.png" class="imgbutton" id="menu_geoshift" title="Trasla mappa">
+                <img src="{{ STATIC_URL }}resource/visng_menu_filter.png" class="imgbutton" id="menu_filter" title="Evidenzia entità">
+            {% endif %}
+
+            {% if mode == 'full' or mode == 'mapedit' %}
+                <img src="{{ STATIC_URL }}resource/visng_menu_viewmodel.png" class="imgbutton" id="menu_showmodel" title="Visualizza modello">
+                <img src="{{ STATIC_URL }}resource/visng_menu_viewmap.png" class="imgbutton" id="menu_showmap" title="Visualizza mappa">
+
+            {% endif %}
+            </span>
+
+        {% endif %}
+
+    <!-- TODO: ENABLE
+
+        <span id="mapcontrolsbar">
+            <img src="{{ STATIC_URL }}resource/visng_controls_reposition.png" class="imgbutton mapcontrol" id="mapcontrols_repos" title="Riposiziona la mappa">
+            {% if mode == 'full' or mode == 'mapedit' %}
+                <img src="{{ STATIC_URL }}resource/visng_controls_measure.png" class="imgbutton mapcontrol" id="mapcontrols_measure" title="Crea entità">
+            {% endif %}
+        <img src="{{ STATIC_URL }}resource/visng_controls_editfeature.png" class="imgbutton mapcontrol" id="mapcontrols_editfeature" title="Seleziona entità">
+            {% if mode == 'full' or mode == 'mapedit' %}
+                <img src="{{ STATIC_URL }}resource/visng_controls_newfeature.png" class="imgbutton mapcontrol" id="mapcontrols_createfeature" title="Crea entità">
+            {% endif %}
+        </span>
+    -->
+
+    </div>
     <div id="mapview"></div>
 
 

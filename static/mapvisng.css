@@ -59,12 +59,37 @@
 #mapview
 {
     position:       absolute;
-    top:            0;
+    top:            24px;
     bottom:         0;
     left:           0;
     right:          0;
 
-    padding:        0 8px 8px 8px;
+    padding:        0px 8px 8px 8px;
+}
+
+#standalonebar
+{
+    position:       absolute;
+    top:            0;
+    left:           0;
+    right:          0;
+    height:         24px;
+
+    padding:        2px 0px 4px 8px;
+    background-color:   #ffffff;
+
+    vertical-align: middle;
+}
+
+#standalonebar .imgbutton
+{
+    cursor:         pointer;
+    border:         1px solid #ffffff;
+}
+
+#standalonebar .activebutton
+{
+    border:         1px solid #ff8800;
 }
 
 #newmap_load
@@ -147,4 +172,9 @@
 #modelstruct
 {
     border-collapse:        collapse;
+}
+
+#appcontrolsbar
+{
+    margin-right:                  24px;
 }

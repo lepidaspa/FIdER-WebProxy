@@ -237,7 +237,6 @@ function initForms()
         width:  "auto"
     });
 
-
     $("#progress_mapload").dialog({
         autoOpen: false,
         modal: true,
@@ -369,6 +368,7 @@ function funcShowMap ()
 {
     console.log("switching to map display");
 
+    $("#standalonebar").show();
     $("#modelstruct tbody").empty();
     $("#modelview").hide();
     $("#mapview").show();
@@ -378,7 +378,7 @@ function funcShowMap ()
 function funcShowModel ()
 {
     console.log("switching to model display");
-
+    $("#standalonebar").hide();
     $("#mapview").hide();
     $("#modelview").show();
     $("#modelstruct tbody").empty();
@@ -397,7 +397,6 @@ function funcCreateFilter()
 
 function trySaveMap ()
 {
-
 
     //TODO: placeholder, implement
 
@@ -421,8 +420,8 @@ function tryLoadMap ()
     else
     {
         // load from instance
-        // TODO: placeholder, implement as getLoadedMap
-        // should simply need a getLoadedMap with the correct parameters
+        // TODO: placeholder, implement as getUploadedMap
+        // should simply need a getUploadedMap with the correct parameters
 
     }
 
@@ -1137,7 +1136,7 @@ function setMapControlsEdit()
     editcontrol = new OpenLayers.Control.ModifyFeature(
         vislayer, {
             displayClass: "olLabsControlModifyFeature",
-            title: "Modifica"
+            title: "Seleziona"
         }
     );
 

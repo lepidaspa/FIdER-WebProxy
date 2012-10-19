@@ -9,6 +9,7 @@
 
 var proj_WGS84 = "EPSG:4326";
 var proj_900913 = "EPSG:900913";
+var gjformat;
 
 var objtypestrings = { 'LineString': 'tratte', 'Point': 'punti'};
 var objtypes = [ 'LineString', 'Point' ];
@@ -79,6 +80,8 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $("#newremote_mapname").on('mouseup keyup change', checkCandidateMapname);
     $(".removedata").on('click', removeDataSource);
     $(".convert").on('click', loadConversionTable);
+    $(".switchmapvis").on('change', switchMapVis);
+
 
     $("#conn_name_new").on('mouseup keyup change', checkCandidateQueryparams);
     $("#conn_host_new").on('mouseup keyup change', checkCandidateQueryparams);
@@ -87,6 +90,7 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $("#conn_schema_new").on('mouseup keyup change', checkCandidateQueryparams);
     $("#conn_view_new").on('mouseup keyup change', checkCandidateQueryparams);
 
+
     $("#convtable_modelselect").live('change', renderConvTable);
     $(".conv_addpreset").live('click', addConvPreset);
     $(".valueconv_remove").live('click', removeConvPreset);
@@ -94,6 +98,8 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $("#valueconv_save").live('click', saveConversionTable);
 
     $("#fieldconv_geometry").live('change', checkGeometryConversion);
+
+
 
 
 }
@@ -233,6 +239,110 @@ function initForms ()
 
 }
 
+
+function switchMapVis()
+{
+    var prefix = 'mapvis_';
+    var dest = this.id.substr(prefix.length).split("-");
+
+    var cmeta_id = dest[0];
+    var cmap_id = dest[1];
+    var switchstate = $(this).prop('checked');
+
+    console.log("Vis switch for "+cmeta_id+"/"+cmap_id+" modified to "+switchstate);
+
+    if (switchstate)
+    {
+
+        //TODO: warning form for heavy data that leads to vismap or unchecks
+
+        // check if the map layer already exists, re-enable it
+
+        // load and show the requested map
+        tryVisMap();
+
+
+
+
+    }
+    else
+    {
+        //TODO: placeholder, implement
+        // remove the data from the map
+
+        // note: may simply make existing layer invisible
+    }
+
+}
+
+function tryVisMap ()
+{
+
+
+    var urlstring;
+    if (meta_id == ".st")
+    {
+        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id+"/";
+    }
+    else
+    {
+        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id+"/";
+    }
+
+    console.log("Loading: "+urlstring);
+
+    $("#progress_visload").dialog("open");
+    $("#progress_visload").hide();
+    $("#progress_visload .progressinfo").hide();
+    $("#progspinner_visload").show();
+    $("#progress_stage_visloading").show();
+
+    $.ajax ({
+        url:            urlstring,
+        async:          true,
+        success:        addVisLayer,
+        error:          reportFailedVisLoad
+    });
+
+}
+
+function addVisLayer(jsondata, textStatus, jqXHR)
+{
+    $("#progress_visload .progressinfo").hide();
+    $("#progspinner_visload").show();
+    $("#progress_stage_visrendering").show();
+
+    var layername = cmeta_id+"-"+cmap_id;
+
+    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#ffffff", strokeColor: "#ffffff", strokeWidth: 2, strokeDashstyle: "solid"});
+    var featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    var proxymap_newvislayer = new OpenLayers.Layer.Vector(layername, {name: layername, styleMap: featurestylemap});
+
+
+    renderGeoJSONCanvas(jsondata, proxymap_newvislayer);
+
+    proxymap.addLayer(proxymap_newvislayer);
+}
+
+function renderGeoJSONCanvas(jsondata, layer)
+{
+
+    //todo: placeholder, implement
+
+}
+
+function reportFailedVisLoad()
+{
+    //todo: placeholder, implement
+
+    $("#mapvis_"+cmeta_id+"-"+cmap_id).prop('checked', false);
+
+    $("#progress_visload .progressinfo").hide();
+    $("#progspinner_convdload").hide();
+    $("#visload_fail").show();
+
+
+}
 
 function loadConversionTable()
 {
@@ -1465,7 +1575,7 @@ function buildMapWidget()
         numZoomLevels : 20
     }));
 
-
+    gjformat = new OpenLayers.Format.GeoJSON({'externalProjection': new OpenLayers.Projection(proj_WGS84), 'internalProjection': proxymap.getProjectionObject()});
 
     var osmlayer = new OpenLayers.Layer.OSM();
     proxymap.addLayer(osmlayer);
