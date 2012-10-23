@@ -70,7 +70,10 @@ def mapvisng (request, **kwargs):
 
 	print "Proxy maps data: %s " % proxy_mapsbymeta
 
-	return render_to_response ('mapvisng.html', {'proxy_id': proxy_id, 'meta_id': meta_id, 'map_id': map_id, 'manifest': SafeString(json.dumps(manifest)), 'mode': vismode, 'proxy_name': manifest['name'], 'proxy_meta': proxy_meta, 'proxy_type': proxy_type, 'mapsbymeta': proxy_mapsbymeta, 'proxy_maps': mapsdata, 'mapsforjs': SafeString(json.dumps(mapsdata))}, context_instance=RequestContext(request))
+	modeldata = getModels()
+	print "Proxy models: %s" % modeldata
+
+	return render_to_response ('mapvisng.html', {'proxy_id': proxy_id, 'meta_id': meta_id, 'map_id': map_id, 'manifest': SafeString(json.dumps(manifest)), 'mode': vismode, 'proxy_name': manifest['name'], 'proxy_meta': proxy_meta, 'proxy_type': proxy_type, 'mapsbymeta': proxy_mapsbymeta, 'proxy_maps': mapsdata, 'mapsforjs': SafeString(json.dumps(mapsdata)), 'proxy_models': SafeString(json.dumps(modeldata)), 'rawmodels': modeldata}, context_instance=RequestContext(request))
 
 
 

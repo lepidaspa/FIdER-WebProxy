@@ -41,9 +41,10 @@ var mapdata;
 // actual model in use, may be bigger than what is provided by the map data
 var modeldata;
 
+// all available models for this session, can include federated ones
+var models;
+
 var menufunctions = {
-    'menu_createnewmap': funcCreateMap,
-    'menu_loadmap': funcLoadMap,
     'menu_integratemap': funcIntegrateMap,
     'menu_integratemodel': funcIntegrateModel,
     'menu_savemap': funcSaveMap,
@@ -84,7 +85,7 @@ var gjformat;
 // (first loading screen is closed automatically)
 var firstload = true;
 
-function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_type, req_manifest, req_proxy_maps)
+function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_type, req_manifest, req_proxy_maps, req_models)
 {
 
     freeSelection();
@@ -118,7 +119,7 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
     }
 
     proxy_maps = req_proxy_maps;
-
+    models = req_models;
 
 
 
@@ -141,9 +142,19 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
 
     if (map_id != null)
     {
-        console.log("Starting loading "+meta_id+"/"+map_id);
-        getUploadedMap(meta_id, map_id);
+        if (meta_id != '.create')
+        {
+            console.log("Starting loading "+meta_id+"/"+map_id);
+            getUploadedMap(meta_id, map_id);
+        }
+        else
+        {
+            console.log("Creating new map from model "+map_id);
+            createNewMap(map_id)
+        }
+
     }
+
 
 
 
@@ -278,15 +289,11 @@ function initForms()
 }
 
 
+
 // MENU DRIVEN FUNCTIONS
 
 // all functions have the prefix "func" to distinguish them as menu launchers from actual "system" functions
 
-function funcCreateMap ()
-{
-    //TODO: placeholder, implement
-    console.log("opening map creation dialog");
-}
 
 function funcLoadMap ()
 {
@@ -481,6 +488,7 @@ function verifyUploadToStandalone (data, textStatus, jqXHR) {
 
 }
 
+
 function getUploadedMap(meta_id, map_id)
 {
     $("#progress_upload").dialog("close");
@@ -579,6 +587,20 @@ function applyNewMap(newdata, textStatus, jqXHR)
     }
 
 }
+
+
+function createNewMap (modelname)
+{
+
+    resetMap();
+    resetModel();
+
+    console.log("Getting model "+modelname);
+    modeldata = models[modelname];
+
+
+}
+
 
 function getMapModel (jsondata)
 {

@@ -79,8 +79,8 @@ Gestione dati e cataloghi
                     <img class="imgbutton newdata new_query" id="new_query_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova connessione">
                 {% endif %}
                 {% if proxy_type == 'local' and meta_id == '.st' %}
-                        <img class="imgbutton newdata new_lines" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/visng_newmap_lines.png" title="Nuova mappa: tratte">
-                    <img class="imgbutton newdata new_points" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/visng_newmap_points.png" title="Nuova mappa: punti">
+                        <a href="/fwp/visng/mapedit/{{ proxy_id }}/.create/DefaultLine"><img class="imgbutton newdata new_lines" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/visng_newmap_lines.png" title="Nuova mappa: tratte"></a>
+                    <a href="/fwp/visng/mapedit/{{ proxy_id }}/.create/DefaultPoint"><img class="imgbutton newdata new_points" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/visng_newmap_points.png" title="Nuova mappa: punti"></a>
                     <!--<a href="/fwp/visng/full/{{ proxy_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Area di lavorazione"></a> -->
                 {% endif %}
             {% endif %}
