@@ -179,7 +179,20 @@ function initForms ()
         modal: true,
         closeOnEscape: false,
         width:  "auto",
-        height: "auto"
+        height: "auto",
+        buttons: {
+            "Reset": {
+                id : "btn_removal_resetpage",
+                text: "Chiudi",
+                click: resetPage
+            },
+            "Close": {
+                text: "Chiudi",
+                id : "btn_removal_closedialog",
+                click: function() {$( this ).dialog( "close" );}
+            }
+
+        }
     });
 
     $("#form_newwfs").dialog({
@@ -859,6 +872,8 @@ function applyDataRemove()
 
     $("#form_removesource").dialog("close");
     $("#progress_removal").dialog("open");
+    $("#btn_removal_closedialog").hide();
+    $("#btn_removal_resetpage").hide();
     $("#progress_removal .progressinfo").hide();
     $("#progspinner_removal").show();
     $("#progress_stage_removereq").show();
@@ -879,6 +894,9 @@ function applyDataRemove()
             {
                 $("#progress_removal .progressinfo").hide();
                 $("#removalfinished_success").show();
+
+                $("#btn_removal_resetpage").show();
+
             }
             else
             {
@@ -887,6 +905,7 @@ function applyDataRemove()
                 $("#removalfail_explain").empty();
                 $("#removalfail_explain").append(data['report']);
                 $("#removalfail_explain").show();
+                $("#btn_removal_closedialog").show();
             }
 
 
@@ -900,6 +919,7 @@ function applyDataRemove()
             $("#removalfail_explain").empty();
             $("#removalfail_explain").append(data['report']);
             $("#removalfail_explain").show();
+            $("#btn_removal_closedialog").show();
 
 
         }
@@ -1060,6 +1080,8 @@ function checkCandidateMapname()
 
 
 }
+
+
 
 function checkCandidateFilename()
 {
@@ -1656,3 +1678,8 @@ function bboxToFeature (bbox, olmap)
     return new OpenLayers.Feature.Vector(polygon, {});
 }
 
+function resetPage()
+{
+    // callback for forms that need to have the page reloaded after the user reads the feedback
+    window.location = window.location.pathname;
+}

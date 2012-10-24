@@ -30,6 +30,7 @@ body
     font-weight:        bold;
 }
 
+
 .ui-button
 {
     border:             1px solid #ff8800;
@@ -403,4 +404,10 @@ tr
 
     cursor:         pointer;
 
+}
+
+
+.ui-dialog-titlebar-close
+{
+    display:            none;
 }
