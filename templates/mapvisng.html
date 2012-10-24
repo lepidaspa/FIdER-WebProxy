@@ -125,16 +125,18 @@
     <input type="file" id="uploadfield" accept="application/zip">
 
     <div class="formbriefing">
-        Selezionare una mappa esistente o un file sul disco dell'utente.<br>
+        Selezionare una mappa presente nel sistema{% if mode == 'full' %} o un file sul disco dell'utente.<br>
         Il sistema accetta mappe in formato Shapefile, GeoJSON o MapInfo.<br>
-        La mappa deve essere archiviata in un singolo file Zip e contenere un solo tipo di oggetto geografico (tratta o punto).
+        La mappa deve essere archiviata in un singolo file Zip e contenere un solo tipo di oggetto geografico (tratta o punto){% endif %}.
     </div>
 
     <select id="newmap_load">
         <option value=""></option>
+    {% if mode == 'full'  %}
         <optgroup  id="newmap_section_fromfile" label="Da file">
             <option value=".file" id="newmap_load_fromfile">Seleziona...</option>
         </optgroup>
+    {% endif %}
 
         {% for cmeta_id, maplist in proxy_maps.items %}
             <optgroup label="{% if cmeta_id == ".st" %}Area di lavorazione{% else %}{{ cmeta_id }}{% endif %}">

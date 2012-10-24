@@ -319,7 +319,9 @@ function funcIntegrateMap ()
 
     // set for later applyMap function to use
     loadmode_incremental = true;
-
+    $("#newmap_load").val("");
+    $("#form_loadmap").dialog("open");
+    verifyMapLoadSelection();
 
 }
 
@@ -1726,11 +1728,18 @@ function zoomToBBox (olmap, bbox)
 function verifyMapLoadSelection ()
 {
 
+    if (loadmode_incremental)
+    {
+        $("#warning_maploadoverwrite").hide();
+        $("#warning_maploadlosechanges").hide();
+    }
+
 
     var upreq = $("#newmap_load").val();
     $("#warning_maploadwrongformat").hide();
 
     console.log("Checking maploader selection: "+upreq);
+
 
 
     if (upreq == "")
@@ -1768,6 +1777,8 @@ function verifyMapLoadSelection ()
 
         $("#form_newfile_confirmload").prop('disabled', false);
     }
+
+
 
 }
 
