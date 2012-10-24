@@ -373,7 +373,7 @@ def saveVisMap (request, **kwargs):
 		if meta_id == ".st":
 			path_tool = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone)
 		else:
-			path_tool = os.path.join(proxyconf.baseproxypath, proxy_id, meta_id, proxyconf.path_geojson)
+			path_tool = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id )
 
 		dest_fp = open(os.path.join(path_tool, map_id), 'w+')
 		print mapdata
@@ -393,7 +393,7 @@ def saveVisMap (request, **kwargs):
 		feedback = {
 
 			'success': False,
-			'report': "Salvataggio fallito: %s" % ex
+			'report': "Errore: %s" % ex
 
 		}
 
