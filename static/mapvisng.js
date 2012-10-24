@@ -277,7 +277,14 @@ function initForms()
         autoOpen: false,
         modal: true,
         closeOnEscape: false,
-        width:  "auto"
+        width:  "auto",
+        buttons: {
+            "Chiudi": {
+                id: "btn_saveprogress_close",
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
     });
 
 
@@ -300,10 +307,28 @@ function initForms()
         }
     });
 
+    $("#form_geoshift").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Trasla": {
+                id : "form_xlatemap_confirm",
+                text: "Esegui",
+                click: xlateMap
+            }
+        }
+    });
+
     // bindings for form-connected elements
     $("#newmap_load").live("change", verifyMapLoadSelection);
     $("#uploadfield").live("change", updateUploadSelector);
-
+    $(".geoshift_floatfield").live("keyup mouseup change", checkXlateValues);
 }
 
 
@@ -397,6 +422,9 @@ function funcGeoShift ()
 {
     //TODO: placeholder, implement
     console.log("opening geoshifting dialog");
+
+    $("#form_geoshift").dialog("open");
+
 }
 
 function funcLoadSnap ()
@@ -445,6 +473,7 @@ function trySaveMap ()
     $("#form_datasave").dialog("close");
 
     $("#progress_datasave").dialog("open");
+    $("#btn_saveprogress_close").hide();
     $("#progress_datasave .progressinfo").hide();
     $("#progspinner_datasave").show();
     $("#progress_stage_datasaving").show();
@@ -499,8 +528,8 @@ function confirmSave (data, textStatus, jqXHR)
 
     }
 
+    $("#btn_saveprogress_close").show();
 
-    //TODO: FIX LOADER LIST
 
 }
 
@@ -1938,11 +1967,80 @@ function getFilenameFromPath (filepath)
 
 }
 
+function xlateMap()
+{
+
+    var offset_x = parseFloat($("#txt_geoshift_movex").val());
+    var offset_y = parseFloat($("#txt_geoshift_movey").val());
+
+    if (isNaN(offset_x) || isNaN(offset_y))
+    {
+        $("#form_xlatemap_confirm").prop("disabled", true);
+        console.log("Non valid translation value");
+        return;
+    }
+
+    var f;
+    for (f in vislayer.features)
+    {
+        xlateFeature (vislayer.features[f], offset_x, offset_y);
+    }
+
+    for (f in filterlayer.features)
+    {
+        xlateFeature (filterlayer.features[f], offset_x, offset_y);
+    }
+
+    vislayer.redraw();
+    vislayer.refresh();
+    filterlayer.redraw();
+    filterlayer.refresh();
+
+    $("#txt_geoshift_movex").val("0");
+    $("#txt_geoshift_movey").val("0");
+
+    $("#form_geoshift").dialog("close");
+
+
+}
+
+function checkXlateValues()
+{
+
+    var offset_x = parseFloat($("#txt_geoshift_movex").val());
+    var offset_y = parseFloat($("#txt_geoshift_movey").val());
+
+    if (isNaN(offset_x) || isNaN(offset_y))
+    {
+        $("#form_xlatemap_confirm").prop("disabled", true);
+        console.log("Non valid translation value");
+    }
+    else
+    {
+        $("#form_xlatemap_confirm").prop("disabled", false);
+    }
+
+
+}
+
+
+function xlateFeature (feature, offset_x, offset_y)
+{
+
+    //console.log("Feature move from");
+    //console.log(feature);
+    feature.geometry.move(offset_x, offset_y);
+    //console.log("Feature move to");
+    //console.log(feature);
+
+}
+
+
 function updateUploadSelector()
 {
 
     console.log("updating uploader selection");
-    var filename =  getFilenameFromPath($("#uploadfield").val());
+    var filename = getFilenameFromPath($("#uploadfield").val());
     console.log(filename);
     // removing previously selected file
 

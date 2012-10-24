@@ -162,20 +162,37 @@
 </div>
 
 
+<div id="form_geoshift" title="Traslazione mappa">
+
+    <div class="formbriefing">
+        Questo strumento sposta tutti i punti della mappa della distanza indicata.<br>
+        Lo strumento non effettua una riproiezione ma una traslazione.
+    </div>
+
+    <table>
+        <tr>
+            <td>Traslazione verso nord:</td><td><input type="text" class="geoshift_floatfield" value="0" id="txt_geoshift_movey"></td><td>metri</td>
+            </tr><tr>
+            <td>Traslazione verso est:</td><td><input type="text" value="0" class="geoshift_floatfield" id="txt_geoshift_movex"></td><td>metri</td>
+        </tr>
+    </table>
+
+</div>
+
+
 
 <div id="form_loadmap" title="Integrazione mappe">
 
     <input type="file" id="uploadfield" accept="application/zip">
 
     <div class="formbriefing">
-        Selezionare una mappa presente nel sistema{% if mode == 'full' %} o un file sul disco dell'utente.<br>
-        Il sistema accetta mappe in formato Shapefile, GeoJSON o MapInfo.<br>
-        La mappa deve essere archiviata in un singolo file Zip e contenere un solo tipo di oggetto geografico (tratta o punto){% endif %}.
+        Selezionare una mappa presente nel sistema.<br>
+        È possibile selezionare solo mappe con lo stesso modello geometrico di base della mappa in uso.
     </div>
 
     <select id="newmap_load">
         <option value=""></option>
-    {% if mode == 'full'  %}
+    {% if mode == 'full' %}
         <optgroup  id="newmap_section_fromfile" label="Da file">
             <option value=".file" id="newmap_load_fromfile">Seleziona...</option>
         </optgroup>
