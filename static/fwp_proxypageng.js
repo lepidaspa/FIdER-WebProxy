@@ -1356,6 +1356,8 @@ function tryCreateQuery()
                 $("#creationfinished_fail").show();
                 $("#creationfail_explain").append(data['report']);
                 $("#creationfail_explain").show();
+                $("#btn_newquery_closedialog").show();
+
 
             }
         },
@@ -1366,6 +1368,7 @@ function tryCreateQuery()
             $("#creationfinished_fail").show();
             $("#creationfail_explain").append(data);
             $("#creationfail_explain").show();
+            $("#btn_newquery_closedialog").show();
 
         }
 
