@@ -120,6 +120,27 @@
 {% block functionality %}
 
 
+<div id="form_loadsnap" title="Caricamento riferimenti">
+
+    <div class="formbriefing">
+        Selezionare una mappa presente nel sistema.<br>
+        Gli oggetti della mappa verranno usati come punti di aggancio per gli oggetti tracciati sulla mappa attiva.
+    </div>
+
+    <select id="newsnap_load">
+        <option value=""></option>
+        {% for cmeta_id, maplist in proxy_maps.items %}
+            <optgroup label="{% if cmeta_id == ".st" %}Area di lavorazione{% else %}{{ cmeta_id }}{% endif %}">
+                {% for map_id, mapdata in maplist.items %}
+                    <option value="{{ cmeta_id }}/{{ map_id }}">{{ map_id }}</option>
+                {% endfor %}
+            </optgroup>
+        {% endfor %}
+    </select>
+
+</div>
+
+
 <div id="form_loadmap" title="Caricamento mappe">
 
     <input type="file" id="uploadfield" accept="application/zip">

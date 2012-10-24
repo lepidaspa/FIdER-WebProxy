@@ -49,7 +49,7 @@ var menufunctions = {
     'menu_integratemodel': funcIntegrateModel,
     'menu_savemap': funcSaveMap,
     'menu_geoshift': funcGeoShift,
-    'menu_loadsnap': funcLoadSnap,
+    'menu_loadsnapmap': funcLoadSnap,
     'menu_showmap': funcShowMap,
     'menu_showmodel': funcShowModel,
     'menu_filter': funcCreateFilter
@@ -241,6 +241,24 @@ function initForms()
         }
     });
 
+    $("#form_loadsnap").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Carica": {
+                id : "form_shadow_confirmload",
+                text: "Carica",
+                click: tryLoadShadow
+            }
+        }
+    });
+
     $("#progress_upload").dialog({
         autoOpen: false,
         modal: true,
@@ -385,6 +403,9 @@ function funcLoadSnap ()
 {
     //TODO: placeholder, implement
     console.log("opening shadow map loading dialog");
+
+    $("#form_loadsnap").dialog("open");
+
 }
 
 function funcShowMap ()
@@ -602,6 +623,45 @@ function layerToJSON(layer, mapid)
 
 }
 
+function tryLoadShadow()
+{
+
+    // NOTE: cloned from getUploadedMap
+
+    $("#form_loadsnap").dialog("close");
+
+    var mapname =  $("#newsnap_load").val().split("/");
+    var snapmeta = mapname[0];
+    var snapname = mapname[1];
+
+    var urlstring;
+    if (snapmeta == ".st")
+    {
+        urlstring = "/fwst/maps/"+proxy_id+"/"+snapname+"/";
+    }
+    else
+    {
+        urlstring = "/fwp/maps/"+proxy_id+"/"+snapmeta+"/"+snapname+"/";
+    }
+
+    console.log("Loading: "+urlstring);
+
+    $("#progress_mapload").dialog("open");
+    $("#progress_mapload .formwarning").hide();
+    $("#progress_mapload .progressinfo").hide();
+    $("#progspinner_mapload").show();
+    $("#progress_stage_maploading").show();
+
+    $.ajax ({
+        url:    urlstring,
+        async:  true,
+        success:    applyNewSnap,
+        error:  reportFailedDownload
+    });
+
+}
+
+
 function tryLoadMap ()
 {
 
@@ -683,6 +743,7 @@ function getUploadedMap(meta_id, map_id)
 {
     $("#progress_upload").dialog("close");
 
+
     var urlstring;
     if (meta_id == ".st")
     {
@@ -729,13 +790,38 @@ function resetModel()
     modeldata = {};
 }
 
+function applyNewSnap (newdata, textStatus, jqXHR)
+{
+    $("#progress_stage_maploading").hide();
+    $("#progress_stage_rendering").show();
+
+
+    console.log("Rendering map data on shadow layer");
+    console.log(newdata);
+
+    // TODO: implement rendering
+
+    snaplayer.destroyFeatures();
+    renderGeoJSONCollection(newdata, snaplayer);
+
+
+    $("#progress_stage_rendering").hide();
+    $("#progspinner_mapload").hide();
+    $("#maploadfinished_success").show();
+
+
+    $("#progress_mapload").dialog("close");
+
+
+
+}
+
 
 function applyNewMap(newdata, textStatus, jqXHR)
 {
     $("#progress_stage_maploading").hide();
     $("#progress_stage_rendering").show();
 
-    // TODO: implement rendering
 
     console.log("Rendering map data");
     console.log(newdata);
