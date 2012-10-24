@@ -1513,12 +1513,68 @@ function setMapControlsEdit()
 
 }
 
-function handleMeasure() {
-    //TODO: placeholder, implement
+function handleMeasure(event)
+{
+
+    freeSelection();
+
+    //var geometry = event.geometry;
+    var units = event.units;
+
+    var precision;
+    if (units == 'm')
+    {
+        precision = 2;
+    }
+    else
+    {
+        precision = 3;
+    }
+
+    console.log("Measure data");
+    //console.log(event);
+    //console.log(event.geometry.getBounds());
+
+
+    var measure = event.measure.toFixed(precision);
+    var bbox = event.geometry.getBounds();
+
+    console.log(bbox);
+
+    var span_x = bbox['right'] - bbox ['left'];
+    var unitx = "m";
+    var precisionx = 2;
+    if (span_x > 1000)
+    {
+        span_x /= 1000;
+        unitx = "km";
+        precisionx = 3;
+    }
+
+    var span_y = bbox['top'] - bbox ['bottom'];
+    var unity = "m";
+    var precisiony = 2;
+    if (span_y > 1000)
+    {
+        span_y /= 1000;
+        unity = "km";
+        precisiony = 3;
+    }
+
+
+    $("#measure_overall").empty().append(measure+" "+units);
+    $("#measure_ns").empty().append(span_y.toFixed(precisiony).toLocaleString()+" "+unity);
+    $("#measure_ew").empty().append(span_x.toFixed(precisionx).toLocaleString()+" "+unitx);
+
+    $("#measuredetails").show()
+
+
 }
 
 function hideDistance() {
     //TODO: placeholder, implement
+    $("#measuredetails").hide();
+
 }
 
 function renderFeatureCard(caller)
@@ -1672,6 +1728,7 @@ function checkReplicationChance()
 function freeSelection()
 {
     $("#featuredetails").empty();
+    $("#measuredetails").hide();
     $("#featuredesc tbody").empty();
     $("#featurecard").hide();
 
