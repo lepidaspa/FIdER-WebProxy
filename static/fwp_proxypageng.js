@@ -163,7 +163,20 @@ function initForms ()
         modal: true,
         closeOnEscape: false,
         width:  "auto",
-        height: "auto"
+        height: "auto",
+        buttons: {
+            "Reset": {
+                id : "btn_newdata_resetpage",
+                text: "Chiudi",
+                click: resetPage
+            },
+            "Close": {
+                text: "Chiudi",
+                id : "btn_newdata_closedialog",
+                click: function() {$( this ).dialog( "close" );}
+            }
+
+        }
     });
 
     $("#progress_newquery").dialog({
@@ -171,7 +184,20 @@ function initForms ()
         modal: true,
         closeOnEscape: false,
         width:  "auto",
-        height: "auto"
+        height: "auto",
+        buttons: {
+            "Reset": {
+                id : "btn_newquery_resetpage",
+                text: "Chiudi",
+                click: resetPage
+            },
+            "Close": {
+                text: "Chiudi",
+                id : "btn_newquery_closedialog",
+                click: function() {$( this ).dialog( "close" );}
+            }
+
+        }
     });
 
     $("#progress_removal").dialog({
@@ -1152,6 +1178,10 @@ function tryUploadNewRemote()
 
     $("#form_newwfs").dialog("close");
     $("#progress_newdata").dialog("open");
+
+    $("#btn_newdata_resetpage").hide();
+    $("#btn_newdata_closedialog").hide();
+
     $("#progress_newdata .progressinfo").hide();
     $("#progspinner_newdata").show();
     $("#progress_stage_uploading").show();
@@ -1176,6 +1206,7 @@ function tryUploadNewRemote()
                 $("#uploadfinished_fail").show();
                 $("#uploadfail_explain").append(data['report']);
                 $("#uploadfail_explain").show();
+                $("#btn_newdata_closedialog").show();
             }
 
         },
@@ -1186,6 +1217,7 @@ function tryUploadNewRemote()
             $("#uploadfinished_fail").show();
             $("#uploadfail_explain").append(data);
             $("#uploadfail_explain").show();
+            $("#btn_newdata_closedialog").show();
         }
     });
 }
@@ -1292,6 +1324,8 @@ function tryCreateQuery()
     $("#form_newquery").dialog("close");
     $("#progress_newquery").dialog("open");
     $("#progress_newquery .progressinfo").hide();
+    $("#btn_newquery_resetpage").hide();
+    $("#btn_newquery_closedialog").hide();
     $("#progspinner_newquery").show();
     $("#progress_stage_probing").show();
 
@@ -1414,6 +1448,8 @@ function rebuildShapeData (meta_id, map_id)
             $("#progspinner_newdata").hide();
             $("#progress_newdata .progressinfo").hide();
             $("#uploadfinished_success").show();
+            $("#btn_newdata_resetpage").show();
+
 
         },
         error: function (data)
@@ -1423,6 +1459,7 @@ function rebuildShapeData (meta_id, map_id)
             $("#uploadfinished_fail").show();
             $("#uploadfail_explain").append(data);
             $("#uploadfail_explain").show();
+            $("#btn_newdata_resetpage").show();
         }
     });
 
@@ -1452,6 +1489,8 @@ function saveConnection(currentconn)
             $("#progspinner_newquery").hide();
             $("#progress_newdata .progressinfo").hide();
             $("#creationfinished_success").show();
+            $("#btn_newquery_resetpage").show();
+
 
         },
         error: function (data)
@@ -1462,6 +1501,7 @@ function saveConnection(currentconn)
             $("#creationfinished_fail").show();
             $("#creationfail_explain").append(data);
             $("#creationfail_explain").show();
+            $("#btn_newquery_closedialog").show();
         }
     });
 
