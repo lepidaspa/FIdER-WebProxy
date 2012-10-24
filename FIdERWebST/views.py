@@ -346,8 +346,56 @@ def saveSTMap (request, **kwargs):
 		}
 
 
+	return HttpResponse(json.dumps(feedback), mimetype="application/json")
 
 
+@csrf_exempt
+def saveVisMap (request, **kwargs):
+	"""
+	Saves a map from the Vis tool to the requested meta
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	try:
+		proxy_id = kwargs['proxy_id']
+		meta_id = kwargs['meta_id']
+		map_id = kwargs['map_id']
+		#map_id = request.POST['mapname']
+
+		mapdata = request.POST['jsondata']
+
+		print "Changes submitted for map %s to standalone tool %s in meta %s" % (map_id, proxy_id, meta_id)
+		print "format %s" % (type(mapdata))
+		#print "DATA: %s" % mapdata
+
+		if meta_id == ".st":
+			path_tool = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone)
+		else:
+			path_tool = os.path.join(proxyconf.baseproxypath, proxy_id, meta_id, proxyconf.path_geojson)
+
+		dest_fp = open(os.path.join(path_tool, map_id), 'w+')
+		print mapdata
+		json.dump(json.loads(mapdata), dest_fp, encoding="latin-1")
+		dest_fp.close()
+
+
+		feedback = {
+			'success': True,
+			'report': "Mappa salvata correttamente."
+		}
+
+	except Exception as ex:
+
+		print "Save fail due to:\n%s" % ex
+
+		feedback = {
+
+			'success': False,
+			'report': "Salvataggio fallito: %s" % ex
+
+		}
 
 
 	return HttpResponse(json.dumps(feedback), mimetype="application/json")

@@ -228,8 +228,11 @@
     <div class="formbriefing">
         <input type="text" value="{{ map_id }}" id="savemapto_filename">
         <select id="savemapto_dest">
-            {% for cmeta_id, maplist in proxy_maps.items %}
-                <option value="{{ cmeta_id }}" {% if meta_id  == cmeta_id %}selected{% endif %}>{% if cmeta_id == ".st" %}Area di lavorazione{% else %}{{ cmeta_id }}{% endif %}</option>
+        <option value=".st" selected>Area di lavorazione</option>
+            {% for cmeta_id in proxy_meta %}
+                {% if cmeta_id != ".st" %}
+                    <option value="{{ cmeta_id }}">{{ cmeta_id }}</option>
+                {% endif %}
             {% endfor %}
         </select>
     </div>
@@ -312,13 +315,13 @@
 
 
         <span id="mapcontrolsbar">
-            <img src="{{ STATIC_URL }}resource/visng_controls_reposition.png" class="imgbutton mapcontrol" id="mapcontrols_repos" title="Riposiziona la mappa">
+            <img src="{{ STATIC_URL }}resource/visng_controls_reposition.png" class="imgbutton mapcontrol ctype_action" id="mapcontrols_repos" title="Riposiziona la mappa">
             {% if mode == 'full' or mode == 'mapedit' %}
-                <img src="{{ STATIC_URL }}resource/visng_controls_measure.png" class="imgbutton mapcontrol" id="mapcontrols_measure" title="Crea entità">
+                <img src="{{ STATIC_URL }}resource/visng_controls_measure.png" class="imgbutton mapcontrol ctype_switch" id="mapcontrols_measure" title="Misura">
             {% endif %}
-        <img src="{{ STATIC_URL }}resource/visng_controls_editfeature.png" class="imgbutton mapcontrol" id="mapcontrols_editfeature" title="Seleziona entità">
+        <img src="{{ STATIC_URL }}resource/visng_controls_editfeature.png" class="imgbutton mapcontrol ctype_switch" id="mapcontrols_editfeature" title="Seleziona">
             {% if mode == 'full' or mode == 'mapedit' %}
-                <img src="{{ STATIC_URL }}resource/visng_controls_newfeature.png" class="imgbutton mapcontrol" id="mapcontrols_createfeature" title="Crea entità">
+                <img src="{{ STATIC_URL }}resource/visng_controls_newfeature.png" class="imgbutton mapcontrol ctype_switch" id="mapcontrols_createfeature" title="Inserisci">
             {% endif %}
         </span>
 

@@ -275,7 +275,7 @@ function initForms()
                 click: function() {$( this ).dialog( "close" );}
             },
             "Salva": {
-                id : "form_newfile_confirmload",
+                id : "form_newfile_confirmsave",
                 text: "Salva",
                 click: trySaveMap
             }
@@ -336,9 +336,23 @@ function funcSaveMap ()
     $("#form_datasave").dialog("open");
     $("#form_datasave .progressinfo").hide();
 
+
+    var today = new Date();
+
+    var day = today.getDay()>10 ? today.getDay().toString() : "0"+today.getDay().toString();
+    var month = today.getMonth()<10 ? "0"+today.getDay().toString() : today.getDay().toString();
+    var year = today.getFullYear().toString();
+
+
+    var basesavename = map_id;
+    if (map_id.length > 9 && map_id.substring(map_id.length-9).match(/_[0-9]{8}/))
+    {
+        basesavename = map_id.substring(0,map_id.length-9);
+    }
+
     try
     {
-        $("#savemapto_filename").val(map_id);
+        $("#savemapto_filename").val(basesavename+"_"+day+month+year);
     }
     catch (err)
     {
@@ -405,7 +419,181 @@ function funcCreateFilter()
 function trySaveMap ()
 {
 
+    $("#form_datasave").dialog("close");
+
+    $("#progress_datasave").dialog("open");
+    $("#progress_datasave .progressinfo").hide();
+    $("#progspinner_datasave").show();
+    $("#progress_stage_datasaving").show();
+
     //TODO: placeholder, implement
+
+    var mapname = $("#savemapto_filename").val();
+    var mapmeta = $("#savemapto_dest").val();
+
+    var mapjson = layerToJSON(vislayer, mapname);
+
+    var urlstring = "/fwst/saveng/"+proxy_id+"/"+mapmeta+"/"+mapname+"/";
+
+    $.ajax (
+        {
+            url:    urlstring,
+            data:   {
+                'mapname': mapname,
+                'jsondata': JSON.stringify(mapjson)
+            },
+            async:  true,
+            type:   'POST',
+            success: confirmSave,
+            error: reportFailedSave
+        }
+    );
+
+}
+
+
+function confirmSave (data, textStatus, jqXHR)
+{
+    // TODO: PLACEHOLDER, IMPLEMENT
+
+    console.log("Reporting successful save callback")
+    console.log(data);
+
+    $("#progress_datasave .progressinfo").hide();
+    $("#progspinner_datasave").hide();
+
+    if (data['success'])
+    {
+        $("#datasave_success").show();
+
+
+    }
+    else
+    {
+        $("#datasave_fail").show();
+        $("#datasavefail_explain").append(data['report']);
+        $("#datasavefail_explain").show();
+
+    }
+
+
+    //TODO: FIX LOADER LIST
+
+}
+
+function reportFailedSave (err, xhr)
+{
+    // TODO: PLACEHOLDER, IMPLEMENT
+    $("#progspinner_datasave").hide();
+
+    $("#progress_datasave .progressinfo").hide();
+    $("#datasave_fail").show();
+    $("#datasavefail_explain").append(data['report']);
+    $("#datasavefail_explain").show();
+
+}
+
+
+function layerToJSON(layer, mapid)
+{
+
+    var bbox;
+    try
+    {
+        if (layer.getDataExtent() != null)
+        {
+
+            bbox = layer.getDataExtent().toArray();
+
+            console.log("Tried getting bbox from map extent, had");
+            console.log(bbox);
+
+            var endA = reprojPoint(bbox[0], bbox[1], mapview);
+            console.log(endA);
+            var endB = reprojPoint(bbox[2], bbox[3], mapview);
+            console.log(endB);
+
+            bbox = [endA.x, endA.y, endB.x, endB.y];
+
+            console.log("Bbox from map data");
+        }
+        else
+        {
+
+            bbox = bb_meta;
+            console.log("Bbox from meta");
+        }
+    }
+    catch (ex)
+    {
+        console.log("Exception while trying to set the bbox");
+        console.log(ex);
+        bbox = bb_proxy;
+        console.log("Bbox from proxy");
+    }
+
+    var jsondata = {
+        'type': 'FeatureCollection',
+        'model': modeldata,
+        'features': [],
+        'bbox': bbox
+    };
+
+    if (mapid)
+    {
+        jsondata['id'] = mapid;
+    }
+
+    var geom;
+    var props;
+
+    var badfeaturescount = 0;
+    for (var fid in layer.features)
+    {
+
+        if (layer.features[fid].hasOwnProperty('_sketch') && layer.features[fid]._sketch === true)
+        {
+            //console.log("Found highlighter as feature "+fid);
+            // avoiding highlighters
+            continue;
+        }
+
+
+        geom = JSON.parse(gjformat.write(layer.features[fid].geometry));
+        props = layer.features[fid].attributes;
+
+        for (var propname in modeldata['properties'])
+        {
+            // we add empty values for any property that should not be already created in the feature
+            if (!props.hasOwnProperty(propname))
+            {
+                props[propname] = "";
+            }
+        }
+
+        // we do not specify an ID since the geoid is not actually relevant for our use and can change and/or be erased on merges.
+
+        // safety check to avoid inconsistencies being introduced during editing by OpenLayers
+        if (geom['type'] == modeldata['objtype'])
+        {
+            jsondata['features'].push({
+                'type': "Feature",
+                'geometry': geom,
+                'properties': props
+            });
+        }
+        else
+        {
+            console.log("Conflict: "+geom['type']+" against "+modeldata['objtype']);
+            //console.log(layer.features[fid]);
+            badfeaturescount++;
+        }
+
+
+    }
+    console.log("Removed "+badfeaturescount+" incompatible features");
+
+    return jsondata;
 
 
 
@@ -568,7 +756,7 @@ function applyNewMap(newdata, textStatus, jqXHR)
 
     // TODO: workaround to avoid full render
     renderGeoJSONCollection(newdata, vislayer);
-    autoZoom();
+    autoZoom(mapview);
 
     $("#progress_stage_rendering").hide();
     $("#progspinner_mapload").hide();
@@ -595,9 +783,13 @@ function createNewMap (modelname)
     resetMap();
     resetModel();
 
+
+
     console.log("Getting model "+modelname);
     modeldata = models[modelname];
+    setMapControlsEdit();
 
+    autoZoom(mapview);
 
 }
 
@@ -1412,8 +1604,13 @@ function autoZoom (olmap)
     {
         try
         {
-            mapview.zoomToExtent(vislayer.getDataExtent());
-            return;
+            if (vislayer.getDataExtent() != null)
+            {
+                console.log("Auto zoom by mode");
+                mapview.zoomToExtent(vislayer.getDataExtent());
+                return;
+            }
+
         }
         catch (err)
         {
@@ -1609,4 +1806,14 @@ function updateUploadSelector()
     verifyMapLoadSelection();
 
 
+}
+
+function reprojPoint (pointX, pointY, olmap)
+{
+    var reproj;
+
+    reproj = new OpenLayers.LonLat(pointX, pointY).transform(olmap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
+
+
+    return new OpenLayers.Geometry.Point(reproj.lon, reproj.lat);
 }

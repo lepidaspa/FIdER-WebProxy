@@ -76,6 +76,8 @@ urlpatterns = patterns('',
 	url(r'^fwst/maps/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.loadSTMap),
 	url(r'^fwst/save/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.saveSTMap),
 
+
+
 	url(r'^fwp/stimport', fwpviews.sideloadSTMap),
 
 	url(r'^fwst/(?P<proxy_id>\w*)/$', fwstviews.uiview),
@@ -91,7 +93,8 @@ urlpatterns = patterns('',
 
 	url(r'^fwp/proxyng/(?P<proxy_id>\w*)/$', fwpviews.proxypageng),
 	url(r'^fwp/visng/(?P<vismode>\w*)/(?P<proxy_id>\w*)/$', fwstviews.mapvisng),
-	url(r'^fwp/visng/(?P<vismode>\w*)/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.mapvisng)
+	url(r'^fwp/visng/(?P<vismode>\w*)/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.mapvisng),
+	url(r'^fwst/saveng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.saveVisMap),
 
 )
 
