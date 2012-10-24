@@ -1385,7 +1385,16 @@ function tryUploadNewFile()
 
     var filepath = $("#newfile_chooser").val();
     var map_id = getMapIdFromPath(filepath);
-    var urlstring = "/fwp/upload/"+proxy_id+"/"+cmeta_id+"/";
+
+    var urlstring;
+    if (cmeta_id != ".st")
+    {
+        urlstring = "/fwp/upload/"+proxy_id+"/"+cmeta_id+"/";
+    }
+    else
+    {
+        urlstring = "/fwst/upload/"+proxy_id+"/";
+    }
 
     // and now for some black magic...
 
@@ -1394,6 +1403,8 @@ function tryUploadNewFile()
     $("#form_newfile").dialog("close");
     $("#progress_newdata").dialog("open");
     $("#progress_newdata .progressinfo").hide();
+    $("#btn_newdata_resetpage").hide();
+    $("#btn_newdata_closedialog").hide();
     $("#progspinner_newdata").show();
     $("#progress_stage_uploading").show();
 
@@ -1408,7 +1419,17 @@ function tryUploadNewFile()
             if (data['success'] == true)
             {
                 $("#progress_newdata .progressinfo").hide();
-                rebuildShapeData(cmeta_id, map_id);
+                if (cmeta_id != ".st")
+                {
+                    rebuildShapeData(cmeta_id, map_id);
+                }
+                else
+                {
+                    $("#progspinner_newdata").hide();
+                    $("#progress_newdata .progressinfo").hide();
+                    $("#uploadfinished_success").show();
+                    $("#btn_newdata_resetpage").show();
+                }
             }
             else
             {
@@ -1417,6 +1438,7 @@ function tryUploadNewFile()
                 $("#uploadfinished_fail").show();
                 $("#uploadfail_explain").append(data['report']);
                 $("#uploadfail_explain").show();
+                $("#btn_newdata_closedialog").show();
             }
         },
         error: function (data)
@@ -1426,6 +1448,7 @@ function tryUploadNewFile()
             $("#uploadfinished_fail").show();
             $("#uploadfail_explain").append(data);
             $("#uploadfail_explain").show();
+            $("#btn_newdata_closedialog").show();
         }
 
     });
