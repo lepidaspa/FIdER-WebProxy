@@ -10,8 +10,8 @@
 var proj_WGS84 = "EPSG:4326";
 var proj_900913 = "EPSG:900913";
 
-var objtypestrings = { 'LineString': 'tratte', 'Point': 'punti'};
-var singleobjstring = { 'LineString': 'Tratta', 'Point': 'Punto'};
+var objtypestrings = { 'LineString': 'tratte', 'Point': 'nodi'};
+var singleobjstring = { 'LineString': 'Tratta', 'Point': 'Nodo'};
 var objtypes = [ 'LineString', 'Point' ];
 
 var proxy_id;

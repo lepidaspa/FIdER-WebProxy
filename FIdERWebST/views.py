@@ -169,7 +169,7 @@ def getModels ():
 		'DefaultPoint' :
 			{
 				'objtype': 'Point',
-				'name': 'Punto',
+				'name': 'Nodo',
 				'properties': {
 					'OwnerID': 'str',
 					'Owner': 'str',
