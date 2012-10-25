@@ -343,6 +343,14 @@
 
         {% if mode != 'mapview' %}
 
+            {% if mode == 'full' or mode == 'mapedit' %}
+                <img src="{{ STATIC_URL }}resource/visng_menu_viewmap.png" class="imgbutton menuopt" id="menu_showmap" title="Visualizza mappa">
+                <img src="{{ STATIC_URL }}resource/visng_menu_viewmodel.png" class="imgbutton menuopt" id="menu_showmodel" title="Visualizza modello">
+
+                &nbsp;&nbsp;
+            {% endif %}
+
+
             {% if mode == 'full' %}
                 <img src="{{ STATIC_URL }}resource/fwp_newmapedit.png" class="imgbutton" id="menu_createnewmap" title="Crea nuova mappa">
                 <img src="{{ STATIC_URL }}resource/fwp_editmap.png" class="imgbutton" id="menu_loadmap" title="Carica una mappa">
@@ -354,25 +362,26 @@
 
             <img src="{{ STATIC_URL }}resource/visng_menu_integratemodel.png" class="imgbutton menuopt" id="menu_integratemodel" title="Combina un modello">
 
+            <img src="{{ STATIC_URL }}resource/visng_menu_savemap.png" class="imgbutton menuopt" id="menu_savemap" title="Salva">
+
+            &nbsp;&nbsp;
+
+
             {% if mode == 'full' or mode == 'mapedit' %}
 
                 <img src="{{ STATIC_URL }}resource/visng_layers.png" class="imgbutton menuopt" id="menu_loadsnapmap" title="Carica un riferimento">
             {% endif %}
 
-            <img src="{{ STATIC_URL }}resource/visng_menu_savemap.png" class="imgbutton menuopt" id="menu_savemap" title="Salva">
+
 
 
 
             {% if mode == 'full' or mode == 'mapedit' %}
                 <img src="{{ STATIC_URL }}resource/visng_menu_geoshift.png" class="imgbutton menuopt" id="menu_geoshift" title="Trasla mappa">
-                <img src="{{ STATIC_URL }}resource/visng_menu_filter.png" class="imgbutton menuopt" id="menu_filter" title="Evidenzia entità">
+                <img src="{{ STATIC_URL }}resource/visng_menu_filter.png" class="imgbutton menuopt" id="menu_filter" title="Filtra">
             {% endif %}
 
-            {% if mode == 'full' or mode == 'mapedit' %}
-                <img src="{{ STATIC_URL }}resource/visng_menu_viewmodel.png" class="imgbutton menuopt" id="menu_showmodel" title="Visualizza modello">
-                <img src="{{ STATIC_URL }}resource/visng_menu_viewmap.png" class="imgbutton menuopt" id="menu_showmap" title="Visualizza mappa">
 
-            {% endif %}
             </span>
 
         {% endif %}

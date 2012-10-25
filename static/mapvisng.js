@@ -453,6 +453,7 @@ function funcShowMap ()
     $("#modelview").hide();
     $("#mapview").show();
 
+
 }
 
 function funcShowModel ()
@@ -1087,8 +1088,6 @@ function reportFailedDownload (xhr,err)
 function initModelWidget()
 {
 
-    // TODO: add autofill with current SET value (not map-based)
-
     var base = $("#modelstruct tbody");
     for (var propname in modeldata['properties'])
     {
@@ -1100,6 +1099,12 @@ function initModelWidget()
             '</tr>' +
             '<tr id="modelproval_widget_'+propname+'"><td></td><td colspan=2 class="modelprop_valtable" id="valtable_'+propname+'"></td><td></td></tr>');
 
+
+
+    }
+
+    for ( propname in modeldata['properties'])
+    {
         var setvalues = modeldata['properties'][propname]
 
         if ($.isArray(setvalues))
@@ -1110,9 +1115,7 @@ function initModelWidget()
             }
 
         }
-
     }
-
 
 
 }
@@ -1189,7 +1192,6 @@ function importModelPropValue ()
     var propname = this.id.substr(prefix.length);
     // adds all non-already set values from the map in the form
 
-
     var formpropvalues = [];
     var mappropvalues = [];
 
@@ -1246,9 +1248,10 @@ function updateModelPropertyValue()
 {
     // rebuilds only the single section of the model for this particular property
 
+    console.log("Updating model prop value")
     var base = $(this).closest(".modelprop_valtable");
     var prefix = "valtable_";
-    var propname = base.id.substr(prefix.length);
+    var propname = base[0].id.substr(prefix.length);
 
     var valuelist = $(".textfield_modelpropvalue_"+propname);
 
@@ -1272,9 +1275,13 @@ function rebuildModelFromForm()
     var prefix = "modelprop_widget_";
     var modelform = $(".modelprop_widget");
     var newprops = {};
+
+    console.log("Saving "+modelform.length+" properties");
     for (var i = 0; i < modelform.length; i++)
     {
+
         var cid = modelform[i].id;
+        console.log("Adding property "+cid);
         var propname = cid.substr(prefix.length);
 
         newprops[propname] = "string";
@@ -1293,16 +1300,23 @@ function rebuildModelFromForm()
         }
         else
         {
-            if (modeldata['properties'].hasOwnProperty(propname) && !$.isArray(modeldata['properties']['propname']))
+            if (modeldata['properties'].hasOwnProperty(propname) && !$.isArray(modeldata['properties'][propname]))
             {
                 newprops[propname] = modeldata['properties'][propname];
             }
         }
 
-
     }
 
     modeldata['properties'] = newprops;
+    var totprops = 0;
+    for (var propname in modeldata['properties'])
+    {
+        totprops++;
+    }
+    console.log("Saved "+totprops+" properties");
+
+
 
     /*
     console.log("New model properties and values");
