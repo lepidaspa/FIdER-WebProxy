@@ -150,7 +150,7 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
         else
         {
             console.log("Creating new map from model "+map_id);
-            createNewMap(map_id)
+            createNewMap(map_id);
         }
 
     }
@@ -270,7 +270,14 @@ function initForms()
         autoOpen: false,
         modal: true,
         closeOnEscape: false,
-        width:  "auto"
+        width:  "auto",
+        buttons: {
+            "Chiudi": {
+                id: "btn_loadprogress_close",
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
     });
 
     $("#progress_datasave").dialog({
@@ -338,6 +345,7 @@ function initForms()
 // all functions have the prefix "func" to distinguish them as menu launchers from actual "system" functions
 
 
+
 function funcLoadMap ()
 {
 
@@ -384,8 +392,8 @@ function funcSaveMap ()
 
     var today = new Date();
 
-    var day = today.getDay()>10 ? today.getDay().toString() : "0"+today.getDay().toString();
-    var month = today.getMonth()<10 ? "0"+today.getDay().toString() : today.getDay().toString();
+    var day = today.getDate()>10 ? today.getDate().toString() : "0"+today.getDate().toString();
+    var month = (today.getMonth()+1)<10 ? "0"+(today.getMonth()+1).toString() : (today.getMonth()+1).toString();
     var year = today.getFullYear().toString();
 
 
@@ -691,12 +699,18 @@ function tryLoadShadow()
 }
 
 
+
+
 function tryLoadMap ()
 {
+
+
 
     $("#form_loadmap").dialog("close");
     var upreq = $("#newmap_load").val();
     var contentreq = upreq.split("/");
+
+    console.log("Loading/integrating map: "+upreq);
 
     if (contentreq[0] == '.file/')
     {
@@ -708,6 +722,7 @@ function tryLoadMap ()
         // load from instance
         // TODO: placeholder, implement as getUploadedMap
         // should simply need a getUploadedMap with the correct parameters
+        getUploadedMap(contentreq[0], contentreq[1]);
 
     }
 
@@ -790,6 +805,7 @@ function getUploadedMap(meta_id, map_id)
     $("#progress_mapload .progressinfo").hide();
     $("#progspinner_mapload").show();
     $("#progress_stage_maploading").show();
+    $("#btn_loadprogress_close").hide();
 
     $.ajax ({
         url:    urlstring,
@@ -878,6 +894,7 @@ function applyNewMap(newdata, textStatus, jqXHR)
     $("#progress_stage_rendering").hide();
     $("#progspinner_mapload").hide();
     $("#maploadfinished_success").show();
+    $("#btn_loadprogress_close").show();
 
 
     if (firstload)
@@ -1032,12 +1049,12 @@ function reportFailedUpload (xhr,err)
     $("#progspinner_upload").hide();
     $("#upload_fail").show();
 
-    console.log("Reporting failed download of the requested file");
+    console.log("Reporting failed upload of the requested file");
     console.log("readyState: "+xhr.readyState+"\nstatus: "+xhr.status);
-    console.log("responseText: "+xhr.responseText);
+    //console.log("responseText: "+xhr.responseText);
     console.log(err);
 
-    $("#uploadfail_explain").append(err);
+    $("#uploadfail_explain").append("Errore "+xhr.status);
 
 }
 
@@ -1050,10 +1067,17 @@ function reportFailedDownload (xhr,err)
 
     console.log("Reporting failed download of the requested file");
     console.log("readyState: "+xhr.readyState+"\nstatus: "+xhr.status);
-    console.log("responseText: "+xhr.responseText);
+    // console.log("responseText: "+xhr.responseText);
     console.log(err);
 
-    $("#maploadfail_explain").append(err);
+    $("#maploadfail_explain").append("Errore "+xhr.status);
+
+    if (firstload)
+    {
+        $("#btn_loadprogress_close").unbind();
+        $("#btn_loadprogress_close").click(backToProxy);
+    }
+    $("#btn_loadprogress_close").show();
 
     // TODO: implement closing button on the dialog as BACK action of the browser in case we are in single-map mode (MAPEDIT, MAPVIEW)
 
@@ -1857,22 +1881,6 @@ function autoZoom (olmap)
     }
 
 
-    console.log(zoomto);
-
-    //combining bounding boxes
-    // TODO: fix the reprojection issue on actualextent
-    // (which means we should be able to avoid the separate zoomToExtent call earlier
-
-    /*
-    if (actualextent != null)
-    {
-        if (zoomto[0] > actualextent[0]) { zoomto[0] = actualextent[0]; }
-        if (zoomto[1] > actualextent[1]) { zoomto[1] = actualextent[1]; }
-        if (zoomto[2] < actualextent[2]) { zoomto[2] = actualextent[2]; }
-        if (zoomto[3] < actualextent[3]) { zoomto[3] = actualextent[3]; }
-    }
-    */
-
     console.log("Combined bbox");
     console.log(zoomto);
 
@@ -1946,7 +1954,7 @@ function verifyMapLoadSelection ()
     }
     else
     {
-
+        console.log("Valid selection, enabling");
         $("#form_newfile_confirmload").prop('disabled', false);
     }
 
@@ -2035,6 +2043,13 @@ function xlateFeature (feature, offset_x, offset_y)
 
 }
 
+function backToProxy()
+{
+    // quick wrapper for buttons
+    console.log("Back to proxy summary");
+    location.href = "/fwp/proxyng/"+proxy_id+"/";
+
+}
 
 function updateUploadSelector()
 {
