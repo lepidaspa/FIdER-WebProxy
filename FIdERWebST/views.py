@@ -59,9 +59,30 @@ def mapvisng (request, **kwargs):
 	print "Launching *%s* with context %s/%s/%s" % (vismode, proxy_id, meta_id, map_id)
 
 
+
+
 	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, manifest)
 
 	mapsdata = proxy_core.getMapsSummary(proxy_id)
+	setmodel = mapsdata[meta_id][map_id]['type']
+
+	"""
+		print "Full maps data:\n%s" % mapsdata
+
+	if map_id is not None and meta_id != ".create":
+		# filtering other maps according to the model
+		setmodel = mapsdata[meta_id][map_id]['type']
+		maps_filtered = {}
+		for cmeta in mapsdata.keys():
+			maps_filtered [cmeta] = {}
+			for cmap in mapsdata[cmeta].keys():
+				cmodel = mapsdata[cmeta][cmap]['type']
+				if cmodel == setmodel:
+					maps_filtered[cmeta][cmap] = mapsdata[cmeta][cmap]
+		mapsdata = maps_filtered
+		print "Filtered maps data:\n%s" % mapsdata
+	"""
+
 
 	proxy_meta = mapsdata.keys()
 	proxy_mapsbymeta = {}
@@ -73,7 +94,7 @@ def mapvisng (request, **kwargs):
 	modeldata = getModels()
 	print "Proxy models: %s" % modeldata
 
-	return render_to_response ('mapvisng.html', {'proxy_id': proxy_id, 'meta_id': meta_id, 'map_id': map_id, 'manifest': SafeString(json.dumps(manifest)), 'mode': vismode, 'proxy_name': manifest['name'], 'proxy_meta': proxy_meta, 'proxy_type': proxy_type, 'mapsbymeta': proxy_mapsbymeta, 'proxy_maps': mapsdata, 'mapsforjs': SafeString(json.dumps(mapsdata)), 'proxy_models': SafeString(json.dumps(modeldata)), 'rawmodels': modeldata}, context_instance=RequestContext(request))
+	return render_to_response ('mapvisng.html', {'proxy_id': proxy_id, 'meta_id': meta_id, 'map_id': map_id, 'manifest': SafeString(json.dumps(manifest)), 'mode': vismode, 'proxy_name': manifest['name'], 'proxy_meta': proxy_meta, 'proxy_type': proxy_type, 'mapsbymeta': proxy_mapsbymeta, 'proxy_maps': mapsdata, 'mapsforjs': SafeString(json.dumps(mapsdata)), 'proxy_models': SafeString(json.dumps(modeldata)), 'rawmodels': modeldata, 'maptype': setmodel}, context_instance=RequestContext(request))
 
 
 

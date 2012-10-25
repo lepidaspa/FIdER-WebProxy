@@ -200,8 +200,10 @@
 
         {% for cmeta_id, maplist in proxy_maps.items %}
             <optgroup label="{% if cmeta_id == ".st" %}Area di lavorazione{% else %}{{ cmeta_id }}{% endif %}">
-                {% for map_id, mapdata in maplist.items %}
-                <option value="{{ cmeta_id }}/{{ map_id }}">{{ map_id }}</option>
+                {% for cmap_id, mapdata in maplist.items %}
+                    {% if mapdata.type == maptype %}
+                        <option value="{{ cmeta_id }}/{{ cmap_id }}">{{ cmap_id }}</option>
+                    {% endif  %}
                 {% endfor %}
             </optgroup>
         {% endfor %}
