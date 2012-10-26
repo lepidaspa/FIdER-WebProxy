@@ -64,24 +64,13 @@ def mapvisng (request, **kwargs):
 	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, manifest)
 
 	mapsdata = proxy_core.getMapsSummary(proxy_id)
-	setmodel = mapsdata[meta_id][map_id]['type']
 
-	"""
-		print "Full maps data:\n%s" % mapsdata
-
-	if map_id is not None and meta_id != ".create":
-		# filtering other maps according to the model
+	if meta_id != '.create':
 		setmodel = mapsdata[meta_id][map_id]['type']
-		maps_filtered = {}
-		for cmeta in mapsdata.keys():
-			maps_filtered [cmeta] = {}
-			for cmap in mapsdata[cmeta].keys():
-				cmodel = mapsdata[cmeta][cmap]['type']
-				if cmodel == setmodel:
-					maps_filtered[cmeta][cmap] = mapsdata[cmeta][cmap]
-		mapsdata = maps_filtered
-		print "Filtered maps data:\n%s" % mapsdata
-	"""
+	elif map_id == 'DefaultLine':
+		setmodel = 'LineString'
+	elif map_id == 'DefaultPoint':
+		setmodel = 'Point'
 
 
 	proxy_meta = mapsdata.keys()

@@ -80,9 +80,8 @@ Gestione dati e cataloghi
                 {% endif %}
                 {% if proxy_type == 'local' and meta_id == '.st' %}
                     <img class="imgbutton newdata new_file" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_newfromfile.png" title="Nuova mappa da file">
-                        <a href="/fwp/visng/mapedit/{{ proxy_id }}/.create/DefaultLine"><img class="imgbutton newdata new_lines" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/visng_newmap_lines.png" title="Nuova mappa: tratte"></a>
-                    <a href="/fwp/visng/mapedit/{{ proxy_id }}/.create/DefaultPoint"><img class="imgbutton newdata new_points" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/visng_newmap_points.png" title="Nuova mappa: punti"></a>
-                    <!--<a href="/fwp/visng/full/{{ proxy_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Area di lavorazione"></a> -->
+                        <a href="/fwp/visng/mapedit/{{ proxy_id }}/.create/DefaultLine"><img class="imgbutton newdata new_lines" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/createnewmap-lines.png" title="Nuova mappa: tratte"></a>
+                    <a href="/fwp/visng/mapedit/{{ proxy_id }}/.create/DefaultPoint"><img class="imgbutton newdata new_points" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/createnewmap-points.png" title="Nuova mappa: nodi"></a>
                 {% endif %}
             {% endif %}
         </td>
@@ -99,6 +98,7 @@ Gestione dati e cataloghi
                 <td class="maptitle">{% if proxy_type != 'query' %}<!--<input type="checkbox" class="switchmapvis" id="mapvis_{{ meta_id }}-{{ map_id }}"> -->{% endif %}{{ map_id }}</td> <td>{{  mapdata.source }}</td>
                 <td class="actionstd">
                     {% if proxy_type != 'query' %}
+
                     <a href="/fwp/visng/mapview/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_focus.png" title="Visualizza mappa"></a>
                     {%  endif %}
                     {% if proxy_type == 'local' and meta_id == '.st' %}
