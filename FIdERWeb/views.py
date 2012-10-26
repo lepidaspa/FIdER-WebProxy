@@ -90,18 +90,32 @@ def proxyselng (request, **kwargs):
 	proxydict = getManifests()
 
 	proxies = {}
+	# list of standalone without a linker
+	standalone = {}
+	federatedst = {}
 	for proxy_id in proxydict:
 		proxies [proxy_id] = {}
 		proxies [proxy_id]['area'] = proxydict[proxy_id]['area']
 		proxies [proxy_id]['time'] = proxydict[proxy_id]['time']
 		proxies [proxy_id]['name'] = proxydict[proxy_id]['name']
 		proxies [proxy_id]['type'] = proxy_core.learnProxyTypeAdv(proxy_id, proxydict[proxy_id])
+		if proxies[proxy_id]['type'] == 'local':
+			standalone[proxies[proxy_id]['name']] = proxy_id
+		if proxies[proxy_id]['type'] == 'linked':
+			federatedst[proxies[proxy_id]['name']] = proxy_id
+
+	# non federated standalone  ids
+	unfed = []
+	for proxyname in standalone.keys():
+		if not federatedst.has_key(proxyname):
+			unfed.append(standalone[proxyname])
+
 
 	print "Proxy listing:\n%s" % proxies
 
 
 
-	return render_to_response ('fwp_proxyselng.html', {'proxiesdj': proxies, 'proxiesjs': SafeString(json.dumps(proxies))},
+	return render_to_response ('fwp_proxyselng.html', {'proxiesdj': proxies, 'proxiesjs': SafeString(json.dumps(proxies)), 'freest': unfed},
 		context_instance=RequestContext(request))
 
 
