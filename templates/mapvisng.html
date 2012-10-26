@@ -85,7 +85,7 @@
     <div id="featurecard">
 
         {%  if mode == 'mapedit' or mode == 'full' %}
-            <input type="button" id="button_removefeature" value="Elimina oggetto">
+            <img id="button_removefeature" class="imgbtn" title="Elimina oggetto" src="{{ STATIC_URL }}resource/visng_controls_deleteitem.png">
         {% endif %}
 
         <div id="featuredetails"></div>
@@ -419,8 +419,8 @@
             </tbody>
             <tfoot>
             <tr>
-                <td><input type="text" id="model_newpropname"></td>
-                <td colspan=2><input type="button" id="model_addnewprop" value="Aggiungi proprietà"></td>
+                <td class="newpropnametd"><input type="text" id="model_newpropname"></td>
+                <td><img class="imgbtn" id="model_addnewprop" src="/static/resource/visng_model_addproperty.png" title="Aggiungi proprietà"></td>
             </tr>
             </tfoot>
 

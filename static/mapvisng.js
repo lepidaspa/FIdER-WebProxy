@@ -1093,13 +1093,10 @@ function initModelWidget()
     {
         base.append('<tr class="modelprop_widget" id="modelprop_widget_'+propname+'">' +
             '<td><b>' + propname + '</b></td>' +
-            '<td><input id="modeladdpropvalue_'+propname+'" class="button_modeladdpropvalue" type="button" value="Aggiungi valore"></td>' +
-            '<td><input id="modelimportpropvalue_'+propname+'" class="button_modelimportpropvalue" type="button" value="Importa i valori della mappa"></td>' +
-            '<td><input type="button" class="button_modelremoveprop" id="modelremoveprop_'+propname+'" value="Elimina proprietà"></td>' +
+            '<td class="valuetabletd"></td>' +
+            '<td><img id="modeladdpropvalue_'+propname+'" class="button_modeladdpropvalue imgbtn" src="/static/resource/visng_model_addvalue.png" title="Aggiungi valore"> <img id="modelimportpropvalue_'+propname+'" class="button_modelimportpropvalue imgbtn" src="/static/resource/visng_model_importvalues.png" title="Importa i valori della mappa"> <img class="button_modelremoveprop imgbtn" id="modelremoveprop_'+propname+'" src="/static/resource/visng_model_deleteproperty.png" title="Elimina proprietà"></td>' +
             '</tr>' +
-            '<tr id="modelpropval_widget_'+propname+'"><td></td><td colspan=2 class="modelprop_valtable" id="valtable_'+propname+'"></td><td></td></tr>');
-
-
+            '<tr id="modelpropval_widget_'+propname+'"><td></td><td class="modelprop_valtable" id="valtable_'+propname+'"></td><td></td></tr>');
 
     }
 
@@ -1138,7 +1135,7 @@ function addSetModelPropValue (propname, propvalue, rebuild)
 {
 
 
-    $("#valtable_"+propname).append('<div class="valtable_propvalue"><input type="text" class="textfield_modelpropvalue textfield_modelpropvalue_'+propname+'" value="'+propvalue+'"><input type="button" value="Elimina valore" class="button_modelremovepropvalue"></div>');
+    $("#valtable_"+propname).append('<div class="valtable_propvalue"><input type="text" class="textfield_modelpropvalue textfield_modelpropvalue_'+propname+'" value="'+propvalue+'"><img src="/static/resource/visng_model_deletevalue.png" title="Elimina valore" class="button_modelremovepropvalue imgbtn"></div>');
 
     if (rebuild===true)
     {
@@ -1710,7 +1707,7 @@ function renderFeatureCard(caller)
             $("#featuredesc tbody").append('<tr class="feature_propdata" id="feature_propdata_'+propname+'">' +
                 '<td class="feature_propname">'+propname+'</td>' +
                 '<td>'+inputfield+'</td>' +
-                '<td><input type="button" value="Copia" class="button_replicatevalue"></td>' +
+                '<td><img src="/static/resource/visng_controls_replicateproperty.png" title="Replica il valore negli elementi filtrati" class="imgbtn button_replicatevalue"></td>' +
                 '</tr>');
         }
     }
