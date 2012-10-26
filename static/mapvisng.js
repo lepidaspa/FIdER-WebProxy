@@ -175,6 +175,8 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
     $("#savemapto_filename").live("change keyup mouseup", checkSaveMapOverwrite);
     $("#savemapto_dest").live("change", checkSaveMapOverwrite);
 
+    $("#button_removefeature").live("click", removeCurrentFeature);
+
 }
 
 
@@ -1814,6 +1816,21 @@ function freeSelection()
     $("#featuredesc tbody").empty();
     $("#featurecard").hide();
 
+}
+
+
+function removeCurrentFeature()
+{
+
+    var feature = vislayer.getFeatureById(cfid);
+    vislayer.removeFeatures([feature]);
+    vislayer.destroyFeatures([feature]);
+
+    editcontrol.deactivate();
+    editcontrol.activate();
+
+
+    freeSelection();
 }
 
 

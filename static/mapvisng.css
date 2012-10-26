@@ -120,6 +120,12 @@
 .imgbtn
 {
     cursor:         pointer;
+    border:         1px solid #ffffff;
+}
+
+.imgbtn:active
+{
+    border:         1px solid #ff8800;
 }
 
 #standalonebar .activebutton
@@ -222,7 +228,7 @@
 }
 
 
-.feature_propdata, .feature_propdata *, .modelprop_widget, .modelprop_widget *
+tr, tr *
 {
     vertical-align:         middle;
 }
