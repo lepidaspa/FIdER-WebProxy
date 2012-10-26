@@ -1097,7 +1097,7 @@ function initModelWidget()
             '<td><input id="modelimportpropvalue_'+propname+'" class="button_modelimportpropvalue" type="button" value="Importa i valori della mappa"></td>' +
             '<td><input type="button" class="button_modelremoveprop" id="modelremoveprop_'+propname+'" value="Elimina proprietà"></td>' +
             '</tr>' +
-            '<tr id="modelproval_widget_'+propname+'"><td></td><td colspan=2 class="modelprop_valtable" id="valtable_'+propname+'"></td><td></td></tr>');
+            '<tr id="modelpropval_widget_'+propname+'"><td></td><td colspan=2 class="modelprop_valtable" id="valtable_'+propname+'"></td><td></td></tr>');
 
 
 
@@ -1105,17 +1105,22 @@ function initModelWidget()
 
     for ( propname in modeldata['properties'])
     {
-        var setvalues = modeldata['properties'][propname]
+        var setvalues = modeldata['properties'][propname];
+
+        //console.log("Values for "+propname);
+        //console.log(setvalues);
 
         if ($.isArray(setvalues))
         {
+            console.log("Adding "+setvalues.length+" values for "+propname);
             for (var i in setvalues)
             {
-                addSetModelPropValue(propname, setvalues[i], true)
+                addSetModelPropValue(propname, setvalues[i], false)
             }
-
         }
     }
+
+    rebuildModelFromForm();
 
 
 }
@@ -1154,6 +1159,8 @@ function removeModelProp ()
 
     var prefix = "modelremoveprop_";
     var propname = this.id.substr(prefix.length);
+
+    console.log("Removing property "+propname);
 
     $("#modelprop_widget_"+propname).remove();
     $("#modelpropval_widget_"+propname).remove();
@@ -1198,9 +1205,9 @@ function importModelPropValue ()
     try
     {
         var formvalues = $(".textfield_modelpropvalue_"+propname);
-        for (var v in formvalues)
+        for (var v = 0; v < formvalues.length; v++)
         {
-            var cval = formvalues[i].val();
+            var cval = $(formvalues[v]).val();
 
             if (cval != null && formpropvalues.indexOf(cval) == -1)
             {
@@ -1211,6 +1218,8 @@ function importModelPropValue ()
     catch (err)
     {
         // do nothing, no existing values set for this property
+        console.log("Values import issue: ");
+        console.log(err);
     }
 
 
@@ -1218,7 +1227,11 @@ function importModelPropValue ()
     {
         try
         {
-            var cval = vislayer.features[f]['attributes'][propname];
+            cval = vislayer.features[f]['attributes'][propname];
+            if (cval != null && formpropvalues.indexOf(cval)==-1 && mappropvalues.indexOf(cval)==-1)
+            {
+                mappropvalues.push(cval);
+            }
         }
         catch (err)
         {
@@ -1226,18 +1239,19 @@ function importModelPropValue ()
             continue;
         }
 
-        if (cval != null && formpropvalues.indexOf(cval)==-1 && mappropvalues.indexOf(cval)==-1)
-        {
-            mappropvalues.push(cval);
-        }
+
 
     }
 
-    //console.log("Values to add for "+propname);
-    //console.log(mappropvalues);
+
+    console.log("Values to add for "+propname);
+    console.log(mappropvalues);
+    console.log("Existing values:");
+    console.log(formpropvalues);
 
     for (var i in mappropvalues)
     {
+
         addSetModelPropValue(propname, mappropvalues[i], false);
     }
 
@@ -1281,12 +1295,11 @@ function rebuildModelFromForm()
     {
 
         var cid = modelform[i].id;
-        console.log("Adding property "+cid);
+        //console.log("Adding property "+cid);
         var propname = cid.substr(prefix.length);
 
-        newprops[propname] = "string";
-
         var valuelist = $(".textfield_modelpropvalue_"+propname);
+        //console.log("Values for "+propname+": "+valuelist.length);
 
         var vals = [];
         if (valuelist.length > 0)
@@ -1302,9 +1315,14 @@ function rebuildModelFromForm()
         {
             if (modeldata['properties'].hasOwnProperty(propname) && !$.isArray(modeldata['properties'][propname]))
             {
-                newprops[propname] = modeldata['properties'][propname];
+                vals = modeldata['properties'][propname];
+            }
+            else
+            {
+                vals = "string";
             }
         }
+        newprops[propname] = vals;
 
     }
 
