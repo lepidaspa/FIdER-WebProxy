@@ -80,6 +80,31 @@ def proxysel (request):
 		context_instance=RequestContext(request))
 
 
+
+def proxyselng (request, **kwargs):
+	"""
+	Shows the basic proxy selection screen (new version). From here the user can also create a new proxy
+	:return:
+	"""
+
+	proxydict = getManifests()
+
+	proxies = {}
+	for proxy_id in proxydict:
+		proxies [proxy_id] = {}
+		proxies [proxy_id]['area'] = proxydict[proxy_id]['area']
+		proxies [proxy_id]['time'] = proxydict[proxy_id]['time']
+		proxies [proxy_id]['name'] = proxydict[proxy_id]['name']
+		proxies [proxy_id]['type'] = proxy_core.learnProxyTypeAdv(proxy_id, proxydict[proxy_id])
+
+	print "Proxy listing:\n%s" % proxies
+
+
+
+	return render_to_response ('fwp_proxyselng.html', {'proxiesdj': proxies, 'proxiesjs': SafeString(json.dumps(proxies))},
+		context_instance=RequestContext(request))
+
+
 def proxypage (request, **kwargs):
 	"""
 	Shows the meta selection screen for a selected proxy and any other proxy-specific option. Includes a small static view of the proxy bounding box

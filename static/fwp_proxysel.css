@@ -12,6 +12,11 @@
     border-collapse:    collapse;
 }
 
+.tabbar, .tabbar *
+{
+    vertical-align:     middle;
+}
+
 .subtab
 {
     display:    table-cell;

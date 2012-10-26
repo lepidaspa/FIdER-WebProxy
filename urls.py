@@ -95,6 +95,7 @@ urlpatterns = patterns('',
 	url(r'^fwp/visng/(?P<vismode>\w*)/(?P<proxy_id>\w*)/$', fwstviews.mapvisng),
 	url(r'^fwp/visng/(?P<vismode>\w*)/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.mapvisng),
 	url(r'^fwst/saveng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.saveVisMap),
+	url(r'^fwp/selng/', fwpviews.proxyselng)
 
 )
 

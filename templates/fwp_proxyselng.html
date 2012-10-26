@@ -1,0 +1,132 @@
+{% extends "fwpcore.html" %}
+
+
+{% block title %}
+    Selezione e creazione istanze
+{% endblock %}
+
+{% block headers %}
+
+    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false" xmlns="http://www.w3.org/1999/html"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}proxyselng.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwstui.css">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}proxyselng.css">
+
+{% endblock %}
+
+{% block navigation %}
+
+    <div class="tabbar">
+        <span class="subtab" id="tabsel_proxy">
+            AREA PROXY
+        </span>
+        <span class="subtab" id="tabsel_standalone">
+            AREA STANDALONE
+        </span>
+    </div>
+
+    <div id="proxylisting">
+
+        <table class="proxylistinglayout" id="instances_proxy">
+            <thead>
+                <tr><td colspan=3>Istanze proxy</td><td class="proxylisting_actions">                    <img src="/static/resource/fwp_newdatasource_networked.png" class="imgbutton" id="btn_newdatasource_networked" title="Crea proxy read/write">
+                    <img src="/static/resource/fwp_newdatasource_query.png" class="imgbutton" id="btn_newdatasource_query" title="Crea proxy query">
+                    <img src="/static/resource/fwp_newdatasource_networked.png" class="imgbutton" id="btn_newdatasource_linker" title="Crea proxy di collegamento standalone"></td></tr>
+            </thead>
+            <tbody>
+            {% for proxy_id, proxydata in proxiesdj.items %}
+                {% if proxydata.type != 'local' %}
+                    <tr class="proxylisting_instance">
+                        <td class="proxylisting_emblem">
+                            <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/{% if proxydata.type == 'query' %}fwp_datasource-query{% endif %}{% if proxydata.type == 'read' or proxydata.type == 'write' or proxydata.type == 'linked' %}fwp_datasource-networked{% endif %}.png" title="Apri istanza"></a>
+                        </td>
+                        <td class="proxylisting_name">
+                            <a href="/fwp/proxyng/{{ proxy_id }}/">{{ proxydata.name }}</a>
+                        </td>
+                        <td class="proxylisting_type">
+                            {% if proxydata.type == 'query' %}Query{% endif %}
+                            {% if proxydata.type == 'read' %}Read{% endif %}
+                            {% if proxydata.type == 'write' %}Write{% endif %}
+                            {% if proxydata.type == 'linked' %}Standalone{% endif %}
+                        </td>
+                        <td class="proxylisting_actions">
+                            <img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+
+
+
+        <table class="proxylistinglayout" id="instances_standalone">
+            <thead>
+            <tr><td colspan=2>Istanze standalone</td>
+                <td class="proxylisting_actions">
+                    <img src="/static/resource/fwp_newdatasource_local.png" class="imgbutton" id="btn_newdatasource_standalone" title="Crea strumento standalone">
+            </td></tr>
+            </thead>
+            <tbody>
+            {% for proxy_id, proxydata in proxiesdj.items %}
+                {% if proxydata.type == 'local' %}
+                    <tr class="proxylisting_instance">
+                        <td class="proxylisting_emblem">
+                            <img src="/static/resource/fwp_datasource-local.png">                                    </td>
+                        <td class="proxylisting_name">
+                            {{ proxydata.name }}
+                        </td>
+                        <td class="proxylisting_actions">
+                            <img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+
+
+{% endblock %}
+
+
+{% block functionality %}
+
+    <div id="proxymap"></div>
+
+    <div id="proxybuilder" class="inhiding">
+        {% include "fwp_proxycreate.html" %}
+    </div>
+
+
+{% endblock %}
+
+
+{% block starterscript %}
+    <script>
+        pageInit({{ proxies }});
+    </script>
+{% endblock %}
+
+
+{% block contextguide %}
+
+    <div class="help">
+        La mappa principale permette di visualizzare l'area di interesse geografico delle varie istanze di proxy e strumenti Standalone. Le istanze non visibili nell'area sulla mappa vengono indicate in grigio. È possibile cliccare sul nome di un'istanza per passare alla pagina relativa.
+        <br><br>
+        Per creare una nuova istanza è necessario inserire un nome, il nome del fornitore dei dati, una data d'inizio validità e almeno un metadato. Nel caso dei proxy query è necessario attivare anche almeno una delle tre modalità di query elencate.<br><br>Ogni metadato deve avere un nome unico (rispetto agli altri metadati della stessa istanza). I nomi di proxy e metadati possono comprendere fino a 20 caratteri (sono ammesse le lettere dalla A alla Z maiuscole e minuscole, numeri e il simbolo underscore _ ).<br><br>
+        I proxy possono funzionare in modalità Lettura, Scrittura, Query. I dati presenti nelle istanze Standalone non entrano a far parte del processo di federazione.
+        <br><br>
+        Le  aree di interesse vengono rilevate automaticamente dall'inquadratura della minimappa.<br>
+        Date e aree di interesse non specificate nella descrizione dei metadati verranno allineate a quelle complessive dell'istanza. Se questi intervalli andranno oltre quelli specificati per l'istanza nel suo complesso, verranno ridotti automaticamente per rientrare in quelli dell'istanza.<br>
+        Gli intervalli di tempo sono inclusivi della data di inizio ed esclusivi di quella di fine.<br><br>
+
+        La struttura e le modalità di funzionamento di un'istanza non possono essere modificate dopo la creazione.
+    </div>
+{%  endblock %}
+
+
+

@@ -345,6 +345,8 @@ function showSelProxy ()
     $("#tabsel_proxy").removeClass("unseltab");
 
     $("#controls_standalone").hide();
+    $("#standalone_create_new").hide();
+    $("#proxy_create_new").show();
     $("#controls_proxy").show();
 
     $(".proxytype_local").hide();
@@ -385,6 +387,8 @@ function showSelStandalone()
 
     $("#controls_standalone").show();
     $("#controls_proxy").hide();
+    $("#standalone_create_new").show();
+    $("#proxy_create_new").hide();
 
     $(".proxytype_local").show();
 
