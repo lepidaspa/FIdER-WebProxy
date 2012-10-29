@@ -7,6 +7,9 @@
  */
 
 
+var keycode_ENTER = 13;
+var keycode_ESC = 27;
+
 var proj_WGS84 = "EPSG:4326";
 var proj_900913 = "EPSG:900913";
 
@@ -176,6 +179,42 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
     $("#savemapto_dest").live("change", checkSaveMapOverwrite);
 
     $("#button_removefeature").live("click", removeCurrentFeature);
+
+    $("body").live("keyup", tryUnselectMode);
+
+}
+
+function tryUnselectMode (event)
+{
+
+    console.log(event);
+
+    if (event.keyCode == keycode_ESC)
+    {
+        console.log("ESC pressed, checking  launched by keyboard");
+
+        var alleditcontrols = [snapcontrol, drawcontrol, editcontrol, measurecontrol, homecontrol, selectcontrol];
+
+        for (var i in alleditcontrols)
+        {
+            try
+            {
+                alleditcontrols[i].deactivate();
+            }
+            catch (err)
+            {
+                console.log("Control n."+i+" (see code) not active yet");
+            }
+        }
+
+        // IF the event reaches body as per bindings in initPage
+        // this should not be needed, but leaving it here in case
+        // a different point of entry is chosen and/or different effects
+        // are desired
+        event.preventDefault();
+
+    }
+
 
 }
 
