@@ -182,7 +182,72 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
 
     $("body").live("keyup", tryUnselectMode);
 
+    $("#text_geosearch").live("keyup", tryGeoSearch)
+
 }
+
+function tryGeoSearch (event)
+{
+    if (event.keyCode == keycode_ENTER)
+    {
+        console.log("Enter pressed, launching geosearch");
+        geosearch($('#text_geosearch').val());
+        event.preventDefault();
+    }
+
+}
+
+function geosearch(locationdesc)
+{
+
+    var jg;
+    var path = '/external/maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
+        + locationdesc;
+
+    console.log("Recentering map by search: "+path);
+
+
+    $.getJSON(path, function(gqdata){
+        console.log(gqdata);
+        if(gqdata.status == "OK"){
+            if (gqdata.results.length > 0){
+
+                console.log("Results found");
+
+                gq = new OpenLayers.Bounds();
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.southwest.lng,
+                    gqdata.results[0].geometry.viewport.southwest.lat).transform(proj_WGS84,
+                    proj_900913));
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.northeast.lng,
+                    gqdata.results[0].geometry.viewport.northeast.lat).transform(proj_WGS84,
+                    proj_900913));
+                mapview.zoomToExtent(gq);
+                closeFeedback();
+
+            }
+            else
+            {
+
+                console.log("No location found");
+                alert("Impossibile individuare la posizione richiesta.");
+                console.log(gqdata.results);
+            }
+        }
+        else
+        {
+            console.log("No location found");
+            alert("Impossibile individuare la posizione richiesta.");
+            console.log(gqdata.results);
+        }
+    });
+
+    console.log("DEBUG: codewise after getJSON function, possibly waiting for return value");
+
+
+}
+
 
 function tryUnselectMode (event)
 {
@@ -217,6 +282,8 @@ function tryUnselectMode (event)
 
 
 }
+
+
 
 
 function initMenu()

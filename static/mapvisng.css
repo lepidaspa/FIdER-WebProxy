@@ -227,6 +227,20 @@
     margin-right:                  24px;
 }
 
+#geofindertool
+{
+    margin-right:               24px;
+
+}
+
+#geofindertool *
+{
+    font-size:                  small;
+    padding-top:                0;
+    margin-top:                 0;
+    vertical-align:             top;
+}
+
 
 tr, tr *
 {
