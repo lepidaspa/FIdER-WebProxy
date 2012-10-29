@@ -7,8 +7,6 @@
 {
     width:          100%;
     border-collapse:    collapse;
-
-
 }
 
 .proxylistinglayout tr
@@ -73,4 +71,53 @@ thead *
 {
     background-color:   #ffffff;
     color:              #ff8800;
+}
+
+
+.creatormask
+{
+    border-collapse:        collapse;
+}
+
+.creatormask td
+{
+    border-left:            1px solid #ff8800;
+}
+
+.creatormask td:first-of-type
+{
+    border-left:            none;
+}
+
+
+td *
+{
+    vertical-align:         middle;
+}
+
+td
+{
+    vertical-align: top;
+}
+
+.tablemap
+{
+    width:                  200px;
+    height:                 120px;
+}
+
+.creationdialog *
+{
+    font-size:              small;
+}
+
+.tablebanner td
+{
+    font-weight:            bold;
+    text-align:             center;
+}
+
+.imgbutton
+{
+    cursor:                 pointer;
 }

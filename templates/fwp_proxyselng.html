@@ -7,10 +7,10 @@
 
 {% block headers %}
 
-    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false" xmlns="http://www.w3.org/1999/html"></script>
+    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false" xmlns="http://www.w3.org/1999/html"
+            xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html"></script>
     <script language="JavaScript" src="{{ STATIC_URL }}proxyselng.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwstui.css">
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}proxyselng.css">
 
 {% endblock %}
@@ -96,11 +96,97 @@
 {% block functionality %}
 
 
-    <div id="proxycreate_readwrite"></div>
-    <div id="proxycreate_query"></div>
+    <div class="creationdialog" id="proxycreate_readwrite">
+        <table class="creatormask" id="layout_createreadwrite">
+            <tbody class="tablebanner"><tr>
+                <td colspan=5>ISTANZA</td>
+            </tr></tbody>
+            <tbody class="tablebanner"><tr>
+                <td colspan=3>Pertinenza</td><td colspan=2>Contatti</td>
+            </tr></tbody>
+            <tr>
+                <td rowspan=4>
+                    <div class="tablemap" id="map_createreadwrite"></div>
+                </td>
+                <td>
+                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_createreadwrite_name">
+                </td>
+                <td>
+                    <label for="field_createreadwrite_owner">Fornitore</label></td>
+                <td>
+                    <input type="ẗext" id="field_createreadwrite_owner">
+                </td>
+            </tr>
 
 
-    <div id="proxycreate_linked" title="Creazione proxy di collegamento standalone">
+            <tr>
+                <td>
+                    <label for="field_createreadwrite_datefrom">Valido dal</label></td><td><input type="ẗext" id="field_createreadwrite_datefrom">
+            </td>
+                <td><label for="field_createreadwrite_contactname">Nome referente</label></td>
+                <td><input type="ẗext" id="field_createreadwrite_contactname"></td>
+            </tr>
+            <tr>
+                <td>
+
+                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_createreadwrite_hasdateto"></td><td><input type="ẗext" id="field_createreadwrite_dateto">
+            </td>
+                <td><label for="field_createreadwrite_contactname">Email referente</label></td><td><input type="ẗext" id="field_createreadwrite_contactemail"></td>
+
+            </tr>
+
+            <tr>
+            <td>
+
+                    <label for="field_createreadwrite_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxyrw" src="/static/resource/fwp_focus.png"><img class="imgbutton" id="btn_cleangeoloc_proxyrw" src="/static/resource/fwp_clear.png"></td><td>
+                    <input type="ẗext" id="field_createreadwrite_area_geosearch">
+
+                </td>
+                <td>
+                    <label for="field_createreadwrite_contactname">Telefono referente</label></td><td><input type="ẗext" id="field_createreadwrite_contactphone">
+                </td>
+                </tr>
+
+
+            <tbody class="tablebanner"><tr>
+                <td colspan=5>CATALOGHI</td>
+            </tr></tbody>
+
+            <tbody class="tablebanner"><tr>
+                <td colspan=3>Nuovo catalogo</td><td colspan=2>Cataloghi inseriti</td>
+            </tr></tbody>
+
+            <tr>
+                <td rowspan=5>
+                    <div class="tablemap" id="map_metareadwrite"></div>
+                </td>
+                <td>
+
+
+                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_metareadwrite_name"></td><td id="createdmetalist" rowspan=4 colspan=2></td></tr>
+            <tr><td>
+                    <label for="field_createreadwrite_datefrom">Valido dal</label> <input type="checkbox" id="field_metareadwrite_hasdatefrom"></td><td><input type="ẗext" id="field_metareadwrite_datefrom"></td></tr>
+            <tr><td>
+                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_metareadwrite_hasdateto"></td><td><input type="ẗext" id="field_metareadwrite_dateto"></td></tr>
+
+            <tr><td>
+                    <label for="field_createreadwrite_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxyrwmeta" src="/static/resource/fwp_focus.png">
+                    <img class="imgbutton" id="btn_cleangeoloc_proxyrwmeta" src="/static/resource/fwp_clear.png"></td><td><input type="ẗext" id="field_metareadwrite_area_geosearch">
+
+                </td>
+            </tr>
+
+
+        </table>
+    </div>
+
+
+
+
+    <div class="creationdialog" id="proxycreate_query"></div>
+
+
+    <div class="creationdialog" id="proxycreate_linked" title="Creazione proxy di collegamento standalone">
 
         {% if freest|length > 0 %}
 
@@ -131,7 +217,48 @@
 
 
 
-    <div id="proxycreate_standalone">
+
+
+
+    <div class="creationdialog" id="proxycreate_standalone" title="Creazione istanza standalone">
+        <div class="formbriefing">
+            Inserire i parametri di pertinenza dell'istanza standalone e i dati del referente.<br>
+        </div>
+
+
+        <table class="creatormask" id="layout_createstandalone">
+            <tbody class="tablebanner"><tr>
+                <td colspan=3>Informazioni sull'istanza</td>
+            </tr></tbody>
+            <tr>
+                <td>
+                    <div class="tablemap" id="map_createstandalone"></div>
+                </td>
+                <td>
+
+
+                    <label for="field_createstandalone_name">Nome</label><br><input type="ẗext" id="field_createstandalone_name"><br>
+                    <label for="field_createstandalone_datefrom">Valido dal</label><br><input type="ẗext" id="field_createstandalone_datefrom"><br>
+
+                    <label for="field_createstandalone_dateto">Valido al</label> <input type="checkbox" id="field_createstandalone_hasdateto"><br><input type="ẗext" id="field_createstandalone_dateto"><br>
+
+                    <label for="field_createstandalone_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxy" src="/static/resource/fwp_focus.png">
+                    <img class="imgbutton" id="btn_cleangeoloc_st" src="/static/resource/fwp_clear.png"><br><input type="ẗext" id="field_createstandalone_area_geosearch">
+
+                </td>
+                <td>
+
+                    <label for="field_createstandalone_owner">Fornitore</label><br><input type="ẗext" id="field_createstandalone_owner"><br>
+                    <label for="field_createstandalone_contactname">Nome referente</label><br><input type="ẗext" id="field_createstandalone_contactname"><br>
+                    <label for="field_createstandalone_contactname">Email referente</label><br><input type="ẗext" id="field_createstandalone_contactemail"><br>
+                    <label for="field_createstandalone_contactname">Telefono referente</label><br><input type="ẗext" id="field_createstandalone_contactphone">
+                </td>
+            </tr>
+        </table>
+
+
+
+
 
     </div>
 
