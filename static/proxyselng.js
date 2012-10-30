@@ -65,6 +65,20 @@ function initForms()
     $("#btn_newdatasource_query").live('click', initCreateQuery);
 
 
+
+    $(".proxydatefield, .proxymetadatefield").datepicker({
+        changeMonth: true,
+        changeYear: true
+    });
+
+    // blocking direct text input in date fields
+    $(".proxydatefield, .proxymetadatefield").live("keyup keydown",
+    function (ev)
+    {
+        ev.preventDefault();
+        return false;
+    });
+
     $("#proxycreate_readwrite").dialog({
         autoOpen: false,
         modal: true,
@@ -153,6 +167,9 @@ function initCreateReadWrite ()
     $("#proxycreate_readwrite").dialog("open");
     newproxymap = initMiniMap("map_createreadwrite");
     newmetamap = initMiniMap("map_metareadwrite");
+
+    cleanForms();
+
 }
 
 
@@ -171,6 +188,8 @@ function initCreateQuery ()
     $("#proxycreate_query").dialog("open");
     newproxymap = initMiniMap("map_createquery");
     newmetamap = initMiniMap("map_metaquery");
+
+    cleanForms();
 }
 
 function tryCreateQuery ()
@@ -199,11 +218,47 @@ function initCreateStandalone()
     initMiniMap("map_createstandalone");
     initMiniMap("map_metastandalone");
 
+    cleanForms();
+
 }
 
 function tryCreateStandalone()
 {
     //TODO: placeholder, implement
+}
+
+
+function cleanForms()
+{
+
+    //Clearing all fields and triggering change on all
+    // SELECTS are reset to first value
+
+    // clearing all text fields
+    console.log("Resetting text inputs");
+    $('.creatormask .widetext').val('');
+
+
+    console.log("Resetting checkboxes");
+    // setting all checkboxes to false in all creation forms
+    $(".creatormask input[type=checkbox]").attr("checked", false);
+
+    console.log("Resetting selects");
+    // setting all selects to default
+    var selector = $(".creatormask select");
+    console.log(selector);
+    for (var i = 0; i < selector.length; i++)
+    {
+        $(selector[i])[0].selectedIndex = 0;
+    }
+
+    verifyFormData();
+
+}
+
+function verifyFormData()
+{
+    // TODO: placeholder, implemenet
 }
 
 function initMiniMap (eid)
