@@ -81,8 +81,17 @@ thead *
 
 .creatormask td
 {
-    border-left:            1px solid #ff8800;
+    padding-left:           4px;
+    padding-right:          4px;
+    vertical-align:         middle;
 }
+
+col.bordered, td.bordered
+{
+    border-right:            1px solid #ff8800;
+}
+
+
 
 .creatormask td:first-of-type
 {
@@ -120,4 +129,20 @@ td
 .imgbutton
 {
     cursor:                 pointer;
+}
+
+#proxycreate_linked .formbriefing
+{
+    max-width:              400px;
+}
+
+#proxycreate_linked select
+{
+    width:                  100%;
+}
+
+
+.proxylisting_instance, .proxylisting_instance *
+{
+    vertical-align:         middle;
 }

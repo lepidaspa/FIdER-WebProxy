@@ -113,9 +113,15 @@ def proxyselng (request, **kwargs):
 
 	print "Proxy listing:\n%s" % proxies
 
+	try:
+		providers = urllib2.urlopen(proxyconf.URL_PROVIDERS)
+		print "Providers found: %s" % providers
+	except Exception as ex:
+		print "Provider list is empty or missing"
+		print "Exception: %s " % ex
+		providers = []
 
-
-	return render_to_response ('fwp_proxyselng.html', {'proxiesdj': proxies, 'proxiesjs': SafeString(json.dumps(proxies)), 'freest': unfed},
+	return render_to_response ('fwp_proxyselng.html', {'proxiesdj': proxies, 'proxiesjs': SafeString(json.dumps(proxies)), 'freest': unfed, 'providers': providers},
 		context_instance=RequestContext(request))
 
 

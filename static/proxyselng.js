@@ -62,6 +62,7 @@ function initForms()
     $("#btn_newdatasource_linker").live('click', initCreateLinked);
     $("#btn_newdatasource_standalone").live('click', initCreateStandalone);
     $("#btn_newdatasource_networked").live('click', initCreateReadWrite);
+    $("#btn_newdatasource_query").live('click', initCreateQuery);
 
 
     $("#proxycreate_readwrite").dialog({
@@ -82,6 +83,28 @@ function initForms()
             }
         }
     });
+    $("#btn_newmetarw_create").button();
+
+
+    $("#proxycreate_query").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                id : "form_close_query",
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Crea": {
+                id : "form_create_query",
+                text: "Crea",
+                click: tryCreateQuery
+            }
+        }
+    });
+    $("#btn_newmetaquery_create").button();
 
     $("#proxycreate_linked").dialog({
         autoOpen: false,
@@ -130,13 +153,30 @@ function initCreateReadWrite ()
     $("#proxycreate_readwrite").dialog("open");
     newproxymap = initMiniMap("map_createreadwrite");
     newmetamap = initMiniMap("map_metareadwrite");
-
-
 }
+
+
+
 
 function tryCreateReadWrite()
 {
     //TODO: placeholder, implement
+
+}
+
+function initCreateQuery ()
+{
+    //TODO: placeholder, implement
+    $(".tablemap").empty();
+    $("#proxycreate_query").dialog("open");
+    newproxymap = initMiniMap("map_createquery");
+    newmetamap = initMiniMap("map_metaquery");
+}
+
+function tryCreateQuery ()
+{
+    //TODO: placeholder, implement
+
 }
 
 function initCreateLinked ()
