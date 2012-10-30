@@ -14,6 +14,7 @@ var keycode_ESC = 27;
 
 var proj_WGS84 = "EPSG:4326";
 var proj_900913 = "EPSG:900913";
+var gjformat;
 
 var regex_names = new RegExp ("^[A-Za-z0-9_]+$");
 
@@ -22,7 +23,8 @@ var defaultLat = 44.5;
 
 var newproxymap;
 var newmetamap;
-var hpmap;
+// full hard proxy map
+var proxymap;
 
 
 var newproxychecks;
@@ -43,11 +45,94 @@ function pageInit(proxylist)
     $("#tabsel_proxy").live('click', showSelProxy);
     $("#tabsel_standalone").live('click', showSelStandalone)
 
-    showSelProxy();
-    initForms();
+
 
     OpenLayers.Lang.setCode("it");
     OpenLayers.ImgPath = "/static/OpenLayers/themes/dark/";
+
+
+    showSelProxy();
+    initForms();
+    initProxyMap();
+
+}
+
+
+function initProxyMap()
+{
+    // resetting the widget in case there is an older map and we are loading a new one
+    $("#proxymap").empty();
+
+    proxymap = new OpenLayers.Map("proxymap", {controls: []});
+    proxymap.projection = proj_WGS84;
+    proxymap.displayProjection = new OpenLayers.Projection(proj_WGS84);
+
+    // setting the format to translate geometries out of the map
+    gjformat = new OpenLayers.Format.GeoJSON({'externalProjection': new OpenLayers.Projection(proj_WGS84), 'internalProjection': proxymap.getProjectionObject()});
+
+    //Base Maps from Google
+    proxymap.addLayer(new OpenLayers.Layer.Google("Google Physical", {
+        type : google.maps.MapTypeId.TERRAIN,
+        visibility : false
+    }));
+    proxymap.addLayer(new OpenLayers.Layer.Google("Google Satellite", {
+        type : google.maps.MapTypeId.SATELLITE,
+        numZoomLevels : 20
+    }));
+    proxymap.addLayer(new OpenLayers.Layer.Google("Google Streets", {
+        numZoomLevels : 20,
+        visibility : false
+    }));
+    proxymap.addLayer(new OpenLayers.Layer.Google("Google Hybrid", {
+        type : google.maps.MapTypeId.HYBRID,
+        numZoomLevels : 20,
+        visibility : false
+    }));
+
+
+    var osmlayer = new OpenLayers.Layer.OSM();
+    proxymap.addLayer(osmlayer);
+
+
+    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.2, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid"});
+    var featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    proxymap_metalayer = new OpenLayers.Layer.Vector("Cataloghi", {styleMap: featurestylemap});
+    proxymap.addLayer(proxymap_metalayer);
+
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.2, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    proxymap_activemeta = new OpenLayers.Layer.Vector("Catalogo attivo", {styleMap: featurestylemap});
+    proxymap.addLayer(proxymap_activemeta);
+
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#009900", strokeColor: "#009900", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    proxymap_activemap = new OpenLayers.Layer.Vector("Mappa attiva", {styleMap: featurestylemap});
+    proxymap.addLayer(proxymap_activemap);
+
+    proxymap.addControl(new OpenLayers.Control.Navigation());
+    proxymap.addControl(new OpenLayers.Control.PanZoomBar());
+
+    //Inheriting of OpenLayers.Control.LayerSwitcher
+    ItaLayerSwitcher.prototype = new OpenLayers.Control.LayerSwitcher;           // Define sub-class
+    ItaLayerSwitcher.prototype.constructor = ItaLayerSwitcher;
+
+    function ItaLayerSwitcher()
+    {
+        OpenLayers.Control.LayerSwitcher.call(this, { displayClass: "olLabsLayerSwitcher"});                                         // derived constructor = call super-class constructor
+    }
+
+    ItaLayerSwitcher.prototype.loadContents = function()                                 // redefine Method
+    {
+        OpenLayers.Control.LayerSwitcher.prototype.loadContents.call(this);         // Call super-class method
+        this.baseLbl.innerHTML = 'Sfondi';                                   //change title for base layers
+        this.dataLbl.innerHTML = 'Livelli';                                   //change title for overlays (empty string "" is an option, too)
+    };
+
+    var switcher = new ItaLayerSwitcher();
+    proxymap.addControl(switcher);
+
+    zoomToCenter(proxymap, defaultLon, defaultLat, 6);
+
 
 }
 
