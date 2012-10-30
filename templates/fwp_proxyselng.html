@@ -28,6 +28,15 @@
 
     <div id="proxylisting">
 
+        {% if providers|length > 0 %}
+            {# here only logically, element is not visible and is shared by different creation forms #}
+            <datalist id="providers">
+                {% for provider in providers %}
+                    <option value="{{ provider }}"></option>
+                {% endfor %}
+            </datalist>
+        {% endif %}
+
         <table class="proxylistinglayout" id="instances_proxy">
             <thead>
                 <tr><td colspan=3>Istanze proxy</td><td class="proxylisting_actions">                    <img src="/static/resource/fwp_newdatasource_networked.png" class="imgbutton" id="btn_newdatasource_networked" title="Crea proxy read/write">
@@ -116,14 +125,8 @@
                     <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_createreadwrite_name" class="widetext">
                 </td>
                 <td><label for="field_createreadwrite_owner">Fornitore</label></td>
-                <td><input type="ẗext" id="field_createreadwrite_owner" {% if providers|length > 0 %}class="datalisted"{% endif %}>
-                    {% if providers|length > 0 %}
-                        <datalist>
-                            {% for provider in providers %}
-                                <option value="{{ provider }}"></option>
-                            {% endfor %}
-                        </datalist>
-                    {% endif %}
+                <td><input type="ẗext" id="field_createreadwrite_owner" {% if providers|length > 0 %}class="datalisted" list="providers"{% endif %}>
+
 
                 </td>
             </tr>
@@ -250,14 +253,8 @@
 
 
                 <td><label for="field_createquery_owner">Fornitore</label></td>
-                <td><input type="ẗext" id="field_createquery_owner"{% if providers|length > 0 %}class="datalisted"{% endif %}>
-                    {% if providers|length > 0 %}
-                        <datalist>
-                            {% for provider in providers %}
-                                <option value="{{ provider }}"></option>
-                            {% endfor %}
-                        </datalist>
-                    {% endif %}</td>
+                <td><input type="ẗext" id="field_createquery_owner" {% if providers|length > 0 %}class="datalisted" list="providers"{% endif %}>
+                   </td>
             </tr>
 
 
@@ -440,14 +437,8 @@
                     <label for="field_createstandalone_owner">Fornitore</label>
                 </td>
                 <td>
-                    <input type="ẗext" id="field_createstandalone_owner"{% if providers|length > 0 %}class="datalisted"{% endif %}>
-                    {% if providers|length > 0 %}
-                        <datalist>
-                            {% for provider in providers %}
-                                <option value="{{ provider }}"></option>
-                            {% endfor %}
-                        </datalist>
-                    {% endif %}
+                    <input type="ẗext" id="field_createstandalone_owner"{% if providers|length > 0 %}class="datalisted" list="providers"{% endif %}>
+
                 </td>
             </tr>
 
