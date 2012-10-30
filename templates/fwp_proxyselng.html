@@ -113,7 +113,7 @@
                     <div class="tablemap" id="map_createreadwrite"></div>
                 </td>
                 <td>
-                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_createreadwrite_name">
+                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_createreadwrite_name" class="widetext">
                 </td>
                 <td><label for="field_createreadwrite_owner">Fornitore</label></td>
                 <td><input type="ẗext" id="field_createreadwrite_owner" {% if providers|length > 0 %}class="datalisted"{% endif %}>
@@ -131,16 +131,16 @@
 
             <tr>
 
-                <td>Modalità</td>
+                <td><label for="field_createreadwrite_mode">Modalità</label></td>
                 <td>
-                    <select style="width: 99%">
+                    <select id="field_createreadwrite_mode">
                         <optgroup label="Lettura">
-                            <option value="read/full">Completa</option>
-                            <option value="read/diff">Incrementale</option>
+                            <option value="read/full">Lettura completa</option>
+                            <option value="read/diff">Lettura incrementale</option>
                         </optgroup>
                         <optgroup label="Scrittura">
-                            <option value="write/full">Continua</option>
-                            <option value="write/sync">Periodica</option>
+                            <option value="write/full">Scrittura continua</option>
+                            <option value="write/sync">Scrittura periodica</option>
                         </optgroup>
                     </select>
                 </td>
@@ -152,7 +152,7 @@
             <tr>
 
                 <td><label for="field_createreadwrite_datefrom">Valido dal</label></td>
-                <td><input type="ẗext" id="field_createreadwrite_datefrom">
+                <td><input type="ẗext" id="field_createreadwrite_datefrom" class="widetext">
                 </td>
 
 
@@ -164,7 +164,7 @@
 
                 <td>
 
-                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_createreadwrite_hasdateto"></td><td><input type="ẗext" id="field_createreadwrite_dateto">
+                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_createreadwrite_hasdateto" ></td><td><input type="ẗext" id="field_createreadwrite_dateto" class="widetext">
             </td>
 
 
@@ -175,7 +175,7 @@
 
             <tr>
                 <td><label for="field_createreadwrite_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxyrw" src="/static/resource/fwp_focus.png"><img class="imgbutton" id="btn_cleangeoloc_proxyrw" src="/static/resource/fwp_clear.png"></td><td>
-                <input type="ẗext" id="field_createreadwrite_area_geosearch">
+                <input type="ẗext" id="field_createreadwrite_area_geosearch" class="widetext">
 
             </td>
             </tr>
@@ -196,15 +196,15 @@
                 <td>
 
 
-                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_metareadwrite_name"></td><td id="createdmetalistrw" rowspan=4 colspan=2></td></tr>
+                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_metareadwrite_name" class="widetext"></td><td id="createdmetalistrw" rowspan=4 colspan=2></td></tr>
             <tr><td>
-                    <label for="field_createreadwrite_datefrom">Valido dal</label> <input type="checkbox" id="field_metareadwrite_hasdatefrom"></td><td><input type="ẗext" id="field_metareadwrite_datefrom"></td></tr>
+                    <label for="field_createreadwrite_datefrom">Valido dal</label> <input type="checkbox" id="field_metareadwrite_hasdatefrom"></td><td><input type="ẗext" id="field_metareadwrite_datefrom" class="widetext"></td></tr>
             <tr><td>
-                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_metareadwrite_hasdateto"></td><td><input type="ẗext" id="field_metareadwrite_dateto"></td></tr>
+                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_metareadwrite_hasdateto"></td><td><input type="ẗext" id="field_metareadwrite_dateto" class="widetext"></td></tr>
 
             <tr><td>
                     <label for="field_createreadwrite_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxyrwmeta" src="/static/resource/fwp_focus.png">
-                    <img class="imgbutton" id="btn_cleangeoloc_proxyrwmeta" src="/static/resource/fwp_clear.png"></td><td><input type="ẗext" id="field_metareadwrite_area_geosearch">
+                    <img class="imgbutton" id="btn_cleangeoloc_proxyrwmeta" src="/static/resource/fwp_clear.png"></td><td><input type="ẗext" id="field_metareadwrite_area_geosearch" class="widetext">
 
                 </td>
             </tr>
@@ -238,7 +238,7 @@
                     <label for="field_createquery_name">Nome</label></td><td><input type="ẗext" id="field_createquery_name">
             </td>
 
-                <td>Ricerca geografica</td>
+                <td><label for="newquery_mode_geo">Ricerca geografica</label></td>
                 <td class="bordered">
                     <select id="newquery_mode_geo">
                         <option value="full">Complessa</option>
@@ -266,7 +266,7 @@
                 <td><input type="ẗext" id="field_createquery_datefrom">
                 </td>
 
-                <td>Ricerca inventariale</td>
+                <td><label for="newquery_mode_inv">Ricerca inventariale</label></td>
                 <td class="bordered">
                     <select id="newquery_mode_inv">
                     <option value="full">Completa</option>
@@ -285,7 +285,7 @@
                     <label for="field_createquery_dateto">Valido al</label> <input type="checkbox" id="field_createquery_hasdateto"></td><td><input type="ẗext" id="field_createquery_dateto">
             </td>
 
-                <td>Ricerca temporale</td>
+                <td><label for="newquery_mode_time">Ricerca temporale</label></td>
                 <td class="bordered">
                     <select id="newquery_mode_time">
                         <option value="full">Completa</option>
@@ -305,7 +305,7 @@
 
             </td>
 
-                <td>Business intelligence</td>
+                <td><label for="newquery_mode_bi">Business intelligence</label></td>
                 <td class="bordered">
                     <select id="newquery_mode_bi">
                         <option value="full">Completa</option>
@@ -324,7 +324,7 @@
                 <td colspan=2>
                 </td>
 
-                <td>Firma</td>
+                <td><label for="newquery_mode_sign">Firma</label></td>
                 <td class="bordered">
                     <select id="newquery_mode_sign">
                         <option value="true">Sì</option>
@@ -335,7 +335,7 @@
 
 
             <tbody class="tablebanner"><tr>
-                <td colspan=5>CATALOGHI</td>
+                <td colspan=7>CATALOGHI</td>
             </tr></tbody>
 
             <tbody class="tablebanner"><tr>
@@ -427,7 +427,7 @@
                 <td colspan=2>Contatti</td>
             </tr></tbody>
             <tr>
-                <td rowspan=4>
+                <td rowspan=5>
                     <div class="tablemap" id="map_createstandalone"></div>
                 </td>
                 <td>

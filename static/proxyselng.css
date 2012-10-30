@@ -84,6 +84,7 @@ thead *
     padding-left:           4px;
     padding-right:          4px;
     vertical-align:         middle;
+    white-space:            nowrap;
 }
 
 col.bordered, td.bordered
@@ -146,3 +147,11 @@ td
 {
     vertical-align:         middle;
 }
+
+.creatormask .widetext, .creatormask select
+{
+    min-width:  98%;
+    width:      98%;
+    max-width:  98%;
+}
+
