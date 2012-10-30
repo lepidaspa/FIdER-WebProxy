@@ -7,12 +7,15 @@
  */
 
 var proxies;
+var instancenames = [];
 
 var keycode_ENTER = 13;
 var keycode_ESC = 27;
 
 var proj_WGS84 = "EPSG:4326";
 var proj_900913 = "EPSG:900913";
+
+var regex_names = new RegExp ("^[A-Za-z0-9_]+$");
 
 var defaultLon = 11.1;
 var defaultLat = 44.5;
@@ -22,11 +25,20 @@ var newmetamap;
 var hpmap;
 
 
+var newproxychecks;
+var newmetachecks;
+
+
 
 function pageInit(proxylist)
 {
 
     proxies = proxylist;
+
+    buildInstanceNamesList();
+
+    console.log("Proxy selection/creation. Listing:");
+    console.log(proxylist);
 
     $("#tabsel_proxy").live('click', showSelProxy);
     $("#tabsel_standalone").live('click', showSelStandalone)
@@ -37,6 +49,43 @@ function pageInit(proxylist)
     OpenLayers.Lang.setCode("it");
     OpenLayers.ImgPath = "/static/OpenLayers/themes/dark/";
 
+}
+
+function resetProxyChecks()
+{
+    newproxychecks = {
+        "proxyname": false,
+        "proxydates": false,
+        "meta_partial": [],
+        "meta_out": [],
+        "hasmeta": false
+    };
+
+    resetMetaChecks();
+}
+
+function resetMetaChecks()
+{
+    newmetachecks = {
+        "metaname": false,
+        "metadates": false
+    }
+}
+
+function buildInstanceNamesList()
+{
+
+    for (var proxy_id in proxies)
+    {
+        var cname = proxies[proxy_id].name;
+        if (instancenames.indexOf(cname) == -1)
+        {
+            instancenames.push(cname);
+        }
+    }
+
+    console.log("List of current instances names");
+    console.log(instancenames);
 }
 
 function showSelProxy ()
@@ -71,13 +120,18 @@ function initForms()
         changeYear: true
     });
 
-    // blocking direct text input in date fields
+    // blocking direct text input in date fields, will use datepicker only
     $(".proxydatefield, .proxymetadatefield").live("keyup keydown",
     function (ev)
     {
         ev.preventDefault();
         return false;
     });
+
+    $(".proxydatefield").live("change", verifyProxyDates);
+    $(".proxyhasdateto").live("change", switchProxyDateFields);
+
+    $(".proxynamefield").live('keyup change mouseup', verifyProxyName);
 
     $("#proxycreate_readwrite").dialog({
         autoOpen: false,
@@ -158,6 +212,9 @@ function initForms()
         }
     });
 
+    $("#form_create_standalone, #form_create_linked, #form_create_readwrite, #form_create_query").addClass("btn_form_create");
+
+
 }
 
 function initCreateReadWrite ()
@@ -168,8 +225,9 @@ function initCreateReadWrite ()
     newproxymap = initMiniMap("map_createreadwrite");
     newmetamap = initMiniMap("map_metareadwrite");
 
-    cleanForms();
-
+    resetProxyChecks();
+    cleanForms("proxycreate_readwrite");
+    reviewProxySubmission("proxycreate_readwrite");
 }
 
 
@@ -188,8 +246,9 @@ function initCreateQuery ()
     $("#proxycreate_query").dialog("open");
     newproxymap = initMiniMap("map_createquery");
     newmetamap = initMiniMap("map_metaquery");
-
-    cleanForms();
+    resetProxyChecks();
+    cleanForms("proxycreate_query");
+    reviewProxySubmission("proxycreate_query");
 }
 
 function tryCreateQuery ()
@@ -203,6 +262,9 @@ function initCreateLinked ()
     //TODO: placeholder, implement
     $(".tablemap").empty();
     $("#proxycreate_linked").dialog("open");
+    resetProxyChecks();
+    cleanForms("proxycreate_linked");
+    reviewProxySubmission("proxycreate_linked");
 }
 
 function tryCreateLinked()
@@ -217,8 +279,9 @@ function initCreateStandalone()
     $("#proxycreate_standalone").dialog("open");
     initMiniMap("map_createstandalone");
     initMiniMap("map_metastandalone");
-
-    cleanForms();
+    resetProxyChecks();
+    cleanForms("proxycreate_standalone");
+    reviewProxySubmission("proxycreate_standalone");
 
 }
 
@@ -228,7 +291,7 @@ function tryCreateStandalone()
 }
 
 
-function cleanForms()
+function cleanForms(formname)
 {
 
     //Clearing all fields and triggering change on all
@@ -242,6 +305,7 @@ function cleanForms()
     console.log("Resetting checkboxes");
     // setting all checkboxes to false in all creation forms
     $(".creatormask input[type=checkbox]").attr("checked", false);
+    $(".creatormask input[type=checkbox]").change();
 
     console.log("Resetting selects");
     // setting all selects to default
@@ -252,13 +316,133 @@ function cleanForms()
         $(selector[i])[0].selectedIndex = 0;
     }
 
-    verifyFormData();
+    verifyFormData(formname);
 
 }
 
-function verifyFormData()
+function verifyFormData(formname)
 {
-    // TODO: placeholder, implemenet
+    switch (formname)
+    {
+        case "proxycreate_standalone":
+            verifyFormDataStandalone();
+            break;
+        case "proxycreate_linked":
+            verifyFormDataLinked();
+            break;
+        case "proxycreate_query":
+            verifyFormDataQuery();
+            break;
+        case "proxycreate_readwrite":
+            verifyFormDataReadWrite();
+            break;
+    }
+}
+
+function verifyFormDataStandalone()
+{
+    //TODO: placeholder, implement
+}
+
+function verifyFormDataLinked()
+{
+    //TODO: placeholder, implement
+}
+
+function verifyFormDataQuery()
+{
+    //TODO: placeholder, implement
+}
+
+function verifyFormDataReadWrite()
+{
+    //TODO: placeholder, implement
+}
+
+function verifyProxyName ()
+{
+
+    var candidate = $(this).val();
+    var formid = $(this).closest(".creationdialog").attr("id");
+    console.log ("Checking proxy name from "+formid+": "+candidate);
+
+
+    // not on one line so we can add show() for specific warnings.
+    var isvalid = true;
+
+    // verifying if there are any illegal chars
+    if (candidate.match(regex_names)==null || instancenames.indexOf(candidate)!= -1)
+    {
+        isvalid = false;
+    }
+
+    newproxychecks.proxyname = isvalid;
+    reviewProxySubmission(formid);
+}
+
+function reviewProxySubmission(dialogid)
+{
+    // checks if all the parameters to create a proxy are met by looking at the global object newproxychecks
+
+    var ready = (newproxychecks.proxyname && newproxychecks.proxydates && newproxychecks.hasmeta && (newproxychecks.meta_out.length == 0));
+
+    console.log("Form "+dialogid+" readiness: "+ready);
+
+    $("#"+dialogid).closest(".ui-dialog").find(".btn_form_create").prop("disabled", !ready);
+    console.log($("#"+dialogid).closest(".ui-dialog").find(".btn_form_create"));
+}
+
+function switchProxyDateFields()
+{
+
+    // only checks on dateto
+
+    var eid = this.id;
+    var hasdateto = $(this).attr("checked");
+
+    var formid = $(this).closest(".creationdialog").attr("id");
+    $("#"+formid).find(".proxydatefield.datetofield").prop("disabled", !hasdateto);
+    $("#"+formid).find(".proxydatefield.datetofield").change();
+}
+
+function verifyProxyDates()
+{
+
+    // checks and compare proxy date fields
+    // we assume fields can only be correctly formatted or empty/null
+    // since the HTML page locks up keyboard input here
+
+
+    var isvalid = true;
+
+    var formid = $(this).closest(".creationdialog").attr("id");
+    console.log ("Checking proxy dates from "+formid);
+
+    var base = $(this).closest(".creatormask");
+
+    var datefromval = base.find(".proxydatefield.datefromfield").val();
+    if (datefromval === null || datefromval == "")
+    {
+        isvalid = false;
+    }
+
+    var hasdateto = base.find(".proxyhasdateto").attr("checked");
+    if (hasdateto)
+    {
+        var datetoval = base.find(".proxydatefield.datetofield").val();
+        if (datetoval === null || datetoval == "")
+        {
+            isvalid = false;
+        }
+
+        console.log("Comparing "+datefromval+" to "+datetoval);
+    }
+
+
+    newproxychecks.proxydates = isvalid;
+    reviewProxySubmission(formid);
+
+
 }
 
 function initMiniMap (eid)

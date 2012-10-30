@@ -122,7 +122,7 @@
                     <div class="tablemap" id="map_createreadwrite"></div>
                 </td>
                 <td>
-                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_createreadwrite_name" class="widetext">
+                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_createreadwrite_name" class="widetext proxynamefield">
                 </td>
                 <td><label for="field_createreadwrite_owner">Fornitore</label></td>
                 <td><input type="ẗext" class="widetext" id="field_createreadwrite_owner" {% if providers|length > 0 %}class="datalisted" list="providers"{% endif %}>
@@ -155,7 +155,7 @@
             <tr>
 
                 <td><label for="field_createreadwrite_datefrom">Valido dal</label></td>
-                <td><input type="ẗext" id="field_createreadwrite_datefrom" class="widetext proxydatefield">
+                <td><input type="ẗext" id="field_createreadwrite_datefrom" class="widetext proxydatefield datefromfield">
                 </td>
 
 
@@ -167,7 +167,7 @@
 
                 <td>
 
-                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_createreadwrite_hasdateto" ></td><td><input type="ẗext" id="field_createreadwrite_dateto" class="widetext proxydatefield">
+                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_createreadwrite_hasdateto" class="proxyhasdateto"></td><td><input type="ẗext" id="field_createreadwrite_dateto" class="widetext proxydatefield datetofield">
             </td>
 
 
@@ -238,7 +238,7 @@
                     <div class="tablemap" id="map_createquery"></div>
                 </td>
                 <td>
-                    <label for="field_createquery_name">Nome</label></td><td><input type="ẗext" id="field_createquery_name" class="widetext">
+                    <label for="field_createquery_name">Nome</label></td><td><input type="ẗext" id="field_createquery_name" class="widetext proxynamefield">
             </td>
 
                 <td><label for="newquery_mode_geo">Ricerca geografica</label></td>
@@ -260,7 +260,7 @@
 
             <tr>
                 <td><label for="field_createquery_datefrom">Valido dal</label></td>
-                <td><input type="ẗext" id="field_createquery_datefrom" class="proxydatefield widetext">
+                <td><input type="ẗext" id="field_createquery_datefrom" class="proxydatefield widetext datefromfield">
                 </td>
 
                 <td><label for="newquery_mode_inv">Ricerca inventariale</label></td>
@@ -279,7 +279,7 @@
 
                 <td>
 
-                    <label for="field_createquery_dateto">Valido al</label> <input type="checkbox" id="field_createquery_hasdateto"></td><td><input type="ẗext" id="field_createquery_dateto" class="proxydatefield widetext">
+                    <label for="field_createquery_dateto">Valido al</label> <input type="checkbox" id="field_createquery_hasdateto" class="proxyhasdateto"></td><td><input type="ẗext" id="field_createquery_dateto" class="proxydatefield datetofield widetext">
             </td>
 
                 <td><label for="newquery_mode_time">Ricerca temporale</label></td>
@@ -431,7 +431,7 @@
                     <label for="field_createstandalone_name">Nome</label>
                 </td>
                 <td>
-                    <input type="ẗext" class="widetext" id="field_createstandalone_name">
+                    <input type="ẗext" class="widetext proxynamefield" id="field_createstandalone_name">
                 </td>
                 <td>
                     <label for="field_createstandalone_owner">Fornitore</label>
@@ -444,14 +444,14 @@
 
             <tr>
                 <td><label for="field_createstandalone_datefrom">Valido dal</label></td>
-                <td><input type="ẗext" class="widetext proxydatefield" id="field_createstandalone_datefrom"></td>
+                <td><input type="ẗext" class="widetext proxydatefield datefromfield" id="field_createstandalone_datefrom"></td>
                 <td><label for="field_createstandalone_contactname">Nome referente</label></td>
                 <td><input type="ẗext" class="widetext" id="field_createstandalone_contactname"></td>
             </tr>
 
             <tr>
-                <td><label for="field_createstandalone_dateto">Valido al</label> <input type="checkbox" id="field_createstandalone_hasdateto"></td>
-                <td><input type="ẗext" class="widetext proxydatefield" id="field_createstandalone_dateto"></td>
+                <td><label for="field_createstandalone_dateto">Valido al</label> <input type="checkbox" id="field_createstandalone_hasdateto" class="proxyhasdateto"></td>
+                <td><input type="ẗext" class="widetext proxydatefield datetofield" id="field_createstandalone_dateto"></td>
                 <td><label for="field_createstandalone_contactname">Email referente</label></td>
                 <td><input type="ẗext" class="widetext" id="field_createstandalone_contactemail"></td>
             </tr>
@@ -482,7 +482,7 @@
 
 {% block starterscript %}
     <script>
-        pageInit({{ proxies }});
+        pageInit({{ proxiesjs }});
     </script>
 {% endblock %}
 
