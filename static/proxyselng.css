@@ -27,8 +27,8 @@
 
 .proxylisting_emblem
 {
-    padding-left:   8px;
-    width:          24px;
+    padding-left:   4px;
+    /*width:          24px;*/
 }
 
 thead *
@@ -142,10 +142,14 @@ td
     width:                  100%;
 }
 
+.proxylisting_instance:first-child *
+{
+    padding-top:            4px;
+}
 
 .proxylisting_instance, .proxylisting_instance *
 {
-    vertical-align:         middle;
+    vertical-align:         text-bottom;
 }
 
 .creatormask .widetext, .creatormask select

@@ -17,6 +17,8 @@ var proj_900913 = "EPSG:900913";
 var gjformat;
 
 var regex_names = new RegExp ("^[A-Za-z0-9_]+$");
+var regex_email_rfc = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
+
 
 var defaultLon = 11.1;
 var defaultLat = 44.5;
@@ -143,7 +145,9 @@ function resetProxyChecks()
         "proxydates": false,
         "meta_partial": [],
         "meta_out": [],
-        "hasmeta": false
+        "hasmeta": false,
+        "hasprovider": false,
+        "hascontact": false
     };
 
     resetMetaChecks();
@@ -215,6 +219,9 @@ function initForms()
 
     $(".proxydatefield").live("change", verifyProxyDates);
     $(".proxyhasdateto").live("change", switchProxyDateFields);
+    $(".proxyfieldprovider").live("keyup change mouseup", verifyProxyProvider);
+    $(".proxyfieldcontactdata").live("keyup change mouseup", verifyProxyContact);
+
 
     $(".proxynamefield").live('keyup change mouseup', verifyProxyName);
 
@@ -365,6 +372,8 @@ function initCreateStandalone()
     initMiniMap("map_createstandalone");
     initMiniMap("map_metastandalone");
     resetProxyChecks();
+    // standalone does NOT need an actual meta structure, will be created automatically
+    newproxychecks.hasmeta = true;
     cleanForms("proxycreate_standalone");
     reviewProxySubmission("proxycreate_standalone");
 
@@ -465,11 +474,19 @@ function verifyProxyName ()
     reviewProxySubmission(formid);
 }
 
+
+
 function reviewProxySubmission(dialogid)
 {
     // checks if all the parameters to create a proxy are met by looking at the global object newproxychecks
 
-    var ready = (newproxychecks.proxyname && newproxychecks.proxydates && newproxychecks.hasmeta && (newproxychecks.meta_out.length == 0));
+    /*
+    "hasprovider": false,
+    "hascontact": false
+    */
+
+
+    var ready = (newproxychecks.proxyname && newproxychecks.proxydates && newproxychecks.hasmeta && newproxychecks.hasprovider && newproxychecks.hascontact && (newproxychecks.meta_out.length == 0));
 
     console.log("Form "+dialogid+" readiness: "+ready);
 
@@ -490,6 +507,82 @@ function switchProxyDateFields()
     $("#"+formid).find(".proxydatefield.datetofield").change();
 }
 
+function verifyProxyContact()
+{
+    // checks if a valid contact reference has been inserted for this proxy
+
+    console.log("Contact field verfication from field "+this.id);
+
+    // we only need one valid data in all the contact data fields for this to be used
+    var isvalid = false;
+
+    var formid = $(this).closest(".creationdialog").attr("id");
+    var base = $(this).closest(".creatormask");
+
+    var contactfields = base.find(".proxyfieldcontactdata");
+
+    for (var i = 0; i < contactfields.length; i++)
+    {
+
+        console.log("Checking contact field "+contactfields[i].id);
+
+        var fieldval = $(contactfields[i]).val();
+        console.log("Field has value "+fieldval);
+
+
+        if (fieldval != null && fieldval != "")
+        {
+            if ($(contactfields[i]).hasClass("proxyfieldemail"))
+            {
+                if (regex_email_rfc.test(fieldval))
+                {
+                    isvalid = true;
+                }
+            }
+
+            if ($(contactfields[i]).hasClass("proxyfieldphone"))
+            {
+                if (fieldval.match(/\d/g).length > 7)
+                {
+                    isvalid = true;
+                }
+            }
+        }
+
+    }
+
+    newproxychecks.hascontact = isvalid;
+    reviewProxySubmission(formid);
+
+
+}
+
+function verifyProxyProvider()
+{
+
+    // checks if a provider has been inserted for this proxy
+
+    var formid = $(this).closest(".creationdialog").attr("id");
+    var base = $(this).closest(".creatormask");
+
+    var providername = base.find(".proxyfieldprovider").val();
+    var isvalid = false;
+
+    if (providername != null)
+    {
+        var clean = providername.replace (/\s/, "");
+        if (clean.length > 0)
+        {
+            isvalid = true;
+        }
+    }
+
+    newproxychecks.hasprovider = isvalid;
+    reviewProxySubmission(formid);
+
+
+}
+
 function verifyProxyDates()
 {
 
@@ -505,8 +598,9 @@ function verifyProxyDates()
 
     var base = $(this).closest(".creatormask");
 
-    var datefromval = base.find(".proxydatefield.datefromfield").val();
-    if (datefromval === null || datefromval == "")
+
+    var datefromval = base.find(".proxydatefield.datefromfield").datepicker("getDate");
+    if (datefromval === null)
     {
         isvalid = false;
     }
@@ -514,21 +608,57 @@ function verifyProxyDates()
     var hasdateto = base.find(".proxyhasdateto").attr("checked");
     if (hasdateto)
     {
-        var datetoval = base.find(".proxydatefield.datetofield").val();
-        if (datetoval === null || datetoval == "")
+        var datetoval = base.find(".proxydatefield.datetofield").datepicker("getDate");
+        if (datetoval === null)
         {
             isvalid = false;
         }
 
-        console.log("Comparing "+datefromval+" to "+datetoval);
-    }
+        console.log("Comparing dates "+datefromval+" to "+datetoval);
+        isvalid = isvalid && verifyDateSequence(datefromval, datetoval);
 
+    }
 
     newproxychecks.proxydates = isvalid;
     reviewProxySubmission(formid);
 
-
 }
+
+function verifyDateSequence (datefrom, dateto)
+{
+
+    var isSequence = false;
+
+    var yearfrom = datefrom.getFullYear();
+    var monthfrom = datefrom.getMonth();
+    var dayfrom = datefrom.getDate();
+
+    var yearto = dateto.getFullYear();
+    var monthto = dateto.getMonth();
+    var dayto = dateto.getDate();
+
+    if (yearto > yearfrom)
+    {
+        isSequence = true;
+    }
+    else
+    {
+        if (monthto > monthfrom )
+        {
+            isSequence = true;
+        }
+        else
+        {
+            if (dayto >= dayfrom)
+            {
+                isSequence = true;
+            }
+        }
+    }
+
+    return isSequence;
+}
+
 
 function initMiniMap (eid)
 {

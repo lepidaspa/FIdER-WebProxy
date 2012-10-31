@@ -49,7 +49,7 @@
                 {% if proxydata.type != 'local' %}
                     <tr class="proxylisting_instance">
                         <td class="proxylisting_emblem">
-                            <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/{% if proxydata.type == 'query' %}fwp_datasource-query{% endif %}{% if proxydata.type == 'read' or proxydata.type == 'write' or proxydata.type == 'linked' %}fwp_datasource-networked{% endif %}.png" title="Apri istanza"></a>
+
                         </td>
                         <td class="proxylisting_name">
                             <a href="/fwp/proxyng/{{ proxy_id }}/">{{ proxydata.name }}</a>
@@ -61,7 +61,8 @@
                             {% if proxydata.type == 'linked' %}Standalone{% endif %}
                         </td>
                         <td class="proxylisting_actions">
-                            <img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
+                            <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/{% if proxydata.type == 'query' %}fwp_datasource-query{% endif %}{% if proxydata.type == 'read' or proxydata.type == 'write' or proxydata.type == 'linked' %}fwp_datasource-networked{% endif %}.png" title="Apri istanza"></a>
+                            <img src="/static/resource/fwp_remove.png" class="imgbutton btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
                         </td>
                     </tr>
                 {% endif %}
@@ -83,11 +84,12 @@
                 {% if proxydata.type == 'local' %}
                     <tr class="proxylisting_instance">
                         <td class="proxylisting_emblem">
-                            <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/fwp_datasource-local.png" title="Apri istanza"></a></td>
+                            </td>
                         <td class="proxylisting_name">
                             {{ proxydata.name }}
                         </td>
                         <td class="proxylisting_actions">
+                            <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/fwp_datasource-local.png" title="Apri istanza"></a>
                             <img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
                         </td>
                     </tr>
@@ -126,7 +128,7 @@
                     <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_createreadwrite_name" class="widetext proxynamefield">
                 </td>
                 <td><label for="field_createreadwrite_owner">Fornitore</label></td>
-                <td><input type="ẗext" class="widetext" id="field_createreadwrite_owner" {% if providers|length > 0 %}class="datalisted" list="providers"{% endif %}>
+                <td><input type="ẗext" class="widetext" id="field_createreadwrite_owner" class="proxyfieldprovider {% if providers|length > 0 %}datalisted" list="providers{% endif %}">
 
 
                 </td>
@@ -160,7 +162,7 @@
                 </td>
 
 
-                <td><label for="field_createreadwrite_contactname">Email referente</label></td><td><input type="ẗext" class="widetext" id="field_createreadwrite_contactemail"></td>
+                <td><label for="field_createreadwrite_contactname">Email referente</label></td><td><input type="ẗext" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createreadwrite_contactemail"></td>
 
             </tr>
 
@@ -173,7 +175,7 @@
 
 
                 <td>
-                    <label for="field_createreadwrite_contactname">Telefono referente</label></td><td><input type="ẗext" class="widetext" id="field_createreadwrite_contactphone">
+                    <label for="field_createreadwrite_contactname">Telefono referente</label></td><td><input type="ẗext" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createreadwrite_contactphone">
                 </td>
                 </tr>
 
@@ -254,7 +256,7 @@
 
 
                 <td><label for="field_createquery_owner">Fornitore</label></td>
-                <td><input type="ẗext" class="widetext{% if providers|length > 0 %} datalisted{% endif %}" id="field_createquery_owner" {% if providers|length > 0 %}list="providers"{% endif %}>
+                <td><input type="ẗext" class="widetext{% if providers|length > 0 %} datalisted{% endif %}" id="field_createquery_owner" class="proxyfieldprovider" {% if providers|length > 0 %}list="providers"{% endif %}>
                    </td>
             </tr>
 
@@ -292,7 +294,7 @@
                 </td>
 
 
-                <td><label for="field_createquery_contactname">Email referente</label></td><td><input type="ẗext" class="widetext" id="field_createquery_contactemail"></td>
+                <td><label for="field_createquery_contactname">Email referente</label></td><td><input type="ẗext" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createquery_contactemail"></td>
 
             </tr>
 
@@ -313,7 +315,7 @@
                 </td>
 
                 <td>
-                    <label for="field_createquery_contactname">Telefono referente</label></td><td><input type="ẗext" class="widetext" id="field_createquery_contactphone">
+                    <label for="field_createquery_contactname">Telefono referente</label></td><td><input type="ẗext" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createquery_contactphone">
             </td>
             </tr>
 
@@ -438,7 +440,7 @@
                     <label for="field_createstandalone_owner">Fornitore</label>
                 </td>
                 <td>
-                    <input type="ẗext" class="widetext {% if providers|length > 0 %}datalisted{% endif %}" id="field_createstandalone_owner"{% if providers|length > 0 %}list="providers"{% endif %}>
+                    <input type="ẗext" class="proxyfieldprovider widetext {% if providers|length > 0 %}datalisted{% endif %}" id="field_createstandalone_owner" {% if providers|length > 0 %}list="providers"{% endif %}>
 
                 </td>
             </tr>
@@ -454,14 +456,14 @@
                 <td><label for="field_createstandalone_dateto">Valido al</label> <input type="checkbox" id="field_createstandalone_hasdateto" class="proxyhasdateto"></td>
                 <td><input type="ẗext" class="widetext proxydatefield datetofield" id="field_createstandalone_dateto"></td>
                 <td><label for="field_createstandalone_contactname">Email referente</label></td>
-                <td><input type="ẗext" class="widetext" id="field_createstandalone_contactemail"></td>
+                <td><input type="ẗext" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createstandalone_contactemail"></td>
             </tr>
             <tr>
                 <td><label for="field_createstandalone_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxy" src="/static/resource/fwp_focus.png">
                     <img class="imgbutton" id="btn_cleangeoloc_st" src="/static/resource/fwp_clear.png"></td>
                 <td><input type="ẗext" class="widetext" id="field_createstandalone_area_geosearch"></td>
                 <td><label for="field_createstandalone_contactname">Telefono referente</label></td>
-                <td><input type="ẗext" class="widetext" id="field_createstandalone_contactphone"></td>
+                <td><input type="ẗext" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createstandalone_contactphone"></td>
             </tr>
 
         </table>
