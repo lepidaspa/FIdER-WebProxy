@@ -157,7 +157,7 @@ function resetMetaChecks()
 {
     newmetachecks = {
         "metaname": false,
-        "metadates": false
+        "metadates": true
     }
 }
 
@@ -221,9 +221,11 @@ function initForms()
     $(".proxyhasdateto").live("change", switchProxyDateFields);
     $(".proxyfieldprovider").live("keyup change mouseup", verifyProxyProvider);
     $(".proxyfieldcontactdata").live("keyup change mouseup", verifyProxyContact);
-
-
     $(".proxynamefield").live('keyup change mouseup', verifyProxyName);
+
+    $(".newmeta_name").live('keyup change mouseup', verifyMetaName);
+    $(".metadatefieldswitch").live('change', switchMetaDates);
+    $(".proxymetadatefield").live('change', verifyMetaDates);
 
     $("#proxycreate_readwrite").dialog({
         autoOpen: false,
@@ -285,6 +287,8 @@ function initForms()
         }
     });
 
+    $("#proxycreate_linked_choosesource").live('change', checkFedRequestField);
+
     $("#proxycreate_standalone").dialog({
         autoOpen: false,
         modal: true,
@@ -320,6 +324,8 @@ function initCreateReadWrite ()
     resetProxyChecks();
     cleanForms("proxycreate_readwrite");
     reviewProxySubmission("proxycreate_readwrite");
+    reviewMetaSubmission("proxycreate_readwrite");
+
 }
 
 
@@ -341,6 +347,7 @@ function initCreateQuery ()
     resetProxyChecks();
     cleanForms("proxycreate_query");
     reviewProxySubmission("proxycreate_query");
+    reviewMetaSubmission("proxycreate_query");
 }
 
 function tryCreateQuery ()
@@ -351,12 +358,21 @@ function tryCreateQuery ()
 
 function initCreateLinked ()
 {
-    //TODO: placeholder, implement
+
+    // avoids the usual proxy checks since we only need to know WHICH proxy will be chosen and everything else is copied automatically
+
     $(".tablemap").empty();
     $("#proxycreate_linked").dialog("open");
-    resetProxyChecks();
     cleanForms("proxycreate_linked");
-    reviewProxySubmission("proxycreate_linked");
+    checkFedRequestField();
+}
+
+function checkFedRequestField()
+{
+    var selection = $("#proxycreate_linked_choosesource").val();
+
+    $("#form_create_linked").prop("disabled", !(selection != null && selection != ""));
+
 }
 
 function tryCreateLinked()
@@ -453,6 +469,33 @@ function verifyFormDataReadWrite()
     //TODO: placeholder, implement
 }
 
+
+function getCurrentMetaNames()
+{
+    var metanames = [];
+
+    // TODO: implement, placeholder
+
+    return metanames;
+}
+
+function verifyMetaName()
+{
+    var candidate = $(this).val();
+    var formid = $(this).closest(".creationdialog").attr("id");
+    console.log ("Checking meta name from "+formid+": "+candidate);
+
+    var isvalid = true;
+
+    if (candidate.match(regex_names)==null || getCurrentMetaNames().indexOf(candidate)!= -1)
+    {
+        isvalid = false;
+    }
+
+    newmetachecks.metaname = isvalid;
+    reviewMetaSubmission(formid);
+}
+
 function verifyProxyName ()
 {
 
@@ -475,23 +518,29 @@ function verifyProxyName ()
 }
 
 
+function reviewMetaSubmission(dialogid)
+{
+    var ready = (newmetachecks.metadates && newmetachecks.metaname);
+    // bounding box is implicit
+
+    console.log("Form "+dialogid+" META readiness: "+ready);
+    $("#"+dialogid).closest(".ui-dialog").find(".newmeta_create").prop("disabled", !ready);
+
+
+}
+
 
 function reviewProxySubmission(dialogid)
 {
     // checks if all the parameters to create a proxy are met by looking at the global object newproxychecks
 
-    /*
-    "hasprovider": false,
-    "hascontact": false
-    */
-
 
     var ready = (newproxychecks.proxyname && newproxychecks.proxydates && newproxychecks.hasmeta && newproxychecks.hasprovider && newproxychecks.hascontact && (newproxychecks.meta_out.length == 0));
 
-    console.log("Form "+dialogid+" readiness: "+ready);
+    console.log("Form "+dialogid+" PROXY readiness: "+ready);
 
     $("#"+dialogid).closest(".ui-dialog").find(".btn_form_create").prop("disabled", !ready);
-    console.log($("#"+dialogid).closest(".ui-dialog").find(".btn_form_create"));
+    //console.log($("#"+dialogid).closest(".ui-dialog").find(".btn_form_create"));
 }
 
 function switchProxyDateFields()
@@ -579,6 +628,59 @@ function verifyProxyProvider()
 
     newproxychecks.hasprovider = isvalid;
     reviewProxySubmission(formid);
+
+
+}
+
+function switchMetaDates()
+{
+    var switchid = this.id;
+    var destid = this.id.replace("_has", "_");
+
+    var switchval = $(this).attr("checked");
+
+    $("#"+destid).prop("disabled", !switchval);
+    $("#"+destid).change();
+
+}
+
+function verifyMetaDates()
+{
+
+    var isvalid = true;
+
+    var formid = $(this).closest(".creationdialog").attr("id");
+    console.log ("Checking proxy dates from "+formid);
+
+    var base = $(this).closest(".creatormask");
+
+    var hasdatefrom = base.find(".metadatefieldswitch.hasdatefrom").attr("checked");
+    if (hasdatefrom)
+    {
+        var datefromval = base.find(".metadatefrom").datepicker("getDate");
+        if (datefromval === null)
+        {
+            isvalid = false;
+        }
+    }
+
+    var hasdateto = base.find(".metadatefieldswitch.hasdateto").attr("checked");
+    if (hasdateto)
+    {
+        var datetoval= base.find(".metadateto").datepicker("getDate");
+        if (datetoval === null)
+        {
+            isvalid = false;
+        }
+    }
+
+    if (hasdatefrom && hasdateto)
+    {
+        isvalid = isvalid && verifyDateSequence(datefromval, datetoval);
+    }
+
+    newmetachecks.metadates = isvalid;
+    reviewMetaSubmission(formid);
 
 
 }
@@ -699,6 +801,7 @@ function initMiniMap (eid)
 
     zoomToCenter (mapview, defaultLon, defaultLat, 6);
 
+    create_setNavControls(mapview);
     return mapview;
 }
 
@@ -712,3 +815,18 @@ function zoomToCenter (widget, lon, lat, zoom)
     widget.setCenter(projected, zoom);
 
 }
+
+
+function create_setNavControls (map)
+{
+
+    map.addControl(new OpenLayers.Control.Navigation());
+
+}
+
+function create_unsetNavControls (map)
+{
+    //alert("Current map:"+JSON.stringify(map));
+    map.removeControl(OpenLayers.Control.Navigation());
+}
+

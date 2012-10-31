@@ -90,7 +90,7 @@
                         </td>
                         <td class="proxylisting_actions">
                             <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/fwp_datasource-local.png" title="Apri istanza"></a>
-                            <img src="/static/resource/fwp_remove.png" class="btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
+                            <img src="/static/resource/fwp_remove.png" class="imgbutton btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
                         </td>
                     </tr>
                 {% endif %}
@@ -202,11 +202,11 @@
                 <td>
 
 
-                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_metareadwrite_name" class="widetext"></td><td id="createdmetalistrw" rowspan=4 colspan=2></td></tr>
+                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_metareadwrite_name" class="widetext newmeta_name"></td><td id="createdmetalistrw" rowspan=4 colspan=2></td></tr>
             <tr><td>
-                    <label for="field_createreadwrite_datefrom">Valido dal</label> <input type="checkbox" id="field_metareadwrite_hasdatefrom"></td><td><input type="ẗext" id="field_metareadwrite_datefrom" class="widetext proxymetadatefield"></td></tr>
+                    <label for="field_createreadwrite_datefrom">Valido dal</label> <input type="checkbox" class="metadatefieldswitch hasdatefrom" id="field_metareadwrite_hasdatefrom"></td><td><input type="ẗext" id="field_metareadwrite_datefrom" class="widetext metadatefrom proxymetadatefield"></td></tr>
             <tr><td>
-                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_metareadwrite_hasdateto"></td><td><input type="ẗext" id="field_metareadwrite_dateto" class="widetext proxymetadatefield"></td></tr>
+                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" class="metadatefieldswitch hasdateto" id="field_metareadwrite_hasdateto"></td><td><input type="ẗext" id="field_metareadwrite_dateto" class="widetext metadateto proxymetadatefield"></td></tr>
 
             <tr><td>
                     <label for="field_createreadwrite_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxyrwmeta" src="/static/resource/fwp_focus.png">
@@ -215,7 +215,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan=2 style="text-align: center"><input type="button" value="Crea catalogo" id="btn_newmetarw_create"></td>
+                <td colspan=2 style="text-align: center"><input type="button" class="newmeta_create" value="Crea catalogo" id="btn_newmetarw_create"></td>
             </tr>
 
 
@@ -349,11 +349,11 @@
                 <td>
 
 
-                    <label for="field_metaquery_name">Nome</label></td><td class="bordered"><input type="ẗext" class="widetext" id="field_metaquery_name"></td><td id="createdmetalistquery" rowspan=4 colspan=2></td></tr>
+                    <label for="field_metaquery_name">Nome</label></td><td class="bordered"><input type="ẗext" class="widetext newmeta_name" id="field_metaquery_name"></td><td id="createdmetalistquery" rowspan=4 colspan=2></td></tr>
             <tr><td>
-                <label for="field_metaquery_datefrom">Valido dal</label> <input type="checkbox" id="field_metaquery_hasdatefrom"></td><td class="bordered"><input class="widetext proxymetadatefield" type="ẗext" id="field_metaquery_datefrom"></td></tr>
+                <label for="field_metaquery_datefrom">Valido dal</label> <input type="checkbox" class="metadatefieldswitch hasdatefrom" id="field_metaquery_hasdatefrom"></td><td class="bordered"><input class="widetext metadatefrom proxymetadatefield" type="ẗext" id="field_metaquery_datefrom"></td></tr>
             <tr><td>
-                <label for="field_metaquery_dateto">Valido al</label> <input type="checkbox" id="field_metaquery_hasdateto"></td><td class="bordered"><input type="ẗext" id="field_metaquery_dateto" class="proxymetadatefield widetext"></td></tr>
+                <label for="field_metaquery_dateto">Valido al</label> <input type="checkbox" id="field_metaquery_hasdateto" class="metadatefieldswitch hasdateto"></td><td class="bordered"><input type="ẗext" id="field_metaquery_dateto" class="proxymetadatefield metadateto widetext"></td></tr>
 
             <tr><td>
                 <label for="field_metaquery_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxyquerymeta" src="/static/resource/fwp_focus.png">
@@ -362,7 +362,7 @@
             </td>
             </tr>
             <tr>
-                <td colspan=2 style="text-align: center" class="bordered"><input type="button" value="Crea catalogo" id="btn_newmetaquery_create"></td>
+                <td colspan=2 style="text-align: center" class="bordered"><input type="button" value="Crea catalogo" class="newmeta_create" id="btn_newmetaquery_create"></td>
             </tr>
 
 
