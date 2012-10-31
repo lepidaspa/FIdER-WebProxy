@@ -32,7 +32,7 @@ var proxymap;
 var newproxychecks;
 var newmetachecks;
 
-
+var newmetalist = [];
 
 function pageInit(proxylist)
 {
@@ -201,7 +201,7 @@ function initForms()
     $("#btn_newdatasource_standalone").live('click', initCreateStandalone);
     $("#btn_newdatasource_networked").live('click', initCreateReadWrite);
     $("#btn_newdatasource_query").live('click', initCreateQuery);
-
+    $("#newmeta_create").live('click', tryCreateMeta);
 
 
     $(".proxydatefield, .proxymetadatefield").datepicker({
@@ -325,11 +325,8 @@ function initCreateReadWrite ()
     cleanForms("proxycreate_readwrite");
     reviewProxySubmission("proxycreate_readwrite");
     reviewMetaSubmission("proxycreate_readwrite");
-
+    newmetalist = [];
 }
-
-
-
 
 function tryCreateReadWrite()
 {
@@ -449,24 +446,116 @@ function verifyFormData(formname)
     }
 }
 
-function verifyFormDataStandalone()
+
+function tryCreateMeta()
 {
-    //TODO: placeholder, implement
+
+    var formid = $(this).closest(".creationdialog").attr("id");
+    console.log ("Checking meta name from "+formid+": "+candidate);
+    var base = $(this).closest(".creatormask");
+
+    var metaname = base.find(".newmeta_name").val();
+
+    var datefromval = null;
+    var hasdatefrom = base.find(".metadatefieldswitch.hasdatefrom").attr("checked");
+    if (hasdatefrom)
+    {
+        datefromval = base.find(".metadatefrom").datepicker("getDate");
+    }
+
+    var datetoval = null;
+    var hasdateto = base.find(".metadatefieldswitch.hasdateto").attr("checked");
+    if (hasdateto)
+    {
+        datetoval = base.find(".metadateto").datepicker("getDate");
+    }
+
 }
 
-function verifyFormDataLinked()
-{
-    //TODO: placeholder, implement
-}
 
-function verifyFormDataQuery()
+function geosearch(caller)
 {
-    //TODO: placeholder, implement
-}
 
-function verifyFormDataReadWrite()
-{
-    //TODO: placeholder, implement
+
+    var cmap;
+    var geostring;
+    if (caller.srcElement.id == 'btn_trygeoloc_meta')
+    {
+        cmap = newmetamap;
+        geostring = $('#newmeta_geoloc').val();
+    }
+    else if  (caller.srcElement.id == 'btn_trygeoloc_proxy')
+    {
+        cmap = newproxymap;
+        geostring = $('#newproxy_geoloc').val();
+    }
+
+
+    var jg;
+    var path = '/external/maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
+        + geostring;
+
+    console.log("Recentering meta map by search: "+path);
+
+
+    $.getJSON(path, function(gqdata){
+        console.log(gqdata);
+        if(gqdata.status == "OK"){
+            if (gqdata.results.length > 0){
+
+                console.log("Results found");
+
+                gq = new OpenLayers.Bounds();
+
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.southwest.lng,
+                    gqdata.results[0].geometry.viewport.southwest.lat).transform(proj_WGS84,
+                    proj_900913));
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.northeast.lng,
+                    gqdata.results[0].geometry.viewport.northeast.lat).transform(proj_WGS84,
+                    proj_900913));
+
+
+
+                // moved inside renderbbox
+                //cmap.zoomToExtent(gq);
+
+                // using the data for either the proxy or the current meta
+                if (caller.srcElement.id == 'btn_trygeoloc_meta')
+                {
+                    console.log("Rendering meta bbox");
+                    tempgeoloc_meta = gq;
+                }
+                else if  (caller.srcElement.id == 'btn_trygeoloc_proxy')
+                {
+                    console.log("Rendering proxy bbox");
+                    tempgeoloc_proxy = gq;
+                }
+                renderbbox (gq, cmap, true);
+
+
+                cleanupFeedback("#proxy_created");
+
+            }
+            else
+            {
+
+                console.log("No location found");
+                postFeedbackMessage(false, "Impossibile individuare la locazione specificata.", "#proxy_created", true);
+                console.log(gqdata.results);
+            }
+        }
+        else
+        {
+            console.log("No location found");
+            postFeedbackMessage(false, "Impossibile individuare la locazione specificata.", "#proxy_created", true);
+            console.log(gqdata.results);
+        }
+    });
+
+
+
 }
 
 
@@ -475,6 +564,8 @@ function getCurrentMetaNames()
     var metanames = [];
 
     // TODO: implement, placeholder
+
+
 
     return metanames;
 }
@@ -667,7 +758,7 @@ function verifyMetaDates()
     var hasdateto = base.find(".metadatefieldswitch.hasdateto").attr("checked");
     if (hasdateto)
     {
-        var datetoval= base.find(".metadateto").datepicker("getDate");
+        var datetoval = base.find(".metadateto").datepicker("getDate");
         if (datetoval === null)
         {
             isvalid = false;
