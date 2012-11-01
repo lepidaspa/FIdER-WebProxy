@@ -487,6 +487,24 @@ function cleanGeoloc()
 
     //TODO: placeholder, implement
 
+    var cmap;
+    var searchbox;
+    if ($(this).hasClass("cleangeoloc_meta"))
+    {
+        cmap = newmetamap;
+        searchbox = base.find(".field_meta_geoloc");
+        tempgeoloc_meta = null;
+    }
+    else if ($(this).hasClass("cleangeoloc_proxy"))
+    {
+        cmap = newproxymap;
+        searchbox = base.find(".field_proxy_geoloc");
+        tempgeoloc_proxy = null;
+    }
+
+    searchbox.val("");
+    cmap.layers[1].destroyFeatures();
+
 }
 
 
