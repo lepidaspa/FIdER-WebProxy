@@ -1545,8 +1545,8 @@ function setMapControlsNav ()
     ItaLayerSwitcher.prototype.loadContents = function()                                 // redefine Method
     {
         OpenLayers.Control.LayerSwitcher.prototype.loadContents.call(this);         // Call super-class method
-        this.baseLbl.innerHTML = 'Sfondi';                                   //change title for base layers
-        this.dataLbl.innerHTML = 'Livelli';                                   //change title for overlays (empty string "" is an option, too)
+        this.baseLbl.innerHTML = 'Cartografia';                                   //change title for base layers
+        this.dataLbl.innerHTML = 'Mappe';                                   //change title for overlays (empty string "" is an option, too)
     };
 
     var switcher = new ItaLayerSwitcher();

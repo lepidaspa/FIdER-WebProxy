@@ -34,6 +34,10 @@ var newmetachecks;
 
 var newmetalist = [];
 
+// these are needed only to avoid checking against the presence of the bbox feature on the respective maps; on these it is a simple exists/null check
+var tempgeoloc_meta = null;
+var tempgeoloc_proxy = null;
+
 function pageInit(proxylist)
 {
 
@@ -226,6 +230,10 @@ function initForms()
     $(".newmeta_name").live('keyup change mouseup', verifyMetaName);
     $(".metadatefieldswitch").live('change', switchMetaDates);
     $(".proxymetadatefield").live('change', verifyMetaDates);
+
+    $(".field_meta_geoloc, .field_proxy_geoloc").live('keyup', tryGeoSearch);
+    $(".btn_trygeoloc").live('click', geosearch);
+    $(".cleangeoloc_meta, .cleangeoloc_proxy").live('click', cleanGeoloc);
 
     $("#proxycreate_readwrite").dialog({
         autoOpen: false,
@@ -423,27 +431,7 @@ function cleanForms(formname)
         $(selector[i])[0].selectedIndex = 0;
     }
 
-    verifyFormData(formname);
 
-}
-
-function verifyFormData(formname)
-{
-    switch (formname)
-    {
-        case "proxycreate_standalone":
-            verifyFormDataStandalone();
-            break;
-        case "proxycreate_linked":
-            verifyFormDataLinked();
-            break;
-        case "proxycreate_query":
-            verifyFormDataQuery();
-            break;
-        case "proxycreate_readwrite":
-            verifyFormDataReadWrite();
-            break;
-    }
 }
 
 
@@ -473,21 +461,62 @@ function tryCreateMeta()
 }
 
 
-function geosearch(caller)
+function tryGeoSearch (event)
 {
 
 
+    if (event.keyCode == keycode_ENTER)
+    {
+
+        console.log("Enter pressed, launching geosearch");
+        console.log("Geosearch event launched from "+event.target.id);
+        console.log(event);
+
+        // passing the event down
+        geosearch(event);
+        event.preventDefault();
+    }
+
+}
+
+function cleanGeoloc()
+{
+    var formid = $(this).closest(".creationdialog").attr("id");
+    console.log ("Cleaning geoloc bbox for "+formid);
+    var base = $(this).closest(".creatormask");
+
+    //TODO: placeholder, implement
+
+}
+
+
+
+function geosearch(event)
+{
+    console.log(event);
+
+    var caller = event.target;
+
+    var formid = $(caller).closest(".creationdialog").attr("id");
+    console.log ("Geosearching bbox for "+formid);
+    var base = $(caller).closest(".creatormask");
+
+
+    var searchbox;
+
     var cmap;
     var geostring;
-    if (caller.srcElement.id == 'btn_trygeoloc_meta')
+    if ($(caller).hasClass ('btn_meta_geoloc') || $(caller).hasClass('field_meta_geoloc'))
     {
         cmap = newmetamap;
-        geostring = $('#newmeta_geoloc').val();
+        searchbox = base.find(".field_meta_geoloc");
+        geostring = $('.field_meta_geoloc').val();
     }
-    else if  (caller.srcElement.id == 'btn_trygeoloc_proxy')
+    else if ($(caller).hasClass ('btn_proxy_geoloc') || $(caller).hasClass('field_proxy_geoloc'))
     {
         cmap = newproxymap;
-        geostring = $('#newproxy_geoloc').val();
+        searchbox = base.find(".field_proxy_geoloc");
+        geostring = searchbox.val();
     }
 
 
@@ -522,38 +551,58 @@ function geosearch(caller)
                 //cmap.zoomToExtent(gq);
 
                 // using the data for either the proxy or the current meta
-                if (caller.srcElement.id == 'btn_trygeoloc_meta')
+                if (caller.id == 'btn_trygeoloc_meta')
                 {
                     console.log("Rendering meta bbox");
                     tempgeoloc_meta = gq;
                 }
-                else if  (caller.srcElement.id == 'btn_trygeoloc_proxy')
+                else if  (caller.id == 'btn_trygeoloc_proxy')
                 {
                     console.log("Rendering proxy bbox");
                     tempgeoloc_proxy = gq;
                 }
                 renderbbox (gq, cmap, true);
 
-
-                cleanupFeedback("#proxy_created");
-
             }
             else
             {
 
                 console.log("No location found");
-                postFeedbackMessage(false, "Impossibile individuare la locazione specificata.", "#proxy_created", true);
+                alert("Impossibile individuare la posizione richiesta.");
                 console.log(gqdata.results);
             }
         }
         else
         {
             console.log("No location found");
-            postFeedbackMessage(false, "Impossibile individuare la locazione specificata.", "#proxy_created", true);
-            console.log(gqdata.results);
+            alert("Impossibile individuare la posizione richiesta.");
+
         }
     });
 
+
+
+}
+
+function renderbbox (bounds, mapview, zoomto)
+{
+
+    // forcing since we know we will have only OSM as background layer on the maps where we use this
+    var vectorlayer = mapview.layers[1];
+    vectorlayer.destroyFeatures();
+
+    if (bounds != null)
+    {
+        if (zoomto)
+        {
+            mapview.zoomToExtent(bounds);
+        }
+        var cfeature = new OpenLayers.Feature.Vector(bounds.toGeometry());
+
+        vectorlayer.addFeatures(cfeature);
+        console.log(bounds.toGeometry());
+        console.log(vectorlayer);
+    }
 
 
 }

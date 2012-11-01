@@ -122,13 +122,13 @@
             </tr></tbody>
             <tr>
                 <td rowspan=5>
-                    <div class="tablemap" id="map_createreadwrite"></div>
+                    <div class="tablemap map_newproxy" id="map_createreadwrite"></div>
                 </td>
                 <td>
-                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_createreadwrite_name" class="widetext proxynamefield">
+                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="text" id="field_createreadwrite_name" class="widetext proxynamefield">
                 </td>
                 <td><label for="field_createreadwrite_owner">Fornitore</label></td>
-                <td><input type="ẗext" class="widetext" id="field_createreadwrite_owner" class="proxyfieldprovider {% if providers|length > 0 %}datalisted" list="providers{% endif %}">
+                <td><input type="text" class="widetext" id="field_createreadwrite_owner" class="proxyfieldprovider {% if providers|length > 0 %}datalisted" list="providers{% endif %}">
 
 
                 </td>
@@ -153,16 +153,16 @@
 
 
                 <td><label for="field_createreadwrite_contactname">Nome referente</label></td>
-                <td><input type="ẗext" id="field_createreadwrite_contactname" class="widetext"></td>
+                <td><input type="text" id="field_createreadwrite_contactname" class="widetext"></td>
             </tr>
             <tr>
 
                 <td><label for="field_createreadwrite_datefrom">Valido dal</label></td>
-                <td><input type="ẗext" id="field_createreadwrite_datefrom" class="widetext proxydatefield datefromfield">
+                <td><input type="text" id="field_createreadwrite_datefrom" class="widetext proxydatefield datefromfield">
                 </td>
 
 
-                <td><label for="field_createreadwrite_contactname">Email referente</label></td><td><input type="ẗext" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createreadwrite_contactemail"></td>
+                <td><label for="field_createreadwrite_contactemail">Email referente</label></td><td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createreadwrite_contactemail"></td>
 
             </tr>
 
@@ -170,18 +170,18 @@
 
                 <td>
 
-                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_createreadwrite_hasdateto" class="proxyhasdateto"></td><td><input type="ẗext" id="field_createreadwrite_dateto" class="widetext proxydatefield datetofield">
+                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_createreadwrite_hasdateto" class="proxyhasdateto"></td><td><input type="text" id="field_createreadwrite_dateto" class="widetext proxydatefield datetofield">
             </td>
 
 
                 <td>
-                    <label for="field_createreadwrite_contactname">Telefono referente</label></td><td><input type="ẗext" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createreadwrite_contactphone">
+                    <label for="field_createreadwrite_contactphone">Telefono referente</label></td><td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createreadwrite_contactphone">
                 </td>
                 </tr>
 
             <tr>
-                <td><label for="field_createreadwrite_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxyrw" src="/static/resource/fwp_focus.png"><img class="imgbutton" id="btn_cleangeoloc_proxyrw" src="/static/resource/fwp_clear.png"></td><td>
-                <input type="ẗext" id="field_createreadwrite_area_geosearch" class="widetext">
+                <td><label for="field_createreadwrite_area_geosearch">Area</label> <img class="imgbutton btn_proxy_geoloc btn_trygeoloc" id="btn_trygeoloc_proxyrw" src="/static/resource/fwp_focus.png"><img class="imgbutton cleangeoloc_proxy" id="btn_cleangeoloc_proxyrw" src="/static/resource/fwp_clear.png"></td><td>
+                <input type="text" id="field_createreadwrite_area_geosearch" class="widetext field_proxy_geoloc">
 
             </td>
             </tr>
@@ -197,20 +197,20 @@
 
             <tr>
                 <td rowspan=5>
-                    <div class="tablemap" id="map_metareadwrite"></div>
+                    <div class="tablemap map_newmeta" id="map_metareadwrite"></div>
                 </td>
                 <td>
 
 
-                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="ẗext" id="field_metareadwrite_name" class="widetext newmeta_name"></td><td id="createdmetalistrw" rowspan=4 colspan=2></td></tr>
+                    <label for="field_metareadwrite_name">Nome</label></td><td><input type="text" id="field_metareadwrite_name" class="widetext newmeta_name"></td><td id="createdmetalistrw" rowspan=4 colspan=2></td></tr>
             <tr><td>
-                    <label for="field_createreadwrite_datefrom">Valido dal</label> <input type="checkbox" class="metadatefieldswitch hasdatefrom" id="field_metareadwrite_hasdatefrom"></td><td><input type="ẗext" id="field_metareadwrite_datefrom" class="widetext metadatefrom proxymetadatefield"></td></tr>
+                    <label for="field_metareadwrite_datefrom">Valido dal</label> <input type="checkbox" class="metadatefieldswitch hasdatefrom" id="field_metareadwrite_hasdatefrom"></td><td><input type="text" id="field_metareadwrite_datefrom" class="widetext metadatefrom proxymetadatefield"></td></tr>
             <tr><td>
-                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" class="metadatefieldswitch hasdateto" id="field_metareadwrite_hasdateto"></td><td><input type="ẗext" id="field_metareadwrite_dateto" class="widetext metadateto proxymetadatefield"></td></tr>
+                    <label for="field_metareadwrite_dateto">Valido al</label> <input type="checkbox" class="metadatefieldswitch hasdateto" id="field_metareadwrite_hasdateto"></td><td><input type="text" id="field_metareadwrite_dateto" class="widetext metadateto proxymetadatefield"></td></tr>
 
             <tr><td>
-                    <label for="field_createreadwrite_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxyrwmeta" src="/static/resource/fwp_focus.png">
-                    <img class="imgbutton" id="btn_cleangeoloc_proxyrwmeta" src="/static/resource/fwp_clear.png"></td><td><input type="ẗext" id="field_metareadwrite_area_geosearch" class="widetext">
+                    <label for="field_metareadwrite_area_geosearch">Area</label> <img class="imgbutton btn_meta_geoloc btn_trygeoloc" id="btn_trygeoloc_proxyrwmeta" src="/static/resource/fwp_focus.png">
+                    <img class="imgbutton cleangeoloc_meta" id="btn_cleangeoloc_proxyrwmeta" src="/static/resource/fwp_clear.png"></td><td><input type="text" id="field_metareadwrite_area_geosearch" class="widetext field_meta_geoloc">
 
                 </td>
             </tr>
@@ -238,10 +238,10 @@
             </tr></tbody>
             <tr>
                 <td rowspan=5>
-                    <div class="tablemap" id="map_createquery"></div>
+                    <div class="tablemap map_newproxy" id="map_createquery"></div>
                 </td>
                 <td>
-                    <label for="field_createquery_name">Nome</label></td><td><input type="ẗext" id="field_createquery_name" class="widetext proxynamefield">
+                    <label for="field_createquery_name">Nome</label></td><td><input type="text" id="field_createquery_name" class="widetext proxynamefield">
             </td>
 
                 <td><label for="newquery_mode_geo">Ricerca geografica</label></td>
@@ -256,14 +256,14 @@
 
 
                 <td><label for="field_createquery_owner">Fornitore</label></td>
-                <td><input type="ẗext" class="widetext{% if providers|length > 0 %} datalisted{% endif %}" id="field_createquery_owner" class="proxyfieldprovider" {% if providers|length > 0 %}list="providers"{% endif %}>
+                <td><input type="text" class="widetext{% if providers|length > 0 %} datalisted{% endif %}" id="field_createquery_owner" class="proxyfieldprovider" {% if providers|length > 0 %}list="providers"{% endif %}>
                    </td>
             </tr>
 
 
             <tr>
                 <td><label for="field_createquery_datefrom">Valido dal</label></td>
-                <td><input type="ẗext" id="field_createquery_datefrom" class="proxydatefield widetext datefromfield">
+                <td><input type="text" id="field_createquery_datefrom" class="proxydatefield widetext datefromfield">
                 </td>
 
                 <td><label for="newquery_mode_inv">Ricerca inventariale</label></td>
@@ -276,13 +276,13 @@
 
 
                 <td><label for="field_createquery_contactname">Nome referente</label></td>
-                <td><input type="ẗext" class="widetext" id="field_createquery_contactname"></td>
+                <td><input type="text" class="widetext" id="field_createquery_contactname"></td>
             </tr>
             <tr>
 
                 <td>
 
-                    <label for="field_createquery_dateto">Valido al</label> <input type="checkbox" id="field_createquery_hasdateto" class="proxyhasdateto"></td><td><input type="ẗext" id="field_createquery_dateto" class="proxydatefield datetofield widetext">
+                    <label for="field_createquery_dateto">Valido al</label> <input type="checkbox" id="field_createquery_hasdateto" class="proxyhasdateto"></td><td><input type="text" id="field_createquery_dateto" class="proxydatefield datetofield widetext">
             </td>
 
                 <td><label for="newquery_mode_time">Ricerca temporale</label></td>
@@ -294,14 +294,14 @@
                 </td>
 
 
-                <td><label for="field_createquery_contactname">Email referente</label></td><td><input type="ẗext" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createquery_contactemail"></td>
+                <td><label for="field_createquery_contactname">Email referente</label></td><td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createquery_contactemail"></td>
 
             </tr>
 
             <tr>
 
-                <td><label for="field_createquery_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxyquery" src="/static/resource/fwp_focus.png"><img class="imgbutton" id="btn_cleangeoloc_proxyquery" src="/static/resource/fwp_clear.png"></td><td>
-                <input type="ẗext" class="widetext" id="field_createquery_area_geosearch">
+                <td><label for="field_createquery_area_geosearch">Area</label> <img class="imgbutton btn_trygeoloc btn_proxy_geoloc" id="btn_trygeoloc_proxyquery" src="/static/resource/fwp_focus.png"><img class="imgbutton cleangeoloc_proxy" id="btn_cleangeoloc_proxyquery" src="/static/resource/fwp_clear.png"></td><td>
+                <input type="text" class="widetext field_proxy_geoloc" id="field_createquery_area_geosearch">
 
             </td>
 
@@ -315,7 +315,7 @@
                 </td>
 
                 <td>
-                    <label for="field_createquery_contactname">Telefono referente</label></td><td><input type="ẗext" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createquery_contactphone">
+                    <label for="field_createquery_contactname">Telefono referente</label></td><td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createquery_contactphone">
             </td>
             </tr>
 
@@ -344,20 +344,20 @@
 
             <tr>
                 <td rowspan=5>
-                    <div class="tablemap" id="map_metaquery"></div>
+                    <div class="tablemap map_newmeta" id="map_metaquery"></div>
                 </td>
                 <td>
 
 
-                    <label for="field_metaquery_name">Nome</label></td><td class="bordered"><input type="ẗext" class="widetext newmeta_name" id="field_metaquery_name"></td><td id="createdmetalistquery" rowspan=4 colspan=2></td></tr>
+                    <label for="field_metaquery_name">Nome</label></td><td class="bordered"><input type="text" class="widetext newmeta_name" id="field_metaquery_name"></td><td id="createdmetalistquery" rowspan=4 colspan=2></td></tr>
             <tr><td>
-                <label for="field_metaquery_datefrom">Valido dal</label> <input type="checkbox" class="metadatefieldswitch hasdatefrom" id="field_metaquery_hasdatefrom"></td><td class="bordered"><input class="widetext metadatefrom proxymetadatefield" type="ẗext" id="field_metaquery_datefrom"></td></tr>
+                <label for="field_metaquery_datefrom">Valido dal</label> <input type="checkbox" class="metadatefieldswitch hasdatefrom" id="field_metaquery_hasdatefrom"></td><td class="bordered"><input class="widetext metadatefrom proxymetadatefield" type="text" id="field_metaquery_datefrom"></td></tr>
             <tr><td>
-                <label for="field_metaquery_dateto">Valido al</label> <input type="checkbox" id="field_metaquery_hasdateto" class="metadatefieldswitch hasdateto"></td><td class="bordered"><input type="ẗext" id="field_metaquery_dateto" class="proxymetadatefield metadateto widetext"></td></tr>
+                <label for="field_metaquery_dateto">Valido al</label> <input type="checkbox" id="field_metaquery_hasdateto" class="metadatefieldswitch hasdateto"></td><td class="bordered"><input type="text" id="field_metaquery_dateto" class="proxymetadatefield metadateto widetext"></td></tr>
 
             <tr><td>
-                <label for="field_metaquery_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxyquerymeta" src="/static/resource/fwp_focus.png">
-                <img class="imgbutton" id="btn_cleangeoloc_proxyquerymeta" src="/static/resource/fwp_clear.png"></td><td class="bordered"><input class="widetext" type="ẗext" id="field_metaquery_area_geosearch">
+                <label for="field_metaquery_area_geosearch">Area</label> <img class="imgbutton btn_trygeoloc btn_meta_geoloc" id="btn_trygeoloc_proxyquerymeta" src="/static/resource/fwp_focus.png">
+                <img class="imgbutton cleangeoloc_meta" id="btn_cleangeoloc_proxyquerymeta" src="/static/resource/fwp_clear.png"></td><td class="bordered"><input class="widetext field_meta_geoloc" type="text" id="field_metaquery_area_geosearch">
 
             </td>
             </tr>
@@ -428,42 +428,42 @@
             </tr></tbody>
             <tr>
                 <td rowspan=5>
-                    <div class="tablemap" id="map_createstandalone"></div>
+                    <div class="tablemap map_newproxy" id="map_createstandalone"></div>
                 </td>
                 <td>
                     <label for="field_createstandalone_name">Nome</label>
                 </td>
                 <td>
-                    <input type="ẗext" class="widetext proxynamefield" id="field_createstandalone_name">
+                    <input type="text" class="widetext proxynamefield" id="field_createstandalone_name">
                 </td>
                 <td>
                     <label for="field_createstandalone_owner">Fornitore</label>
                 </td>
                 <td>
-                    <input type="ẗext" class="proxyfieldprovider widetext {% if providers|length > 0 %}datalisted{% endif %}" id="field_createstandalone_owner" {% if providers|length > 0 %}list="providers"{% endif %}>
+                    <input type="text" class="proxyfieldprovider widetext {% if providers|length > 0 %}datalisted{% endif %}" id="field_createstandalone_owner" {% if providers|length > 0 %}list="providers"{% endif %}>
 
                 </td>
             </tr>
 
             <tr>
                 <td><label for="field_createstandalone_datefrom">Valido dal</label></td>
-                <td><input type="ẗext" class="widetext proxydatefield datefromfield" id="field_createstandalone_datefrom"></td>
+                <td><input type="text" class="widetext proxydatefield datefromfield" id="field_createstandalone_datefrom"></td>
                 <td><label for="field_createstandalone_contactname">Nome referente</label></td>
-                <td><input type="ẗext" class="widetext" id="field_createstandalone_contactname"></td>
+                <td><input type="text" class="widetext" id="field_createstandalone_contactname"></td>
             </tr>
 
             <tr>
                 <td><label for="field_createstandalone_dateto">Valido al</label> <input type="checkbox" id="field_createstandalone_hasdateto" class="proxyhasdateto"></td>
-                <td><input type="ẗext" class="widetext proxydatefield datetofield" id="field_createstandalone_dateto"></td>
+                <td><input type="text" class="widetext proxydatefield datetofield" id="field_createstandalone_dateto"></td>
                 <td><label for="field_createstandalone_contactname">Email referente</label></td>
-                <td><input type="ẗext" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createstandalone_contactemail"></td>
+                <td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createstandalone_contactemail"></td>
             </tr>
             <tr>
-                <td><label for="field_createstandalone_area_geosearch">Area</label> <img class="imgbutton" id="btn_trygeoloc_proxy" src="/static/resource/fwp_focus.png">
-                    <img class="imgbutton" id="btn_cleangeoloc_st" src="/static/resource/fwp_clear.png"></td>
-                <td><input type="ẗext" class="widetext" id="field_createstandalone_area_geosearch"></td>
+                <td><label for="field_createstandalone_area_geosearch">Area</label> <img class="imgbutton btn_proxy_geoloc btn_trygeoloc" id="btn_trygeoloc_proxy" src="/static/resource/fwp_focus.png">
+                    <img class="imgbutton cleangeoloc_proxy" id="btn_cleangeoloc_st" src="/static/resource/fwp_clear.png"></td>
+                <td><input type="text" class="widetext field_proxy_geoloc" id="field_createstandalone_area_geosearch"></td>
                 <td><label for="field_createstandalone_contactname">Telefono referente</label></td>
-                <td><input type="ẗext" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createstandalone_contactphone"></td>
+                <td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createstandalone_contactphone"></td>
             </tr>
 
         </table>
