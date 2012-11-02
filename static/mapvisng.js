@@ -657,8 +657,9 @@ function reportFailedSave (err, xhr)
 
     $("#progress_datasave .progressinfo").hide();
     $("#datasave_fail").show();
-    $("#datasavefail_explain").append(data['report']);
+    $("#datasavefail_explain").append(err);
     $("#datasavefail_explain").show();
+    $("#btn_saveprogress_close").show();
 
 }
 
