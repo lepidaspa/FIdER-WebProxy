@@ -130,8 +130,8 @@ function initProxyMap()
     ItaLayerSwitcher.prototype.loadContents = function()                                 // redefine Method
     {
         OpenLayers.Control.LayerSwitcher.prototype.loadContents.call(this);         // Call super-class method
-        this.baseLbl.innerHTML = 'Sfondi';                                   //change title for base layers
-        this.dataLbl.innerHTML = 'Livelli';                                   //change title for overlays (empty string "" is an option, too)
+        this.baseLbl.innerHTML = 'Cartografie';                                   //change title for base layers
+        this.dataLbl.innerHTML = 'Mappe';                                   //change title for overlays (empty string "" is an option, too)
     };
 
     var switcher = new ItaLayerSwitcher();
@@ -205,7 +205,6 @@ function initForms()
     $("#btn_newdatasource_standalone").live('click', initCreateStandalone);
     $("#btn_newdatasource_networked").live('click', initCreateReadWrite);
     $("#btn_newdatasource_query").live('click', initCreateQuery);
-    $("#newmeta_create").live('click', tryCreateMeta);
 
 
     $(".proxydatefield, .proxymetadatefield").datepicker({
@@ -229,11 +228,14 @@ function initForms()
 
     $(".newmeta_name").live('keyup change mouseup', verifyMetaName);
     $(".metadatefieldswitch").live('change', switchMetaDates);
+    $(".metabboxfieldswitch").live('change', switchMetaBbox);
     $(".proxymetadatefield").live('change', verifyMetaDates);
 
     $(".field_meta_geoloc, .field_proxy_geoloc").live('keyup', tryGeoSearch);
     $(".btn_trygeoloc").live('click', geosearch);
     $(".cleangeoloc_meta, .cleangeoloc_proxy").live('click', cleanGeoloc);
+    $(".newmeta_create").live('click', addNewMeta);
+    $(".removemeta").live('click', removeMeta);
 
     $("#proxycreate_readwrite").dialog({
         autoOpen: false,
@@ -333,6 +335,7 @@ function initCreateReadWrite ()
     cleanForms("proxycreate_readwrite");
     reviewProxySubmission("proxycreate_readwrite");
     reviewMetaSubmission("proxycreate_readwrite");
+
     newmetalist = [];
 }
 
@@ -430,36 +433,33 @@ function cleanForms(formname)
     {
         $(selector[i])[0].selectedIndex = 0;
     }
-
-
 }
 
-
-function tryCreateMeta()
+function cleanMetaForm (dialogid)
 {
 
-    var formid = $(this).closest(".creationdialog").attr("id");
-    console.log ("Checking meta name from "+formid+": "+candidate);
-    var base = $(this).closest(".creatormask");
+    var base = $("#"+dialogid).find(".metadata_info");
 
-    var metaname = base.find(".newmeta_name").val();
+    newmetamap.layers[1].destroyFeatures();
+    zoomToCenter (newmetamap, defaultLon, defaultLat, 6);
 
-    var datefromval = null;
-    var hasdatefrom = base.find(".metadatefieldswitch.hasdatefrom").attr("checked");
-    if (hasdatefrom)
-    {
-        datefromval = base.find(".metadatefrom").datepicker("getDate");
-    }
+    base.find(".newmeta_name").val("");
+    base.find(".proxymetadatefield").val("");
+    base.find(".field_meta_geoloc").val("");
 
-    var datetoval = null;
-    var hasdateto = base.find(".metadatefieldswitch.hasdateto").attr("checked");
-    if (hasdateto)
-    {
-        datetoval = base.find(".metadateto").datepicker("getDate");
-    }
+    var checkboxes = base.find("input[type=checkbox]");
+    checkboxes.attr("checked", false);
+    checkboxes.change();
+
+
+    reviewMetaSubmission(dialogid);
+
+
+
+
+
 
 }
-
 
 function tryGeoSearch (event)
 {
@@ -630,9 +630,11 @@ function getCurrentMetaNames()
 {
     var metanames = [];
 
-    // TODO: implement, placeholder
 
-
+    for (var i in newmetalist)
+    {
+        metanames.push(newmetalist[i]['name']);
+    }
 
     return metanames;
 }
@@ -687,6 +689,86 @@ function reviewMetaSubmission(dialogid)
 
 }
 
+function addNewMeta ()
+{
+
+    var formid = $(this).closest(".creationdialog").attr("id");
+    var base = $(this).closest(".creatormask");
+
+
+
+    var metaname = base.find(".newmeta_name").val();
+    var hasdatefrom = base.find(".metadatefieldswitch.hasdatefrom").val();
+    var metadatefrom = hasdatefrom ? base.find(".metadatefrom") : null;
+    var hasdateto = base.find(".metadatefieldswitch.hasdateto").val();
+    var metadateto = hasdateto ? base.find(".metadateto") : null;
+
+    var metabbox = null;
+    var hasbbox = base.find(".metabboxfieldswitch.hasbbox").val();
+    if (hasbbox)
+    {
+        var mapwidget = newmetamap;
+        var isbboxdrawn = mapwidget.layers[1].features.length > 0;
+        metabbox = isbboxdrawn ? mapwidget.layers[1].features[0].geometry.bounds.toBBOX : mapwidget.getExtent().toBBOX();
+    }
+
+    var newmeta = {
+        'name': metaname,
+        'datefrom': metadatefrom,
+        'dateto': metadateto,
+        'bbox': metabbox
+    };
+
+    console.log("Adding new meta:");
+    console.log(newmeta);
+
+    newmetalist.push(newmeta);
+
+    renderMetaTable(base);
+    cleanMetaForm(formid);
+
+}
+
+function removeMeta()
+{
+    var metablock = $(this).closest(".metainfo");
+    var base = $(this).closest(".creatormask");
+
+    var prefix = "removemeta_";
+    var metaid = parseInt(this.id.substr(prefix.length));
+
+    newmetalist.splice(metaid, 1);
+    renderMetaTable(base);
+    resetMetaChecks();
+}
+
+function renderMetaTable (base)
+{
+
+    var metatable = base.find(".newmetalist");
+    metatable.empty();
+
+    for (var i in newmetalist)
+    {
+        var metarow = $('<tr class="metainfo">' +
+            '<td class="metainfo_name"></td>' +
+            '<td class="metainfo_details"></td>' +
+            '<td class="metainfo_actions"></td>' +
+            '</tr>');
+
+        var removemeta = '<img class="imgbutton removemeta" src="/static/resource/visng_model_deletevalue.png" id="removemeta_'+i+'">';
+
+
+        metarow.find(".metainfo_name").append(newmetalist[i]['name']);
+        metarow.find(".metainfo_actions").append(removemeta);
+
+        metatable.append(metarow);
+
+    }
+
+
+
+}
 
 function reviewProxySubmission(dialogid)
 {
@@ -802,13 +884,25 @@ function switchMetaDates()
 
 }
 
+function switchMetaBbox ()
+{
+
+    var switchval = $(this).attr("checked");
+    var formid = $(this).closest(".creationdialog").attr("id");
+    var base = $(this).closest(".creatormask");
+
+    base.find(".field_meta_geoloc").prop('disabled', !switchval);
+
+
+}
+
 function verifyMetaDates()
 {
 
     var isvalid = true;
 
     var formid = $(this).closest(".creationdialog").attr("id");
-    console.log ("Checking proxy dates from "+formid);
+    console.log ("Checking meta dates from "+formid);
 
     var base = $(this).closest(".creatormask");
 
