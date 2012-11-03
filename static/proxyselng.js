@@ -588,6 +588,7 @@ function cleanMetaForm (dialogid)
     var checkboxes = base.find("input[type=checkbox]");
     checkboxes.attr("checked", false);
     checkboxes.change();
+    resetMetaChecks();
 
 
     reviewMetaSubmission(dialogid);
