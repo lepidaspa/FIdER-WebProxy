@@ -38,6 +38,27 @@ var newmetalist = [];
 var tempgeoloc_meta = null;
 var tempgeoloc_proxy = null;
 
+var blankmanifest = {
+    'name': "",
+    'provider': "",
+    'operations':
+    {
+        'read' : 'none',
+        'write': 'none',
+        'query':
+        {
+            'inventory': 'none',
+            'geographic': 'none',
+            'time': 'none',
+            'bi': 'none',
+            'signs': false
+        }
+    },
+    'time': ["", ""],
+    'area': [],
+    'metadata': []
+};
+
 function pageInit(proxylist)
 {
 
@@ -339,10 +360,127 @@ function initCreateReadWrite ()
     newmetalist = [];
 }
 
+
 function tryCreateReadWrite()
 {
     //TODO: placeholder, implement
 
+    var base = $("#proxycreate_readwrite");
+
+    var proxyname = base.find(".proxynamefield").val();
+
+    var proxydatefrom = base.find(".proxydatefield.datefromfield").datepicker("getDate");
+    var hasdateto = base.find(".proxyhasdateto").is(":checked");
+    var proxydateto = hasdateto ? base.find(".proxydatefield.datetofield").datepicker("getDate"): null;
+
+    var proxyopsdetails = base.find("#field_createreadwrite_mode").val().split("/");
+    var proxymode = proxyopsdetails[0];
+    var proxysubmode = proxyopsdetails[1];
+
+    // the proxy must ALWAYS have a bounding box, we only need to find if it's drawn or implicit
+    var proxybbox = newproxymap.layers[1].features.length > 0 ? newproxymap.layers[1].features[0].geometry.bounds.toArray() : newproxymap.getExtent().toArray();
+
+    var proxyowner = base.find(".proxyfieldprovider").val();
+    var proxycontactname = base.find(".proxyfieldcontactname").val();
+    var proxycontactmail = base.find(".proxyfieldemail").val();
+    var proxycontactphone = base.find(".proxyfieldphone").val();
+
+    //quick and dirty clone hack
+    var manifest = JSON.parse(JSON.stringify(blankmanifest));
+
+    manifest['name'] = proxyname;
+    manifest['provider'] = proxyowner;
+    manifest['time'][0] = dateToStamp(proxydatefrom);
+    if (proxydateto != null)
+    {
+        manifest['time'][1] = dateToStamp(proxydateto);
+    }
+
+    //TODO: check for need to reproject
+
+    proxybbox = reprojBboxArray(proxybbox, newproxymap);
+
+    manifest['area'] = proxybbox;
+
+    // setting only the operation we actually use
+    manifest['operations'][proxymode] = proxysubmode;
+
+
+    for (var i in newmetalist)
+    {
+        var metadata = {
+            'name': "",
+            'time': ["", ""],
+            'area': []
+        };
+
+        metadata['name'] = newmetalist[i]['name'];
+
+
+        var hasbbox = newmetalist[i]['bbox'] != null;
+        if (hasbbox)
+        {
+            metadata['area'] = reprojBboxArray(newmetalist[i]['bbox'], newmetamap);
+        }
+        else
+        {
+            metadata['area'] = proxybbox;
+        }
+
+        var hasdatefrom = newmetalist[i]['datefrom'] != null;
+        if (hasdatefrom)
+        {
+            metadata['time'][0] = dateToStamp(newmetalist[i]['datefrom']);
+        }
+
+        var hasdateto = newmetalist[i]['dateto'] != null;
+        if (hasdateto)
+        {
+            metadata['time'][1] = dateToStamp(newmetalist[i]['dateto']);
+        }
+
+        manifest['metadata'].push(metadata);
+
+
+    }
+
+
+
+    var contacts = {
+        'owner': proxyowner,
+        'contact': proxycontactname,
+        'email': proxycontactmail,
+        'phone': proxycontactphone
+    };
+
+    var payload = {
+        'manifest' : manifest,
+        'contacts' : contacts
+    };
+
+    console.log("Preparing to send payload message for registration");
+    console.log(payload);
+
+
+}
+
+function reprojBboxArray (boxarray, olmap)
+{
+    var endA = reprojPoint(boxarray[0], boxarray[1], newproxymap);
+    //console.log(endA);
+    var endB = reprojPoint(boxarray[2], boxarray[3], newproxymap);
+    //console.log(endB);
+    return [endA.x, endA.y, endB.x, endB.y];
+}
+
+function reprojPoint (pointX, pointY, olmap)
+{
+    var reproj;
+
+    reproj = new OpenLayers.LonLat(pointX, pointY).transform(olmap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
+
+
+    return new OpenLayers.Geometry.Point(reproj.lon, reproj.lat);
 }
 
 function initCreateQuery ()
@@ -661,7 +799,7 @@ function verifyProxyName ()
 
     var candidate = $(this).val();
     var formid = $(this).closest(".creationdialog").attr("id");
-    console.log ("Checking proxy name from "+formid+": "+candidate);
+    //console.log ("Checking proxy name from "+formid+": "+candidate);
 
 
     // not on one line so we can add show() for specific warnings.
@@ -683,7 +821,7 @@ function reviewMetaSubmission(dialogid)
     var ready = (newmetachecks.metadates && newmetachecks.metaname);
     // bounding box is implicit
 
-    console.log("Form "+dialogid+" META readiness: "+ready);
+    //console.log("Form "+dialogid+" META readiness: "+ready);
     $("#"+dialogid).closest(".ui-dialog").find(".newmeta_create").prop("disabled", !ready);
 
 
@@ -698,10 +836,10 @@ function addNewMeta ()
 
 
     var metaname = base.find(".newmeta_name").val();
-    var hasdatefrom = base.find(".metadatefieldswitch.hasdatefrom").val();
-    var metadatefrom = hasdatefrom ? base.find(".metadatefrom") : null;
-    var hasdateto = base.find(".metadatefieldswitch.hasdateto").val();
-    var metadateto = hasdateto ? base.find(".metadateto") : null;
+    var hasdatefrom = base.find(".metadatefieldswitch.hasdatefrom").is(":checked");
+    var metadatefrom = hasdatefrom ? base.find(".metadatefrom").datepicker("getDate") : null;
+    var hasdateto = base.find(".metadatefieldswitch.hasdateto").is(":checked");
+    var metadateto = hasdateto ? base.find(".metadateto").datepicker("getDate") : null;
 
     var metabbox = null;
     var hasbbox = base.find(".metabboxfieldswitch.hasbbox").val();
@@ -709,7 +847,7 @@ function addNewMeta ()
     {
         var mapwidget = newmetamap;
         var isbboxdrawn = mapwidget.layers[1].features.length > 0;
-        metabbox = isbboxdrawn ? mapwidget.layers[1].features[0].geometry.bounds.toBBOX : mapwidget.getExtent().toBBOX();
+        metabbox = isbboxdrawn ? mapwidget.layers[1].features[0].geometry.bounds.toArray() : mapwidget.getExtent().toArray();
     }
 
     var newmeta = {
@@ -724,9 +862,12 @@ function addNewMeta ()
 
     newmetalist.push(newmeta);
 
+    newproxychecks.hasmeta = true;
+
     renderMetaTable(base);
     cleanMetaForm(formid);
 
+    reviewProxySubmission(formid);
 }
 
 function removeMeta()
@@ -734,12 +875,18 @@ function removeMeta()
     var metablock = $(this).closest(".metainfo");
     var base = $(this).closest(".creatormask");
 
+
     var prefix = "removemeta_";
     var metaid = parseInt(this.id.substr(prefix.length));
 
     newmetalist.splice(metaid, 1);
+
+    newproxychecks.hasmeta = newmetalist.length > 0;
+
     renderMetaTable(base);
     resetMetaChecks();
+
+    reviewProxySubmission($(this).closest(".creationdialog").attr("id"));
 }
 
 function renderMetaTable (base)
@@ -777,7 +924,7 @@ function reviewProxySubmission(dialogid)
 
     var ready = (newproxychecks.proxyname && newproxychecks.proxydates && newproxychecks.hasmeta && newproxychecks.hasprovider && newproxychecks.hascontact && (newproxychecks.meta_out.length == 0));
 
-    console.log("Form "+dialogid+" PROXY readiness: "+ready);
+    //console.log("Form "+dialogid+" PROXY readiness: "+ready);
 
     $("#"+dialogid).closest(".ui-dialog").find(".btn_form_create").prop("disabled", !ready);
     //console.log($("#"+dialogid).closest(".ui-dialog").find(".btn_form_create"));
@@ -789,7 +936,7 @@ function switchProxyDateFields()
     // only checks on dateto
 
     var eid = this.id;
-    var hasdateto = $(this).attr("checked");
+    var hasdateto = $(this).is(":checked");
 
     var formid = $(this).closest(".creationdialog").attr("id");
     $("#"+formid).find(".proxydatefield.datetofield").prop("disabled", !hasdateto);
@@ -800,7 +947,7 @@ function verifyProxyContact()
 {
     // checks if a valid contact reference has been inserted for this proxy
 
-    console.log("Contact field verfication from field "+this.id);
+    //console.log("Contact field verfication from field "+this.id);
 
     // we only need one valid data in all the contact data fields for this to be used
     var isvalid = false;
@@ -813,10 +960,10 @@ function verifyProxyContact()
     for (var i = 0; i < contactfields.length; i++)
     {
 
-        console.log("Checking contact field "+contactfields[i].id);
+        //console.log("Checking contact field "+contactfields[i].id);
 
         var fieldval = $(contactfields[i]).val();
-        console.log("Field has value "+fieldval);
+        //console.log("Field has value "+fieldval);
 
 
         if (fieldval != null && fieldval != "")
@@ -857,6 +1004,8 @@ function verifyProxyProvider()
     var providername = base.find(".proxyfieldprovider").val();
     var isvalid = false;
 
+    //console.log("Checking providername "+providername);
+
     if (providername != null)
     {
         var clean = providername.replace (/\s/, "");
@@ -877,7 +1026,7 @@ function switchMetaDates()
     var switchid = this.id;
     var destid = this.id.replace("_has", "_");
 
-    var switchval = $(this).attr("checked");
+    var switchval = $(this).is(":checked");
 
     $("#"+destid).prop("disabled", !switchval);
     $("#"+destid).change();
@@ -887,7 +1036,7 @@ function switchMetaDates()
 function switchMetaBbox ()
 {
 
-    var switchval = $(this).attr("checked");
+    var switchval = $(this).is(":checked");
     var formid = $(this).closest(".creationdialog").attr("id");
     var base = $(this).closest(".creatormask");
 
@@ -906,7 +1055,7 @@ function verifyMetaDates()
 
     var base = $(this).closest(".creatormask");
 
-    var hasdatefrom = base.find(".metadatefieldswitch.hasdatefrom").attr("checked");
+    var hasdatefrom = base.find(".metadatefieldswitch.hasdatefrom").is(":checked");
     if (hasdatefrom)
     {
         var datefromval = base.find(".metadatefrom").datepicker("getDate");
@@ -916,7 +1065,7 @@ function verifyMetaDates()
         }
     }
 
-    var hasdateto = base.find(".metadatefieldswitch.hasdateto").attr("checked");
+    var hasdateto = base.find(".metadatefieldswitch.hasdateto").is(":checked");
     if (hasdateto)
     {
         var datetoval = base.find(".metadateto").datepicker("getDate");
@@ -933,6 +1082,23 @@ function verifyMetaDates()
 
     newmetachecks.metadates = isvalid;
     reviewMetaSubmission(formid);
+
+
+}
+
+
+function dateToStamp (candidate)
+{
+
+    function pad(number) {
+        var r = String(number);
+        if ( r.length === 1 ) {
+            r = '0' + r;
+        }
+        return ""+r;
+    }
+
+    return ''+candidate.getUTCFullYear()+'-'+ pad(candidate.getUTCMonth()+1)+'-' + pad(candidate.getUTCDate())+ 'T00:00Z';
 
 
 }
@@ -959,7 +1125,7 @@ function verifyProxyDates()
         isvalid = false;
     }
 
-    var hasdateto = base.find(".proxyhasdateto").attr("checked");
+    var hasdateto = base.find(".proxyhasdateto").is(":checked");
     if (hasdateto)
     {
         var datetoval = base.find(".proxydatefield.datetofield").datepicker("getDate");
@@ -970,7 +1136,6 @@ function verifyProxyDates()
 
         console.log("Comparing dates "+datefromval+" to "+datetoval);
         isvalid = isvalid && verifyDateSequence(datefromval, datetoval);
-
     }
 
     newproxychecks.proxydates = isvalid;

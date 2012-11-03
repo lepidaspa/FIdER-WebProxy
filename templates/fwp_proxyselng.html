@@ -128,7 +128,7 @@
                     <label for="field_createreadwrite_name">Nome</label></td><td><input type="text" id="field_createreadwrite_name" class="widetext proxynamefield">
                 </td>
                 <td><label for="field_createreadwrite_owner">Fornitore</label></td>
-                <td><input type="text" class="widetext" id="field_createreadwrite_owner" class="proxyfieldprovider {% if providers|length > 0 %}datalisted" list="providers{% endif %}">
+                <td><input type="text" id="field_createreadwrite_owner" class="widetext proxyfieldprovider {% if providers|length > 0 %}datalisted" list="providers{% endif %}">
 
 
                 </td>
@@ -153,7 +153,7 @@
 
 
                 <td><label for="field_createreadwrite_contactname">Nome referente</label></td>
-                <td><input type="text" id="field_createreadwrite_contactname" class="widetext"></td>
+                <td><input type="text" id="field_createreadwrite_contactname" class="widetext proxyfieldcontactdata proxyfieldcontactname"></td>
             </tr>
             <tr>
 
@@ -263,7 +263,7 @@
 
 
                 <td><label for="field_createquery_owner">Fornitore</label></td>
-                <td><input type="text" class="widetext{% if providers|length > 0 %} datalisted{% endif %}" id="field_createquery_owner" class="proxyfieldprovider" {% if providers|length > 0 %}list="providers"{% endif %}>
+                <td><input type="text" class="proxyfieldprovider widetext{% if providers|length > 0 %} datalisted{% endif %}" id="field_createquery_owner" {% if providers|length > 0 %}list="providers"{% endif %}>
                    </td>
             </tr>
 
@@ -283,7 +283,7 @@
 
 
                 <td><label for="field_createquery_contactname">Nome referente</label></td>
-                <td><input type="text" class="widetext" id="field_createquery_contactname"></td>
+                <td><input type="text" class="widetext proxyfieldcontactdata proxyfieldcontactname" id="field_createquery_contactname"></td>
             </tr>
             <tr>
 
@@ -301,7 +301,7 @@
                 </td>
 
 
-                <td><label for="field_createquery_contactname">Email referente</label></td><td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createquery_contactemail"></td>
+                <td><label for="field_createquery_contactemail">Email referente</label></td><td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createquery_contactemail"></td>
 
             </tr>
 
@@ -322,7 +322,7 @@
                 </td>
 
                 <td>
-                    <label for="field_createquery_contactname">Telefono referente</label></td><td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createquery_contactphone">
+                    <label for="field_createquery_contactphone">Telefono referente</label></td><td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createquery_contactphone">
             </td>
             </tr>
 
@@ -464,20 +464,20 @@
                 <td><label for="field_createstandalone_datefrom">Valido dal</label></td>
                 <td><input type="text" class="widetext proxydatefield datefromfield" id="field_createstandalone_datefrom"></td>
                 <td><label for="field_createstandalone_contactname">Nome referente</label></td>
-                <td><input type="text" class="widetext" id="field_createstandalone_contactname"></td>
+                <td><input type="text" class="widetext proxyfieldcontactdata proxyfieldcontactname" id="field_createstandalone_contactname"></td>
             </tr>
 
             <tr>
                 <td><label for="field_createstandalone_dateto">Valido al</label> <input type="checkbox" id="field_createstandalone_hasdateto" class="proxyhasdateto"></td>
                 <td><input type="text" class="widetext proxydatefield datetofield" id="field_createstandalone_dateto"></td>
-                <td><label for="field_createstandalone_contactname">Email referente</label></td>
+                <td><label for="field_createstandalone_contactemail">Email referente</label></td>
                 <td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createstandalone_contactemail"></td>
             </tr>
             <tr>
                 <td><label for="field_createstandalone_area_geosearch">Area</label> <img class="imgbutton btn_proxy_geoloc btn_trygeoloc" id="btn_trygeoloc_proxy" src="/static/resource/fwp_focus.png">
                     <img class="imgbutton cleangeoloc_proxy" id="btn_cleangeoloc_st" src="/static/resource/fwp_clear.png"></td>
                 <td><input type="text" class="widetext field_proxy_geoloc" id="field_createstandalone_area_geosearch"></td>
-                <td><label for="field_createstandalone_contactname">Telefono referente</label></td>
+                <td><label for="field_createstandalone_contactphone">Telefono referente</label></td>
                 <td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createstandalone_contactphone"></td>
             </tr>
 

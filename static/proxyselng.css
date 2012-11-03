@@ -170,3 +170,13 @@ td
     padding:        0 8px 8px 8px;
 
 }
+
+.newmetalist, .newmetalist tr
+{
+    width:          100%;
+}
+
+.metainfo_actions
+{
+    text-align:         right;
+}
