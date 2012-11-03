@@ -339,9 +339,41 @@ function initForms()
         }
     });
 
+    $("#progress_creation").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Esci": {
+                id: "btn_createprogress_close_success",
+                text: "Chiudi",
+                click: function() {
+                    $( this ).dialog( "close" );
+                    resetPage();
+                }
+            },
+            "Chiudi": {
+                id: "btn_createprogress_close_fail",
+                text: "Chiudi",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+
+        }
+    });
+
+
     $("#form_create_standalone, #form_create_linked, #form_create_readwrite, #form_create_query").addClass("btn_form_create");
 
 
+}
+
+function resetPage()
+{
+    // callback for forms that need to have the page reloaded after the user reads the feedback
+    window.location = window.location.pathname;
 }
 
 function initCreateReadWrite ()
@@ -396,7 +428,6 @@ function tryCreateReadWrite()
         manifest['time'][1] = dateToStamp(proxydateto);
     }
 
-    //TODO: check for need to reproject
 
     proxybbox = reprojBboxArray(proxybbox, newproxymap);
 
@@ -461,6 +492,59 @@ function tryCreateReadWrite()
     console.log("Preparing to send payload message for registration");
     console.log(payload);
 
+
+    $("#creation_progress").dialog("open");
+    $("#creation_progress.progressinfo").hide();
+    $("#progspinner_creation").show();
+
+    $("#btn_createprogress_close_success").hide();
+    $("#btn_createprogress_close_fail").hide();
+
+    var urlstring = "/fwp/createng/";
+
+    $.ajax ({
+        url: urlstring,
+        data: {jsonmessage: JSON.stringify(payload)},
+        //contentType: 'application/json',
+        //dataType: 'json',
+        type: 'POST',
+        async: true,
+        success: reportCreationResult,
+        error: reportFailedCreation
+    });
+
+}
+
+function reportCreationResult (data, textStatus, jqXHR)
+{
+
+    $("#progress_stage_sendinginfo").hide();
+    $("#progspinner_creation").hide();
+
+    if (data['success'] == true)
+    {
+        $("#btn_createprogress_close_success").show();
+        $("#creationfinished_success").show();
+    }
+    else
+    {
+        $("#creationfinished_fail").show();
+        $("#creationfail_explain").append(data['report']);
+        $("#btn_createprogress_close_fail").show();
+    }
+
+
+}
+
+function reportFailedCreation (err, xhr)
+{
+
+    $("#progress_stage_sendinginfo").hide();
+    $("#progspinner_creation").hide();
+
+    $("#creationfinished_fail").show();
+    $("#creationfail_explain").append(err);
+    $("#btn_createprogress_close_fail").show();
 
 }
 
@@ -940,8 +1024,12 @@ function switchProxyDateFields()
     var hasdateto = $(this).is(":checked");
 
     var formid = $(this).closest(".creationdialog").attr("id");
-    $("#"+formid).find(".proxydatefield.datetofield").prop("disabled", !hasdateto);
-    $("#"+formid).find(".proxydatefield.datetofield").change();
+
+    var datefield = $("#"+formid).find(".proxydatefield.datetofield");
+
+    datefield.prop("disabled", !hasdateto);
+
+    datefield.change();
 }
 
 function verifyProxyContact()

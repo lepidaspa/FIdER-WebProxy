@@ -695,6 +695,155 @@ def proxy_uploadwfs (request, **kwargs):
 	return HttpResponse(json.dumps(response_upload), mimetype="application/json")
 
 @csrf_exempt
+def proxy_create_adv (request):
+	"""
+	Creates a new proxy from a partially compiled manifest and performs the full communication with the main server. Returns success only if the proxy is correctly registered. NOTE: also saves contacts, compared to proxy_create_new
+	:param request:
+	:return:
+	"""
+
+	#NOTE: linked proxies work differently in terms of using the data from the request, as both manifest and contacts take data from the original
+
+	print "Trying to create a new proxy"
+	if request.REQUEST.has_key("linkedto"):
+		linkedto = request.REQUEST['linkedto']
+		print "Creating from standalone %s" % linkedto
+		request = None
+	else:
+		print "Creating from premanifest"
+		print request.POST
+		linkedto = None
+
+	if request is None and linkedto is None:
+		raise Exception ("Missing manifest or linkage data for new proxy");
+
+	result = {
+		'success':  False,
+		'result': ""
+	}
+
+
+	#NOTE: manifest is STILL referred to as jsonmessage for a quick transition from the old version of this function.
+
+	try:
+
+		# creating the pre-manifest
+		if request is not None:
+			jsonmessage = (json.loads(request.POST['jsonmessage']))['manifest']
+			jsoncontacts = (json.loads(request.POST['jsonmessage']))['contacts']
+		elif linkedto is not None:
+			jsonmessage = json.load(open(os.path.join(proxyconf.baseproxypath, proxyconf.basemanifestpath, linkedto+".manifest")))
+			jsonmessage['operations']['read'] = 'full'
+		#local proxies have no token in the manifest (it's never used anyway
+		#jsonmessage.pop('token')
+
+
+		premanifest = ArDiVa.Model(MessageTemplates.model_response_capabilities)
+
+		#TODO: check that BASEURL receives the correct value
+
+		#print "SENT:",jsonmessage
+		#print "PRE:",premanifest
+
+		#verify if the proxy is local or not (i.e. if all modes are none)
+		islocal = (
+			jsonmessage['operations']['read'] == 'none' and
+			jsonmessage['operations']['write'] == 'none' and
+			jsonmessage['operations']['query']['bi'] == 'none' and
+			jsonmessage['operations']['query']['geographic'] == 'none' and
+			jsonmessage['operations']['query']['inventory'] == 'none' and
+			jsonmessage['operations']['query']['time'] == 'none'
+		)
+
+
+		# Getting the token from the main  server
+		# or creating a uuid locally
+
+		# note that we only get around the main server parts rather than rewriting the whole process for more consistent maintainance as local and federated proxies are functionally the same
+
+		if not islocal:
+			accepted, message = Components.getWelcomeFromServer()
+		else:
+			# local proxy are automatic
+			accepted = True
+
+			message = {'token': "local_"+str(uuid.uuid4()).replace("-","_")}
+
+
+
+
+		if accepted:
+			#assembling the manifest
+
+			proxy_id = message['token']
+			print "RECEIVED TOKEN %s" % proxy_id
+			jsonmessage['token'] = proxy_id
+			filledok, manifest = premanifest.fillSafely(jsonmessage)
+
+
+			if not islocal:
+				approved, response = Components.sendProxyManifestRaw (json.dumps(manifest))
+
+				print "RECEIVED RESPONSE FOR RAW MANIFEST: %s" % approved
+				print response
+
+			else:
+				approved = True
+
+
+
+
+			if approved:
+
+
+				created, message = ProxyFS.createSoftProxy(proxy_id, manifest, linkedto)
+
+				if created:
+					success = True
+
+					if linkedto is None:
+						ProxyFS.setProxyContacts(proxy_id, jsoncontacts)
+
+					report = "Creazione del proxy %s completata." % jsonmessage['name']
+				else:
+					success = False
+					report = "Creazione del proxy %s fallita. Errore locale: %s" % (jsonmessage['name'], str(message))
+
+			else:
+
+				success = False
+				report = "Creazione del proxy %s fallita. Errore dal federatore: %s" % (jsonmessage['name'], str(response))
+
+
+		else:
+			success = False
+			report = "Creazione del proxy %s fallita, riprovare.<br>(%s)" % (jsonmessage['name'], message)
+
+
+		result = {
+		'success': success,
+		'report': report
+		}
+
+	except Exception as ex:
+
+		traceback.print_exc()
+		print (type(ex))
+		print ex
+		result = {
+		'success':	False,
+		'report':	"Errore nella procedura: %s" % str(ex)
+		}
+
+
+
+
+	print json.dumps(result)
+
+	return HttpResponse(json.dumps(result), mimetype="application/json")
+
+
+@csrf_exempt
 def proxy_create_new (request):
 	"""
 	Creates a new proxy from a partially compiled manifest and performs the full communication with the main server. Returns success only if the proxy is correctly registered

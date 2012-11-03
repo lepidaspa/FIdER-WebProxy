@@ -66,6 +66,7 @@ mainserver_ref_location = config_testing.MAINSERVER_CONF_FILE
 
 path_mirror = 'maps/mirror'
 path_geojson = 'maps/geojson'
+path_contacts = 'conf/contacts.json'
 path_manifest = 'conf/manifest.json'
 path_mappings = 'conf/mappings'
 path_remoteres = 'conf/remote'

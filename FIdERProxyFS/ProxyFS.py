@@ -79,6 +79,20 @@ def logEvent (eventdata, iserror=False):
 		pass
 
 
+def setProxyContacts (proxy_id, contactsjson):
+	"""
+	Writes the contacts file for this proxy. No check on the contents of contactsjson, will work as long as it's json-dumpable. No feedback given unless there is an exceptions
+	:param proxy_id:
+	:param contactsjson:
+	:return:
+	"""
+
+	#NOTE: since the linked proxy uses a symlink to the standalone tool, changing  this will always change the contacts on both instances
+	contactspath = os.path.join(conf.baseproxypath, proxy_id, conf.path_contacts)
+	json.dump(contactsjson, open(contactspath))
+
+
+
 def createSoftProxy (proxy_id, manifest, linkedto=None):
 
 	success = True
@@ -190,7 +204,6 @@ def handleFileEvent (eventpath):
 				logEvent ("Error while sending update for proxy %s: %s" % (proxy_id, details))
 		except Exception as e:
 			logEvent (e.message, True)
-
 
 
 

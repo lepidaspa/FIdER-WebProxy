@@ -220,6 +220,7 @@ def makeSoftProxy (proxy_id, manifest, linkedto=None):
 	if linkedto is None:
 		os.makedirs(os.path.join(basepath, conf.path_mirror))
 	else:
+		os.symlink(os.path.join(conf.baseproxypath, linkedto, conf.path_contacts), os.path.join(basepath, conf.path_contacts))
 		os.symlink(os.path.join(conf.baseproxypath, linkedto, conf.path_mirror), os.path.join(basepath, conf.path_mirror))
 		linkerdict = { 'linkedto': linkedto}
 		json.dumps(linkerdict, open(os.path.join(basepath, "conf", "linkedto.json"), 'w+'))
