@@ -646,6 +646,8 @@ function tryCreateReadWrite()
     console.log("Preparing to send payload message for registration");
     console.log(payload);
 
+    $("#proxycreate_readwrite").dialog("close");
+
 
     $("#creation_progress").dialog("open");
     $("#creation_progress.progressinfo").hide();
@@ -854,6 +856,7 @@ function tryCreateQuery ()
     console.log("Preparing to send payload message for registration");
     console.log(payload);
 
+    $("#proxycreate_query").dialog("close");
     $("#creation_progress").dialog("open");
     $("#creation_progress.progressinfo").hide();
     $("#creationfinished_success").hide();
@@ -900,11 +903,6 @@ function checkFedRequestField()
 
     $("#form_create_linked").prop("disabled", !(selection != null && selection != ""));
 
-}
-
-function tryCreateLinked()
-{
-    //TODO: placeholder, implement
 }
 
 function initCreateStandalone()
@@ -989,11 +987,13 @@ function tryCreateStandalone()
     console.log("Preparing to send payload message for registration");
     console.log(payload);
 
+    $("#proxycreate_standalone").dialog("close");
 
     $("#creation_progress").dialog("open");
     $("#creation_progress.progressinfo").hide();
     $("#creationfinished_success").hide();
     $("#creationfinished_fail").hide();
+    $("#creationfail_explain").empty();
     $("#progspinner_creation").show();
 
     $("#btn_createprogress_close_success").hide();
@@ -1006,6 +1006,52 @@ function tryCreateStandalone()
         data: {jsonmessage: JSON.stringify(payload)},
         //contentType: 'application/json',
         //dataType: 'json',
+        type: 'POST',
+        async: true,
+        success: reportCreationResult,
+        error: reportFailedCreation
+    });
+
+    console.log("Payload sent");
+
+
+}
+
+function tryCreateLinked()
+{
+
+    // needs only the proxy_id of the standalone to be linked
+
+    console.log("Creating a linked proxy instance");
+
+    var base = $("#proxycreate_linked");
+
+    var proxy_id = base.find("#proxycreate_linked_choosesource").val();
+
+    var payload = {
+        'linkedto': proxy_id
+    };
+
+    console.log("Preparing to send payload message for registration");
+    console.log(payload);
+
+    $("#proxycreate_linked").dialog("close");
+
+
+    $("#creation_progress").dialog("open");
+    $("#creation_progress.progressinfo").hide();
+    $("#creationfinished_success").hide();
+    $("#creationfinished_fail").hide();
+    $("#creationfail_explain").empty();
+    $("#progspinner_creation").show();
+    $("#btn_createprogress_close_success").hide();
+    $("#btn_createprogress_close_fail").hide();
+
+    var urlstring = "/fwp/createng/";
+
+    $.ajax ({
+        url: urlstring,
+        data: {jsonmessage: JSON.stringify(payload)},
         type: 'POST',
         async: true,
         success: reportCreationResult,

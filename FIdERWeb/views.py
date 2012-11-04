@@ -705,8 +705,11 @@ def proxy_create_adv (request):
 	#NOTE: linked proxies work differently in terms of using the data from the request, as both manifest and contacts take data from the original
 
 	print "Trying to create a new proxy"
-	if request.REQUEST.has_key("linkedto"):
-		linkedto = request.REQUEST['linkedto']
+	print "Request: %s" % request.POST
+	payload_dict = json.loads(request.POST['jsonmessage'])
+	print "Payload dict: %s" % payload_dict
+	if payload_dict.has_key("linkedto"):
+		linkedto = payload_dict['linkedto']
 		print "Creating from standalone %s" % linkedto
 		request = None
 	else:
@@ -715,7 +718,7 @@ def proxy_create_adv (request):
 		linkedto = None
 
 	if request is None and linkedto is None:
-		raise Exception ("Missing manifest or linkage data for new proxy");
+		raise Exception ("Missing manifest or linkage data for new proxy")
 
 	result = {
 		'success':  False,
