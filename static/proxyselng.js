@@ -395,7 +395,6 @@ function initCreateReadWrite ()
 
 function tryCreateReadWrite()
 {
-    //TODO: placeholder, implement
 
     var base = $("#proxycreate_readwrite");
 
@@ -569,7 +568,9 @@ function reprojPoint (pointX, pointY, olmap)
 
 function initCreateQuery ()
 {
-    //TODO: placeholder, implement
+
+
+
     $(".tablemap").empty();
     $("#proxycreate_query").dialog("open");
     newproxymap = initMiniMap("map_createquery");
@@ -582,7 +583,132 @@ function initCreateQuery ()
 
 function tryCreateQuery ()
 {
-    //TODO: placeholder, implement
+    //NOTE: based on tryCreateReadWrite
+
+    var base = $("#proxycreate_query");
+
+    var proxyname = base.find(".proxynamefield").val();
+
+    var proxydatefrom = base.find(".proxydatefield.datefromfield").datepicker("getDate");
+    var hasdateto = base.find(".proxyhasdateto").is(":checked");
+    var proxydateto = hasdateto ? base.find(".proxydatefield.datetofield").datepicker("getDate"): null;
+
+    var querymode_geo = $("#newquery_mode_geo").val();
+    var querymode_inv = $("#newquery_mode_inv").val();
+    var querymode_time = $("#newquery_mode_time").val();
+    var querymode_bi = $("#newquery_mode_bi").val();
+    var querymode_signed = $("#newquery_mode_sign").val();
+
+    //TODO: complete flow
+
+    // the proxy must ALWAYS have a bounding box, we only need to find if it's drawn or implicit
+    var proxybbox = newproxymap.layers[1].features.length > 0 ? newproxymap.layers[1].features[0].geometry.bounds.toArray() : newproxymap.getExtent().toArray();
+
+    var proxyowner = base.find(".proxyfieldprovider").val();
+    var proxycontactname = base.find(".proxyfieldcontactname").val();
+    var proxycontactmail = base.find(".proxyfieldemail").val();
+    var proxycontactphone = base.find(".proxyfieldphone").val();
+
+    //quick and dirty clone hack
+    var manifest = JSON.parse(JSON.stringify(blankmanifest));
+
+    manifest['name'] = proxyname;
+    manifest['provider'] = proxyowner;
+    manifest['time'][0] = dateToStamp(proxydatefrom);
+    if (proxydateto != null)
+    {
+        manifest['time'][1] = dateToStamp(proxydateto);
+    }
+
+
+    proxybbox = reprojBboxArray(proxybbox, newproxymap);
+
+    manifest['area'] = proxybbox;
+
+
+    // setting only the operation we actually use
+
+    // setting the query mode info
+    manifest['operations']['query']['geographic'] = querymode_geo;
+    manifest['operations']['query']['inventory'] = querymode_inv;
+    manifest['operations']['query']['time'] = querymode_time;
+    manifest['operations']['query']['bi'] = querymode_bi;
+    manifest['operations']['query']['sign'] = querymode_signed;
+
+    for (var i in newmetalist)
+    {
+        var metadata = {
+            'name': "",
+            'time': ["", ""],
+            'area': []
+        };
+
+        metadata['name'] = newmetalist[i]['name'];
+
+
+        var hasbbox = newmetalist[i]['bbox'] != null;
+        if (hasbbox)
+        {
+            metadata['area'] = reprojBboxArray(newmetalist[i]['bbox'], newmetamap);
+        }
+        else
+        {
+            metadata['area'] = proxybbox;
+        }
+
+        var hasdatefrom = newmetalist[i]['datefrom'] != null;
+        if (hasdatefrom)
+        {
+            metadata['time'][0] = dateToStamp(newmetalist[i]['datefrom']);
+        }
+
+        var hasdateto = newmetalist[i]['dateto'] != null;
+        if (hasdateto)
+        {
+            metadata['time'][1] = dateToStamp(newmetalist[i]['dateto']);
+        }
+
+        manifest['metadata'].push(metadata);
+
+
+    }
+
+    var contacts = {
+        'owner': proxyowner,
+        'contact': proxycontactname,
+        'email': proxycontactmail,
+        'phone': proxycontactphone
+    };
+
+    var payload = {
+        'manifest' : manifest,
+        'contacts' : contacts
+    };
+
+    console.log("Preparing to send payload message for registration");
+    console.log(payload);
+
+    $("#creation_progress").dialog("open");
+    $("#creation_progress.progressinfo").hide();
+    $("#progspinner_creation").show();
+
+    $("#btn_createprogress_close_success").hide();
+    $("#btn_createprogress_close_fail").hide();
+
+    var urlstring = "/fwp/createng/";
+
+    $.ajax ({
+        url: urlstring,
+        data: {jsonmessage: JSON.stringify(payload)},
+        //contentType: 'application/json',
+        //dataType: 'json',
+        type: 'POST',
+        async: true,
+        success: reportCreationResult,
+        error: reportFailedCreation
+    });
+
+
 
 }
 
