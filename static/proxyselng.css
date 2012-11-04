@@ -132,10 +132,7 @@ td
     cursor:                 pointer;
 }
 
-#proxycreate_linked .formbriefing
-{
-    max-width:              400px;
-}
+
 
 #proxycreate_linked select
 {
@@ -179,4 +176,14 @@ td
 .metainfo_actions
 {
     text-align:         right;
+}
+
+#proxycreate_linked .formbriefing, #proxydelete .formbriefing
+{
+    max-width:              400px;
+}
+
+#proxydelete .widetext
+{
+    width:                  100%;
 }

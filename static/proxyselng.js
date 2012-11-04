@@ -59,6 +59,8 @@ var blankmanifest = {
     'metadata': []
 };
 
+var cpid = null;
+
 function pageInit(proxylist)
 {
 
@@ -226,6 +228,7 @@ function initForms()
     $("#btn_newdatasource_standalone").live('click', initCreateStandalone);
     $("#btn_newdatasource_networked").live('click', initCreateReadWrite);
     $("#btn_newdatasource_query").live('click', initCreateQuery);
+    $(".btn_proxydelete").live('click', initDeleteProxy);
 
 
     $(".proxydatefield, .proxymetadatefield").datepicker({
@@ -246,6 +249,7 @@ function initForms()
     $(".proxyfieldprovider").live("keyup change mouseup", verifyProxyProvider);
     $(".proxyfieldcontactdata").live("keyup change mouseup", verifyProxyContact);
     $(".proxynamefield").live('keyup change mouseup', verifyProxyName);
+
 
     $(".newmeta_name").live('keyup change mouseup', verifyMetaName);
     $(".metadatefieldswitch").live('change', switchMetaDates);
@@ -364,11 +368,157 @@ function initForms()
         }
     });
 
+    $("#proxydelete").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                id : "form_close_delete",
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Conferma": {
+                id : "deleterequest_confirmationbutton",
+                text: "Conferma",
+                click: tryDeleteProxy
+            }
+        }
+    });
+    $("#deleterequest_confirmationstring").live('keyup mouseup change', checkDeletionReady);
+
+    $("#delete_progress").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Esci": {
+                id: "btn_deleteprogress_close_success",
+                text: "Chiudi",
+                click: function() {
+                    $( this ).dialog( "close" );
+                    resetPage();
+                }
+            },
+            "Chiudi": {
+                id: "btn_deleteprogress_close_fail",
+                text: "Chiudi",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+
+        }
+    });
 
     $("#form_create_standalone, #form_create_linked, #form_create_readwrite, #form_create_query").addClass("btn_form_create");
 
 
 }
+
+function initDeleteProxy()
+{
+
+    var prefix = "btn_proxydelete_";
+    cpid = this.id.substr(prefix);
+    console.log("Waiting for confirmation to delete proxy "+cpid);
+
+    $("#proxydelete").dialog("open");
+    $("#deleterequest_confirmationbutton").prop("disabled", true);
+
+
+}
+
+function checkDeletionReady()
+{
+    var userstring = $("#deleterequest_confirmationstring").val();
+    // NOTE: hidden input is used to that we can change the text only in one place, that is the HTML template
+    var compareto = $("#deleterequest_verificationstring").val();
+
+    $("#deleterequest_confirmationbutton").prop("disabled", userstring != compareto);
+
+}
+
+
+function tryDeleteProxy()
+{
+
+    $("#proxydelete").dialog("close");
+
+    var proxy_id = cpid;
+
+
+    var controldict = {
+        'action': 'deleteproxy',
+        'proxy_id': cpid
+    };
+
+    $("#delete_progress").dialog("open");
+    $("#delete_progress.progressinfo").hide();
+    $("#deletefinished_success").hide();
+    $("#deletefinished_fail").hide();
+    $("#progspinner_delete").show();
+
+    $("#btn_deleteprogress_close_success").hide();
+    $("#btn_deleteprogress_close_fail").hide();
+
+
+    $.ajax({
+        url: "/fwp/control/",
+        async: true,
+        data: controldict,
+        type: 'POST',
+        success: reportDeleteResult,
+        error: reportFailedDelete
+    });
+
+
+}
+
+function reportDeleteResult (data, textStatus, jqXHR)
+{
+
+    console.log("Received structurally correct response");
+    console.log(data);
+
+    $("#progress_stage_makingrequest").hide();
+    $("#progspinner_delete").hide();
+
+    if (data['success'] == true)
+    {
+        $("#btn_deleteprogress_close_success").show();
+        $("#deletefinished_success").show();
+        console.log("Proxy deletion succeeded");
+    }
+    else
+    {
+        $("#deletefinished_fail").show();
+        $("#deletefail_explain").append(data['report']);
+        $("#btn_deleteprogress_close_fail").show();
+        console.log("Proxy deletion failed");
+    }
+
+}
+
+function reportFailedDelete (err, xhr)
+{
+
+    console.log("Reporting failed ajax call for proxy delete");
+    console.log(err);
+
+    $("#progress_stage_makingrequest").hide();
+    $("#progspinner_delete").hide();
+
+    $("#deletefinished_fail").show();
+    $("#deletefail_explain").append(err);
+    $("#btn_deleteprogress_close_fail").show();
+
+
+}
+
+
 
 function resetPage()
 {
@@ -752,7 +902,6 @@ function tryCreateLinked()
 
 function initCreateStandalone()
 {
-    //TODO: placeholder, implement
     $(".tablemap").empty();
     $("#proxycreate_standalone").dialog("open");
     initMiniMap("map_createstandalone");
@@ -768,6 +917,10 @@ function initCreateStandalone()
 function tryCreateStandalone()
 {
     //TODO: placeholder, implement
+
+    // works as per ReadWrite except NO mode or operation set
+    // artificially declare only ONE meta, same data as the instance itself
+
 }
 
 

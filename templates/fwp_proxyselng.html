@@ -392,6 +392,8 @@
     </div>
 
 
+
+
     <div class="creationdialog" id="proxycreate_linked" title="Creazione proxy di collegamento standalone">
 
         {% if freest|length > 0 %}
@@ -418,6 +420,25 @@
             </div>
 
         {% endif %}
+
+    </div>
+
+
+
+    <div class="deletedialog" id="proxydelete" title="Eliminazione istanza">
+
+        <div class="formbriefing">
+            L'istanza e tutti i suoi dati verranno eliminati permanentemente.<br>
+            Questa operazione è irreversibile.<br>
+        </div>
+
+        <div class="formbriefing">
+            Per confermare la richiesta di eliminazione, inserire la frase "confermo la richiesta di eliminazione" nel riquadro sottostante e fare clic sul pulsante Conferma.
+        </div>
+
+        <input type="text" class="widetext" id="deleterequest_confirmationstring" value="">
+        <input type="hidden" id="deleterequest_verificationstring" value="confermo la richiesta di eliminazione">
+
 
     </div>
 
@@ -511,6 +532,29 @@
     </div>
 
 
+
+    <div id="delete_progress" title="Eliminazione istanza">
+
+        <div class="progspinner" id="progspinner_delete">
+            <img src="/static/resource/progressbar.gif">
+        </div>
+
+        <div class="progressinfo" id="progress_stage_makingrequest">
+            Eliminazione istanza in corso...
+        </div>
+
+        <div class="progressinfo feedback_good" id="deletefinished_success">
+            Eliminazione completata.
+        </div>
+
+        <div class="progressinfo feedback_bad" id="deletefinished_fail">
+            Eliminazione fallita.
+            <div id="deletefail_explain">
+            </div>
+        </div>
+
+
+    </div>
 
     <div id="proxymap"></div>
 
