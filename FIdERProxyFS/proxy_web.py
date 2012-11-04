@@ -82,6 +82,7 @@ def deleteProxy (proxy_id):
 
 		except (urllib2.HTTPError, urllib2.URLError) as ex:
 
+			print "ERRORE: %s\nMESSAGGIO: %s" % (ex, ex.message)
 			feedback['report'] = "Cancellazione annullata dal federatore"
 			return feedback
 

@@ -381,7 +381,7 @@ function initForms()
             },
             "Conferma": {
                 id : "deleterequest_confirmationbutton",
-                text: "Conferma",
+                text: "Elimina",
                 click: tryDeleteProxy
             }
         }
@@ -422,10 +422,11 @@ function initDeleteProxy()
 {
 
     var prefix = "btn_proxydelete_";
-    cpid = this.id.substr(prefix);
+    cpid = this.id.substr(prefix.length);
     console.log("Waiting for confirmation to delete proxy "+cpid);
 
     $("#proxydelete").dialog("open");
+    $("#deleterequest_confirmationstring").val("");
     $("#deleterequest_confirmationbutton").prop("disabled", true);
 
 
@@ -445,10 +446,13 @@ function checkDeletionReady()
 function tryDeleteProxy()
 {
 
+
+
     $("#proxydelete").dialog("close");
 
     var proxy_id = cpid;
 
+    console.log("Requesting deletion for proxy "+cpid);
 
     var controldict = {
         'action': 'deleteproxy',
@@ -459,6 +463,7 @@ function tryDeleteProxy()
     $("#delete_progress.progressinfo").hide();
     $("#deletefinished_success").hide();
     $("#deletefinished_fail").hide();
+    $("#deletefail_explain").empty();
     $("#progspinner_delete").show();
 
     $("#btn_deleteprogress_close_success").hide();
@@ -760,7 +765,7 @@ function tryCreateQuery ()
     var querymode_inv = $("#newquery_mode_inv").val();
     var querymode_time = $("#newquery_mode_time").val();
     var querymode_bi = $("#newquery_mode_bi").val();
-    var querymode_signed = $("#newquery_mode_sign").val();
+    var querymode_signed = $("#newquery_mode_sign").val() == "true";
 
     // the proxy must ALWAYS have a bounding box, we only need to find if it's drawn or implicit
     var proxybbox = newproxymap.layers[1].features.length > 0 ? newproxymap.layers[1].features[0].geometry.bounds.toArray() : newproxymap.getExtent().toArray();
@@ -794,7 +799,7 @@ function tryCreateQuery ()
     manifest['operations']['query']['inventory'] = querymode_inv;
     manifest['operations']['query']['time'] = querymode_time;
     manifest['operations']['query']['bi'] = querymode_bi;
-    manifest['operations']['query']['sign'] = querymode_signed;
+    manifest['operations']['query']['signs'] = querymode_signed;
 
     for (var i in newmetalist)
     {
@@ -853,6 +858,8 @@ function tryCreateQuery ()
     $("#creation_progress.progressinfo").hide();
     $("#creationfinished_success").hide();
     $("#creationfinished_fail").hide();
+    $("#creationfail_explain").empty();
+
     $("#progspinner_creation").show();
 
 
@@ -904,8 +911,7 @@ function initCreateStandalone()
 {
     $(".tablemap").empty();
     $("#proxycreate_standalone").dialog("open");
-    initMiniMap("map_createstandalone");
-    initMiniMap("map_metastandalone");
+    newproxymap = initMiniMap("map_createstandalone");
     resetProxyChecks();
     // standalone does NOT need an actual meta structure, will be created automatically
     newproxychecks.hasmeta = true;
@@ -916,10 +922,98 @@ function initCreateStandalone()
 
 function tryCreateStandalone()
 {
-    //TODO: placeholder, implement
-
     // works as per ReadWrite except NO mode or operation set
     // artificially declare only ONE meta, same data as the instance itself
+
+
+    console.log("Creating a standalone instance");
+
+
+    var base = $("#proxycreate_standalone");
+
+    var proxyname = base.find(".proxynamefield").val();
+
+    var proxydatefrom = base.find(".proxydatefield.datefromfield").datepicker("getDate");
+    var hasdateto = base.find(".proxyhasdateto").is(":checked");
+    var proxydateto = hasdateto ? base.find(".proxydatefield.datetofield").datepicker("getDate"): null;
+
+
+    // the proxy must ALWAYS have a bounding box, we only need to find if it's drawn or implicit
+    var proxybbox = newproxymap.layers[1].features.length > 0 ? newproxymap.layers[1].features[0].geometry.bounds.toArray() : newproxymap.getExtent().toArray();
+
+    var proxyowner = base.find(".proxyfieldprovider").val();
+    var proxycontactname = base.find(".proxyfieldcontactname").val();
+    var proxycontactmail = base.find(".proxyfieldemail").val();
+    var proxycontactphone = base.find(".proxyfieldphone").val();
+
+    //quick and dirty clone hack
+    var manifest = JSON.parse(JSON.stringify(blankmanifest));
+
+    manifest['name'] = proxyname;
+    manifest['provider'] = proxyowner;
+    manifest['time'][0] = dateToStamp(proxydatefrom);
+    if (proxydateto != null)
+    {
+        manifest['time'][1] = dateToStamp(proxydateto);
+    }
+
+
+    proxybbox = reprojBboxArray(proxybbox, newproxymap);
+
+    manifest['area'] = proxybbox;
+
+    // standalone has only ONE meta, same bbox as the proxy and no time (reverts to main)
+
+    var unimeta = {
+        "name": "Archivio",
+        "time": ["",""],
+        "area": proxybbox
+    };
+
+    manifest['metadata'] = [];
+    manifest['metadata'].push(unimeta);
+
+
+    var contacts = {
+        'owner': proxyowner,
+        'contact': proxycontactname,
+        'email': proxycontactmail,
+        'phone': proxycontactphone
+    };
+
+    var payload = {
+        'manifest' : manifest,
+        'contacts' : contacts
+    };
+
+    console.log("Preparing to send payload message for registration");
+    console.log(payload);
+
+
+    $("#creation_progress").dialog("open");
+    $("#creation_progress.progressinfo").hide();
+    $("#creationfinished_success").hide();
+    $("#creationfinished_fail").hide();
+    $("#progspinner_creation").show();
+
+    $("#btn_createprogress_close_success").hide();
+    $("#btn_createprogress_close_fail").hide();
+
+    var urlstring = "/fwp/createng/";
+
+    $.ajax ({
+        url: urlstring,
+        data: {jsonmessage: JSON.stringify(payload)},
+        //contentType: 'application/json',
+        //dataType: 'json',
+        type: 'POST',
+        async: true,
+        success: reportCreationResult,
+        error: reportFailedCreation
+    });
+
+    console.log("Payload sent");
+
 
 }
 
