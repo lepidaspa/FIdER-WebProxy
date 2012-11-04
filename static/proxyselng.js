@@ -339,7 +339,7 @@ function initForms()
         }
     });
 
-    $("#progress_creation").dialog({
+    $("#creation_progress").dialog({
         autoOpen: false,
         modal: true,
         closeOnEscape: false,
@@ -494,6 +494,8 @@ function tryCreateReadWrite()
 
     $("#creation_progress").dialog("open");
     $("#creation_progress.progressinfo").hide();
+    $("#creationfinished_success").hide();
+    $("#creationfinished_fail").hide();
     $("#progspinner_creation").show();
 
     $("#btn_createprogress_close_success").hide();
@@ -512,10 +514,15 @@ function tryCreateReadWrite()
         error: reportFailedCreation
     });
 
+    console.log("Payload sent");
+
 }
 
 function reportCreationResult (data, textStatus, jqXHR)
 {
+
+    console.log("Received structurally correct response");
+    console.log(data);
 
     $("#progress_stage_sendinginfo").hide();
     $("#progspinner_creation").hide();
@@ -524,12 +531,14 @@ function reportCreationResult (data, textStatus, jqXHR)
     {
         $("#btn_createprogress_close_success").show();
         $("#creationfinished_success").show();
+        console.log("Proxy creation succeeded");
     }
     else
     {
         $("#creationfinished_fail").show();
         $("#creationfail_explain").append(data['report']);
         $("#btn_createprogress_close_fail").show();
+        console.log("Proxy creation failed");
     }
 
 
@@ -538,12 +547,16 @@ function reportCreationResult (data, textStatus, jqXHR)
 function reportFailedCreation (err, xhr)
 {
 
+    console.log("Reporting failed ajax call for creation");
+
     $("#progress_stage_sendinginfo").hide();
     $("#progspinner_creation").hide();
 
     $("#creationfinished_fail").show();
     $("#creationfail_explain").append(err);
     $("#btn_createprogress_close_fail").show();
+
+    console.log(err);
 
 }
 
@@ -598,8 +611,6 @@ function tryCreateQuery ()
     var querymode_time = $("#newquery_mode_time").val();
     var querymode_bi = $("#newquery_mode_bi").val();
     var querymode_signed = $("#newquery_mode_sign").val();
-
-    //TODO: complete flow
 
     // the proxy must ALWAYS have a bounding box, we only need to find if it's drawn or implicit
     var proxybbox = newproxymap.layers[1].features.length > 0 ? newproxymap.layers[1].features[0].geometry.bounds.toArray() : newproxymap.getExtent().toArray();
@@ -690,7 +701,10 @@ function tryCreateQuery ()
 
     $("#creation_progress").dialog("open");
     $("#creation_progress.progressinfo").hide();
+    $("#creationfinished_success").hide();
+    $("#creationfinished_fail").hide();
     $("#progspinner_creation").show();
+
 
     $("#btn_createprogress_close_success").hide();
     $("#btn_createprogress_close_fail").hide();
@@ -708,7 +722,7 @@ function tryCreateQuery ()
         error: reportFailedCreation
     });
 
-
+    console.log("Payload sent");
 
 }
 

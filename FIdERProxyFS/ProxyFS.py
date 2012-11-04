@@ -89,7 +89,7 @@ def setProxyContacts (proxy_id, contactsjson):
 
 	#NOTE: since the linked proxy uses a symlink to the standalone tool, changing  this will always change the contacts on both instances
 	contactspath = os.path.join(conf.baseproxypath, proxy_id, conf.path_contacts)
-	json.dump(contactsjson, open(contactspath))
+	json.dump(contactsjson, open(contactspath, 'w+'))
 
 
 
