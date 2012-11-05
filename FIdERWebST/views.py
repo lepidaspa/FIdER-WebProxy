@@ -389,22 +389,28 @@ def saveVisMap (request, **kwargs):
 			if not os.path.exists (deploypath):
 				os.makedirs(deploypath)
 			path_tool = os.path.join(deploypath, map_id+".geojson")
-			proxy_core.rebuildShape(proxy_id, meta_id, map_id, False)
 
-			destproxy = proxy_core.findLinkedBy(proxy_id)
-			if destproxy is not None:
-				print "Rebuilding map data on linker proxy %s" % destproxy
-				try:
-					proxy_core.rebuildShape(destproxy, meta_id, map_id, False)
-				except Exception as ex:
-					print "Error while rebuilding shape on linker proxy: %s" % ex
-			else:
-				print "No destination proxy for this instance %s" % proxy_id
+
 
 		dest_fp = open(path_tool, 'w+')
 
 		json.dump(json.loads(mapdata), dest_fp, encoding="latin-1")
+
 		dest_fp.close()
+
+		#AND REBUILDING LOCALLY
+		proxy_core.rebuildShape(proxy_id, meta_id, map_id, False)
+
+		#AND REBUILDING ON LINKER
+		destproxy = proxy_core.findLinkedBy(proxy_id)
+		if destproxy is not None:
+			print "Rebuilding map data on linker proxy %s" % destproxy
+			try:
+				proxy_core.rebuildShape(destproxy, meta_id, map_id, False)
+			except Exception as ex:
+				print "Error while rebuilding shape on linker proxy: %s" % ex
+		else:
+			print "No destination proxy for this instance %s" % proxy_id
 
 		feedback = {
 			'success': True,
