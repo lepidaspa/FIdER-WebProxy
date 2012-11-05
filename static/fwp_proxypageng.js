@@ -80,8 +80,8 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $("#newremote_mapname").on('mouseup keyup change', checkCandidateMapname);
     $(".removedata").on('click', removeDataSource);
 
-    //TODO: temporary only for demo purposes, reopen and fix asap
-    //$(".convert").on('click', loadConversionTable);
+
+    $(".convert").on('click', loadConversionTable);
 
 
     $(".switchmapvis").on('change', switchMapVis);
@@ -139,11 +139,27 @@ function initForms ()
         height: "auto",
         buttons: {
             "Chiudi": {
+                id: "btn_convdload_close",
                 text: "Annulla",
                 click: function() {$( this ).dialog( "close" );}
             }
         }
     });
+
+    $("#progress_visload").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        height: "auto",
+        buttons: {
+            "Chiudi": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
+    });
+
 
 
     $("#progress_convsave").dialog({
@@ -304,9 +320,6 @@ function switchMapVis()
         // load and show the requested map
         tryVisMap();
 
-
-
-
     }
     else
     {
@@ -381,7 +394,7 @@ function reportFailedVisLoad()
     $("#mapvis_"+cmeta_id+"-"+cmap_id).prop('checked', false);
 
     $("#progress_visload .progressinfo").hide();
-    $("#progspinner_convdload").hide();
+    $("#progspinner_visload").hide();
     $("#visload_fail").show();
 
 
@@ -402,6 +415,7 @@ function loadConversionTable()
 
     $("#progress_convdload").dialog("open");
     $("#progress_convdload .progressinfo").hide();
+    $("#btn_convdload_close").hide();
     $("#progspinner_convdload").show();
     $("#progress_stage_convloading").show();
 
@@ -427,6 +441,7 @@ function loadConversionTable()
             $("#convdload_fail").show();
             $("#convdloadfail_explain").val(data);
             $("#convdloadfail_explain").show();
+            $("#btn_convdload_close").show();
 
         });
 
@@ -451,6 +466,7 @@ function loadConversionTable()
             $("#convdload_fail").show();
             $("#convdloadfail_explain").val(data);
             $("#convdloadfail_explain").show();
+            $("#btn_convdload_close").show();
 
         });
 
@@ -759,7 +775,16 @@ function renderConvTable()
 
         //var seloptshtml = $('<div></div>').append(selopts.clone()).remove().html();
 
-        var fieldrow = $('<tr></tr>');
+        var addpresets = $("<td class='addpresetsaction'></td>");
+        // adding fixed values, generator only to begin with
+        if (haspresetvalues)
+        {
+            addpresets.append('<img class="imgbutton conv_addpreset" id="conv_addpreset_'+field+'" title="Aggiungi valore" src="/static/resource/visng_model_addvalue.png">');
+        }
+
+
+
+        var fieldrow = $('<tr class="convtable_fieldrow"></tr>');
         fieldrow.append('<td>'+fieldname_friendly+'</td>');
         fieldrow.append($('<td></td>').append(selopts));
 
@@ -767,13 +792,20 @@ function renderConvTable()
         // adding fixed values, generator only to begin with
         if (haspresetvalues)
         {
-            var valuesconv = $('<table class="valueconvtable" cellpadding=0 cellspacing=0 id="conv_presets_'+field+'"><tbody></tbody>' +
-                '<tfoot><tr><td colspan="3"><input type="button" class="conv_addpreset" id="conv_addpreset_'+field+'" value="Aggiungi"></td></tr></tfoot>' +
+            var valuesconv = $('<table class="valueconvtable" cellpadding=0 cellspacing=0 id="conv_presets_'+field+'">' +
+                '<thead><tr><td colspan="2"></td><td></td></tr></thead>' +
+                '<tbody></tbody>' +
                 '</table>');
 
-            fieldrow.append($('<td colspan=3 class="padless"></td>').append(valuesconv));
+            fieldrow.append($('<td colspan=2 class="padless"></td>').append(valuesconv));
 
         }
+        else
+        {
+            fieldrow.append('<td colspan=2 class="padless"></td>');
+        }
+        fieldrow.append (addpresets);
+
 
         convtable.append(fieldrow);
     }
@@ -821,7 +853,7 @@ function addConvPreset()
                 '</select>' +
             '</td>' +
             '<td>' +
-                '<input type="button" class="valueconv_remove" value="Elimina">' +
+                '<img class="imgbutton valueconv_remove" title="Elimina valore" src="/static/resource/visng_model_deletevalue.png">' +
             '</td>' +
         '</tr>');
 

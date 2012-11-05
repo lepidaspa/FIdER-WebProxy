@@ -144,7 +144,12 @@ Gestione dati e cataloghi
 
 <div id="form_setconversion">
 
-<input type="button" value="Torna alla mappa" class="valueconv_quit">
+<div id="conversionmenu">
+
+<img class="imgbutton" title="Torna alla mappa" class="valueconv_quit" src="{{ STATIC_URL }}resource/visng_menu_viewmap.png">
+<img class="imgbutton" title="Salva la conversione" class="valueconv_save" src="{{ STATIC_URL }}resource/visng_menu_savemap.png">
+</div>
+
 
 <div id="modelselect">
     <label for="convtable_modelselect">Modello di riferimento</label>
@@ -157,16 +162,9 @@ Gestione dati e cataloghi
 
     <thead id="convtable_headers" callpadding=0 cellspacing=0>
         <tr>
-            <td rowspan=2 class=mainfields>Campo federato</td>
-            <td rowspan=2 class=mainfields>Campo di origine</td>
-            <td class="padless">
-                <table  callpadding=0 cellspacing=0 class="valueconvtable"><tr>
-                    <td class="halffield">Valore di origine</td>
-                    <td class="halffield">Valore federato</td>
-                    <td></td>
-                </tr></table>
-            </td>
-
+            <td colspan=2 class=mainfields>Conversione campi</td>
+            <td colspan=2 class=mainfields id="valueconvsection">Valori predefiniti</td>
+            <td></td>
         </tr>
     </thead>
 
@@ -176,12 +174,6 @@ Gestione dati e cataloghi
     </tbody>
 
 </table>
-
-    <div id="tablecontrols">
-        <input type="button" class="valueconv_quit" value="Annulla">
-        <input type="button" id="valueconv_save" value="Salva la conversione">
-    </div>
-
 
 </div>
 

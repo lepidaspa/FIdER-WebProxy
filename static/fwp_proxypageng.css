@@ -144,6 +144,16 @@ td
 
 }
 
+#valueconvsection
+{
+    min-width:              300px;
+}
+
+.valueconvtable tbody, .valueconvtable tr
+{
+    width:                  100%;
+}
+
 .valueconvtable *
 {
     white-space:nowrap;
@@ -156,12 +166,24 @@ td
     vertical-align:         top;
 }
 
+#form_setconversion_table
+{
+    border-collapse:        collapse;
+
+}
+
+.valueconvtable
+{
+    margin-top:             24px;
+}
+
 #form_setconversion_table *
 {
     padding-top:            0;
     padding-bottom:         0;
     vertical-align:         top;
-    white-space:nowrap;
+    white-space:            nowrap;
+
 
 }
 
@@ -184,4 +206,22 @@ td
 #tablecontrols
 {
     margin-top:             8px;
+}
+
+#conversionmenu
+{
+    margin-left:            -8px;
+    padding-left:                4px;
+    width:                  100%;
+    border-bottom:          1px solid #ff8800;
+}
+
+.convtable_fieldrow
+{
+    border-top:     1px dashed #ff8800;
+}
+
+.convtable_fieldrow:first-child
+{
+    border-top:     none;
 }
