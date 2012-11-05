@@ -394,7 +394,7 @@ def saveVisMap (request, **kwargs):
 			if destproxy is not None:
 				print "Rebuilding map data on linker proxy %s" % destproxy
 				try:
-					proxy_core.rebuildShape(destproxy, meta_id, map_id)
+					proxy_core.rebuildShape(destproxy, meta_id, map_id, False)
 				except Exception as ex:
 					print "Error while rebuilding shape on linker proxy: %s" % ex
 			else:
