@@ -423,7 +423,7 @@ function loadConversionTable()
 
     $.ajax({
         url: "/fwp/conversion/"+proxy_id+"/"+cmeta_id+"/"+cmap_id+"/",
-        async: true
+        async: false
     }).done(function (jsondata) {
 
             if (conv_hasmodels !== false)
@@ -442,7 +442,6 @@ function loadConversionTable()
             $("#convdloadfail_explain").val(data);
             $("#convdloadfail_explain").show();
             $("#btn_convdload_close").show();
-
         });
 
     // loading the models available from the main server
