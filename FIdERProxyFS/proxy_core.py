@@ -388,6 +388,8 @@ def handleDelete (proxy_id, meta_id, shape_id):
 			#TODO: add specific handling of further exceptions or just push it up the ladder
 			shutil.rmtree(path_mirror)
 
+
+
 	else:
 		path_mapfile = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, shape_id)
 		os.remove(path_mapfile)
@@ -413,6 +415,10 @@ def replicateDelete (proxy_id, meta_id, shape_id):
 	else:
 		#TODO: add specific handling of further exceptions or just push it up the ladder
 		os.remove(path_gj)
+
+	linkedby = findLinkedBy(proxy_id)
+	if linkedby is not None:
+		replicateDelete(linkedby, meta_id, shape_id)
 
 
 def readSingleShape (proxy_id, meta_id, shape_id):
