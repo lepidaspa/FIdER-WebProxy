@@ -804,6 +804,7 @@ def proxy_create_adv (request):
 				if created:
 					success = True
 
+					print "Adding CONTACTS info"
 					if linkedto is None:
 						ProxyFS.setProxyContacts(proxy_id, jsoncontacts)
 

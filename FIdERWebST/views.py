@@ -389,6 +389,7 @@ def saveVisMap (request, **kwargs):
 			if not os.path.exists (deploypath):
 				os.makedirs(deploypath)
 			path_tool = os.path.join(deploypath, map_id+".geojson")
+			proxy_core.rebuildShape(proxy_id, meta_id, map_id, False)
 
 			destproxy = proxy_core.findLinkedBy(proxy_id)
 			if destproxy is not None:
