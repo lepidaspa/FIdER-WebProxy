@@ -398,19 +398,21 @@ def saveVisMap (request, **kwargs):
 
 		dest_fp.close()
 
-		#AND REBUILDING LOCALLY
-		proxy_core.rebuildShape(proxy_id, meta_id, map_id, False)
+		if meta_id != ".st":
 
-		#AND REBUILDING ON LINKER
-		destproxy = proxy_core.findLinkedBy(proxy_id)
-		if destproxy is not None:
-			print "Rebuilding map data on linker proxy %s" % destproxy
-			try:
-				proxy_core.rebuildShape(destproxy, meta_id, map_id, False)
-			except Exception as ex:
-				print "Error while rebuilding shape on linker proxy: %s" % ex
-		else:
-			print "No destination proxy for this instance %s" % proxy_id
+			print "Rebuilding data locally"
+			proxy_core.replicateShapeData(proxy_core.rebuildShape(proxy_id, meta_id, map_id, False), proxy_id, meta_id, map_id, False)
+
+			print "Rebuilding data on linker"
+			destproxy = proxy_core.findLinkedBy(proxy_id)
+			if destproxy is not None:
+				print "Rebuilding map data on linker proxy %s" % destproxy
+				try:
+					proxy_core.replicateShapeData(proxy_core.rebuildShape(destproxy, meta_id, map_id, False), destproxy, meta_id, map_id, False)
+				except Exception as ex:
+					print "Error while rebuilding shape on linker proxy: %s" % ex
+			else:
+				print "No destination proxy for this instance %s" % proxy_id
 
 		feedback = {
 			'success': True,
