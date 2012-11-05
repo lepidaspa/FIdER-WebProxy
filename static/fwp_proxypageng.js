@@ -79,7 +79,11 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $("#newfile_chooser").change(checkCandidateFilename);
     $("#newremote_mapname").on('mouseup keyup change', checkCandidateMapname);
     $(".removedata").on('click', removeDataSource);
-    $(".convert").on('click', loadConversionTable);
+
+    //TODO: temporary only for demo purposes, reopen and fix asap
+    //$(".convert").on('click', loadConversionTable);
+
+
     $(".switchmapvis").on('change', switchMapVis);
 
 
