@@ -381,15 +381,19 @@ def saveVisMap (request, **kwargs):
 		#print "DATA: %s" % mapdata
 
 		if meta_id == ".st":
-			path_tool = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone)
+			deploypath = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone)
+			path_tool = os.path.join(deploypath, map_id)
 		else:
-			path_tool = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id )
 
-		dest_fp = open(os.path.join(path_tool, map_id), 'w+')
-		print mapdata
+			deploypath = os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id)
+			if not os.path.exists (deploypath):
+				os.makedirs(deploypath)
+			path_tool = os.path.join(deploypath, map_id+".geojson")
+
+		dest_fp = open(path_tool, 'w+')
+
 		json.dump(json.loads(mapdata), dest_fp, encoding="latin-1")
 		dest_fp.close()
-
 
 		feedback = {
 			'success': True,

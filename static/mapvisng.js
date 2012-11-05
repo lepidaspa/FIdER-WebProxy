@@ -595,8 +595,6 @@ function trySaveMap ()
     $("#progspinner_datasave").show();
     $("#progress_stage_datasaving").show();
 
-    //TODO: placeholder, implement
-
     var mapname = $("#savemapto_filename").val();
     var mapmeta = $("#savemapto_dest").val();
 
@@ -1948,7 +1946,6 @@ function autoZoom (olmap)
      */
 
 
-    // TODO: verify why zoom right after load and zoom later have different results without changing the feature data
 
     // to be fixed
     if (vismode == "mapview" || vismode == "full" || vismode == "mapedit")
