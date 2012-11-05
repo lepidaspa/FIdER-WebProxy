@@ -248,6 +248,28 @@ def makeSoftProxy (proxy_id, manifest, linkedto=None):
 		if linkedto is None:
 			os.makedirs (os.path.join(basepath, conf.path_mirror, meta_id))
 
+def findLinkedBy (proxy_id):
+	"""
+	Returns which proxy_id is the id of a linker proxy linked to the current one. Returns None if the current proxy is not a standalone or if it has no linker
+	:param proxy_id:
+	:return:
+	"""
+
+	linkedBy = None
+
+	for candidate_id in getProxyList():
+		path_linkinfo = os.path.join(conf.baseproxypath, candidate_id, "conf", "linkedto.json")
+		try:
+			linkdataraw = json.load(open(path_linkinfo, 'r'))
+			linked_id = linkdataraw['linkedto']
+			if linked_id == proxy_id:
+				linkedBy = candidate_id
+		except:
+			pass
+
+	return linkedBy
+
+
 
 def rebuildAllData (proxy_id):
 	"""
