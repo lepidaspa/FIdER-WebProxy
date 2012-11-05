@@ -267,6 +267,8 @@ def findLinkedBy (proxy_id):
 		except:
 			pass
 
+	print "LinkedBy output: %s is linked by proxy %s" % (proxy_id, linkedBy)
+
 	return linkedBy
 
 
