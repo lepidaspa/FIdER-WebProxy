@@ -248,6 +248,14 @@ def makeSoftProxy (proxy_id, manifest, linkedto=None):
 		if linkedto is None:
 			os.makedirs (os.path.join(basepath, conf.path_mirror, meta_id))
 
+	if linkedto is not None:
+		print "Linker proxy: trying to rebuild all maps inherited from the current state of the linked standalone"
+		try:
+			rebuildAllData(proxy_id)
+			print "Autorebuild successful"
+		except Exception as ex:
+			print "Autorebuild failed because of %s" % ex
+
 def findLinkedBy (proxy_id):
 	"""
 	Returns which proxy_id is the id of a linker proxy linked to the current one. Returns None if the current proxy is not a standalone or if it has no linker
