@@ -114,7 +114,7 @@ def proxyselng (request, **kwargs):
 	print "Proxy listing:\n%s" % proxies
 
 	try:
-		providers = urllib2.urlopen(proxyconf.URL_PROVIDERS)
+		providers = json.loads(urllib2.urlopen(proxyconf.URL_PROVIDERS).read())
 		print "Providers found: %s" % providers
 	except Exception as ex:
 		print "Provider list is empty or missing"

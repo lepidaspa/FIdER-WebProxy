@@ -61,6 +61,11 @@ var blankmanifest = {
 
 var cpid = null;
 
+// layer with the bboxes of all instances of the current kind
+var mapsumlayer;
+// layer with the bboxes of the currently selected instance
+var mapvislayer;
+
 function pageInit(proxylist)
 {
 
@@ -80,9 +85,11 @@ function pageInit(proxylist)
     OpenLayers.ImgPath = "/static/OpenLayers/themes/dark/";
 
 
-    showSelProxy();
     initForms();
     initProxyMap();
+
+    showSelProxy();
+
 
 }
 
@@ -125,18 +132,13 @@ function initProxyMap()
 
     var featurestyle = new OpenLayers.Style ({fillOpacity: 0.2, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid"});
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
-    proxymap_metalayer = new OpenLayers.Layer.Vector("Cataloghi", {styleMap: featurestylemap});
-    proxymap.addLayer(proxymap_metalayer);
+    mapsumlayer = new OpenLayers.Layer.Vector("Istanze", {styleMap: featurestylemap});
+    proxymap.addLayer(mapsumlayer);
 
     featurestyle = new OpenLayers.Style ({fillOpacity: 0.2, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
-    proxymap_activemeta = new OpenLayers.Layer.Vector("Catalogo attivo", {styleMap: featurestylemap});
-    proxymap.addLayer(proxymap_activemeta);
-
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#009900", strokeColor: "#009900", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
-    featurestylemap = new OpenLayers.StyleMap(featurestyle);
-    proxymap_activemap = new OpenLayers.Layer.Vector("Mappa attiva", {styleMap: featurestylemap});
-    proxymap.addLayer(proxymap_activemap);
+    mapvislayer = new OpenLayers.Layer.Vector("Istanze selezionate", {styleMap: featurestylemap});
+    proxymap.addLayer(mapvislayer);
 
     proxymap.addControl(new OpenLayers.Control.Navigation());
     proxymap.addControl(new OpenLayers.Control.PanZoomBar());
@@ -204,14 +206,34 @@ function buildInstanceNamesList()
     console.log(instancenames);
 }
 
+function getProxyList(federated)
+{
+    // returns a list of proxy ids, federated is a boolean: true for proxies, false for local
+
+    var prefix = "local_";
+    var cproxylist = [];
+    for (var proxy_id in proxies)
+    {
+        if ((proxy_id.substr(0,prefix.length)!=prefix) == federated)
+        {
+            cproxylist.push(proxy_id);
+        }
+
+    }
+
+    return cproxylist;
+
+}
+
 function showSelProxy ()
 {
     $("#tabsel_standalone").addClass("unseltab");
     $("#tabsel_proxy").removeClass("unseltab");
     $("#instances_proxy").show();
     $("#instances_standalone").hide();
-}
 
+    renderProxies(getProxyList(true));
+}
 
 function showSelStandalone ()
 {
@@ -219,10 +241,85 @@ function showSelStandalone ()
     $("#tabsel_proxy").addClass("unseltab");
     $("#instances_proxy").hide();
     $("#instances_standalone").show();
+
+    renderProxies(getProxyList(false));
 }
+
+function renderHovered ()
+{
+    var prefix = "instance_";
+    var proxy_id = this.id.substr(prefix.length);
+    renderSelectedProxy(proxy_id);
+}
+
+function unrenderHovered ()
+{
+
+    mapvislayer.destroyFeatures();
+
+}
+
+function renderSelectedProxy (proxy_id)
+{
+
+    mapvislayer.destroyFeatures();
+
+    var bbox = proxies[proxy_id]['area'];
+    var points = [
+        reverseReprojPoint(bbox[0], bbox[1], proxymap),
+        reverseReprojPoint(bbox[2], bbox[1], proxymap),
+        reverseReprojPoint(bbox[2], bbox[3], proxymap),
+        reverseReprojPoint(bbox[0], bbox[3], proxymap)
+    ];
+    var ring = new OpenLayers.Geometry.LinearRing(points);
+    var polygon = new OpenLayers.Geometry.Polygon([ring]);
+
+    var feature = new OpenLayers.Feature.Vector(polygon, {});
+
+
+    mapvislayer.addFeatures([feature]);
+
+}
+
+function renderProxies (proxy_ids)
+{
+
+    // cleaning up the map
+    mapsumlayer.destroyFeatures();
+
+
+
+    for (var i in proxy_ids)
+    {
+        var proxy_id = proxy_ids[i];
+        console.log("Rendering instance "+proxy_id+" with area");
+        var bbox = proxies[proxy_id]['area'];
+        console.log(bbox);
+        var points = [
+            reverseReprojPoint(bbox[0], bbox[1], proxymap),
+            reverseReprojPoint(bbox[2], bbox[1], proxymap),
+            reverseReprojPoint(bbox[2], bbox[3], proxymap),
+            reverseReprojPoint(bbox[0], bbox[3], proxymap)
+        ];
+        var ring = new OpenLayers.Geometry.LinearRing(points);
+        var polygon = new OpenLayers.Geometry.Polygon([ring]);
+
+        var feature = new OpenLayers.Feature.Vector(polygon, {});
+
+
+        mapsumlayer.addFeatures([feature]);
+
+    }
+
+
+}
+
+
 
 function initForms()
 {
+
+    $(".proxylisting_instance").hover(renderHovered, unrenderHovered);
 
     $("#btn_newdatasource_linker").live('click', initCreateLinked);
     $("#btn_newdatasource_standalone").live('click', initCreateStandalone);
@@ -732,6 +829,15 @@ function reprojPoint (pointX, pointY, olmap)
 
     reproj = new OpenLayers.LonLat(pointX, pointY).transform(olmap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
 
+
+    return new OpenLayers.Geometry.Point(reproj.lon, reproj.lat);
+}
+
+function reverseReprojPoint (pointX, pointY, olmap)
+{
+    var reproj;
+
+    reproj = new OpenLayers.LonLat(pointX, pointY).transform(new OpenLayers.Projection(proj_WGS84), olmap.getProjectionObject());
 
     return new OpenLayers.Geometry.Point(reproj.lon, reproj.lat);
 }

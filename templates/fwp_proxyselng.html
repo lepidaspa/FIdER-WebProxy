@@ -47,7 +47,7 @@
             <tbody>
             {% for proxy_id, proxydata in proxiesdj.items %}
                 {% if proxydata.type != 'local' %}
-                    <tr class="proxylisting_instance">
+                    <tr class="proxylisting_instance" id="instance_{{ proxy_id }}">
                         <td class="proxylisting_emblem">
 
                         </td>
@@ -82,7 +82,7 @@
             <tbody>
             {% for proxy_id, proxydata in proxiesdj.items %}
                 {% if proxydata.type == 'local' %}
-                    <tr class="proxylisting_instance">
+                    <tr class="proxylisting_instance" id="instance_{{ proxy_id }}">
                         <td class="proxylisting_emblem">
                             </td>
                         <td class="proxylisting_name">
@@ -425,6 +425,8 @@
 
 
 
+
+
     <div class="deletedialog" id="proxydelete" title="Eliminazione istanza">
 
         <div class="formbriefing">
@@ -441,7 +443,6 @@
 
 
     </div>
-
 
 
 
