@@ -411,3 +411,17 @@ tr
 {
     display:            none;
 }
+
+
+.datalisted
+{
+    background-image:               url('/static/resource/fwp_dropdown.png');
+    background-position:            99% 50%;
+    background-repeat:              no-repeat;
+}
+
+select:disabled
+{
+    background-color:           #ff8800;
+    color:                      #ffffff;
+}
