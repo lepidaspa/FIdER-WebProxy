@@ -249,3 +249,9 @@ tr, tr *
 {
     width:          99%;
 }
+
+#autovalueselector
+{
+    border-top:     0;
+    margin-top:     -4px;
+}
