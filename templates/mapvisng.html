@@ -202,7 +202,10 @@
             <optgroup label="{% if cmeta_id == ".st" %}Area di lavorazione{% else %}{{ cmeta_id }}{% endif %}">
                 {% for cmap_id, mapdata in maplist.items %}
                     {% if mapdata.type == maptype %}
-                        <option value="{{ cmeta_id }}/{{ cmap_id }}">{{ cmap_id }}</option>
+                        {% if cmeta_id != meta_id or cmap_id != map_id %}
+                            <option value="{{ cmeta_id }}/{{ cmap_id }}">{{ cmap_id }}</option>
+                        {% endif %}
+
                     {% endif  %}
                 {% endfor %}
             </optgroup>
