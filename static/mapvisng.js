@@ -190,7 +190,7 @@ function tryGeoSearch (event)
 {
     if (event.keyCode == keycode_ENTER)
     {
-        console.log("Enter pressed, launching geosearch");
+        //console.log("Enter pressed, launching geosearch");
         geosearch($('#text_geosearch').val());
         event.preventDefault();
     }
@@ -206,14 +206,14 @@ function reverseGeoSearch (featuregeom, writetoid)
     var coords = new OpenLayers.LonLat(featuregeom.x, featuregeom.y).transform(mapview.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
 
 
-    console.log("Trying reverse geocoding for coordinates");
-    console.log(coords);
+    //console.log("Trying reverse geocoding for coordinates");
+    //console.log(coords);
 
-    console.log("Writing result to ID");
-    console.log(writetoid);
+    //console.log("Writing result to ID");
+    //console.log(writetoid);
 
     var dest = $("#"+writetoid);
-    console.log(dest);
+    //console.log(dest);
 
     var path = '/external/maps.googleapis.com/maps/api/geocode/json?latlng='+coords.lat+','+coords.lon+'&sensor=false';
 
@@ -221,25 +221,25 @@ function reverseGeoSearch (featuregeom, writetoid)
 
     $.getJSON(path, function(gqdata)
     {
-        console.log(gqdata);
+        //console.log(gqdata);
         if(gqdata.status == "OK")
         {
             if (gqdata.results.length > 0)
             {
 
-                console.log("Results found");
+                //console.log("Results found");
                 var locstring = gqdata['results'][0]['formatted_address'];
                 dest.append(locstring);
             }
             else
             {
-                console.log("No results found");
+                //console.log("No results found");
                 dest.html("(posizione sconosciuta)");
             }
         }
         else
         {
-            console.log("Transmission error");
+            //console.log("Transmission error");
             dest.html("(posizione non disponibile)");
         }
     });
@@ -259,11 +259,11 @@ function geosearch(locationdesc)
 
 
     $.getJSON(path, function(gqdata){
-        console.log(gqdata);
+        //console.log(gqdata);
         if(gqdata.status == "OK"){
             if (gqdata.results.length > 0){
 
-                console.log("Results found");
+                //console.log("Results found");
 
                 gq = new OpenLayers.Bounds();
                 gq.extend(new
@@ -281,20 +281,20 @@ function geosearch(locationdesc)
             else
             {
 
-                console.log("No location found");
+                //console.log("No location found");
                 alert("Impossibile individuare la posizione richiesta.");
-                console.log(gqdata.results);
+                //console.log(gqdata.results);
             }
         }
         else
         {
-            console.log("No location found");
+            //console.log("No location found");
             alert("Impossibile individuare la posizione richiesta.");
-            console.log(gqdata.results);
+            //console.log(gqdata.results);
         }
     });
 
-    console.log("DEBUG: codewise after getJSON function, possibly waiting for return value");
+    //console.log("DEBUG: codewise after getJSON function, possibly waiting for return value");
 
 
 }
@@ -307,7 +307,7 @@ function tryUnselectMode (event)
 
     if (event.keyCode == keycode_ESC)
     {
-        console.log("ESC pressed, checking  launched by keyboard");
+        //console.log("ESC pressed, checking  launched by keyboard");
 
         var alleditcontrols = [snapcontrol, drawcontrol, editcontrol, measurecontrol, homecontrol, selectcontrol];
 
@@ -319,7 +319,7 @@ function tryUnselectMode (event)
             }
             catch (err)
             {
-                console.log("Control n."+i+" (see code) not active yet");
+                //console.log("Control n."+i+" (see code) not active yet");
             }
         }
 
@@ -354,7 +354,7 @@ function initMenu()
 function toggleMenuItems ()
 {
 
-    console.log(this);
+    //console.log(this);
 
     var visibles = $(this).children(":visible");
     var hidden = $(this).children(":hidden");
@@ -510,8 +510,7 @@ function funcLoadMap ()
 
     // opens the map loading dialog
 
-    //TODO: placeholder, implement
-    console.log("opening map loading dialog");
+    //console.log("opening map loading dialog");
 
     // sets to non-incremental for later
     loadmode_incremental = false;
@@ -524,8 +523,7 @@ function funcLoadMap ()
 
 function funcIntegrateMap ()
 {
-    //TODO: placeholder, implement
-    console.log("opening map integration dialog");
+    //console.log("opening map integration dialog");
 
     // set for later applyMap function to use
     loadmode_incremental = true;
@@ -537,14 +535,14 @@ function funcIntegrateMap ()
 
 function funcIntegrateModel ()
 {
-    //TODO: placeholder, implement
-    console.log("opening model integration dialog");
+    //TODO: remove, superceded by loading a featureless modeled map
+    //console.log("opening model integration dialog");
 }
 
 function funcSaveMap ()
 {
-    //TODO: placeholder, implement
-    console.log("opening map saving dialog");
+
+    //console.log("opening map saving dialog");
     $("#form_datasave").dialog("open");
     $("#form_datasave .progressinfo").hide();
 
@@ -587,8 +585,7 @@ function checkSaveMapOverwrite()
 
 function funcGeoShift ()
 {
-    //TODO: placeholder, implement
-    console.log("opening geoshifting dialog");
+    //console.log("opening geoshifting dialog");
 
     $("#form_geoshift").dialog("open");
 
@@ -596,8 +593,8 @@ function funcGeoShift ()
 
 function funcLoadSnap ()
 {
-    //TODO: placeholder, implement
-    console.log("opening shadow map loading dialog");
+
+    //console.log("opening shadow map loading dialog");
 
     $("#form_loadsnap").dialog("open");
 
@@ -605,7 +602,7 @@ function funcLoadSnap ()
 
 function funcShowMap ()
 {
-    console.log("switching to map display");
+    //console.log("switching to map display");
 
     //$("#standalonebar").show();
     $("#modelstruct tbody").empty();
@@ -617,7 +614,7 @@ function funcShowMap ()
 
 function funcShowModel ()
 {
-    console.log("switching to model display");
+    //console.log("switching to model display");
     //$("#standalonebar").hide();
     $("#mapview").hide();
     $("#modelview").show();
@@ -628,8 +625,7 @@ function funcShowModel ()
 
 function funcCreateFilter()
 {
-    //TODO: placeholder, implement
-    console.log("creating a filter for view");
+    //console.log("creating a filter for view");
 }
 
 // END OF MENU FUNCTIONS
@@ -674,8 +670,8 @@ function confirmSave (data, textStatus, jqXHR)
 {
     // TODO: PLACEHOLDER, IMPLEMENT
 
-    console.log("Reporting successful save callback")
-    console.log(data);
+    //console.log("Reporting successful save callback")
+    //console.log(data);
 
     $("#progress_datasave .progressinfo").hide();
     $("#progspinner_datasave").hide();
@@ -724,31 +720,31 @@ function layerToJSON(layer, mapid)
 
             bbox = layer.getDataExtent().toArray();
 
-            console.log("Tried getting bbox from map extent, had");
-            console.log(bbox);
+            //console.log("Tried getting bbox from map extent, had");
+            //console.log(bbox);
 
             var endA = reprojPoint(bbox[0], bbox[1], mapview);
-            console.log(endA);
+            //console.log(endA);
             var endB = reprojPoint(bbox[2], bbox[3], mapview);
-            console.log(endB);
+            //console.log(endB);
 
             bbox = [endA.x, endA.y, endB.x, endB.y];
 
-            console.log("Bbox from map data");
+            //console.log("Bbox from map data");
         }
         else
         {
 
             bbox = bb_meta;
-            console.log("Bbox from meta");
+            //console.log("Bbox from meta");
         }
     }
     catch (ex)
     {
-        console.log("Exception while trying to set the bbox");
-        console.log(ex);
+        //console.log("Exception while trying to set the bbox");
+        //console.log(ex);
         bbox = bb_proxy;
-        console.log("Bbox from proxy");
+        //console.log("Bbox from proxy");
     }
 
     var jsondata = {
@@ -803,7 +799,7 @@ function layerToJSON(layer, mapid)
         }
         else
         {
-            console.log("Conflict: "+geom['type']+" against "+modeldata['objtype']);
+            //console.log("Conflict: "+geom['type']+" against "+modeldata['objtype']);
             //console.log(layer.features[fid]);
             badfeaturescount++;
         }
@@ -1001,9 +997,7 @@ function applyNewSnap (newdata, textStatus, jqXHR)
 
 
     console.log("Rendering map data on shadow layer");
-    console.log(newdata);
-
-    // TODO: implement rendering
+    //console.log(newdata);
 
     snaplayer.destroyFeatures();
     renderGeoJSONCollection(newdata, snaplayer);
@@ -1028,7 +1022,7 @@ function applyNewMap(newdata, textStatus, jqXHR)
 
 
     console.log("Rendering map data");
-    console.log(newdata);
+    //console.log(newdata);
 
     if (!loadmode_incremental)
     {
@@ -1333,7 +1327,7 @@ function addModelProp ()
 {
     //adds a new property to the model
 
-    console.log("Adding new model property");
+    //console.log("Adding new model property");
 
     var newpropname = $("#model_newpropname").val();
     if (newpropname != null && newpropname != "" && !modeldata.properties.hasOwnProperty(newpropname))
@@ -1399,10 +1393,10 @@ function importModelPropValue ()
     }
 
 
-    console.log("Values to add for "+propname);
-    console.log(mappropvalues);
-    console.log("Existing values:");
-    console.log(formpropvalues);
+    //console.log("Values to add for "+propname);
+    //console.log(mappropvalues);
+    //console.log("Existing values:");
+    //console.log(formpropvalues);
 
     for (var i in mappropvalues)
     {
@@ -1417,7 +1411,7 @@ function updateModelPropertyValue()
 {
     // rebuilds only the single section of the model for this particular property
 
-    console.log("Updating model prop value")
+    //console.log("Updating model prop value");
     var base = $(this).closest(".modelprop_valtable");
     var prefix = "valtable_";
     var propname = base[0].id.substr(prefix.length);
@@ -1433,7 +1427,7 @@ function updateModelPropertyValue()
     modeldata['properties'][propname] = vals;
 
     console.log("Updated model data for property "+propname);
-    console.log(modeldata['properties'][propname]);
+    //console.log(modeldata['properties'][propname]);
 }
 
 function rebuildModelFromForm()
@@ -1771,7 +1765,7 @@ function handleMeasure(event)
         precision = 3;
     }
 
-    console.log("Measure data");
+    //console.log("Measure data");
     //console.log(event);
     //console.log(event.geometry.getBounds());
 
@@ -1779,7 +1773,7 @@ function handleMeasure(event)
     var measure = event.measure.toFixed(precision);
     var bbox = event.geometry.getBounds();
 
-    console.log(bbox);
+    //console.log(bbox);
 
     var span_x = bbox['right'] - bbox ['left'];
     var unitx = "m";
@@ -1812,7 +1806,7 @@ function handleMeasure(event)
 }
 
 function hideDistance() {
-    //TODO: placeholder, implement
+
     $("#measuredetails").hide();
 
 }
