@@ -197,6 +197,57 @@ function tryGeoSearch (event)
 
 }
 
+function reverseGeoSearch (featuregeom, writetoid)
+{
+    /*
+    http://maps.googleapis.com/maps/api/geocode/json?latlng=40.714224,-73.961452&sensor=true_or_false
+     */
+
+    var coords = new OpenLayers.LonLat(featuregeom.x, featuregeom.y).transform(mapview.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
+
+
+    console.log("Trying reverse geocoding for coordinates");
+    console.log(coords);
+
+    console.log("Writing result to ID");
+    console.log(writetoid);
+
+    var dest = $("#"+writetoid);
+    console.log(dest);
+
+    var path = '/external/maps.googleapis.com/maps/api/geocode/json?latlng='+coords.lat+','+coords.lon+'&sensor=false';
+
+
+
+    $.getJSON(path, function(gqdata)
+    {
+        console.log(gqdata);
+        if(gqdata.status == "OK")
+        {
+            if (gqdata.results.length > 0)
+            {
+
+                console.log("Results found");
+                var locstring = gqdata['results'][0]['formatted_address'];
+                dest.append(locstring);
+            }
+            else
+            {
+                console.log("No results found");
+                dest.html("(posizione sconosciuta)");
+            }
+        }
+        else
+        {
+            console.log("Transmission error");
+            dest.html("(posizione non disponibile)");
+        }
+    });
+
+
+
+}
+
 function geosearch(locationdesc)
 {
 
@@ -1777,7 +1828,37 @@ function renderFeatureCard(caller)
     console.log("Viewing/editing feature "+cfid);
     console.log(feature);
 
-    $("#featuredetails").append("Oggetto selezionato: "+singleobjstring[modeldata['objtype']]);
+
+    var isline = feature.geometry.hasOwnProperty('components');
+    var desthtml;
+    if (isline)
+    {
+        var idstart = "pos_"+cfid.replace(/\./g, "_")+"_from";
+        var idend = "pos_"+cfid.replace(/\./g, "_")+"_to";
+
+        desthtml = '<span class=textlabel>Posizione iniziale</span>: <span id='+idstart+'></span><br>' +
+            '<span class=textlabel>Posizione finale</span>: <span id='+idend+'></span>';
+
+        $("#featureloc").append(desthtml);
+
+        var endA = feature.geometry.components[0];
+        var endB = feature.geometry.components[feature.geometry.components.length-1];
+        var posA = reverseGeoSearch(endA, idstart);
+        var posB = reverseGeoSearch(endB, idend);
+
+    }
+    else
+    {
+
+        var idpos = "pos_"+cfid.replace(/\./g, "_");
+        desthtml = 'Posizione: <span id='+idpos+'></span>';
+        $("#featureloc").append(desthtml);
+        var pos = reverseGeoSearch(feature.geometry, idpos);
+    }
+
+
+
+    $("#featuredetails").append("<span class=textlabel>Oggetto selezionato</span>: "+singleobjstring[modeldata['objtype']]);
 
     //for (var propname in feature.attributes)
     for (var propname in modeldata['properties'])
@@ -1917,6 +1998,7 @@ function checkReplicationChance()
 function freeSelection()
 {
     $("#featuredetails").empty();
+    $("#featureloc").empty();
     $("#measuredetails").hide();
     $("#featuredesc tbody").empty();
     $("#featurecard").hide();

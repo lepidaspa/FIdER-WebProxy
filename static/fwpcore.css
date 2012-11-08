@@ -425,3 +425,8 @@ select:disabled
     background-color:           #ff8800;
     color:                      #ffffff;
 }
+
+span.textlabel
+{
+    font-weight: bold;
+}
