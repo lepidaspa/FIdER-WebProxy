@@ -1851,7 +1851,7 @@ function renderFeatureCard(caller)
     {
 
         var idpos = "pos_"+cfid.replace(/\./g, "_");
-        desthtml = 'Posizione: <span id='+idpos+'></span>';
+        desthtml = '<span class="textlabel">Posizione</span>: <span id='+idpos+'></span>';
         $("#featureloc").append(desthtml);
         var pos = reverseGeoSearch(feature.geometry, idpos);
     }
