@@ -215,7 +215,7 @@ function reverseGeoSearch (featuregeom, writetoid)
     var dest = $("#"+writetoid);
     //console.log(dest);
 
-    var path = '/external/maps.googleapis.com/maps/api/geocode/json?latlng='+coords.lat+','+coords.lon+'&sensor=false';
+    var path = '/external/maps.googleapis.com/maps/api/geocode/json?latlng='+coords.lat+','+coords.lon+'&sensor=false&language=it';
 
 
 
