@@ -99,7 +99,7 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $(".conv_addpreset").live('click', addConvPreset);
     $(".valueconv_remove").live('click', removeConvPreset);
     $(".valueconv_quit").live('click', closeConversionScreen);
-    $("#valueconv_save").live('click', saveConversionTable);
+    $(".valueconv_save").live('click', saveConversionTable);
 
     $("#fieldconv_geometry").live('change', checkGeometryConversion);
 
@@ -549,6 +549,14 @@ function saveConversionTable()
     console.log("Saving conversion table");
 
 
+    // find the model currently in use
+    var model_id = $("#convtable_modelselect").val();
+    if (model_id == null || model_id == "" || (proxy_type == 'query' && $("#fieldconv_geometry").val() == ""))
+    {
+        // conversion table is NOT valid unless the user has selected a base model
+        return;
+    }
+
     // UI dialog init
     $("#progress_convsave").dialog("open");
     $("#progress_convsave .progressinfo").hide();
@@ -556,28 +564,24 @@ function saveConversionTable()
     $("#progress_stage_convsaving").show();
 
 
-
-
     var conversion = { "fields": {}, "forcedfields": {}};
 
-    // find the model currently in use
-
-    var model_id = $("#convtable_modelselect").val();
-
     conversion ['modelid'] = model_id;
-
 
     var fprefix;
     fprefix = "fieldconv_";
 
     var vprefix;
-    vprefix = "conv_preset_";
+    vprefix = "conv_presets_";
+
+    console.log(conv_models[model_id]);
 
     for (var fieldname in conv_models[model_id]['properties'])
     {
+        //console.log("Setting "+fieldname);
         var sourcefield = $("#"+fprefix+fieldname).val();
 
-        if (sourcefield =="")
+        if (sourcefield == "")
         {
             continue;
         }
@@ -586,25 +590,27 @@ function saveConversionTable()
 
         var valueconv = {};
 
+        //console.log("#"+vprefix+fieldname);
+
         var base = $("#"+vprefix+fieldname);
 
-        if (base.length == 0)
+
+        if (base.length > 0)
         {
-            // skip if we are not in a field that allows for presets
-            // TODO: move this to the fieldname iterator, continuing if the property does not have an array under itself
-            continue;
+            var convrows = base.find('.valueconv_combo_'+fieldname);
+
+            // filling the value conversion dictionary
+            for (var i = 0; i < convrows.length; i++)
+            {
+                var convfrom = $(convrows[i]).find('.valueconv_from').val();
+                var convto = $(convrows[i]).find('.valueconv_to').val();
+
+                valueconv [convfrom] = convto;
+            }
         }
 
-        var convrows = base.find('.valueconv_combo_'+fieldname);
-
-        // filling the value conversion dictionary
-        for (var i = 0; i < convrows.length; i++)
-        {
-            var convfrom = convrows[i].find('.valueconv_valuefrom').val();
-            var convto = convrows[i].find('.valueconv_valueto').val();
-
-            valueconv [convfrom] = convto;
-        }
+        //console.log("Values for "+fieldname);
+        //console.log(valueconv);
 
         // adding to the full conversion dict
         if (isforced)
@@ -621,6 +627,9 @@ function saveConversionTable()
 
     }
 
+
+    console.log("Saving table as:");
+    console.log(conversion);
 
     // saving to filesystem
 
@@ -653,7 +662,6 @@ function saveConversionTable()
                 rebuildShapeData(cmeta_id, cmap_id);
             }
 
-            $("#progspinner").hide();
 
 
         },
@@ -748,7 +756,7 @@ function renderConvTable()
     var fieldchoice_add = '<option value="+">(aggiungi)</option>';
     var fieldchoice_none = '<option value="">(nessuno)</option>';
 
-    // map fields list
+    // map fields list+
     var proplist = "";
     for (var i in conv_fields)
     {
@@ -811,10 +819,12 @@ function renderConvTable()
 
 
     $("#convtable_headers").show();
+    /*
     $("#valueconv_save").show();
     $("#valueconv_save").prop('disabled', false);
 
     $("#valueconv_quit").show();
+    */
 
     $("#fieldconv_geometry").change();
 
