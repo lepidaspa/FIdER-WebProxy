@@ -22,6 +22,7 @@ var regex_email_rfc = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`
 
 var defaultLon = 11.1;
 var defaultLat = 44.5;
+var defaultBounds;
 
 var newproxymap;
 var newmetamap;
@@ -79,6 +80,14 @@ function pageInit(proxylist)
     $("#tabsel_proxy").live('click', showSelProxy);
     $("#tabsel_standalone").live('click', showSelStandalone)
 
+
+
+    var pobj_wgs84 = new OpenLayers.Projection(proj_WGS84);
+    var pobj_google = new OpenLayers.Projection(proj_900913);
+
+    defaultBounds = new OpenLayers.Bounds();
+    defaultBounds.extend(new OpenLayers.LonLat(9.1980988, 43.73086379999999).transform(pobj_wgs84, pobj_google));
+    defaultBounds.extend(new OpenLayers.LonLat(12.7558364, 45.1395245).transform(pobj_wgs84, pobj_google));
 
 
     OpenLayers.Lang.setCode("it");
@@ -162,7 +171,8 @@ function initProxyMap()
     var switcher = new ItaLayerSwitcher();
     proxymap.addControl(switcher);
 
-    zoomToCenter(proxymap, defaultLon, defaultLat, 6);
+    //zoomToCenter(proxymap, defaultLon, defaultLat, 8);
+    proxymap.zoomToExtent(defaultBounds);
 
 
 }
@@ -1202,7 +1212,8 @@ function cleanMetaForm (dialogid)
     var base = $("#"+dialogid).find(".metadata_info");
 
     newmetamap.layers[1].destroyFeatures();
-    zoomToCenter (newmetamap, defaultLon, defaultLat, 6);
+    //zoomToCenter (newmetamap, defaultLon, defaultLat, 8);
+    newmetamap.zoomToExtent(defaultBounds);
 
     base.find(".newmeta_name").val("");
     base.find(".proxymetadatefield").val("");
@@ -1844,7 +1855,8 @@ function initMiniMap (eid)
     //console.log(mapview);
     mapview.addLayer(tracelayer);
 
-    zoomToCenter (mapview, defaultLon, defaultLat, 6);
+    //zoomToCenter (mapview, defaultLon, defaultLat, 8);
+    mapview.zoomToExtent(defaultBounds);
 
     create_setNavControls(mapview);
     return mapview;
@@ -1857,7 +1869,7 @@ function zoomToCenter (widget, lon, lat, zoom)
     var lonlat = new OpenLayers.LonLat (lon, lat);
     var projected = lonlat.transform(new OpenLayers.Projection(proj_WGS84), widget.getProjectionObject());
 
-    widget.setCenter(projected, zoom);
+    widget.setCenter(projected, zoom, false, true);
 
 }
 
@@ -1875,3 +1887,16 @@ function create_unsetNavControls (map)
     map.removeControl(OpenLayers.Control.Navigation());
 }
 
+function zoomToBounds (olmap, bounds)
+{
+    console.log("Moving to");
+    console.log(bbox);
+
+    console.log(olmap.id);
+    console.log(bounds);
+    olmap.zoomToExtent (bounds, true);
+    console.log("Actual viewport extent after zoom");
+    console.log(olmap.getExtent());
+
+
+}
