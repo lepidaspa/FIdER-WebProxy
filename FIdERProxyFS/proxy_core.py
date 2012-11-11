@@ -700,6 +700,8 @@ def convertShapeFileToJson (proxy_id, meta_id, shape_id, normalise=True):
 	"""
 	shapepath = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
 
+	print "Path is: %s (%s proxy type)" % (shapepath, learnProxyTypeAdv(proxy_id, getManifest(proxy_id)))
+
 	return convertShapePathToJson(shapepath, normalise)
 
 def getCoreFile (path_mapdir):
@@ -745,15 +747,24 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		basepath, shape_id = os.path.split(basepath)
 	else:
 		basepath, shape_id = os.path.split(path_shape)
+
 	basepath, meta_id = os.path.split(basepath)
 
+
+	print "Work paths: %s / %s / %s" % (basepath, meta_id, shape_id)
+
+
+
 	issinglefile = len(os.listdir(path_shape)) == 1
+	print "Single file? %s" % issinglefile
 	if issinglefile:
 		#print "One file only"
 		path_shape = os.path.join(path_shape, os.listdir(path_shape)[0])
 	else:
 		#print "Multiple files, heuristic find"
 		path_shape = os.path.join(path_shape, getCoreFile(path_shape))
+
+
 	print "Main item:",path_shape
 
 

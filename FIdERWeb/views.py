@@ -334,6 +334,7 @@ def getConversionInfo (request, **kwargs):
 	# creating the full list of fields for this map
 	sourcefields = []
 	if learnProxyType(getProxyManifest(proxy_id)) != 'query':
+
 		mapdata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, shape_id, False)
 		for feature in mapdata ['features']:
 			for property in feature['properties'].keys():
@@ -456,6 +457,36 @@ def proxy_getSingleMap (request, **kwargs):
 	response['Content-Disposition'] = 'attachment; filename=' + map_id+".geojson"
 
 	return response
+
+
+def proxy_reconvert_map (request, **kwargs):
+	"""
+	Reconverts an existing map from the mirror dir (already in geojson format) to the gj directory. Used to implement updates to the conversion table in the ng version of the proxy
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id =  kwargs['proxy_id']
+	meta_id =  kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	response_reconversion = {
+	'success': True,
+	'report': ''
+	}
+
+	try:
+		gjdata = proxy_core.rebuildShape(proxy_id, meta_id, map_id, False)
+		proxy_core.replicateShapeData(gjdata, proxy_id, meta_id, map_id, False)
+	except Exception as ex:
+		response_reconversion['success'] = False
+		response_reconversion['report'] = ex
+
+
+	return HttpResponse(json.dumps(response_reconversion), mimetype="application/json")
+
+
 
 
 

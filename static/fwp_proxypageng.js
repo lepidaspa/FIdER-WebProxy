@@ -140,7 +140,7 @@ function initForms ()
         buttons: {
             "Chiudi": {
                 id: "btn_convdload_close",
-                text: "Annulla",
+                text: "Chiudi",
                 click: function() {$( this ).dialog( "close" );}
             }
         }
@@ -421,41 +421,43 @@ function loadConversionTable()
 
     // loading the existing conversions and fields for this map
 
+    var faileddload = false;
+
     $.ajax({
         url: "/fwp/conversion/"+proxy_id+"/"+cmeta_id+"/"+cmap_id+"/",
         async: false
     }).done(function (jsondata) {
 
-            if (conv_hasmodels !== false)
-            {
-                $("#progress_convdload .progressinfo").hide();
-                prepareConversions (jsondata);
-            }
+            $("#progress_convdload .progressinfo").hide();
+            prepareConversions (jsondata);
 
-
-        }).fail(function (data)
+        }).fail(function ()
         {
+
+            faileddload = true;
 
             $("#progress_convdload .progressinfo").hide();
             $("#progspinner_convdload").hide();
             $("#convdload_fail").show();
-            $("#convdloadfail_explain").val(data);
-            $("#convdloadfail_explain").show();
+            //$("#convdloadfail_explain").val(data);
+            //$("#convdloadfail_explain").show();
             $("#btn_convdload_close").show();
         });
 
     // loading the models available from the main server
+
+
 
     $.ajax({
         url: "/fwp/valueconv/",
         async: true
     }).done(function (jsondata) {
 
-            if (conv_hastable !== false)
-            {
-                $("#progress_convdload .progressinfo").hide();
-                prepareModels (jsondata);
-            }
+            prepareModels (jsondata);
+
+            $("#progress_convdload").dialog("close");
+
+
 
         }).fail(function (data)
         {
@@ -463,7 +465,8 @@ function loadConversionTable()
             $("#progress_convdload .progressinfo").hide();
             $("#progspinner_convdload").hide();
             $("#convdload_fail").show();
-            $("#convdloadfail_explain").val(data);
+            $("#convdloadfail_explain").empty();
+            $("#convdloadfail_explain").append("Errore nel caricamento dei modelli dal server.");
             $("#convdloadfail_explain").show();
             $("#btn_convdload_close").show();
 
@@ -659,7 +662,7 @@ function saveConversionTable()
 
             if (proxy_type != 'query')
             {
-                rebuildShapeData(cmeta_id, cmap_id);
+                reconvertMapData(cmeta_id, cmap_id);
             }
 
 
@@ -675,7 +678,27 @@ function saveConversionTable()
         }
     });
 
+}
 
+
+function reconvertMapData (meta_id, map_id)
+{
+
+    //reconverts a map with the new conversion table SILENTLY
+    // we do not know the time span and the issues that can happen, and that will be logged away from this screen anyway (potentially they may be launched from a completely different context), console notification provided just in case
+
+    $.ajax ({
+        url: "/fwp/reconvert/"+proxy_id+"/"+meta_id+"/"+map_id+"/",
+        async: true,
+        success: function(data) {
+            console.log("Received feedback on map save for "+proxy_id+"/"+meta_id+"/"+map_id);
+            console.log(data);
+        },
+        error: function (data) {
+            console.log("Received feedback on map save for "+proxy_id+"/"+meta_id+"/"+map_id);
+            console.log(data);
+        }
+    });
 
 
 }
@@ -692,9 +715,11 @@ function closeConversionScreen()
 
 function renderConvSelection (jsondata)
 {
+
+    $("#conv_mapinfo").append("Tabella di conversione per la mappa "+cmap_id);
+
     // renders the conversion table for a jsondata set
     $("#progress_convdload").dialog("close");
-
 
     console.log("Rendering conversion table from data");
     console.log(jsondata);
@@ -736,6 +761,10 @@ function renderConvTable()
 {
 
     // TODO: handle autoselect and fill for fields in case a model was already registered
+
+
+
+
 
     // renders the conversion table according to the model_id chosen in the model selector
     var model_id = $("#convtable_modelselect").val();

@@ -225,3 +225,9 @@ td
 {
     border-top:     none;
 }
+
+#conv_mapinfo
+{
+    margin-top:     8px;
+    font-weight:    bold;
+}
