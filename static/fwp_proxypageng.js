@@ -716,6 +716,7 @@ function closeConversionScreen()
 function renderConvSelection (jsondata)
 {
 
+    $("#conv_mapinfo").empty();
     $("#conv_mapinfo").append("Tabella di conversione per la mappa "+cmap_id);
 
     // renders the conversion table for a jsondata set
