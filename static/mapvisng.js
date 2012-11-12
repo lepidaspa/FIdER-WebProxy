@@ -186,6 +186,129 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
 
 }
 
+
+function tryBuildMapToCanvas()
+{
+
+    console.log("Trying to copy the tiledata to a canvas object");
+
+    var base = $("#OpenLayers\\.Map_2_GMapContainer");
+
+    var baseoffset_y = parseInt(base.css("top"));
+    var baseoffset_x = parseInt(base.css("left"));
+
+    if (isNaN(baseoffset_y))
+    {
+        baseoffset_y = 0;
+    }
+    if (isNaN(baseoffset_x))
+    {
+        baseoffset_x = 0;
+    }
+
+    var limit_x = parseInt($("#mapview").css("width"));
+    var limit_y = parseInt($("#mapview").css("height"));
+
+    $("#maptoimage").dialog("open");
+
+    $("#exportcanvas").empty().append('<canvas id="drawingarea" height="'+limit_y+'" width="'+limit_x+'"></canvas>');
+
+
+
+
+    console.log(base[0]);
+    console.log(baseoffset_x);
+    console.log(baseoffset_y);
+    console.log(limit_x);
+    console.log(limit_y);
+
+    //var canvas = document.createElement('canvas');
+
+    var canvas = document.getElementById('drawingarea');
+    var context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    var tileset = base.find("img:visible");
+
+    console.log("Total "+tileset.length+" tiles available on this layer");
+
+    var offsetter = base.find("div:first div:first div:first");
+    // console.log("Reading offset div");
+    // console.log(offsetter);
+    // console.log(offsetter.css("-webkit-transform"));
+
+    // cleaning up the matrix string from css
+    var preparse = offsetter.css("-webkit-transform").replace(")","").split(",");
+    // console.log(preparse);
+
+    var mainoffset_x = parseInt(preparse[preparse.length-2]);
+    var mainoffset_y = parseInt(preparse[preparse.length-1]);
+
+
+
+    for (var i = 0; i < tileset.length; i++)
+    {
+        // drawing EVERYTHING to the canvas
+        var ctile = $(tileset[i]);
+        var ctileimg = tileset[i];
+
+        var parent = ctile.closest("div");
+
+        var offset_x = parseInt(parent.css('left'))+mainoffset_x;
+        var offset_y = parseInt(parent.css('top'))+mainoffset_y;
+
+
+        var tile_width = ctileimg.width;
+        var tile_height = ctileimg.height;
+
+        //context.drawImage(ctileimg, 0, 0, tile_width, tile_height, offset_x, offset_y, tile_width, tile_height);
+        context.drawImage(ctileimg, 0, 0, tile_width, tile_height, offset_x, offset_y, tile_width, tile_height);
+
+        console.log("Drawn "+tileset[i]+" in "+offset_x+","+offset_y+" with size "+ctileimg.width+"*"+ctileimg.height);
+
+    }
+
+    console.log("Drawn "+i+" tiles");
+
+    console.log("Copying "+vislayer.features.length+" features to draw layer");
+
+    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.5, fillColor: "#ff00ff", strokeColor: "#000000", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
+    var featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    var renderlayer = new OpenLayers.Layer.Vector("drawlayer", {name: "drawlayer", styleMap: featurestylemap, renderers: ["Canvas"]});
+    renderlayer.id = "rendercanvas";
+
+    renderlayer.display(false);
+
+    mapview.addLayer(renderlayer);
+
+
+    for (var f in vislayer.features)
+    {
+        //renderlayer.addFeatures(vislayer.features);
+        var cfeature = vislayer.features[f];
+        renderlayer.addFeatures(new OpenLayers.Feature.Vector(cfeature.geometry));
+    }
+
+
+
+    //renderlayer.display();
+
+    console.log("Copying renderer canvas to output");
+    var element = ($(renderlayer.div)).find("canvas")[0];
+
+    context.drawImage(element, 0, 0);
+
+    renderlayer.destroy();
+
+    console.log("canvas to data URL");
+
+    console.log($(canvas));
+
+
+
+
+}
+
 function tryGeoSearch (event)
 {
     if (event.keyCode == keycode_ENTER)
@@ -381,6 +504,20 @@ function interceptCallback ()
 
 function initForms()
 {
+
+    $("#maptoimage").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: true,
+        width:  "auto",
+        buttons: {
+            "Chiudi": {
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
+    });
+
 
     $("#form_loadmap").dialog({
         autoOpen: false,

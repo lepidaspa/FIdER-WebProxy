@@ -273,3 +273,26 @@ tr, tr *
     border-top:     0;
     margin-top:     -4px;
 }
+
+#drawingarea
+{
+
+    padding:    0;
+    background: #cccccc;
+
+}
+
+#maptoimage
+{
+    width:      600px;
+    height:     500px;
+}
+
+#exportcanvas
+{
+    left:       auto;
+    right:      auto;
+    width:      400px;
+    height:     400px;
+    overflow:   auto;
+}
