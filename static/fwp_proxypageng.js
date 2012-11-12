@@ -272,7 +272,7 @@ function initForms ()
             },
             "Crea": {
                 id : "form_newquery_create",
-                text: "Carica",
+                text: "Crea",
                 click: tryCreateQuery
             }
         }
@@ -664,8 +664,6 @@ function saveConversionTable()
             {
                 reconvertMapData(cmeta_id, cmap_id);
             }
-
-
 
         },
         error: function (data) {
