@@ -435,10 +435,22 @@ function applyFilters()
 
             if (!verified[pkey])
             {
-                if (vislayer.features[cf].attributes[pkey] == pval)
+
+                if (pval != null)
                 {
-                    verified[pkey] = true;
+                    if (vislayer.features[cf].attributes[pkey] == pval)
+                    {
+                        verified[pkey] = true;
+                    }
                 }
+                else
+                {
+                    if (!vislayer.features[cf].attributes.hasOwnProperty(pkey) || vislayer.features[cf].attributes[pkey] == null)
+                    {
+                        verified[pkey] = true;
+                    }
+                }
+
             }
         }
 
