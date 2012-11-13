@@ -296,3 +296,29 @@ tr, tr *
     height:     400px;
     overflow:   auto;
 }
+
+#filterbox
+{
+    width:      100%;
+}
+
+#layout_filter
+{
+    width:      100%;
+}
+
+
+.layout_filterfield
+{
+    width:          100%;
+}
+
+.filter_valuecriteria
+{
+    width:          100%;
+}
+
+#form_filter
+{
+    max-width:      400px;
+}

@@ -304,8 +304,191 @@ function tryBuildMapToCanvas()
 
     console.log($(canvas));
 
+    //TODO: solve SECURITY exception to allow saving
 
 
+
+}
+
+// FILTER SECTION
+function initFiltersForm()
+{
+
+    //var fieldselectlist = ['filter_fieldcriteria_1', 'filter_fieldcriteria_2'];
+    var valselectlist = ['filter_valuecriteria_1', 'filter_valuecriteria_2'];
+
+    var proplist = [];
+    for (var propname in modeldata['properties'])
+    {
+        if (modeldata['properties'].hasOwnProperty(propname))
+        {
+            proplist.push(propname);
+        }
+    }
+
+    var fieldselectors = $(".filter_fieldcriteria");
+    for (var i = 0; i < fieldselectors.length; i++)
+    {
+        var cselect = $(fieldselectors[i]);
+        cselect.empty();
+        cselect.append('<option value=""></option>');
+        for (var p = 0; p < proplist.length; p++)
+        {
+            cselect.append('<option value="'+proplist[p]+'">'+proplist[p]+'</option>')
+        }
+    }
+
+    fieldselectors.change();
+
+}
+
+function initFilterValueList()
+{
+    var base = $(this);
+    var propname = base.val();
+    var dest = base.closest('tr').find(".filter_valuecriteria");
+
+    dest.empty();
+
+    if (propname == "")
+    {
+        dest.prop('disabled', true);
+        return;
+    }
+
+    dest.append('<option value="">(non definito)</option>');
+    var existing = [];
+    for (var i = 0; i < vislayer.features.length; i++)
+    {
+
+        //console.log("Checking feature "+vislayer.features[i]);
+
+        try
+        {
+            var cvalue = vislayer.features[i].attributes[propname];
+            if (existing.indexOf(cvalue)==-1)
+            {
+                existing.push(cvalue);
+                dest.append('<option value="'+cvalue+'">'+cvalue+'</option>');
+            }
+
+        }
+        catch (ex)
+        {
+            //console.log(ex);
+            //ignoring, feature is missing
+        }
+
+    }
+
+    //console.log("Total values available: "+existing);
+    dest.prop('disabled', existing.length == 0);
+
+}
+
+function applyFilters()
+{
+
+    filterlayer.destroyFeatures();
+
+    var conditions = [];
+    var fieldsels = $(".filter_fieldcriteria");
+    console.log("Creating filter");
+
+    for (var f = 0; f < fieldsels.length; f++)
+    {
+        var fieldselval = $(fieldsels[f]).val();
+
+        if (fieldselval != '')
+        {
+            var valueselval = $(fieldsels[f]).closest('tr').find(".filter_valuecriteria").val();
+
+            console.log ("Adding condition on "+fieldselval+" -> "+valueselval);
+            conditions.push({'field':fieldselval, 'value':valueselval});
+            if (valueselval == '')
+            {
+                conditions.push({'field':fieldselval, 'value':null});
+            }
+        }
+
+    }
+
+    console.log(conditions);
+
+    var featurelist = [];
+
+    for (var cf in vislayer.features)
+    {
+
+        // creating the verification array;
+        var verified = {};
+        for (i in conditions)
+        {
+            verified [conditions[i]['field']] = false;
+        }
+
+        // actual verification
+        for (i in conditions)
+        {
+            var pkey = conditions[i]['field'];
+            var pval = conditions[i]['value'];
+
+            if (!verified[pkey])
+            {
+                if (vislayer.features[cf].attributes[pkey] == pval)
+                {
+                    verified[pkey] = true;
+                }
+            }
+        }
+
+        // recap and final confirmation
+        var verifiedall = true;
+        for (i in conditions)
+        {
+            if (!verified[conditions[i]['field']])
+            {
+                verifiedall = false;
+                break;
+            }
+        }
+
+        if (verifiedall)
+        {
+            featurelist.push(vislayer.features[cf]);
+        }
+
+    }
+
+
+
+    console.log("Got "+featurelist.length+" features to clone");
+
+    for (var i in featurelist)
+    {
+        //console.log(featurelist[i]);
+
+        // $clonedfrom is needed to trace back to the original feature  when working on the filter layer
+
+        var clonedfrom = featurelist[i].id;
+        //console.log("Adding feature "+clonedfrom+"/"+featurelist[i].id);
+        var clonefeature = featurelist[i].clone();
+        clonefeature.attributes['$clonedfrom'] = clonedfrom;
+        filterlayer.addFeatures(clonefeature);
+
+    }
+
+    console.log("Filtered "+filterlayer.features.length+" features");
+
+
+}
+
+function removeAllFilters()
+{
+
+    $(".filter_fieldcriteria").val("");
+    $(".filter_fieldcriteria").change();
+    filterlayer.destroyFeatures();
 
 }
 
@@ -518,6 +701,31 @@ function initForms()
         }
     });
 
+    $("#form_filter").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                text: "Rimuovi filtro",
+                click: function() {
+                    removeAllFilters();
+                    $( this ).dialog( "close" );
+                }
+            },
+            "Applica": {
+                id : "Conferma",
+                text: "Applica",
+                click: function () {
+                    applyFilters();
+                    $ (this).dialog("close");
+
+                }
+            }
+        }
+    });
+    $(".filter_fieldcriteria").live('change', initFilterValueList);
 
     $("#form_loadmap").dialog({
         autoOpen: false,
@@ -762,7 +970,9 @@ function funcShowModel ()
 
 function funcCreateFilter()
 {
-    //console.log("creating a filter for view");
+
+    $("#form_filter").dialog("open");
+
 }
 
 // END OF MENU FUNCTIONS
@@ -1197,6 +1407,9 @@ function applyNewMap(newdata, textStatus, jqXHR)
     {
         funcShowModel();
     }
+
+    initFiltersForm();
+
 
 }
 

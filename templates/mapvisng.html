@@ -182,6 +182,43 @@
 
 
 
+<div id="form_filter" title="Filtro">
+
+    <div class="formbriefing">
+        La funzione di filtro permette di evidenziare degli elementi sulla mappa.<br>
+        È possibile copiare i valori di un elemento selezionato sugli elementi indicati dal filtro.
+    </div>
+
+    <div id="filterbox">
+
+
+        <table id="layout_filter">
+            <tr>
+                <td>
+                    <select class="filter_fieldcriteria" id="filter_fieldcriteria_1">
+                    </select>
+                </td>
+                <td class="layout_filterfield">
+                    <select class="filter_valuecriteria" id="filter_valuecriteria_1">
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <select class="filter_fieldcriteria" id="filter_fieldcriteria_2">
+                    </select>
+                </td>
+                <td class="layout_filterfield">
+                    <select class="filter_valuecriteria" id="filter_valuecriteria_2">
+                    </select>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+
+</div>
+
 <div id="form_loadmap" title="Integrazione mappe">
 
     <input type="file" id="uploadfield" accept="application/zip">
@@ -397,9 +434,7 @@
 
             {% if mode == 'full' or mode == 'mapedit' %}
                 <img src="{{ STATIC_URL }}resource/visng_menu_geoshift.png" class="imgbutton menuopt" id="menu_geoshift" title="Trasla mappa">
-                <!-- temporarily hidden for demo use as of 29/10/2012
                 <img src="{{ STATIC_URL }}resource/visng_controls_filter.png" class="imgbutton menuopt" id="menu_filter" title="Filtra">
-                -->
             {% endif %}
 
 
