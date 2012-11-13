@@ -360,13 +360,21 @@ function initFilterValueList()
     var existing = [];
     for (var i = 0; i < vislayer.features.length; i++)
     {
+        var cfeature = vislayer.features[i];
+
+        if (cfeature.hasOwnProperty('_sketch') && cfeature._sketch === true)
+        {
+            //console.log("Found highlighter as feature "+fid);
+            // avoiding highlighters
+            continue;
+        }
 
         //console.log("Checking feature "+vislayer.features[i]);
 
         try
         {
-            var cvalue = vislayer.features[i].attributes[propname];
-            if (existing.indexOf(cvalue)==-1)
+            var cvalue = cfeature.attributes[propname];
+            if (existing.indexOf(cvalue)==-1 && cvalue != null && typeof cvalue != 'undefined')
             {
                 existing.push(cvalue);
                 dest.append('<option value="'+cvalue+'">'+cvalue+'</option>');
@@ -420,6 +428,15 @@ function applyFilters()
     for (var cf in vislayer.features)
     {
 
+        var cfeature = vislayer.features[cf];
+
+        if (cfeature.hasOwnProperty('_sketch') && cfeature._sketch === true)
+        {
+            //console.log("Found highlighter as feature "+fid);
+            // avoiding highlighters
+            continue;
+        }
+
         // creating the verification array;
         var verified = {};
         for (i in conditions)
@@ -438,14 +455,14 @@ function applyFilters()
 
                 if (pval != null)
                 {
-                    if (vislayer.features[cf].attributes[pkey] == pval)
+                    if (cfeature.attributes[pkey] == pval)
                     {
                         verified[pkey] = true;
                     }
                 }
                 else
                 {
-                    if (!vislayer.features[cf].attributes.hasOwnProperty(pkey) || vislayer.features[cf].attributes[pkey] == null)
+                    if (!cfeature.attributes.hasOwnProperty(pkey) || cfeature.attributes[pkey] == null)
                     {
                         verified[pkey] = true;
                     }
@@ -467,7 +484,7 @@ function applyFilters()
 
         if (verifiedall)
         {
-            featurelist.push(vislayer.features[cf]);
+            featurelist.push(cfeature);
         }
 
     }
