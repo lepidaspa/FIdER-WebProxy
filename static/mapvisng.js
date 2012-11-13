@@ -642,7 +642,6 @@ function geosearch(locationdesc)
                     gqdata.results[0].geometry.viewport.northeast.lat).transform(proj_WGS84,
                     proj_900913));
                 mapview.zoomToExtent(gq);
-                closeFeedback();
 
             }
             else
