@@ -394,6 +394,8 @@ function initFilterValueList()
 
 }
 
+
+
 function applyFilters()
 {
 
@@ -520,6 +522,36 @@ function removeAllFilters()
     filterlayer.destroyFeatures();
 
 }
+
+function replicatePropValue()
+{
+
+    if (filterlayer.features.length == 0)
+    {
+        alert("Per replicare i valori è necessario impostare un filtro");
+        return;
+    }
+
+    var base = $(this).closest('tr');
+
+    var prefix = 'textfield_';
+    var propname = base.find('.feature_propvalue').attr('id').substr(prefix.length);
+    var value = base.find('.feature_propvalue').val();
+
+    console.log("Replicating "+propname+" as "+value);
+
+
+    for (var i in filterlayer.features)
+    {
+        var destid = filterlayer.features[i]['attributes']['$clonedfrom'];
+        vislayer.getFeatureById(destid)['attributes'][propname] = value;
+
+    }
+
+    console.log("Updated "+filterlayer.length+" features");
+
+}
+
 
 function tryGeoSearch (event)
 {
@@ -755,6 +787,8 @@ function initForms()
         }
     });
     $(".filter_fieldcriteria").live('change', initFilterValueList);
+    $(".button_replicatevalue").live('click', replicatePropValue);
+
 
     $("#form_loadmap").dialog({
         autoOpen: false,
@@ -2365,7 +2399,7 @@ function checkReplicationChance()
     // checks if replication buttons can be active (i.e. if there is a filter to >1 object
     // TODO: implement, placeholder
     // currently off by default
-    $(".button_replicatevalue").prop('disable', true);
+    $(".button_replicatevalue").prop('disable', filterlayer.features.length == 0);
 }
 
 function freeSelection()
