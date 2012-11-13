@@ -1751,6 +1751,8 @@ function addModelProp ()
     // TODO: consider reversing the process
     funcShowModel();
 
+    initFiltersForm();
+
 }
 
 function importModelPropValue ()
@@ -1901,6 +1903,8 @@ function rebuildModelFromForm()
     console.log("New model properties and values");
     console.log(modeldata);
     */
+
+    initFiltersForm();
 
 }
 
