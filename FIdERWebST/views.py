@@ -359,6 +359,34 @@ def saveSTMap (request, **kwargs):
 	return HttpResponse(json.dumps(feedback), mimetype="application/json")
 
 
+def downloadMapImage (request, **kwargs):
+	"""
+	Downloads a map rendered against a GoogleMaps background. Uses PIL for rendering the map
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, proxy_core.getManifest(proxy_id))
+
+	# getting the maps from the gj dir (or ST in case of the standalone instance)
+
+	#TODO: placeholder, implement
+
+	if proxy_type != 'local':
+
+
+
+		pass
+
+
+
+
+
 @csrf_exempt
 def saveVisMap (request, **kwargs):
 	"""
