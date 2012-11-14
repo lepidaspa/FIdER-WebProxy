@@ -16,7 +16,8 @@ __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
 import os
-
+import urllib
+import urllib2
 
 from Common import Components
 from FIdERProxyFS import proxy_core
@@ -378,11 +379,60 @@ def downloadMapImage (request, **kwargs):
 	#TODO: placeholder, implement
 
 	if proxy_type != 'local':
+		pathtojs = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id, map_id)
+	else:
+		pathtojs = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
+
+	mapdataraw = json.load(open(pathtojs))
+
+	mapinfo = proxy_core.getMapFileStats(pathtojs)
+
+	print "Working on map data for %s/%s/%s:\n%s" % (proxy_id, meta_id, map_id, mapinfo)
+
+	try:
+		print "Received parameters array, going by POST data"
+		params = request.POST
+	except Exception as ex:
+		print "Missing parameters array, going by default"
+		params = None
+
+	#if not params.has_key('center'):
+	#	center_lon = str((mapinfo['bbox'][2]+mapinfo['bbox'][0])/2)
+	#	center_lat = str((mapinfo['bbox'][3]+mapinfo['bbox'][1])/2)
+
+	urlparams = {}
+	if not params.has_key('bbox'):
+		urlparams['visible'] = "%s,%s|%s,%s" % (str(mapinfo['bbox'][1]),str(mapinfo['bbox'][0]),str(mapinfo['bbox'][3]),str(mapinfo['bbox'][2]))
+		urlparams['maptype'] = 'terrain'
+	else:
+		urlparams['visible'] = params['bbox']
+		urlparams['maptype'] = params['layername']
+
+	urlparams['format'] = 'png32'
+	urlparams['size']='640x640'
+	urlparams['scale']='2'
+	urlparams['sensor']='false'
+
+	#http://maps.googleapis.com/maps/api/staticmap?size=640x640&scale=2&maptype=roadmap&visible=44.2506162174,12.3382646288|44.2667622346,12.3572303763&sensor=false
+
+	print "Params: %s" % params
+	print "URL params %s" % urlparams
+
+	baseurl = "http://maps.googleapis.com/maps/api/staticmap"
 
 
+	params_serialized = []
+	for key, value in urlparams.items():
+		params_serialized.append((key, value))
 
-		pass
+	paramsencoded = urllib.urlencode (params_serialized)
+	print "Encoded: %s" % baseurl+"?"+paramsencoded
+	outimage = urllib2.urlopen(baseurl+"?"+paramsencoded).read()
 
+	#print outimage
+
+
+	return HttpResponse(outimage, mimetype="image/png")
 
 
 
