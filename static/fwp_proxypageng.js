@@ -426,7 +426,7 @@ function loadConversionTable()
 
     $.ajax({
         url: "/fwp/conversion/"+proxy_id+"/"+cmeta_id+"/"+cmap_id+"/",
-        async: true
+        async: false
     }).done(function (jsondata) {
 
             $("#progress_convdload .progressinfo").hide();
