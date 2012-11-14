@@ -425,14 +425,22 @@ function loadConversionTable()
 
     $.ajax({
         url: "/fwp/conversion/"+proxy_id+"/"+cmeta_id+"/"+cmap_id+"/",
-        async: false
+        async: true
     }).done(function (jsondata) {
 
             $("#progress_convdload .progressinfo").hide();
+
+            console.log("Downloaded /fwp/conversion");
+            console.log(jsondata);
+
             prepareConversions (jsondata);
+
+
 
         }).fail(function ()
         {
+
+            console.log("Failed to download /fwp/conversion (call 1)");
 
             faileddload = true;
 
@@ -453,6 +461,10 @@ function loadConversionTable()
         async: true
     }).done(function (jsondata) {
 
+
+            console.log("Downloaded /fwp/valueconv");
+            console.log(jsondata);
+
             prepareModels (jsondata);
 
             $("#progress_convdload").dialog("close");
@@ -461,6 +473,8 @@ function loadConversionTable()
 
         }).fail(function (data)
         {
+
+            console.log("Failed to download /fwp/valueconv (call 2)");
 
             $("#progress_convdload .progressinfo").hide();
             $("#progspinner_convdload").hide();
@@ -721,7 +735,9 @@ function renderConvSelection (jsondata)
     $("#progress_convdload").dialog("close");
 
     console.log("Rendering conversion table from data");
-    console.log(jsondata);
+    //console.log(jsondata);
+    console.log(conv_fields);
+    console.log(conv_table);
 
     var convtable = $("#convtable_datasets");
     convtable.empty();
@@ -741,16 +757,32 @@ function renderConvSelection (jsondata)
         )
     }
 
-    // TODO: handle autoselect in case a model was already registered
 
-    if (modlist.length == 1)
+
+    if (modlist.length > 0 && modlist.indexOf(conv_table['modelid'])!=-1)
     {
+        console.log("Several models available, but we have an existing conversion");
+        modelselector.val(conv_table['modelid']);
+        modelselector.change();
+        renderConvTable();
+
+    }
+    else if (modlist.length == 1)
+    {
+        console.log("Just one model available, different from the existing conversion");
+
         // preselecting and locking the result if there is only one model
         modelselector.val(modlist[0]);
         modelselector.change();
         renderConvTable();
-        modelselector.prop('disabled', true);
+        //modelselector.prop('disabled', true);
     }
+
+    modelselector.prop('disabled', modlist.length == 1);
+
+
+
+
 
 
 }
