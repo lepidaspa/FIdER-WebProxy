@@ -34,6 +34,7 @@ var cmap_id;
 var conv_hasmodels;
 var conv_hastable;
 
+
 var conv_table;
 var conv_fields;
 var conv_models;
@@ -762,9 +763,10 @@ function renderConvSelection (jsondata)
     if (modlist.length > 0 && modlist.indexOf(conv_table['modelid'])!=-1)
     {
         console.log("Several models available, but we have an existing conversion");
+
+        // preselecting existing model that IS STILL federated
         modelselector.val(conv_table['modelid']);
-        modelselector.change();
-        renderConvTable();
+
 
     }
     else if (modlist.length == 1)
@@ -773,11 +775,11 @@ function renderConvSelection (jsondata)
 
         // preselecting and locking the result if there is only one model
         modelselector.val(modlist[0]);
-        modelselector.change();
-        renderConvTable();
         //modelselector.prop('disabled', true);
     }
 
+    modelselector.change();
+    renderConvTable();
     modelselector.prop('disabled', modlist.length == 1);
 
 
@@ -793,18 +795,29 @@ function renderConvTable()
 
     // TODO: handle autoselect and fill for fields in case a model was already registered
 
-
-
-
-
     // renders the conversion table according to the model_id chosen in the model selector
     var model_id = $("#convtable_modelselect").val();
+
+    var prefill;
+    try
+    {
+        prefill = model_id == conv_table['modelid'];
+    }
+    catch (err)
+    {
+        prefill = false;
+    }
+
+    console.log("Prefill option status: "+prefill);
+
 
     var convtable = $("#convtable_datasets");
     convtable.empty();
 
     if (model_id == "")
     {
+
+
         return;
     }
 
@@ -874,8 +887,69 @@ function renderConvTable()
         fieldrow.append (addpresets);
 
 
+
+
         convtable.append(fieldrow);
+
     }
+
+    // PREFILLING
+
+
+    if (prefill)
+    {
+
+        var remap = {};
+
+
+        var destfield;
+        var sourcefield;
+        var valuedict;
+        for (sourcefield in conv_table['fields'])
+        {
+            // PREFILLING FIELD SELECTION
+            destfield = conv_table['fields'][sourcefield]['to'];
+            convtable.find("#fieldconv_"+destfield).val(sourcefield);
+
+            // PREFILLING PRESET VALUES
+            valuedict = conv_table['fields'][sourcefield]['values'];
+            for (var valuefrom in valuedict)
+            {
+                var valueto = valuedict[valuefrom];
+                $("#conv_addpreset_"+destfield).click();
+                var combofield = convtable.find(".valueconv_combo_"+destfield+":last-child");
+                $(combofield).find(".valueconv_from").val(valuefrom);
+                $(combofield).find(".valueconv_to").val(valueto);
+            }
+
+        }
+
+        // setting added fields
+        for (destfield in conv_table['forcedfields'])
+        {
+            // PREFILLING FIELD SELECTION
+            convtable.find("#fieldconv_"+destfield).val("+");
+
+            // PREFILLING PRESET VALUES
+            valuedict = conv_table['forcedfields'][destfield];
+            for (var valuefrom in valuedict)
+            {
+                var valueto = valuedict[valuefrom];
+                $("#conv_addpreset_"+destfield).click();
+                var combofield = convtable.find(".valueconv_combo_"+destfield+":last-child");
+                $(combofield).find(".valueconv_from").val(valuefrom);
+                $(combofield).find(".valueconv_to").val(valueto);
+            }
+        }
+
+
+
+
+    }
+
+
+
+
 
 
     $("#convtable_headers").show();
