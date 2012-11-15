@@ -107,11 +107,108 @@
 
 {% block functionality %}
 
-    <div id="infobox_metas" title="Riepilogo catalogo">
-    {% for metainfo in manifestfordj.metadata  %}
+   <!--
 
-    {% endfor %}
+    <div id="infobox_proxies" title="Riepilogo istanza">
+        {% for proxy_id, proxydata in proxiesdj.items %}
+
+            <div class="proxydetails" id="proxydetails_{{ proxy_id }}">
+
+            <table class="proxydetailstable">
+
+            <tr><td class="proxydetails_label">
+                {% if proxydata.type == 'local' %}
+                    Strumento standalone
+                {% endif %}
+                {% if proxydata.type == 'linked' %}
+                    Proxy standalone
+                {% endif %}
+                {% if proxydata.type == 'query' %}
+                    Proxy query
+                {% endif %}
+                {% if proxydata.type == 'read' %}
+                    Proxy Read
+                {% endif %}
+                {% if proxydata.type == 'write' %}
+                    Proxy Write
+                {% endif %}
+            </td><td>{{ proxydata.name }}</td></tr>
+
+            {% if proxydata.type != 'local' %}
+
+                {% if proxydata.type == 'query' %}
+                    <tr><th colspan=2 class="mapdetails_header">Modalità operative</th></tr>
+                    <tr>
+                        <td>Ricerca geografica</td>
+                        <td>
+                            {% if proxydata.operations.query.geographic == 'full' %}
+                                Complessa
+                            {% endif %}
+                            {% if proxydata.operations.query.geographic == 'BB' %}
+                                Bounding box
+                            {% endif %}
+                            {% if proxydata.operations.query.geographic == 'query' %}
+                                Non disponibile
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Ricerca temporale</td>
+                        <td>
+                            {% if proxydata.operations.query.time == 'full' %}
+                                Completa
+                            {% endif %}
+                            {% if proxydata.operations.query.time == 'query' %}
+                                Non disponibile
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Ricerca inventariale</td>
+                        <td>
+                            {% if proxydata.operations.query.inventory == 'full' %}
+                                Complessa
+                            {% endif %}
+                            {% if proxydata.operations.query.inventory == 'simple' %}
+                                Semplice
+                            {% endif %}
+                            {% if proxydata.operations.query.inventory == 'none' %}
+                                Non disponibile
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Business intelligence</td>
+                        <td>
+                            {% if proxydata.operations.query.bi == 'full' %}
+                                Completa
+                            {% endif %}
+                            {% if proxydata.operations.query.bi == 'none' %}
+                                Non disponibile
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Firma</td>
+                        <td>
+                            {% if proxydata.operations.query.sign == 'true'  %}
+                                Sì
+                                {% else %}
+                                No
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+
+            {% endif %}
+
+            </table>
+        {% endfor %}
     </div>
+
+    -->
 
 
     <div class="creationdialog" id="proxycreate_readwrite" title="Creazione proxy lettura/scrittura">
@@ -519,7 +616,7 @@
         </table>
 
         <div class="formbriefing" style="margin-top: 0.5em">
-            * È obbligatorio creare almeno un catalogo. ** Campo obbligatorio. *** È obbligatorio riempire almeno uno di questi campi.
+            ** Campo obbligatorio. *** È obbligatorio riempire almeno uno di questi campi.
         </div>
 
     </div>

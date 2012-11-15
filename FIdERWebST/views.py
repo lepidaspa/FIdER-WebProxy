@@ -403,7 +403,7 @@ def downloadMapImage (request, **kwargs):
 	urlparams = {}
 	if not params.has_key('bbox'):
 		urlparams['visible'] = "%s,%s|%s,%s" % (str(mapinfo['bbox'][1]),str(mapinfo['bbox'][0]),str(mapinfo['bbox'][3]),str(mapinfo['bbox'][2]))
-		urlparams['maptype'] = 'terrain'
+		urlparams['maptype'] = 'roadmap'
 	else:
 		urlparams['visible'] = params['bbox']
 		urlparams['maptype'] = params['layername']
