@@ -109,6 +109,9 @@
 
 
     <div class="creationdialog" id="proxycreate_readwrite" title="Creazione proxy lettura/scrittura">
+
+
+
         <table class="creatormask" id="layout_createreadwrite">
             <colgroup>
                 <col class="bordered" span=3>
@@ -125,9 +128,9 @@
                     <div class="tablemap map_newproxy" id="map_createreadwrite"></div>
                 </td>
                 <td>
-                    <label for="field_createreadwrite_name">Nome</label></td><td><input type="text" id="field_createreadwrite_name" class="widetext proxynamefield">
+                    <label for="field_createreadwrite_name">Nome **</label></td><td><input type="text" id="field_createreadwrite_name" class="widetext proxynamefield">
                 </td>
-                <td><label for="field_createreadwrite_owner">Fornitore</label></td>
+                <td><label for="field_createreadwrite_owner">Fornitore **</label></td>
                 <td><input type="text" id="field_createreadwrite_owner" class="widetext proxyfieldprovider {% if providers|length > 0 %}datalisted" list="providers{% endif %}">
 
 
@@ -137,7 +140,7 @@
 
             <tr>
 
-                <td><label for="field_createreadwrite_mode">Modalità</label></td>
+                <td><label for="field_createreadwrite_mode">Modalità **</label></td>
                 <td>
                     <select id="field_createreadwrite_mode">
                         <optgroup label="Lettura">
@@ -152,17 +155,17 @@
                 </td>
 
 
-                <td><label for="field_createreadwrite_contactname">Nome referente</label></td>
+                <td><label for="field_createreadwrite_contactname">Referente</label></td>
                 <td><input type="text" id="field_createreadwrite_contactname" class="widetext proxyfieldcontactdata proxyfieldcontactname"></td>
             </tr>
             <tr>
 
-                <td><label for="field_createreadwrite_datefrom">Valido dal</label></td>
+                <td><label for="field_createreadwrite_datefrom">Valido dal **</label></td>
                 <td><input type="text" id="field_createreadwrite_datefrom" class="widetext proxydatefield datefromfield">
                 </td>
 
 
-                <td><label for="field_createreadwrite_contactemail">Email referente</label></td><td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createreadwrite_contactemail"></td>
+                <td><label for="field_createreadwrite_contactemail">Email referente ***</label></td><td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createreadwrite_contactemail"></td>
 
             </tr>
 
@@ -175,7 +178,7 @@
 
 
                 <td>
-                    <label for="field_createreadwrite_contactphone">Telefono referente</label></td><td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createreadwrite_contactphone">
+                    <label for="field_createreadwrite_contactphone">Telefono referente ***</label></td><td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createreadwrite_contactphone">
                 </td>
                 </tr>
 
@@ -188,7 +191,7 @@
 
 
             <tbody class="tablebanner"><tr>
-                <td colspan=5>CATALOGHI</td>
+                <td colspan=5>CATALOGHI *</td>
             </tr></tbody>
 
             <tbody class="tablebanner"><tr>
@@ -203,7 +206,7 @@
                 <td>
 
 
-                    <label for="field_metareadwrite_name">Nome</label></td><td><input type="text" id="field_metareadwrite_name" class="widetext newmeta_name"></td><td id="createdmetalistrw" rowspan=4 colspan=2>
+                    <label for="field_metareadwrite_name">Nome **</label></td><td><input type="text" id="field_metareadwrite_name" class="widetext newmeta_name"></td><td id="createdmetalistrw" rowspan=4 colspan=2>
 
                 <table class="newmetalist" id="newmetalist_readwrite">
                 </table>
@@ -227,6 +230,11 @@
 
             </tbody>
         </table>
+
+        <div class="formbriefing" style="margin-top: 0.5em">
+            * È obbligatorio creare almeno un catalogo. ** Campo obbligatorio. *** È obbligatorio riempire almeno uno di questi campi.
+        </div>
+
     </div>
 
 
@@ -248,7 +256,7 @@
                     <div class="tablemap map_newproxy" id="map_createquery"></div>
                 </td>
                 <td>
-                    <label for="field_createquery_name">Nome</label></td><td><input type="text" id="field_createquery_name" class="widetext proxynamefield">
+                    <label for="field_createquery_name">Nome **</label></td><td><input type="text" id="field_createquery_name" class="widetext proxynamefield">
             </td>
 
                 <td><label for="newquery_mode_geo">Ricerca geografica</label></td>
@@ -262,14 +270,14 @@
 
 
 
-                <td><label for="field_createquery_owner">Fornitore</label></td>
+                <td><label for="field_createquery_owner">Fornitore **</label></td>
                 <td><input type="text" class="proxyfieldprovider widetext{% if providers|length > 0 %} datalisted{% endif %}" id="field_createquery_owner" {% if providers|length > 0 %}list="providers"{% endif %}>
                    </td>
             </tr>
 
 
             <tr>
-                <td><label for="field_createquery_datefrom">Valido dal</label></td>
+                <td><label for="field_createquery_datefrom">Valido dal **</label></td>
                 <td><input type="text" id="field_createquery_datefrom" class="proxydatefield widetext datefromfield">
                 </td>
 
@@ -282,7 +290,7 @@
                 </select></td>
 
 
-                <td><label for="field_createquery_contactname">Nome referente</label></td>
+                <td><label for="field_createquery_contactname">Referente</label></td>
                 <td><input type="text" class="widetext proxyfieldcontactdata proxyfieldcontactname" id="field_createquery_contactname"></td>
             </tr>
             <tr>
@@ -301,7 +309,7 @@
                 </td>
 
 
-                <td><label for="field_createquery_contactemail">Email referente</label></td><td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createquery_contactemail"></td>
+                <td><label for="field_createquery_contactemail">Email referente ***</label></td><td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createquery_contactemail"></td>
 
             </tr>
 
@@ -322,7 +330,7 @@
                 </td>
 
                 <td>
-                    <label for="field_createquery_contactphone">Telefono referente</label></td><td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createquery_contactphone">
+                    <label for="field_createquery_contactphone">Telefono referente ***</label></td><td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createquery_contactphone">
             </td>
             </tr>
 
@@ -342,7 +350,7 @@
 
 
             <tbody class="tablebanner"><tr>
-                <td colspan=7>CATALOGHI</td>
+                <td colspan=7>CATALOGHI *</td>
             </tr></tbody>
 
             <tbody class="tablebanner"><tr>
@@ -357,7 +365,7 @@
                 <td>
 
 
-                    <label for="field_metaquery_name">Nome</label></td><td class="bordered"><input type="text" class="widetext newmeta_name" id="field_metaquery_name"></td><td id="createdmetalistquery" rowspan=4 colspan=2>
+                    <label for="field_metaquery_name">Nome **</label></td><td class="bordered"><input type="text" class="widetext newmeta_name" id="field_metaquery_name"></td><td id="createdmetalistquery" rowspan=4 colspan=2>
 
                     <table class="newmetalist" id="newmetalist_query">
                     </table>
@@ -380,10 +388,11 @@
             </tr>
             </tbody>
 
-
         </table>
 
-
+        <div class="formbriefing" style="margin-top: 0.5em">
+            * È obbligatorio creare almeno un catalogo. ** Campo obbligatorio. *** È obbligatorio riempire almeno uno di questi campi.
+        </div>
 
 
 
