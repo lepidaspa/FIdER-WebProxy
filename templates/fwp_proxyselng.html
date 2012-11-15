@@ -458,9 +458,7 @@
 
 
     <div class="creationdialog" id="proxycreate_standalone" title="Creazione istanza standalone">
-        <div class="formbriefing">
-            Inserire i parametri di pertinenza dell'istanza standalone e i dati del referente.<br>
-        </div>
+
 
 
         <table class="creatormask" id="layout_createstandalone">
@@ -477,13 +475,13 @@
                     <div class="tablemap map_newproxy" id="map_createstandalone"></div>
                 </td>
                 <td>
-                    <label for="field_createstandalone_name">Nome</label>
+                    <label for="field_createstandalone_name">Nome **</label>
                 </td>
                 <td>
                     <input type="text" class="widetext proxynamefield" id="field_createstandalone_name">
                 </td>
                 <td>
-                    <label for="field_createstandalone_owner">Fornitore</label>
+                    <label for="field_createstandalone_owner">Fornitore **</label>
                 </td>
                 <td>
                     <input type="text" class="proxyfieldprovider widetext {% if providers|length > 0 %}datalisted{% endif %}" id="field_createstandalone_owner" {% if providers|length > 0 %}list="providers"{% endif %}>
@@ -492,27 +490,31 @@
             </tr>
 
             <tr>
-                <td><label for="field_createstandalone_datefrom">Valido dal</label></td>
+                <td><label for="field_createstandalone_datefrom">Valido dal **</label></td>
                 <td><input type="text" class="widetext proxydatefield datefromfield" id="field_createstandalone_datefrom"></td>
-                <td><label for="field_createstandalone_contactname">Nome referente</label></td>
+                <td><label for="field_createstandalone_contactname">Referente</label></td>
                 <td><input type="text" class="widetext proxyfieldcontactdata proxyfieldcontactname" id="field_createstandalone_contactname"></td>
             </tr>
 
             <tr>
                 <td><label for="field_createstandalone_dateto">Valido al</label> <input type="checkbox" id="field_createstandalone_hasdateto" class="proxyhasdateto"></td>
                 <td><input type="text" class="widetext proxydatefield datetofield" id="field_createstandalone_dateto"></td>
-                <td><label for="field_createstandalone_contactemail">Email referente</label></td>
+                <td><label for="field_createstandalone_contactemail">Email referente ***</label></td>
                 <td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createstandalone_contactemail"></td>
             </tr>
             <tr>
                 <td><label for="field_createstandalone_area_geosearch">Area</label> <img class="imgbutton btn_proxy_geoloc btn_trygeoloc" id="btn_trygeoloc_proxy" src="/static/resource/fwp_focus.png">
                     <img class="imgbutton cleangeoloc_proxy" id="btn_cleangeoloc_st" src="/static/resource/fwp_clear.png"></td>
                 <td><input type="text" class="widetext field_proxy_geoloc" id="field_createstandalone_area_geosearch"></td>
-                <td><label for="field_createstandalone_contactphone">Telefono referente</label></td>
+                <td><label for="field_createstandalone_contactphone">Telefono referente ***</label></td>
                 <td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createstandalone_contactphone"></td>
             </tr>
 
         </table>
+
+        <div class="formbriefing" style="margin-top: 0.5em">
+            * È obbligatorio creare almeno un catalogo. ** Campo obbligatorio. *** È obbligatorio riempire almeno uno di questi campi.
+        </div>
 
     </div>
 
