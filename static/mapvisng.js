@@ -514,6 +514,29 @@ function applyFilters()
 
 }
 
+function realignFilter (event)
+{
+    // re-aligns the highlight of a feature on the filter layer when the feature is moved on the vislayer
+
+    console.log("Checking for a feature to re-align in the filterlayer");
+
+    var feature = event.feature;
+    for (var i in filterlayer.features)
+    {
+        var cclone = filterlayer.features[i];
+        if (cclone.attributes['$clonedfrom'] == feature.id)
+        {
+            console.log("Realigning feature "+filterlayer.features[i].id+" to feature "+feature.id);
+            var newclone = feature.clone();
+            newclone.attributes['$clonedfrom'] = feature.id;
+            filterlayer.destroyFeatures(cclone);
+            filterlayer.addFeatures(newclone);
+        }
+    }
+
+
+}
+
 function removeAllFilters()
 {
 
@@ -549,6 +572,8 @@ function replicatePropValue()
     }
 
     console.log("Updated "+filterlayer.length+" features");
+
+    applyFilters();
 
 }
 
@@ -2160,8 +2185,10 @@ function setMapControlsEdit()
 
     vislayer.events.register('featureselected', mapview, renderFeatureCard);
     vislayer.events.register('featureunselected', mapview, freeSelection);
-
+    vislayer.events.register('featuremodified', mapview, realignFilter);
 }
+
+
 
 function handleMeasure(event)
 {
@@ -2374,7 +2401,16 @@ function prefillPropertyValue()
 
 function removeValueSelector()
 {
-    $("#autovalueselector").remove();
+    try
+    {
+        $("#autovalueselector").remove();
+    }
+    catch (err)
+    {
+        console.log("autovalue already removed?");
+        console.log(err);
+    }
+
 }
 
 function setPropertyValue()
@@ -2389,6 +2425,10 @@ function setPropertyValue()
 
     vislayer.getFeatureById(cfid)['attributes'][propname] = $(this).val();
     removeValueSelector();
+
+    console.log("Reapplying filters (if needed)");
+
+    applyFilters();
 
 
 
