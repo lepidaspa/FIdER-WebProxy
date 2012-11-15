@@ -107,16 +107,41 @@ def makeMapCard (proxy_id, meta_id, map_id, proxy_type):
 	else:
 		mappath = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, map_id)
 
+	remotedata = None
 	mapsource = "File"
 	if proxy_type != 'query':
 		mapdata = getMapFileStats(mappath)
 		if isRemoteMap(proxy_id, meta_id, map_id):
 			mapsource = "WFS"
+
+			#adding remotedata info (connection parameters)
+			remotedata = json.load(open(os.path.join(conf.baseproxypath, proxy_id, "conf", "remote", meta_id, map_id+".wfs")))
+			"""
+			remotedata = {
+				"URL": remotedataraw['url'],
+				"Mappa": remotedataraw['layer'],
+				"Utente": remotedataraw['user'],
+				"Password": remotedataraw['pass']
+			}
+			"""
+
 	else:
 		mapsource = "Query"
 		mapdata = getQueryInfo (proxy_id, meta_id, map_id)
 
-	#TODO: add conn data for editing in query and WFS maps
+		#adding remotedata info (connection parameters)
+		remotedata = json.load(open(os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, map_id)))
+		"""
+		remotedata = {
+			'Host':		remotedataraw['connection']['host']+":"+remotedataraw['connection']['port'],
+			'Utente':	remotedataraw['connection']['user'],
+			'Password':	remotedataraw['connection']['pass'],
+			'Database': remotedataraw['connection']['dbname'],
+			'Schema':	remotedataraw['query']['schema'],
+			'Vista':	remotedataraw['query']['view']
+		}
+		"""
+
 
 	mapcard = {
 		'name': map_id,
@@ -124,7 +149,7 @@ def makeMapCard (proxy_id, meta_id, map_id, proxy_type):
 		'type': mapdata['type'],
 		'bbox': mapdata['bbox'],
 		'features': mapdata['features'],
-		'remotedata': None
+		'remotedata': remotedata
 	}
 
 	return mapcard

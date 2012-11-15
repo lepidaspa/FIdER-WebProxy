@@ -231,3 +231,17 @@ td
     margin-top:     8px;
     font-weight:    bold;
 }
+
+
+
+.mapdetails_label
+{
+    font-weight:    bold;
+}
+
+
+.mapdetails_header
+{
+    font-weight:    bold;
+    text-align:     center;
+}

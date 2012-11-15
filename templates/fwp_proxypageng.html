@@ -97,6 +97,11 @@ Gestione dati e cataloghi
             <tr class="mapcard" id="mapcard_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">
                 <td class="maptitle">{% if proxy_type != 'query' %}<!--<input type="checkbox" class="switchmapvis" id="mapvis_{{ meta_id }}-{{ map_id }}"> -->{% endif %}{{ map_id }}</td> <td>{{  mapdata.source }}</td>
                 <td class="actionstd">
+                    {% if proxy_type != 'query' %}
+                        <img class="imgbutton maprecap" id="maprecap_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
+                    {% else %}
+                        <img class="imgbutton maprecap" id="maprecap_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
+                    {% endif %}
                     {% if proxy_type != 'query' and proxy_type != 'local'%}
 
                     <a href="/fwp/visng/mapview/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_focus.png" title="Visualizza mappa"></a>
@@ -141,6 +146,223 @@ Gestione dati e cataloghi
 
 
 {% block functionality %}
+
+
+<div id="infobox_metas">
+
+
+
+</div>
+
+{% if proxy_type == 'query' %}
+
+<div id="infobox_maps" title="Riepilogo query">
+
+    {% for meta_id, maplist in proxy_maps.items %}
+
+        {% for map_id, mapdata in maplist.items %}
+
+            <div class="mapdetails" id="mapdetails_{{ meta_id }}-{{ map_id }}">
+
+                <table class="mapdetailstable">
+
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Query
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.name }}
+                        </td>
+                    </tr>
+
+                    <tr><th colspan=2 class="mapdetails_header">Dati di connessione</th></tr>
+                    <tr>
+                        <td class="mapdetails_label">
+                            Host
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.connection.host }}:{{ mapdata.remotedata.connection.port }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Utente
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.connection.user }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mapdetails_label">
+                            Password
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.connection.password }}
+                        </td>
+                    </tr>
+
+                    <tr><th colspan=2 class="mapdetails_header">Parametri query</th></tr>
+                    <tr>
+                        <td class="mapdetails_label">
+                            Database
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.connection.dbname }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mapdetails_label">
+                            Schema
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.query.schema }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mapdetails_label">
+                            Vista
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.query.view }}
+                        </td>
+                    </tr>
+
+
+
+
+                </table>
+
+            </div>
+
+        {% endfor %}
+    {% endfor %}
+
+
+</div>
+
+{% else %}
+
+<div id="infobox_maps" title="Riepilogo mappa">
+
+    {% for meta_id, maplist in proxy_maps.items %}
+
+        {% for map_id, mapdata in maplist.items %}
+
+            <div class="mapdetails" id="mapdetails_{{ meta_id }}-{{ map_id }}">
+
+                <table class="mapdetailstable">
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Mappa
+                        </td>
+                        <td class="mapdetails_info">
+                            {{ map_id }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">Tipologia</td>
+                        <td>{{ mapdata.source}}</td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Elementi
+                        </td>
+                        <td class="mapdetails_info">
+                            {{ mapdata.features }}
+
+                                {% if mapdata.type == 'LineString' %}
+                                    (tratte)
+                                {% endif %}
+                                {% if mapdata.type == 'Point' %}
+                                    (punti)
+                                {% endif %}
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Latitudine
+                        </td>
+                        <td class="mapdetails_info">
+                            da {{ mapdata.bbox.1 }}<br>a {{ mapdata.bbox.3 }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Longitudine
+                        </td>
+                        <td class="mapdetails_info">
+                            da {{ mapdata.bbox.0 }}<br>a {{ mapdata.bbox.2 }}
+                        </td>
+                    </tr>
+
+
+                    {% if mapdata.source == 'WFS' %}
+
+                        <tbody class="remoteconf">
+                        <tr><th colspan=2 class="mapdetails_header">Dati di connessione</th></tr>
+
+                        <tr>
+                            <td class="mapdetails_label">
+                                URL
+                            </td>
+                            <td>
+                                {{ mapdata.remotedata.url }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="mapdetails_label">
+                                Mappa
+                            </td>
+                            <td>
+                                {{ mapdata.remotedata.layer}}
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td class="mapdetails_label">
+                                Utente
+                            </td>
+                            <td>
+                                {{ mapdata.remotedata.user}}
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td class="mapdetails_label">
+                                Password
+                            </td>
+                            <td>
+                                {{ mapdata.remotedata.pass }}
+                            </td>
+                        </tr>
+
+                        </tbody>
+                {% endif %}
+
+
+                </table>
+
+            </div>
+
+        {% endfor %}
+
+    {% endfor %}
+
+</div>
+
+{% endif %}
+
 
 <div id="form_setconversion">
 

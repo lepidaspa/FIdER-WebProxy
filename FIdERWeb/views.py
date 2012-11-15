@@ -157,7 +157,8 @@ def proxypageng (request, **kwargs):
 	for meta_id in proxy_meta:
 		proxy_mapsbymeta [meta_id] = mapsdata[meta_id].keys()
 
-	print "Proxy maps data: %s " % proxy_mapsbymeta
+	print "Proxy maps list: %s " % proxy_mapsbymeta
+	print "Proxy maps data: %s" % mapsdata
 
 	return render_to_response ('fwp_proxypageng.html', {'proxy_id': proxy_id, 'manifest': SafeString(json.dumps(manifest)), 'proxy_name': manifest['name'], 'proxy_meta': proxy_meta, 'proxy_type': proxy_type, 'mapsbymeta': proxy_mapsbymeta, 'proxy_maps': mapsdata, 'mapsforjs': SafeString(json.dumps(mapsdata))}, context_instance=RequestContext(request))
 

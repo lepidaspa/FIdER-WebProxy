@@ -104,6 +104,7 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
 
     $("#fieldconv_geometry").live('change', checkGeometryConversion);
 
+    $(".maprecap").live('click', openMapRecap);
 
 
 
@@ -113,6 +114,19 @@ function initForms ()
 {
 
     $("#form_setconversion").hide();
+
+    $("#infobox_maps").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Chiudi": {
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
+    });
 
     $("#form_newfile").dialog({
         autoOpen: false,
@@ -296,6 +310,23 @@ function initForms ()
             }
         }
     });
+
+}
+
+function openMapRecap()
+{
+    var prefix = "maprecap_";
+    var dest = this.id.substr(prefix.length).split("-");
+
+    var cmeta_id = dest[0].replace(".","\\.");
+    var cmap_id = dest[1];
+
+    console.log("opening infobox for map "+cmeta_id+"-"+cmap_id);
+
+    $(".mapdetails").hide();
+    $("#mapdetails_"+cmeta_id+"-"+cmap_id).show();
+    $("#infobox_maps").dialog("open");
+
 
 }
 
