@@ -107,6 +107,12 @@
 
 {% block functionality %}
 
+    <div id="infobox_metas" title="Riepilogo catalogo">
+    {% for metainfo in manifestfordj.metadata  %}
+
+    {% endfor %}
+    </div>
+
 
     <div class="creationdialog" id="proxycreate_readwrite" title="Creazione proxy lettura/scrittura">
 
@@ -565,8 +571,9 @@
             </div>
         </div>
 
-
     </div>
+
+
 
     <div id="proxymap"></div>
 

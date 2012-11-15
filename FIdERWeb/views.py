@@ -79,6 +79,24 @@ def proxysel (request):
 	return render_to_response ('fwp_proxysel.html', {'proxies': SafeString(json.dumps(proxies))},
 		context_instance=RequestContext(request))
 
+def getProxyContacts (request, **kwargs):
+	"""
+	Returns a json with the complete contacts for the requested proxy
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+
+	try:
+	#for legacy proxies, can be ignored in production
+		contactdata = json.load(open(os.path.join(proxyconf.baseproxypath, proxy_id, "conf", "contacts.json")))
+	except:
+		contactdata = {"owner": "(sconosciuto)", "phone": "", "contact": "", "email": ""}
+
+
+	return HttpResponse(json.dumps(contactdata), mimetype="application/json")
 
 
 def proxyselng (request, **kwargs):
@@ -99,6 +117,11 @@ def proxyselng (request, **kwargs):
 		proxies [proxy_id]['time'] = proxydict[proxy_id]['time']
 		proxies [proxy_id]['name'] = proxydict[proxy_id]['name']
 		proxies [proxy_id]['type'] = proxy_core.learnProxyTypeAdv(proxy_id, proxydict[proxy_id])
+		try:
+			#for legacy proxies, can be ignored in production
+			proxies [proxy_id]['contacts'] = json.load(open(os.path.join(proxyconf.baseproxypath, proxy_id, "conf", "contacts.json")))
+		except:
+			proxies [proxy_id]['contacts'] = {"owner": "(sconosciuto)", "phone": "", "contact": "", "email": ""}
 		if proxies[proxy_id]['type'] == 'local':
 			standalone[proxies[proxy_id]['name']] = proxy_id
 		if proxies[proxy_id]['type'] == 'linked':

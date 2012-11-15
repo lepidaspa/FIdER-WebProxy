@@ -777,7 +777,6 @@ function reconvertMapData (meta_id, map_id)
 
 function closeConversionScreen()
 {
-    //TODO: placeholder, implement
     // empties the conversion widget and returns to map
     $("#convtable_modelselect").empty();
     $("#convtable_datasets").empty();
@@ -842,17 +841,11 @@ function renderConvSelection (jsondata)
     modelselector.prop('disabled', modlist.length == 1);
 
 
-
-
-
-
 }
 
 
 function renderConvTable()
 {
-
-    // TODO: handle autoselect and fill for fields in case a model was already registered
 
     // renders the conversion table according to the model_id chosen in the model selector
     var model_id = $("#convtable_modelselect").val();

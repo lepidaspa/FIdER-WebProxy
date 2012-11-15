@@ -97,7 +97,8 @@ urlpatterns = patterns('',
 	url(r'^fwst/saveng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.saveVisMap),
 	url(r'^fwp/selng/', fwpviews.proxyselng),
 	url(r'^fwp/createng/', fwpviews.proxy_create_adv),
-	url(r'^fwp/mapdl/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.downloadMapImage)
+	url(r'^fwp/mapdl/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.downloadMapImage),
+	url(r'^fwp/contacts/(?P<proxy_id>\w*)/$', fwpviews.getProxyContacts)
 
 )
 
