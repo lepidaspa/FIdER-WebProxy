@@ -71,6 +71,7 @@ Gestione dati e cataloghi
 
         </td>
         <td class="actionstd">
+            <img class="imgbutton metarecap" id="metarecap_{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
             {% if proxy_type != 'linked' and proxy_type != 'local' and proxy_type != 'query' %}
             <img class="imgbutton newdata new_file" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_newfromfile.png" title="Nuova mappa da file">
             <img class="imgbutton newdata new_wfs" id="new_wfs_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova mappa da WFS">
@@ -97,14 +98,11 @@ Gestione dati e cataloghi
             <tr class="mapcard" id="mapcard_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">
                 <td class="maptitle">{% if proxy_type != 'query' %}<!--<input type="checkbox" class="switchmapvis" id="mapvis_{{ meta_id }}-{{ map_id }}"> -->{% endif %}{{ map_id }}</td> <td>{{  mapdata.source }}</td>
                 <td class="actionstd">
-                    {% if proxy_type != 'query' %}
                         <img class="imgbutton maprecap" id="maprecap_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
-                    {% else %}
-                        <img class="imgbutton maprecap" id="maprecap_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
-                    {% endif %}
+
                     {% if proxy_type != 'query' and proxy_type != 'local'%}
 
-                    <a href="/fwp/visng/mapview/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_focus.png" title="Visualizza mappa"></a>
+                        <a href="/fwp/visng/mapview/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_focus.png" title="Visualizza mappa"></a>
                     {%  endif %}
                     {% if proxy_type == 'local' and meta_id == '.st' %}
                         <a href="/fwp/visng/mapedit/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa"></a>
@@ -148,7 +146,63 @@ Gestione dati e cataloghi
 {% block functionality %}
 
 
-<div id="infobox_metas">
+<div id="infobox_metas" title="Riepilogo catalogo">
+
+    {% for metainfo in manifestfordj.metadata  %}
+
+        <div class="metadetails" id="metadetails_{{ metainfo.name }}">
+
+            <table class="metadetailstable">
+
+                <tr><td class="metadetails_label">Catalogo</td><td>{{ metainfo.name }}</td></tr>
+                <tr><td class="metadetails_label">Valido dal</td><td>
+                    {% if metainfo.time.0 != "" %}
+                        {{ metainfo.time.0|slice:":10" }}
+                    {% else %}
+                        {{ manifestfordj.time.0|slice:":10" }}
+                    {% endif %}
+                </td></tr>
+                <tr><td class="metadetails_label">Valido al</td><td>
+                    {% if metainfo.time.1 != "" %}
+                        {{ metainfo.time.1|slice:":10" }}
+                    {% else %}
+                        {% if manifestfordj.time.1 != "" %}
+                            {{ manifestfordj.time.1|slice:":10" }}
+                        {% else %}
+                            (corrente)
+                        {% endif %}
+                    {% endif %}
+                </td></tr>
+
+                <tr>
+                    <td class="metadetails_label">
+                        Latitudine
+                    </td>
+                    <td class="metadetails_info">
+                        {% if metainfo.area.0 != "" %}
+                            da {{ metainfo.area.1 }}<br>a {{ metainfo.area.3 }}
+                        {% else %}
+                            da {{ manifestfordj.area.1 }}<br>a {{ manifestfordj.area.3 }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="metadetails_label">
+                        Longitudine
+                    </td>
+                    <td class="metadetails_info">
+                        {% if metainfo.area.0 != "" %}
+                            da {{ metainfo.area.0 }}<br>a {{ metainfo.area.2 }}
+                        {% else %}
+                            da {{ manifestfordj.area.0 }}<br>a {{ manifestfordj.area.2 }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+    {% endfor %}
 
 
 

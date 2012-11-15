@@ -160,7 +160,7 @@ def proxypageng (request, **kwargs):
 	print "Proxy maps list: %s " % proxy_mapsbymeta
 	print "Proxy maps data: %s" % mapsdata
 
-	return render_to_response ('fwp_proxypageng.html', {'proxy_id': proxy_id, 'manifest': SafeString(json.dumps(manifest)), 'proxy_name': manifest['name'], 'proxy_meta': proxy_meta, 'proxy_type': proxy_type, 'mapsbymeta': proxy_mapsbymeta, 'proxy_maps': mapsdata, 'mapsforjs': SafeString(json.dumps(mapsdata))}, context_instance=RequestContext(request))
+	return render_to_response ('fwp_proxypageng.html', {'proxy_id': proxy_id, 'manifest': SafeString(json.dumps(manifest)), 'proxy_name': manifest['name'], 'proxy_meta': proxy_meta, 'proxy_type': proxy_type, 'mapsbymeta': proxy_mapsbymeta, 'proxy_maps': mapsdata, 'mapsforjs': SafeString(json.dumps(mapsdata)), 'manifestfordj': manifest}, context_instance=RequestContext(request))
 
 
 def metapage (request, **kwargs):

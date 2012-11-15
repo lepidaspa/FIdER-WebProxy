@@ -105,6 +105,7 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $("#fieldconv_geometry").live('change', checkGeometryConversion);
 
     $(".maprecap").live('click', openMapRecap);
+    $(".metarecap").live('click', openMetaRecap);
 
 
 
@@ -116,6 +117,19 @@ function initForms ()
     $("#form_setconversion").hide();
 
     $("#infobox_maps").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Chiudi": {
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
+    });
+
+    $("#infobox_metas").dialog({
         autoOpen: false,
         modal: true,
         closeOnEscape: false,
@@ -310,6 +324,20 @@ function initForms ()
             }
         }
     });
+
+}
+
+function openMetaRecap()
+{
+    var prefix = "metarecap_";
+    var cmeta_id = this.id.substr(prefix.length).replace(".","\\.");
+
+    console.log("opening infobox for meta "+cmeta_id);
+
+    $(".metadetails").hide();
+    $("#metadetails_"+cmeta_id).show();
+    $("#infobox_metas").dialog("open");
+
 
 }
 
