@@ -148,6 +148,48 @@ Gestione dati e cataloghi
 
 <div id="infobox_metas" title="Riepilogo catalogo">
 
+    {% if proxy_type == 'local' %}
+        {# standalone area infobox #}
+
+        <div class="metadetails" id="metadetails_.st">
+
+            <table class="metadetailstable">
+
+                <tr><td class="metadetails_label">Catalogo</td><td>Area di lavorazione</td></tr>
+                <tr><td class="metadetails_label">Valido dal</td><td>
+                        {{ manifestfordj.time.0|slice:":10" }}
+                </td></tr>
+                <tr><td class="metadetails_label">Valido al</td><td>
+                        {% if manifestfordj.time.1 != "" %}
+                            {{ manifestfordj.time.1|slice:":10" }}
+                        {% else %}
+                            (corrente)
+                        {% endif %}
+                </td></tr>
+
+                <tr>
+                    <td class="metadetails_label">
+                        Latitudine
+                    </td>
+                    <td class="metadetails_info">
+                            da {{ manifestfordj.area.1 }}<br>a {{ manifestfordj.area.3 }}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="metadetails_label">
+                        Longitudine
+                    </td>
+                    <td class="metadetails_info">
+                            da {{ manifestfordj.area.0 }}<br>a {{ manifestfordj.area.2 }}
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+
+    {% endif %}
+
     {% for metainfo in manifestfordj.metadata  %}
 
         <div class="metadetails" id="metadetails_{{ metainfo.name }}">
