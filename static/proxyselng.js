@@ -338,6 +338,20 @@ function initForms()
     $(".btn_proxydelete").live('click', initDeleteProxy);
 
 
+    $(".proxyrecap").live('click', openProxyRecap);
+    $("#infobox_proxies").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Chiudi": {
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
+    });
+
     $(".proxydatefield, .proxymetadatefield").datepicker({
         changeMonth: true,
         changeYear: true
@@ -523,6 +537,18 @@ function initForms()
     $("#form_create_standalone, #form_create_linked, #form_create_readwrite, #form_create_query").addClass("btn_form_create");
 
 
+}
+
+function openProxyRecap ()
+{
+    var prefix = "proxyrecap_";
+    var dest = this.id.substr(prefix.length);
+
+    console.log("opening infobox for proxy "+dest);
+
+    $(".proxydetails").hide();
+    $("#proxydetails_"+dest).show();
+    $("#infobox_proxies").dialog("open");
 }
 
 function initDeleteProxy()

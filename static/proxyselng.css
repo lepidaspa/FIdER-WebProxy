@@ -187,3 +187,15 @@ td
 {
     width:                  100%;
 }
+
+.proxydetails_label
+{
+    font-weight:    bold;
+}
+
+
+.proxydetails_header
+{
+    font-weight:    bold;
+    text-align:     center;
+}

@@ -117,6 +117,7 @@ def proxyselng (request, **kwargs):
 		proxies [proxy_id]['time'] = proxydict[proxy_id]['time']
 		proxies [proxy_id]['name'] = proxydict[proxy_id]['name']
 		proxies [proxy_id]['type'] = proxy_core.learnProxyTypeAdv(proxy_id, proxydict[proxy_id])
+		proxies [proxy_id]['operations'] = proxydict[proxy_id]['operations']
 		try:
 			#for legacy proxies, can be ignored in production
 			proxies [proxy_id]['contacts'] = json.load(open(os.path.join(proxyconf.baseproxypath, proxy_id, "conf", "contacts.json")))

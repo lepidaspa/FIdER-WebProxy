@@ -51,8 +51,7 @@
                         <td class="proxylisting_emblem">
 
                         </td>
-                        <td class="proxylisting_name">
-                            <a href="/fwp/proxyng/{{ proxy_id }}/">{{ proxydata.name }}</a>
+                        <td class="proxylisting_name"><a href="/fwp/proxyng/{{ proxy_id }}/">{{ proxydata.name }}</a>
                         </td>
                         <td class="proxylisting_type">
                             {% if proxydata.type == 'query' %}Query{% endif %}
@@ -61,6 +60,7 @@
                             {% if proxydata.type == 'linked' %}Standalone{% endif %}
                         </td>
                         <td class="proxylisting_actions">
+                            <img src="/static/resource/fwp_info.png" class="imgbutton proxyrecap" id="proxyrecap_{{ proxy_id }}" title="Visualizza dettagli">
                             <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/{% if proxydata.type == 'query' %}fwp_datasource-query{% endif %}{% if proxydata.type == 'read' or proxydata.type == 'write' or proxydata.type == 'linked' %}fwp_datasource-networked{% endif %}.png" title="Apri istanza"></a>
                             <img src="/static/resource/fwp_remove.png" class="imgbutton btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
                         </td>
@@ -83,12 +83,11 @@
             {% for proxy_id, proxydata in proxiesdj.items %}
                 {% if proxydata.type == 'local' %}
                     <tr class="proxylisting_instance" id="instance_{{ proxy_id }}">
-                        <td class="proxylisting_emblem">
-                            </td>
-                        <td class="proxylisting_name">
-                            {{ proxydata.name }}
+                        <td class="proxylisting_emblem"></td>
+                        <td class="proxylisting_name">{{ proxydata.name }}
                         </td>
                         <td class="proxylisting_actions">
+                            <img src="/static/resource/fwp_info.png" class="imgbutton proxyrecap" id="proxyrecap_{{ proxy_id }}" title="Visualizza dettagli">
                             <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/fwp_datasource-local.png" title="Apri istanza"></a>
                             <img src="/static/resource/fwp_remove.png" class="imgbutton btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
                         </td>
@@ -107,7 +106,7 @@
 
 {% block functionality %}
 
-   <!--
+
 
     <div id="infobox_proxies" title="Riepilogo istanza">
         {% for proxy_id, proxydata in proxiesdj.items %}
@@ -127,19 +126,19 @@
                     Proxy query
                 {% endif %}
                 {% if proxydata.type == 'read' %}
-                    Proxy Read
+                    Proxy lettura
                 {% endif %}
                 {% if proxydata.type == 'write' %}
-                    Proxy Write
+                    Proxy scrittura
                 {% endif %}
             </td><td>{{ proxydata.name }}</td></tr>
 
             {% if proxydata.type != 'local' %}
 
                 {% if proxydata.type == 'query' %}
-                    <tr><th colspan=2 class="mapdetails_header">Modalità operative</th></tr>
+                    <tr><th colspan=2 class="proxydetails_header">Modalità operative</th></tr>
                     <tr>
-                        <td>Ricerca geografica</td>
+                        <td class="proxydetails_label">Ricerca geografica</td>
                         <td>
                             {% if proxydata.operations.query.geographic == 'full' %}
                                 Complessa
@@ -153,7 +152,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Ricerca temporale</td>
+                        <td class="proxydetails_label">Ricerca temporale</td>
                         <td>
                             {% if proxydata.operations.query.time == 'full' %}
                                 Completa
@@ -164,7 +163,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Ricerca inventariale</td>
+                        <td class="proxydetails_label">Ricerca inventariale</td>
                         <td>
                             {% if proxydata.operations.query.inventory == 'full' %}
                                 Complessa
@@ -179,7 +178,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Business intelligence</td>
+                        <td class="proxydetails_label">Business intelligence</td>
                         <td>
                             {% if proxydata.operations.query.bi == 'full' %}
                                 Completa
@@ -191,7 +190,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Firma</td>
+                        <td class="proxydetails_label">Firma</td>
                         <td>
                             {% if proxydata.operations.query.sign == 'true'  %}
                                 Sì
@@ -200,15 +199,80 @@
                             {% endif %}
                         </td>
                     </tr>
-                {% endif %}
+                {% else %}
 
+
+
+                    {% if proxy_data.type == 'read' or proxy_data.type == 'write' %}
+
+                        <tr>
+                        <td class="proxydetails_label">
+                        Modalità operativa
+                        </td>
+                        <td>
+                            {% if proxydata.operations.read == 'full' %}
+                                Lettura completa
+                            {% endif %}
+                            {% if proxydata.operations.read == 'diff' %}
+                                Lettura incrementale
+                            {% endif %}
+                            {% if proxydata.operations.write == 'full' %}
+                                Scrittura continua
+                            {% endif %}
+                            {% if proxydata.operations.read == 'sync' %}
+                                Scrittura periodica
+                            {% endif %}
+                        </td>
+                        </tr>
+
+                    {% endif %}
+
+
+                {% endif %}
             {% endif %}
 
+                <tr><th colspan=2 class="proxydetails_header">Ambito d'interesse</th></tr>
+
+                <tr><td class="proxydetails_label">Valido dal</td><td>
+                    {{ proxydata.time.0|slice:":10" }}
+                </td></tr>
+                <tr><td class="proxydetails_label">Valido al</td><td>
+                    {% if proxydata.time.1 != "" %}
+                        {{ proxydata.time.1|slice:":10" }}
+                    {% else %}
+                        (corrente)
+                    {% endif %}
+                </td></tr>
+
+                <tr>
+                    <td class="proxydetails_label">
+                        Latitudine
+                    </td>
+                    <td class="proxydetails_info">
+                        da {{ proxydata.area.1 }}<br>a {{ proxydata.area.3 }}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="proxydetails_label">
+                        Longitudine
+                    </td>
+                    <td class="proxydetails_info">
+                        da {{ proxydata.area.0 }}<br>a {{ proxydata.area.2 }}
+                    </td>
+                </tr>
+
+
+
+
+
+
             </table>
+
+            </div>
         {% endfor %}
     </div>
 
-    -->
+
 
 
     <div class="creationdialog" id="proxycreate_readwrite" title="Creazione proxy lettura/scrittura">
