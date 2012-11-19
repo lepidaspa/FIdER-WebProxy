@@ -325,7 +325,7 @@ function renderVectorLayerToCanvas (layerfrom, destcanvas)
 
     console.log("Copying "+vislayer.features.length+" features to draw layer");
 
-    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.5, fillColor: "#ff00ff", strokeColor: "#ff00ff", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
+    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.5, fillColor: "#ff8800", strokeColor: "#ff8800", strokeWidth: 4, strokeDashstyle: "solid", pointRadius: 8, strokeLinecap: "round"});
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
     var renderlayer = new OpenLayers.Layer.Vector("drawlayer", {name: "drawlayer", styleMap: featurestylemap, renderers: ["Canvas"]});
     renderlayer.id = "rendercanvas";
@@ -333,7 +333,6 @@ function renderVectorLayerToCanvas (layerfrom, destcanvas)
     renderlayer.display(false);
 
     mapview.addLayer(renderlayer);
-
 
     for (var f in layerfrom.features)
     {
@@ -348,8 +347,12 @@ function renderVectorLayerToCanvas (layerfrom, destcanvas)
     var element = ($(renderlayer.div)).find("canvas")[0];
     console.log(element);
 
+    var offsetX = (vpCropWidth - viewportWidth)/2;
+    var offsetY = (vpCropHeight - viewportHeight)/2;
+
     var context = destcanvas.getContext('2d');
-    context.drawImage(element,0,0, vpCropWidth, vpCropHeight, 0, 0, vpCropWidth*sizeMultip, vpCropHeight*sizeMultip );
+    //context.drawImage(element,0,0, vpCropWidth, vpCropHeight, 0, 0, vpCropWidth*sizeMultip, vpCropHeight*sizeMultip );
+    context.drawImage(element, offsetX, offsetY)
     renderlayer.destroy();
 
 
