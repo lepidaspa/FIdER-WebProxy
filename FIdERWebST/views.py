@@ -409,8 +409,11 @@ def downloadStaticMap (request, **kwargs):
 	if params['provider'] == 'google':
 		baseurl = "http://maps.googleapis.com/maps/api/staticmap"
 		urlparams['format'] = 'png32'
-		urlparams['size']='640x640'
-		urlparams['scale']='2'
+		sizeX = min(params['drawsize'][0], 640)
+		sizeY = min(params['drawsize'][1], 640)
+		urlparams['size']= str(sizeX)+'x'+str(sizeY)
+		# note: could use 2 as scale but creates issues later on the js side
+		urlparams['scale']='1'
 		urlparams['sensor']='false'
 		try:
 			urlparams['maptype'] = params['maptype']
@@ -420,8 +423,15 @@ def downloadStaticMap (request, **kwargs):
 			urlparams['maptype'] = 'roadmap'
 
 	if params['provider'] == 'osm':
-		urlparams['size']='1280x1280'
-		baseurl = "staticmap.openstreetmap.de/staticmap.php"
+		sizeX = min(params['drawsize'][0], 1280)
+		sizeY = min(params['drawsize'][1], 1280)
+		urlparams['size']= str(sizeX)+'x'+str(sizeY)
+		baseurl = "http://staticmap.openstreetmap.de/staticmap.php"
+		try:
+			urlparams['maptype'] = params['maptype']
+			print "Maptype from client params: %s" % params['maptype']
+		except:
+			urlparams['maptype'] = 'mapnik'
 
 	print "Partially compiled: %s" % urlparams
 

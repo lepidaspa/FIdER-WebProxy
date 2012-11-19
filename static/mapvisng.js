@@ -91,6 +91,19 @@ var firstload = true;
 // used to keep track of which export provider is in use through the callback flow since different providers (g/osm) have different canvas sizes
 var exportprovider;
 
+// viewportsize
+var viewportWidth;
+var viewportHeight;
+
+// final size of the viewport in map rendering, except resampling (e.g. google x 2)
+var vpCropWidth;
+var vpCropHeight;
+
+// variables used to control sizes and resample according to the provider
+var limitHeight;
+var limitWidth;
+var sizeMultip;
+
 function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_type, req_manifest, req_proxy_maps, req_models)
 {
 
@@ -198,6 +211,8 @@ function tryExportView()
 
     var drawcenter = new OpenLayers.LonLat(mapview.getCenter().lon, mapview.getCenter().lat).transform(mapview.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
 
+    viewportWidth = $(mapview.div).width();
+    viewportHeight = $(mapview.div).height();
 
     //console.log(drawcenter);
     //console.log(drawcenter.lon);
@@ -210,7 +225,7 @@ function tryExportView()
 
     $("#maptoimage").dialog("open");
 
-    $("#exportcanvas").empty().append('<canvas id="drawingarea" height=1280 width=1280></canvas>');
+
 
 
     var provider;
@@ -227,16 +242,28 @@ function tryExportView()
 
     }
 
+    limitHeight = provider == 'google' ? 640 : 1280;
+    limitWidth = provider == 'google' ? 640 : 1280;
+
+    vpCropWidth = Math.min(viewportWidth, limitWidth);
+    vpCropHeight = Math.min(viewportHeight, limitHeight);
+
+    // hardcoded: can switch to 2 but gives problems in rebuilding vector geometry later
+    var googleMultip = 1;
+
+    sizeMultip = provider == 'google' ? googleMultip : 1;
+
+    $("#exportcanvas").empty().append('<canvas id="drawingarea" height='+vpCropHeight*sizeMultip+' width='+vpCropWidth*sizeMultip+'></canvas>');
 
     console.log("Parameters for map call");
-
 
     exportprovider = provider;
     var parameters = {
         'provider': provider,
         'maptype': maptype,
         'drawcenter': drawcenter,
-        'drawzoom': drawzoom
+        'drawzoom': drawzoom,
+        'drawsize': [vpCropWidth, vpCropHeight]
     };
 
     //TODO: add progress dialog and set async to true (modal dialog though)
@@ -273,7 +300,7 @@ function renderExportableMap (rawimagedata)
     // cleaning the context
     var canvas = document.getElementById('drawingarea');
     var context = canvas.getContext('2d');
-    context.clearRect(0, 0, 1280, 1280);
+    context.clearRect(0, 0, vpCropWidth*sizeMultip, vpCropHeight*sizeMultip);
 
     console.log("Ready to render");
     //console.log(typeof data);
@@ -281,7 +308,10 @@ function renderExportableMap (rawimagedata)
     $("#exportcanvasshadow").attr("src", "data:image/png;base64," + rawimagedata);
     $("#exportcanvasshadow")[0].onload = function ()
     {
-        context.drawImage($("#exportcanvasshadow")[0], 0, 0, 1280, 1280, 0, 0, 1280, 1280);
+        console.log("Export shadow info");
+        console.log($("#exportcanvasshadow"));
+
+        context.drawImage($("#exportcanvasshadow")[0], 0, 0, vpCropWidth*sizeMultip, vpCropHeight*sizeMultip, 0, 0, vpCropWidth*sizeMultip, vpCropHeight*sizeMultip);
         //console.log(canvas.toDataURL());
         renderVectorLayerToCanvas(vislayer, canvas);
     };
@@ -295,7 +325,7 @@ function renderVectorLayerToCanvas (layerfrom, destcanvas)
 
     console.log("Copying "+vislayer.features.length+" features to draw layer");
 
-    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.5, fillColor: "#ff00ff", strokeColor: "#000000", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
+    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.5, fillColor: "#ff00ff", strokeColor: "#ff00ff", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
     var renderlayer = new OpenLayers.Layer.Vector("drawlayer", {name: "drawlayer", styleMap: featurestylemap, renderers: ["Canvas"]});
     renderlayer.id = "rendercanvas";
@@ -319,12 +349,7 @@ function renderVectorLayerToCanvas (layerfrom, destcanvas)
     console.log(element);
 
     var context = destcanvas.getContext('2d');
-
-
-
-
-    context.drawImage(element,0,0);
-
+    context.drawImage(element,0,0, vpCropWidth, vpCropHeight, 0, 0, vpCropWidth*sizeMultip, vpCropHeight*sizeMultip );
     renderlayer.destroy();
 
 
