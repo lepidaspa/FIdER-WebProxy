@@ -88,6 +88,9 @@ var gjformat;
 // (first loading screen is closed automatically)
 var firstload = true;
 
+// used to keep track of which export provider is in use through the callback flow since different providers (g/osm) have different canvas sizes
+var exportprovider;
+
 function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_type, req_manifest, req_proxy_maps, req_models)
 {
 
@@ -187,8 +190,153 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
 }
 
 
+function tryExportView()
+{
+
+    console.log("Trying to export the viewport");
+
+
+    var drawcenter = new OpenLayers.LonLat(mapview.getCenter().lon, mapview.getCenter().lat).transform(mapview.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
+
+
+    //console.log(drawcenter);
+    //console.log(drawcenter.lon);
+    //console.log(drawcenter.lat);
+    drawcenter = [drawcenter.lat, drawcenter.lon];
+    var drawzoom = mapview.getZoom();
+
+    console.log("Getting map background with zoom "+drawzoom);
+
+
+    $("#maptoimage").dialog("open");
+
+    $("#exportcanvas").empty().append('<canvas id="drawingarea" height=1280 width=1280></canvas>');
+
+
+    var provider;
+    var maptype;
+    if (mapview.baseLayer.name == 'OpenStreetMap')
+    {
+        provider = 'osm';
+        maptype = 'mapnik';
+    }
+    else
+    {
+        provider = 'google';
+        maptype = mapview.baseLayer.name.split(" ",2)[1].toLowerCase();
+
+    }
+
+
+    console.log("Parameters for map call");
+
+
+    exportprovider = provider;
+    var parameters = {
+        'provider': provider,
+        'maptype': maptype,
+        'drawcenter': drawcenter,
+        'drawzoom': drawzoom
+    };
+
+    //TODO: add progress dialog and set async to true (modal dialog though)
+
+    console.log(parameters);
+
+    $.ajax ({
+        url: '/fwp/staticdl/',
+        data:   {jsondata: JSON.stringify(parameters)},
+        async: false,
+        type: 'POST',
+        success: function (data)
+        {
+
+            renderExportableMap(data);
+
+
+
+        },
+        error: function () {
+
+            //TODO: implement error
+            console.log("ERROR received");
+        }
+    });
+
+}
+
+function renderExportableMap (rawimagedata)
+{
+    console.log("succeeded downloading remote map");
+    //console.log(data);
+
+    // cleaning the context
+    var canvas = document.getElementById('drawingarea');
+    var context = canvas.getContext('2d');
+    context.clearRect(0, 0, 1280, 1280);
+
+    console.log("Ready to render");
+    //console.log(typeof data);
+
+    $("#exportcanvasshadow").attr("src", "data:image/png;base64," + rawimagedata);
+    $("#exportcanvasshadow")[0].onload = function ()
+    {
+        context.drawImage($("#exportcanvasshadow")[0], 0, 0, 1280, 1280, 0, 0, 1280, 1280);
+        //console.log(canvas.toDataURL());
+        renderVectorLayerToCanvas(vislayer, canvas);
+    };
+
+
+
+}
+
+function renderVectorLayerToCanvas (layerfrom, destcanvas)
+{
+
+    console.log("Copying "+vislayer.features.length+" features to draw layer");
+
+    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.5, fillColor: "#ff00ff", strokeColor: "#000000", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
+    var featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    var renderlayer = new OpenLayers.Layer.Vector("drawlayer", {name: "drawlayer", styleMap: featurestylemap, renderers: ["Canvas"]});
+    renderlayer.id = "rendercanvas";
+
+    renderlayer.display(false);
+
+    mapview.addLayer(renderlayer);
+
+
+    for (var f in layerfrom.features)
+    {
+        //renderlayer.addFeatures(vislayer.features);
+        var cfeature = layerfrom.features[f];
+        renderlayer.addFeatures(new OpenLayers.Feature.Vector(cfeature.geometry));
+    }
+
+    //renderlayer.display();
+
+    console.log("Copying renderer canvas to output");
+    var element = ($(renderlayer.div)).find("canvas")[0];
+    console.log(element);
+
+    var context = destcanvas.getContext('2d');
+
+
+
+
+    context.drawImage(element,0,0);
+
+    renderlayer.destroy();
+
+
+
+
+}
+
+
 function tryBuildMapToCanvas()
 {
+
+    // obsoleted by tryExportView
 
     console.log("Trying to copy the tiledata to a canvas object");
 
@@ -1947,7 +2095,7 @@ function initMapWidget()
     mapview.displayProjection = new OpenLayers.Projection(proj_WGS84);
 
     //Base Maps from Google
-    mapview.addLayer(new OpenLayers.Layer.Google("Google Physical", {
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Terrain", {
         type : google.maps.MapTypeId.TERRAIN,
         visibility : false
     }));
@@ -1955,7 +2103,7 @@ function initMapWidget()
         type : google.maps.MapTypeId.SATELLITE,
         numZoomLevels : 20
     }));
-    mapview.addLayer(new OpenLayers.Layer.Google("Google Streets", {
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Roadmap", {
         numZoomLevels : 20,
         visibility : false
     }));

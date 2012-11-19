@@ -11,13 +11,15 @@ import json
 import shutil
 import string
 import zipfile
+import traceback
+import os
+import urllib
+import urllib2
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
-import os
-import urllib
-import urllib2
+
 
 from Common import Components
 from FIdERProxyFS import proxy_core
@@ -359,15 +361,19 @@ def saveSTMap (request, **kwargs):
 
 	return HttpResponse(json.dumps(feedback), mimetype="application/json")
 
-
-def downloadMapImage (request, **kwargs):
+@csrf_exempt
+def downloadStaticMap (request, **kwargs):
 	"""
-	Downloads a map rendered against a GoogleMaps background. Uses PIL for rendering the map
+	Downloads a static background map from an external service
 	:param request:
 	:param kwargs:
 	:return:
 	"""
 
+	print "Downloading static map from request"
+
+
+	"""
 	proxy_id = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
 	map_id = kwargs['map_id']
@@ -375,9 +381,6 @@ def downloadMapImage (request, **kwargs):
 	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, proxy_core.getManifest(proxy_id))
 
 	# getting the maps from the gj dir (or ST in case of the standalone instance)
-
-	#TODO: placeholder, implement
-
 	if proxy_type != 'local':
 		pathtojs = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id, map_id)
 	else:
@@ -388,37 +391,60 @@ def downloadMapImage (request, **kwargs):
 	mapinfo = proxy_core.getMapFileStats(pathtojs)
 
 	print "Working on map data for %s/%s/%s:\n%s" % (proxy_id, meta_id, map_id, mapinfo)
+	"""
 
 	try:
 		print "Received parameters array, going by POST data"
-		params = request.POST
+		#print request.REQUEST
+		params = json.loads(request.POST['jsondata'])
 	except Exception as ex:
 		print "Missing parameters array, going by default"
 		params = None
 
-	#if not params.has_key('center'):
-	#	center_lon = str((mapinfo['bbox'][2]+mapinfo['bbox'][0])/2)
-	#	center_lat = str((mapinfo['bbox'][3]+mapinfo['bbox'][1])/2)
+	print "Params: %s" % params.items()
 
 	urlparams = {}
-	if not params.has_key('bbox'):
-		urlparams['visible'] = "%s,%s|%s,%s" % (str(mapinfo['bbox'][1]),str(mapinfo['bbox'][0]),str(mapinfo['bbox'][3]),str(mapinfo['bbox'][2]))
-		urlparams['maptype'] = 'roadmap'
-	else:
-		urlparams['visible'] = params['bbox']
-		urlparams['maptype'] = params['layername']
+	urlparams['provider'] = params['provider']
 
-	urlparams['format'] = 'png32'
-	urlparams['size']='640x640'
-	urlparams['scale']='2'
-	urlparams['sensor']='false'
+	if params['provider'] == 'google':
+		baseurl = "http://maps.googleapis.com/maps/api/staticmap"
+		urlparams['format'] = 'png32'
+		urlparams['size']='640x640'
+		urlparams['scale']='2'
+		urlparams['sensor']='false'
+		try:
+			urlparams['maptype'] = params['maptype']
+			print "Maptype from client params: %s" % params['maptype']
+		except:
+			print "Non valid maptype from client params: %s" % params['maptype']
+			urlparams['maptype'] = 'roadmap'
+
+	if params['provider'] == 'osm':
+		urlparams['size']='1280x1280'
+		baseurl = "staticmap.openstreetmap.de/staticmap.php"
+
+	print "Partially compiled: %s" % urlparams
+
+	print "Created render defaults for %s.%s" % (urlparams['provider'], urlparams['maptype'])
+
+	print params['drawcenter']
+
+	urlparams['center'] = str(params['drawcenter'][0])+","+str(params['drawcenter'][1])
+	urlparams['zoom'] = params['drawzoom']
+
+	"""
+	try:
+		urlparams['center'] = params['center']
+	except:
+		centerY = str((mapinfo['bbox'][1]+mapinfo['bbox'][3])/2)
+		centerX = str((mapinfo['bbox'][2]+mapinfo['bbox'][4])/2)
+		urlparams['center'] = "%s,%s" % (centerY,centerX)
+	"""
 
 	#http://maps.googleapis.com/maps/api/staticmap?size=640x640&scale=2&maptype=roadmap&visible=44.2506162174,12.3382646288|44.2667622346,12.3572303763&sensor=false
+	#http://staticmap.openstreetmap.de/staticmap.php?center=40.714728,-73.998672&zoom=14&size=865x512&maptype=mapnik
 
-	print "Params: %s" % params
 	print "URL params %s" % urlparams
-
-	baseurl = "http://maps.googleapis.com/maps/api/staticmap"
 
 
 	params_serialized = []
@@ -427,12 +453,18 @@ def downloadMapImage (request, **kwargs):
 
 	paramsencoded = urllib.urlencode (params_serialized)
 	print "Encoded: %s" % baseurl+"?"+paramsencoded
-	outimage = urllib2.urlopen(baseurl+"?"+paramsencoded).read()
 
-	#print outimage
+	try:
+		outimage = urllib2.urlopen(baseurl+"?"+paramsencoded).read()
+		outimagestr = outimage.encode("base64")
+		#print outimage
+	except Exception as ex:
+		print "ERROR: %s " % ex
+		traceback.print_exc()
+
+	return HttpResponse(outimagestr)
 
 
-	return HttpResponse(outimage, mimetype="image/png")
 
 
 

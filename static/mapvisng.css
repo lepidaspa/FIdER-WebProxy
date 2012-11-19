@@ -322,3 +322,10 @@ tr, tr *
 {
     max-width:      400px;
 }
+
+
+#exportcanvasshadow
+{
+    visibility: hidden;
+    display:    none;
+}
