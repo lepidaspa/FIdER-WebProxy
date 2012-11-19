@@ -266,20 +266,58 @@
 
 </div>
 
-<div id="maptoimage" title="Esportazione mappa">
+
+<div id="maptojson" title="Scaricamento mappa">
 
     <div class="formbriefing">
-        Per esportare la mappa, selezionare l'immagine e scegliere "Salva come".
+        Per esportare la mappa, fare clic sul collegamento "Scarica mappa".<br>
+        Attenzione: per mantenere la coerenza dei dati, la mappa scaricata corrisponde all'ultimo salvataggio sul server.
     </div>
+
+    <div class="formbriefing mapdloadlink" id="mapdloadlinkjson">
+
+    </div>
+
+</div>
+
+<div id="maptoimage" title="Esportazione vista">
+
+    <div class="formbriefing">
+        Per esportare la mappa mostrata nell'anteprima in basso, fare clic sul collegamento "Scarica mappa".
+    </div>
+
+
 
     <div id="exportcanvas">
 
     </div>
 
+    <div class="formbriefing mapdloadlink" id="mapdloadlinkpng">
+
+    </div>
+
     <img id="exportcanvasshadow">
+
+
 
 </div>
 
+
+<div id="progress_imagerender" title="Rendering vista">
+
+    <div class="progspinner" id="progspinner_imagerender">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_imagerender">
+        Rendering cartografico in corso...
+    </div>
+
+    <div class="progressinfo feedback_bad" id="renderfinished_fail">
+        Errore nell'accesso ai dati. Riprovare in un altro momento.
+    </div>
+
+</div>
 
 <div id="progress_upload" title="Invio dati">
 
@@ -440,9 +478,13 @@
             {% endif %}
 
 
-            </span>
 
         {% endif %}
+        <img src="{{ STATIC_URL }}resource/visng_dload_mapdata.png" class="imgbutton menuopt" id="menu_dloadmapdata" title="Scarica mappa">
+        <img src="{{ STATIC_URL }}resource/visng_dload_image.png" class="imgbutton menuopt" id="menu_dloadimage" title="Esporta vista">
+
+
+         </span>
 
         <span id="geofindertool">
 
@@ -451,20 +493,8 @@
         </span>
 
 
-    <!--
 
-        <span id="mapcontrolsbar">
-            <img src="{{ STATIC_URL }}resource/visng_controls_reposition.png" class="imgbutton mapcontrol ctype_action" id="mapcontrols_repos" title="Riposiziona la mappa">
-            {% if mode == 'full' or mode == 'mapedit' %}
-                <img src="{{ STATIC_URL }}resource/visng_controls_measure.png" class="imgbutton mapcontrol ctype_switch" id="mapcontrols_measure" title="Misura">
-            {% endif %}
-        <img src="{{ STATIC_URL }}resource/visng_controls_editfeature.png" class="imgbutton mapcontrol ctype_switch" id="mapcontrols_editfeature" title="Seleziona">
-            {% if mode == 'full' or mode == 'mapedit' %}
-                <img src="{{ STATIC_URL }}resource/visng_controls_newfeature.png" class="imgbutton mapcontrol ctype_switch" id="mapcontrols_createfeature" title="Inserisci">
-            {% endif %}
-        </span>
 
-    -->
 
     </div>
 

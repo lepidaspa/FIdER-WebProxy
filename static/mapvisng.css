@@ -293,7 +293,7 @@ tr, tr *
     left:       auto;
     right:      auto;
     width:      600px;
-    height:     400px;
+    height:     300px;
     overflow:   auto;
 }
 
@@ -328,4 +328,27 @@ tr, tr *
 {
     visibility: hidden;
     display:    none;
+}
+
+
+
+#maptoimage .formbriefing
+{
+    width:          99%;
+}
+
+.mapdloadlink
+{
+    margin-top: 8px;
+    margin-bottom:  8px;
+
+    text-align:  center;
+}
+
+.mapdloadlink a
+{
+    padding:6px;
+
+    border: 1px solid #ff8800;
+
 }

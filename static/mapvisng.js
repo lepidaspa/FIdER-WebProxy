@@ -55,7 +55,9 @@ var menufunctions = {
     'menu_loadsnapmap': funcLoadSnap,
     'menu_showmap': funcShowMap,
     'menu_showmodel': funcShowModel,
-    'menu_filter': funcCreateFilter
+    'menu_filter': funcCreateFilter,
+    'menu_dloadimage': tryExportView,
+    'menu_dloadmapdata': tryExportMapData
 };
 
 // map controls
@@ -202,9 +204,30 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
 
 }
 
+function tryExportMapData()
+{
+    console.log("Trying to export the full map in geojson format");
+
+    $("#maptojson").dialog("open");
+
+    var linkstring = $("<a>Scarica mappa</a>");
+    linkstring.attr('href', "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id);
+    linkstring.attr('download', proxy_name+"_"+meta_id+"_"+map_id+".json");
+    $("#mapdloadlinkjson").empty().append(linkstring);
+
+
+}
+
 
 function tryExportView()
 {
+
+    $("#progress_imagerender").dialog("open");
+    $("#progress_imagerender .progspinner").show();
+    $("#progress_imagerender .formbrieding").show();
+    $("#renderfinished_fail").hide();
+    $("#btn_renderprogress_close").hide();
+
 
     console.log("Trying to export the viewport");
 
@@ -223,10 +246,8 @@ function tryExportView()
     console.log("Getting map background with zoom "+drawzoom);
 
 
-    $("#maptoimage").dialog("open");
 
-
-
+    //$("#btn_downloadMapRender").hide();
 
     var provider;
     var maptype;
@@ -266,26 +287,35 @@ function tryExportView()
         'drawsize': [vpCropWidth, vpCropHeight]
     };
 
-    //TODO: add progress dialog and set async to true (modal dialog though)
 
     console.log(parameters);
 
     $.ajax ({
         url: '/fwp/staticdl/',
         data:   {jsondata: JSON.stringify(parameters)},
-        async: false,
+        async: true,
         type: 'POST',
         success: function (data)
         {
 
+            $("#progress_imagerender").dialog("close");
+            $("#mapdloadlinkpng").empty().append("L'operazione di rendering può richiedere tempi elevati.<br>In caso di interruzione da parte del browser, premere il pulsante Continua.");
+            $("#btn_maptoimage_close").hide();
+            $("#maptoimage").dialog("open");
+
+
             renderExportableMap(data);
+
 
 
 
         },
         error: function () {
 
-            //TODO: implement error
+            $("#progress_imagerender .progspinner").hide();
+            $("#progress_imagerender .formbrieding").hide();
+            $("#renderfinished_fail").show();
+            $("#btn_renderprogress_close").show();
             console.log("ERROR received");
         }
     });
@@ -296,6 +326,9 @@ function renderExportableMap (rawimagedata)
 {
     console.log("succeeded downloading remote map");
     //console.log(data);
+
+
+
 
     // cleaning the context
     var canvas = document.getElementById('drawingarea');
@@ -314,7 +347,20 @@ function renderExportableMap (rawimagedata)
         context.drawImage($("#exportcanvasshadow")[0], 0, 0, vpCropWidth*sizeMultip, vpCropHeight*sizeMultip, 0, 0, vpCropWidth*sizeMultip, vpCropHeight*sizeMultip);
         //console.log(canvas.toDataURL());
         renderVectorLayerToCanvas(vislayer, canvas);
+
+
+        var linkstring = $("<a>Scarica mappa</a>");
+        linkstring.attr('href', canvas.toDataURL());
+        linkstring.attr('download', map_id+".png");
+        $("#mapdloadlinkpng").empty().append(linkstring);
+
+        //$("#btn_downloadMapRender").show();
+        $("#btn_maptoimage_close").show();
+
+
     };
+
+
 
 
 
@@ -325,166 +371,66 @@ function renderVectorLayerToCanvas (layerfrom, destcanvas)
 
     console.log("Copying "+vislayer.features.length+" features to draw layer");
 
-    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.5, fillColor: "#ff8800", strokeColor: "#ff8800", strokeWidth: 4, strokeDashstyle: "solid", pointRadius: 8, strokeLinecap: "round"});
+    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#ff8800", strokeColor: "#ff8800", strokeWidth: 4, strokeDashstyle: "solid", pointRadius: 8, strokeLinecap: "round"});
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
     var renderlayer = new OpenLayers.Layer.Vector("drawlayer", {name: "drawlayer", styleMap: featurestylemap, renderers: ["Canvas"]});
     renderlayer.id = "rendercanvas";
+    //(($(renderlayer.div)).find("canvas")[0]).lineCap="round";
+    //(($(renderlayer.div)).find("canvas")[0]).lineJoin="round";
 
     renderlayer.display(false);
 
-    mapview.addLayer(renderlayer);
 
-    for (var f in layerfrom.features)
-    {
-        //renderlayer.addFeatures(vislayer.features);
-        var cfeature = layerfrom.features[f];
-        renderlayer.addFeatures(new OpenLayers.Feature.Vector(cfeature.geometry));
-    }
 
-    //renderlayer.display();
+    /* V2: much slower in theory but should scale */
 
     console.log("Copying renderer canvas to output");
     var element = ($(renderlayer.div)).find("canvas")[0];
+    var context = destcanvas.getContext('2d');
     console.log(element);
 
     var offsetX = (vpCropWidth - viewportWidth)/2;
     var offsetY = (vpCropHeight - viewportHeight)/2;
-
-    var context = destcanvas.getContext('2d');
-    //context.drawImage(element,0,0, vpCropWidth, vpCropHeight, 0, 0, vpCropWidth*sizeMultip, vpCropHeight*sizeMultip );
-    context.drawImage(element, offsetX, offsetY)
-    renderlayer.destroy();
-
-
-
-
-}
-
-
-function tryBuildMapToCanvas()
-{
-
-    // obsoleted by tryExportView
-
-    console.log("Trying to copy the tiledata to a canvas object");
-
-    var base = $("#OpenLayers\\.Map_2_GMapContainer");
-
-    var baseoffset_y = parseInt(base.css("top"));
-    var baseoffset_x = parseInt(base.css("left"));
-
-    if (isNaN(baseoffset_y))
-    {
-        baseoffset_y = 0;
-    }
-    if (isNaN(baseoffset_x))
-    {
-        baseoffset_x = 0;
-    }
-
-    var limit_x = parseInt($("#mapview").css("width"));
-    var limit_y = parseInt($("#mapview").css("height"));
-
-    $("#maptoimage").dialog("open");
-
-    $("#exportcanvas").empty().append('<canvas id="drawingarea" height="'+limit_y+'" width="'+limit_x+'"></canvas>');
-
-
-
-
-    console.log(base[0]);
-    console.log(baseoffset_x);
-    console.log(baseoffset_y);
-    console.log(limit_x);
-    console.log(limit_y);
-
-    //var canvas = document.createElement('canvas');
-
-    var canvas = document.getElementById('drawingarea');
-    var context = canvas.getContext('2d');
-    context.clearRect(0, 0, canvas.width, canvas.height);
-
-    var tileset = base.find("img:visible");
-
-    console.log("Total "+tileset.length+" tiles available on this layer");
-
-    var offsetter = base.find("div:first div:first div:first");
-    // console.log("Reading offset div");
-    // console.log(offsetter);
-    // console.log(offsetter.css("-webkit-transform"));
-
-    // cleaning up the matrix string from css
-    var preparse = offsetter.css("-webkit-transform").replace(")","").split(",");
-    // console.log(preparse);
-
-    var mainoffset_x = parseInt(preparse[preparse.length-2]);
-    var mainoffset_y = parseInt(preparse[preparse.length-1]);
-
-
-
-    for (var i = 0; i < tileset.length; i++)
-    {
-        // drawing EVERYTHING to the canvas
-        var ctile = $(tileset[i]);
-        var ctileimg = tileset[i];
-
-        var parent = ctile.closest("div");
-
-        var offset_x = parseInt(parent.css('left'))+mainoffset_x;
-        var offset_y = parseInt(parent.css('top'))+mainoffset_y;
-
-
-        var tile_width = ctileimg.width;
-        var tile_height = ctileimg.height;
-
-        //context.drawImage(ctileimg, 0, 0, tile_width, tile_height, offset_x, offset_y, tile_width, tile_height);
-        context.drawImage(ctileimg, 0, 0, tile_width, tile_height, offset_x, offset_y, tile_width, tile_height);
-
-        console.log("Drawn "+tileset[i]+" in "+offset_x+","+offset_y+" with size "+ctileimg.width+"*"+ctileimg.height);
-
-    }
-
-    console.log("Drawn "+i+" tiles");
-
-    console.log("Copying "+vislayer.features.length+" features to draw layer");
-
-    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.5, fillColor: "#ff00ff", strokeColor: "#000000", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
-    var featurestylemap = new OpenLayers.StyleMap(featurestyle);
-    var renderlayer = new OpenLayers.Layer.Vector("drawlayer", {name: "drawlayer", styleMap: featurestylemap, renderers: ["Canvas"]});
-    renderlayer.id = "rendercanvas";
-
-    renderlayer.display(false);
-
     mapview.addLayer(renderlayer);
 
-
-    for (var f in vislayer.features)
+    for (var f in layerfrom.features)
     {
-        //renderlayer.addFeatures(vislayer.features);
-        var cfeature = vislayer.features[f];
-        renderlayer.addFeatures(new OpenLayers.Feature.Vector(cfeature.geometry));
+
+        /*
+        if (f % 100 == 0)
+        {
+            console.log("Rendered "+f+" of "+layerfrom.features.length);
+        }
+        */
+
+        var geom = layerfrom.features[f].geometry;
+
+        if (layerfrom.features[f].onScreen())
+        {
+            renderlayer.addFeatures(new OpenLayers.Feature.Vector(geom));
+            context.drawImage(element, offsetX, offsetY);
+            renderlayer.destroyFeatures();
+        }
+
+
+
     }
-
-
-
-    //renderlayer.display();
-
-    console.log("Copying renderer canvas to output");
-    var element = ($(renderlayer.div)).find("canvas")[0];
-
-    context.drawImage(element, 0, 0);
-
     renderlayer.destroy();
-
-    console.log("canvas to data URL");
-
-    console.log($(canvas));
-
-    //TODO: solve SECURITY exception to allow saving
-
 
 
 }
+
+function downloadMap ()
+{
+    // downloads the map from the rendering canvas element;
+
+    // kept as backup, currently the map is downloaded straight from a URL
+
+    window.location =  document.getElementById('drawingarea').toDataURL();
+
+}
+
+
 
 // FILTER SECTION
 function initFiltersForm()
@@ -955,12 +901,37 @@ function initForms()
         closeOnEscape: true,
         width:  "auto",
         buttons: {
+            /*"Download": {
+                id: "btn_downloadMapRender",
+                text: "Scarica mappa",
+                click: downloadMap
+            },*/
+
+            "Chiudi": {
+                id: "btn_maptoimage_close",
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
+            }
+
+
+        }
+    });
+
+    $("#maptojson").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: true,
+        width:  "auto",
+        buttons: {
             "Chiudi": {
                 text: "Chiudi",
                 click: function() {$( this ).dialog( "close" );}
             }
+
+
         }
     });
+
 
     $("#form_filter").dialog({
         autoOpen: false,
@@ -1025,6 +996,20 @@ function initForms()
             }
         }
     });
+
+    $("#progress_imagerender").dialog({
+            autoOpen: false,
+            modal: true,
+            closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Chiudi": {
+                id: "btn_renderprogress_close",
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
+        });
 
     $("#progress_upload").dialog({
         autoOpen: false,
@@ -2158,19 +2143,19 @@ function initMapWidget()
 
 
     // SNAP layer
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#888888", strokeColor: "#888888", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 8});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#FF33FC", strokeColor: "#FF33FC", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 8});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     snaplayer= new OpenLayers.Layer.Vector("Allineamento", {styleMap: featurestylemap});
 
     // FILTER layer
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#188E01", strokeColor: "#188E01", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#188E01", strokeColor: "#188E01", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     filterlayer = new OpenLayers.Layer.Vector("Filtro", {styleMap: featurestylemap});
 
     // VIS layer
-    var defaultstyle = new OpenLayers.Style ( {fillOpacity: 0.4, fillColor: "#FF9900", strokeColor: "#FF9900", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6});
-    var selectstyle = new OpenLayers.Style ( {fillOpacity: 0.4, fillColor: "#0000FF", strokeColor: "#0000FF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6});
-    var drawstyle = new OpenLayers.Style ( {fillOpacity: 0.4, fillColor: "#0000FF", strokeColor: "#0000FF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6});
+    var defaultstyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: "#FF9900", strokeColor: "#FF9900", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6});
+    var selectstyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: "#0000FF", strokeColor: "#0000FF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6});
+    var drawstyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: "#0000FF", strokeColor: "#0000FF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6});
     featurestylemap = new OpenLayers.StyleMap ({'default': defaultstyle, 'select': selectstyle, 'temporary': drawstyle});
     vislayer= new OpenLayers.Layer.Vector("Mappa", {styleMap: featurestylemap});
 
