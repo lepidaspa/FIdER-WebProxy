@@ -211,8 +211,17 @@ function tryExportMapData()
     $("#maptojson").dialog("open");
 
     var linkstring = $("<a>Scarica mappa</a>");
-    linkstring.attr('href', "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id);
-    linkstring.attr('download', proxy_name+"_"+meta_id+"_"+map_id+".json");
+    if (proxy_type != 'local')
+    {
+        linkstring.attr('href', "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id);
+        var metadesc = meta_id == ".st" ? "Lavorazione" : "Archivio";
+        linkstring.attr('download', proxy_name+"_"+meta_id+"_"+map_id+".json");
+    }
+    else
+    {
+        linkstring.attr('href', "/fwp/get/"+proxy_id+"/"+meta_id+"/"+map_id);
+        linkstring.attr('download', proxy_name+"_"+meta_id+"_"+map_id+".json");
+    }
     $("#mapdloadlinkjson").empty().append(linkstring);
 
 
