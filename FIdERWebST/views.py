@@ -157,6 +157,10 @@ def getModels ():
 	:return:
 	"""
 
+	#print os.getcwd()
+	models = json.load(open(os.path.join("FIdERWebST", "models.json")))
+
+	"""
 	models = {
 		'DefaultPoint' :
 			{
@@ -186,8 +190,10 @@ def getModels ():
 				}
 			}
 	}
+	"""
 
-	#TODO: add local "registered" models
+
+	# maps models are not "registered" and will be loaded from the editor itself "on the fly"
 
 	hasmodels, models_fider = Components.getModelsFromServer()
 	if hasmodels:

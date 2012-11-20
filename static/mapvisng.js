@@ -213,7 +213,7 @@ function tryExportMapData()
     var linkstring = $("<a>Scarica mappa</a>");
     var metadesc = meta_id == ".st" ? "Lavorazione" : meta_id;
 
-    linkstring.attr('href', "/fwp/getng/"+proxy_id+"/"+meta_id+"/"+map_id+"/fed/");
+    linkstring.attr('href', "/fwp/getng/"+proxy_id+"/"+meta_id+"/"+map_id+"/src/");
     linkstring.attr('download', proxy_name+"_"+meta_id+"_"+map_id+".geojson");
 
     $("#mapdloadlinkjson").empty().append(linkstring);
@@ -1473,14 +1473,11 @@ function tryLoadMap ()
     else
     {
         // load from instance
-        // TODO: placeholder, implement as getUploadedMap
         // should simply need a getUploadedMap with the correct parameters
         getUploadedMap(contentreq[0], contentreq[1]);
-
     }
 
 
-    //TODO: placeholder, implement
 }
 
 
@@ -1548,7 +1545,7 @@ function getUploadedMap(meta_id, map_id)
     }
     else
     {
-        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id+"/";
+        urlstring = "/fwp/getng/"+proxy_id+"/"+meta_id+"/"+map_id+"/src/";
     }
 
     console.log("Loading: "+urlstring);

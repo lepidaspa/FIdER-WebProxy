@@ -101,7 +101,7 @@ Gestione dati e cataloghi
                         <img class="imgbutton maprecap" id="maprecap_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
 
                     {% if proxy_type != 'query' %}
-                            <a href="/fwp/getng/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/fed/" download="{{ proxy_name }}_{% if meta_id != '.st' %}{{ meta_id }}{% else %}Lavorazione{% endif %}_{{ map_id }}.geojson"><img class="imgbutton" src="{{ STATIC_URL }}resource/visng_dload_mapdata.png" title="Scarica mappa"></a>
+                            <a href="/fwp/getng/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/src/" download="{{ proxy_name }}_{% if meta_id != '.st' %}{{ meta_id }}{% else %}Lavorazione{% endif %}_{{ map_id }}.geojson"><img class="imgbutton" src="{{ STATIC_URL }}resource/visng_dload_mapdata.png" title="Scarica mappa"></a>
 
                     {% endif %}
 

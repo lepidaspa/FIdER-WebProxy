@@ -1,0 +1,29 @@
+{
+    "DefaultPoint" :
+    {
+        "objtype": "Point",
+        "name": "Nodo",
+        "properties": {
+            "OwnerID": "str",
+            "Owner": "str",
+            "Depth": "int",
+            "Type": "str",
+            "Infrastructure": ["TLC", "Illuminazione", "Rete elettrica", "Rete idrica"]
+        }
+    },
+    "DefaultLine" :
+    {
+        "objtype": "LineString",
+        "name": "Tratta",
+        "properties": {
+            "OwnerID": "str",
+            "Owner": "str",
+            "Length": "int",
+            "Depth": "int",
+            "Type": "str",
+            "StartID": "str",
+            "EndID": "str",
+            "Infrastructure": ["TLC", "Illuminazione", "Rete elettrica", "Rete idrica"]
+        }
+    }
+}

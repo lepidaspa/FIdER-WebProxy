@@ -99,6 +99,59 @@ def getProxyContacts (request, **kwargs):
 	return HttpResponse(json.dumps(contactdata), mimetype="application/json")
 
 
+def proxy_getmapmodelng (request, **kwargs):
+	"""
+	Gets the model info from a map. Note that this applies ONLY to a standalone instance
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	print "Downloading the map itself"
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, getProxyManifest(proxy_id))
+
+	if proxy_type != 'local':
+		raise Exception ("Wrong proxy type, function only applies to standalone tools")
+
+	if meta_id == '.st':
+		#map editor
+		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
+	else:
+		#archive
+		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id, map_id+".geojson")
+	mapdataraw= json.load(open(path))
+
+
+	print "Getting the actual model out"
+
+	if mapdataraw.has_key('model'):
+		mapmodel = mapdataraw['model']
+	else:
+
+		mapmodel = {}
+
+		mapmodel['name'] = meta_id+"/"+map_id
+		mapmodel['objtype'] = mapdataraw['features'][0]['geometry']['type']
+		mapmodel['properties'] = {}
+
+		for cfeature in mapdataraw['features']:
+			for propname in cfeature['properties'].keys():
+				if not mapmodel['properties'].has_key(propname):
+					mapmodel['properties'][propname] = 'str'
+
+
+	return HttpResponse(json.dumps(mapmodel), mimetype="application/json")
+
+
+
+
+
+@csrf_exempt
 def proxy_getmapng (request, **kwargs):
 	"""
 	Gets a map in geojson format. Allows choice between federated and non-federated output, plus proxy-query
@@ -108,6 +161,7 @@ def proxy_getmapng (request, **kwargs):
 	"""
 
 	print "Downloading single map from proxy"
+	print "URL params: %s" % kwargs
 
 	proxy_id = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
@@ -116,7 +170,6 @@ def proxy_getmapng (request, **kwargs):
 	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, getProxyManifest(proxy_id))
 
 	print "Download context is: %s (%s) / %s / %s" % (proxy_id, proxy_type, meta_id, map_id)
-	print "URL params: %s" % kwargs
 	#getflag is federated or not federated
 	try:
 		getflag = kwargs['getflag']

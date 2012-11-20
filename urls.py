@@ -102,7 +102,8 @@ urlpatterns = patterns('',
 	url(r'^fwp/staticdl/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.downloadStaticMap),
 	url(r'^fwp/staticdl/$', fwstviews.downloadStaticMap),
 	url(r'^fwp/getng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/(?P<getflag>\w*)/$', fwpviews.proxy_getmapng),
-	url(r'^fwp/getng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getmapng)
+	url(r'^fwp/getng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getmapng),
+	url(r'^fwp/getmodelng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getmapmodelng)
 
 )
 

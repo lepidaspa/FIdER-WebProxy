@@ -271,7 +271,9 @@
 
     <div class="formbriefing">
         Per esportare la mappa, fare clic sul collegamento "Scarica mappa".<br>
-        Attenzione: per mantenere la coerenza dei dati, la mappa scaricata corrisponde all'ultimo salvataggio sul server.
+        {% if meta_id == ".st" %}
+        Per mantenere la coerenza dei dati, la mappa scaricata corrisponde all'ultimo salvataggio sul server.
+        {% endif %}
     </div>
 
     <div class="formbriefing mapdloadlink" id="mapdloadlinkjson">
@@ -475,9 +477,11 @@
             {% if mode == 'full' or mode == 'mapedit' %}
                 <img src="{{ STATIC_URL }}resource/visng_menu_geoshift.png" class="imgbutton menuopt" id="menu_geoshift" title="Trasla mappa">
                 <img src="{{ STATIC_URL }}resource/visng_controls_filter.png" class="imgbutton menuopt" id="menu_filter" title="Filtra">
+
+
             {% endif %}
 
-
+            &nbsp;&nbsp;
 
         {% endif %}
         <img src="{{ STATIC_URL }}resource/visng_dload_mapdata.png" class="imgbutton menuopt" id="menu_dloadmapdata" title="Scarica mappa">

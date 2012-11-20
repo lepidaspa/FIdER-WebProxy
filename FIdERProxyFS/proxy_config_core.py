@@ -83,6 +83,7 @@ wait_for_unlock = 3
 
 MAINSERVER_LOC = "http://"+conf_core["FIDER_ADDRESS"]+":"+conf_core["FIDER_PORT"]
 HARDPROXY_LOC = "http://"+conf_core["HARDPROXY_ADDRESS"]+":"+conf_core["HARDPROXY_PORT"]
+HARDPROXY_PORT = conf_core["HARDPROXY_PORT"]
 
 URL_DISCOVERY = MAINSERVER_LOC+conf_core["URL_FIDER_WELCOME"]
 URL_WRITEREQUEST = MAINSERVER_LOC+conf_core["URL_FIDER_SUBMIT_WRITE"]
