@@ -562,12 +562,14 @@ function applyFilters()
     var fieldsels = $(".filter_fieldcriteria");
     console.log("Creating filter");
 
+    var emptyfilter = true;
     for (var f = 0; f < fieldsels.length; f++)
     {
         var fieldselval = $(fieldsels[f]).val();
 
         if (fieldselval != '')
         {
+            emptyfilter = false;
             var valueselval = $(fieldsels[f]).closest('tr').find(".filter_valuecriteria").val();
 
             console.log ("Adding condition on "+fieldselval+" -> "+valueselval);
@@ -578,6 +580,12 @@ function applyFilters()
             }
         }
 
+    }
+
+    if (emptyfilter)
+    {
+        console.log("No real filtering in use");
+        return;
     }
 
     console.log(conditions);
