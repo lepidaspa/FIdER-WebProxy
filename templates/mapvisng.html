@@ -202,15 +202,8 @@
                     <select class="filter_valuecriteria" id="filter_valuecriteria_1">
                     </select>
                 </td>
-            </tr>
-            <tr>
                 <td>
-                    <select class="filter_fieldcriteria" id="filter_fieldcriteria_2">
-                    </select>
-                </td>
-                <td class="layout_filterfield">
-                    <select class="filter_valuecriteria" id="filter_valuecriteria_2">
-                    </select>
+                    <img class="imgbutton" id="btn_addfilter" src="{{ STATIC_URL }}resource/visng_model_addproperty.png" title="Aggiungi criterio">
                 </td>
             </tr>
         </table>
@@ -446,7 +439,6 @@
                 &nbsp;&nbsp;
             {% endif %}
 
-
             {% if mode == 'full' %}
                 <img src="{{ STATIC_URL }}resource/fwp_newmapedit.png" class="imgbutton" id="menu_createnewmap" title="Crea nuova mappa">
                 <img src="{{ STATIC_URL }}resource/fwp_editmap.png" class="imgbutton" id="menu_loadmap" title="Carica una mappa">
@@ -464,21 +456,14 @@
 
             &nbsp;&nbsp;
 
-
             {% if mode == 'full' or mode == 'mapedit' %}
 
                 <img src="{{ STATIC_URL }}resource/visng_layers.png" class="imgbutton menuopt" id="menu_loadsnapmap" title="Carica un riferimento">
             {% endif %}
 
-
-
-
-
             {% if mode == 'full' or mode == 'mapedit' %}
                 <img src="{{ STATIC_URL }}resource/visng_menu_geoshift.png" class="imgbutton menuopt" id="menu_geoshift" title="Trasla mappa">
                 <img src="{{ STATIC_URL }}resource/visng_controls_filter.png" class="imgbutton menuopt" id="menu_filter" title="Filtra">
-
-
             {% endif %}
 
             &nbsp;&nbsp;

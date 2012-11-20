@@ -439,9 +439,6 @@ function downloadMap ()
 function initFiltersForm()
 {
 
-    //var fieldselectlist = ['filter_fieldcriteria_1', 'filter_fieldcriteria_2'];
-    var valselectlist = ['filter_valuecriteria_1', 'filter_valuecriteria_2'];
-
     var proplist = [];
     for (var propname in modeldata['properties'])
     {
@@ -465,6 +462,41 @@ function initFiltersForm()
 
     fieldselectors.change();
 
+}
+
+function funcCreateFilter()
+{
+    $("#form_filter").dialog("open");
+}
+
+function addFilterCriteria()
+{
+
+    var count = ($(".filter_fieldcriteria").length)+1;
+
+
+    var proplist = [];
+    for (var propname in modeldata['properties'])
+    {
+        if (modeldata['properties'].hasOwnProperty(propname))
+        {
+            proplist.push(propname);
+        }
+    }
+    var cselect = '<option value=""></option>';
+    for (var p = 0; p < proplist.length; p++)
+    {
+        cselect += '<option value="'+proplist[p]+'">'+proplist[p]+'</option>';
+    }
+
+    var newrow = $('<tr><td><select class="filter_fieldcriteria" id="filter_fieldcriteria_'+count+'">'+cselect+'</select> </td> <td class="layout_filterfield"> <select class="filter_valuecriteria" id="filter_valuecriteria_'+count+'" disabled></select></td><td><img class="imgbutton btn_removefilter" src="/static/resource/visng_model_deleteproperty.png" title="Elimina criterio"></td></tr>');
+
+    $("#layout_filter").append(newrow);
+}
+
+function removeFilterCriteria()
+{
+    $(this).closest('tr').remove();
 }
 
 function initFilterValueList()
@@ -962,6 +994,8 @@ function initForms()
     });
     $(".filter_fieldcriteria").live('change', initFilterValueList);
     $(".button_replicatevalue").live('click', replicatePropValue);
+    $("#btn_addfilter").live('click', addFilterCriteria);
+    $(".btn_removefilter").live('click', removeFilterCriteria);
 
 
     $("#form_loadmap").dialog({
@@ -1219,12 +1253,7 @@ function funcShowModel ()
 
 }
 
-function funcCreateFilter()
-{
 
-    $("#form_filter").dialog("open");
-
-}
 
 // END OF MENU FUNCTIONS
 
@@ -2891,7 +2920,6 @@ function backToProxy()
     // quick wrapper for buttons
     console.log("Back to proxy summary");
     location.href = "/fwp/proxyng/"+proxy_id+"/";
-
 }
 
 function updateUploadSelector()
@@ -2914,7 +2942,6 @@ function updateUploadSelector()
     }
 
     verifyMapLoadSelection();
-
 
 }
 
