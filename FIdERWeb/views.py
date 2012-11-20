@@ -99,6 +99,60 @@ def getProxyContacts (request, **kwargs):
 	return HttpResponse(json.dumps(contactdata), mimetype="application/json")
 
 
+def proxy_getmapng (request, **kwargs):
+	"""
+	Gets a map in geojson format. Allows choice between federated and non-federated output, plus proxy-query
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	print "Downloading single map from proxy"
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, getProxyManifest(proxy_id))
+
+	print "Download context is: %s (%s) / %s / %s" % (proxy_id, proxy_type, meta_id, map_id)
+	print "URL params: %s" % kwargs
+	#getflag is federated or not federated
+	try:
+		getflag = kwargs['getflag']
+	except:
+		getflag = 'src'
+
+	print "Getflag set to %s" % getflag
+
+	jsondata = {}
+
+	if proxy_type == 'query':
+		#query data is received via query and ALWAYS federated, cannot do without conv table
+		pass
+	elif proxy_type == 'local':
+		# getting from map editor we don NOT have a difference between federated and not
+		# but we still have different locations for data on archive and editor
+		if meta_id == '.st':
+			#map editor
+			path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
+		else:
+			#archive
+			path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id, map_id+".geojson")
+		jsondata = json.load(open(path))
+	else:
+		if getflag == 'fed':
+			# getting FED data, converted to json WITH translation
+			jsondata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, True)
+		elif getflag == 'src':
+			# getting PURE data, converted to json WITHOUT translation
+			jsondata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, False)
+
+	response = HttpResponse(json.dumps(jsondata), mimetype="application/json")
+	response['Content-Disposition'] = 'attachment; filename=' + map_id+".geojson"
+	return response
+
+
 def proxyselng (request, **kwargs):
 	"""
 	Shows the basic proxy selection screen (new version). From here the user can also create a new proxy
@@ -276,13 +330,14 @@ def proxy_loadmap (request, **kwargs):
 	shape_id = kwargs['shape_id']
 
 	print "Loading map data for map %s/%s/%s" % (proxy_id, meta_id, shape_id)
-
 	if os.path.exists(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id, shape_id)):
 		jsondata = readSingleShape (proxy_id, meta_id, shape_id)
 	else:
 		jsondata = {}
 
 	return HttpResponse(jsondata, mimetype="application/json")
+
+
 
 @csrf_exempt
 def proxy_getModels (request):

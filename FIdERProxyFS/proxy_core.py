@@ -726,6 +726,7 @@ def convertShapeFileToJson (proxy_id, meta_id, shape_id, normalise=True):
 	shapepath = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
 
 	print "Path is: %s (%s proxy type)" % (shapepath, learnProxyTypeAdv(proxy_id, getManifest(proxy_id)))
+	print "Path data will be normalised? %s " % normalise
 
 	return convertShapePathToJson(shapepath, normalise)
 
@@ -827,12 +828,13 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	print "Setting SRS conversion"
 	tSRS=ogr.osr.SpatialReference()
 	tSRS.ImportFromEPSG(EPSG_WGS84)
-	print "Converting to %s " % tSRS
+	#print "Converting to %s " % tSRS
 
 	#SRS CONVERSION CODE
 
 
-	if normalise:
+	print "Requiring normalisation? %s" % normalise
+	if normalise is True:
 		convtable = getConversionTable(proxy_id, meta_id, shape_id)
 		print "Data will be normalised with convtable %s" % (convtable,)
 
@@ -855,8 +857,8 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		#print "****>"+str(dir(layer))
 
 		sSRS=layer.GetSpatialRef()
-		print "Layer %s has %s features with spatial ref %s" % (layer, layer.GetFeatureCount(), sSRS)
-
+		#print "Layer %s has %s features with spatial ref %s" % (layer, layer.GetFeatureCount(), sSRS)
+		print "Layer %s has %s features" % (layer, layer.GetFeatureCount())
 
 
 
