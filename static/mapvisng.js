@@ -81,6 +81,8 @@ var vislayer;
 var snaplayer;
 // vector layer used for highlighting features, goes UNDER vislayer and OVER snaplayer
 var filterlayer;
+// layer used for WMS background
+var rasterlayer;
 
 // format used to translate and output coordinates from the map
 var gjformat;
@@ -105,6 +107,9 @@ var vpCropHeight;
 var limitHeight;
 var limitWidth;
 var sizeMultip;
+
+
+
 
 function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_type, req_manifest, req_proxy_maps, req_models)
 {
@@ -1489,7 +1494,46 @@ function tryLoadShadow()
 }
 
 
+function loadRasterLayer()
+{
 
+
+    try
+    {
+        rasterlayer.destroy();
+    }
+    catch (err)
+    {
+        // ignore, no raster layer in use
+    }
+
+    //var wmsidx = mapview.layers.indexOf(rasterlayer);
+
+    var testmap = 'http://eusoils.jrc.ec.europa.eu/wrb/wms_Primary.asp?&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG:3035&BBOX=1988372,1400000,6411627,5400000&FORMAT=image/png&WIDTH=1200&HEIGHT=900';
+    var testlayer = 'PEAT';
+
+
+    //console.log("Replacing WMS layer in position "+wmsidx);
+
+    /*
+    rasterlayer = new OpenLayers.Layer.WMS( "Boston",
+        "http://boston.freemap.in/cgi-bin/mapserv?",
+        {map: '/www/freemap.in/boston/map/gmaps.map', layers: 'border,water,roads', format: 'png', 'transparent': false});
+        */
+
+    rasterlayer = new OpenLayers.Layer.WMS( "Cartografia esterna",
+        testmap, {layers: testlayer} );
+    rasterlayer.isBaseLayer = false;
+
+
+
+
+
+    mapview.addLayer(rasterlayer);
+
+    mapview.setLayerIndex(rasterlayer, 0);
+
+}
 
 function tryLoadMap ()
 {
@@ -2163,11 +2207,11 @@ function initMapWidget()
         visibility : false
     }));
 
-
     var osmlayer = new OpenLayers.Layer.OSM();
     mapview.addLayer(osmlayer);
 
-
+    //rasterlayer = new OpenLayers.Layer.WMS();
+    //mapview.addLayer(rasterlayer);
 
     // setting the format to translate geometries out of the map
     gjformat = new OpenLayers.Format.GeoJSON({'externalProjection': new OpenLayers.Projection(proj_WGS84), 'internalProjection': mapview.getProjectionObject()});
@@ -2592,7 +2636,7 @@ function prefillPropertyValue()
     if ($(this).val() != "")
     {
         var dest = $($(this).closest("td").find(".autocombofield")[0]);
-        dest.val($(this).val());
+        dest.val($(this).val());1
         dest.change();
     }
 }
