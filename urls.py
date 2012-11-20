@@ -64,7 +64,6 @@ urlpatterns = patterns('',
 
 	#old proxy page,to be removed
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
-	url(r'^fwp/get/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/(?P<federated>.*)/$', fwpviews.proxy_getSingleMap),
 	url(r'^fwp/get/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getSingleMap),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
 	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\.st)/$', fwpviews.metapage),

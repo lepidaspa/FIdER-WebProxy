@@ -466,20 +466,13 @@ def proxy_getSingleMap (request, **kwargs):
 	meta_id = kwargs['meta_id']
 	map_id = kwargs['map_id']
 
-	getfederated = kwargs.has_key('federated')
-
 	mapdata = ""
 
 	if meta_id == '.st':
 		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
 		mapdata = json.load(open(path))
 	else:
-		if not getfederated:
-			#path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id)
-			mapdata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, False)
-		else:
-			#path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id)
-			mapdata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, False)
+		mapdata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, False)
 
 
 
