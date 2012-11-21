@@ -383,6 +383,8 @@ function initForms()
     $(".newmeta_create").live('click', addNewMeta);
     $(".removemeta").live('click', removeMeta);
 
+    $(".proxyrefbox").live('click', initContactsForm);
+
     $("#proxycreate_readwrite").dialog({
         autoOpen: false,
         modal: true,
@@ -439,6 +441,41 @@ function initForms()
                 id : "form_create_linked",
                 text: "Crea",
                 click: tryCreateLinked
+            }
+        }
+    });
+
+    $("#infobox_proxyref").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Update": {
+                id: "form_save_saveref",
+                text: "Salva",
+                click: trySaveContacts
+            },
+            "Chiudi": {
+                id : "form_close_saveref",
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
+    });
+    $("#proxyref_refmail,#proxyref_reftel").live('keyup mouseup change', verifySaveContacts);
+
+
+    $("#progress_proxyref").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Chiudi": {
+                id : "prog_close_saveref",
+                text: "Chiudi",
+                click: function() {$( this ).dialog( "close" );}
             }
         }
     });
@@ -680,6 +717,103 @@ function initCreateReadWrite ()
     newmetalist = [];
 }
 
+function initContactsForm()
+{
+
+    var prefix = "proxyrefbox_";
+    cpid = this.id.substr(prefix.length);
+
+    $("#infobox_proxyref").dialog("open");
+
+    $("#proxyref_proxyname").empty().append(proxies[cpid]['name']);
+
+    $("#proxyref_provider").empty().append(proxies[cpid]['contacts']['owner']);
+    $("#proxyref_refname").val(proxies[cpid]['contacts']['contact']);
+    $("#proxyref_refmail").val(proxies[cpid]['contacts']['email']);
+    $("#proxyref_reftel").val(proxies[cpid]['contacts']['phone']);
+
+    verifySaveContacts();
+
+}
+
+function verifySaveContacts()
+{
+
+    var refmail = $("#proxyref_refmail").val();
+    var reftel = $("#proxyref_reftel").val();
+
+    var validmail;
+    var validphone;
+    try
+    {
+        validmail = regex_email_rfc.test(refmail);
+
+    }
+    catch (err)
+    {
+        validmail = false;
+    }
+
+    try
+    {
+        validphone = reftel.match(/\d/g).length > 7;
+    }
+    catch (err)
+    {
+        validphone = false;
+    }
+
+    $("#form_save_saveref").prop('disabled', !(validmail || validphone));
+
+
+}
+
+function trySaveContacts()
+{
+
+    $("#infobox_proxyref").dialog("close");
+
+    $("#progress_proxyref").dialog("open");
+    $("#prog_close_saveref").hide();
+    console.log('Saving contacts for '+cpid);
+
+    $("#progress_proxyref .progressinfo").hide();
+    $("#progress_stage_sendingref").show();
+    $("#progress_proxyref .progspinner").show();
+
+
+    proxies[cpid]['contacts']['contact'] = $("#proxyref_refname").val();
+    proxies[cpid]['contacts']['email'] = $("#proxyref_refmail").val();
+    proxies[cpid]['contacts']['phone'] = $("#proxyref_reftel").val();
+
+
+    var urlstring = "/fwp/savecontactsng/"+cpid+"/";
+
+    $.ajax ({
+        url: urlstring,
+        data: {jsonmessage: JSON.stringify(proxies[cpid]['contacts'])},
+        type: 'POST',
+        async: true,
+        success: function ()
+        {
+            $("#progress_proxyref .progspinner").hide();
+            $("#progress_stage_sendingref").hide();
+            $("#proxyreffinished_success").show();
+            $("#prog_close_saveref").show();
+        },
+        error: function ()
+        {
+            $("#progress_proxyref .progspinner").hide();
+            $("#progress_stage_sendingref").hide();
+            $("#proxyreffinished_fail").show();
+            $("#prog_close_saveref").show();
+        }
+    });
+
+    console.log("Sent contact data")
+
+
+}
 
 function tryCreateReadWrite()
 {

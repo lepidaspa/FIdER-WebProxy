@@ -477,6 +477,7 @@ def downloadStaticMap (request, **kwargs):
 	except Exception as ex:
 		print "ERROR: %s " % ex
 		traceback.print_exc()
+		raise
 
 	return HttpResponse(outimagestr)
 

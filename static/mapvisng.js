@@ -335,9 +335,6 @@ function renderExportableMap (rawimagedata)
     console.log("succeeded downloading remote map");
     //console.log(data);
 
-
-
-
     // cleaning the context
     var canvas = document.getElementById('drawingarea');
     var context = canvas.getContext('2d');
@@ -379,7 +376,7 @@ function renderVectorLayerToCanvas (layerfrom, destcanvas)
 
     console.log("Copying "+vislayer.features.length+" features to draw layer");
 
-    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#ff8800", strokeColor: "#ff8800", strokeWidth: 4, strokeDashstyle: "solid", pointRadius: 8, strokeLinecap: "round"});
+    var featurestyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: "#FF9900", strokeColor: "#FF9900", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6,strokeLinecap: "round" });
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
     var renderlayer = new OpenLayers.Layer.Vector("drawlayer", {name: "drawlayer", styleMap: featurestylemap, renderers: ["Canvas"]});
     renderlayer.id = "rendercanvas";
@@ -413,7 +410,13 @@ function renderVectorLayerToCanvas (layerfrom, destcanvas)
 
         var geom = layerfrom.features[f].geometry;
 
-        if (layerfrom.features[f].onScreen())
+        if (cfeature.hasOwnProperty('_sketch') && cfeature._sketch === true)
+        {
+            continue;
+        }
+
+
+            if (layerfrom.features[f].onScreen())
         {
             renderlayer.addFeatures(new OpenLayers.Feature.Vector(geom));
             context.drawImage(element, offsetX, offsetY);

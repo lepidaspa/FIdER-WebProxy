@@ -1003,11 +1003,33 @@ def proxy_create_adv (request):
 		}
 
 
-
-
 	print json.dumps(result)
 
 	return HttpResponse(json.dumps(result), mimetype="application/json")
+
+@csrf_exempt
+def proxy_saveContacts (request, **kwargs):
+	"""
+	Saves proxy contacts independently from proxy creation
+	:param request:
+	:param kwargs: proxy_id
+	:return:
+	"""
+
+	print "Saving proxy contacts"
+
+	proxy_id = kwargs['proxy_id']
+
+	try:
+		ProxyFS.setProxyContacts(proxy_id, json.loads(request.REQUEST['jsonmessage']))
+	except Exception as ex:
+		print "Error while saving contacts for %s: %s (%s)" % (proxy_id, ex, ex.message)
+		raise
+
+	return HttpResponse('')
+
+
+
 
 
 @csrf_exempt

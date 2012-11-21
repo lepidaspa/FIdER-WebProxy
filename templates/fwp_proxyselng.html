@@ -61,6 +61,7 @@
                         </td>
                         <td class="proxylisting_actions">
                             <img src="/static/resource/fwp_info.png" class="imgbutton proxyrecap" id="proxyrecap_{{ proxy_id }}" title="Visualizza dettagli">
+                            <img src="/static/resource/fwp_contacts.png" class="imgbutton proxyrefbox" id="proxyrefbox_{{ proxy_id }}" title="Visualizza contatti">
                             <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/{% if proxydata.type == 'query' %}fwp_datasource-query{% endif %}{% if proxydata.type == 'read' or proxydata.type == 'write' or proxydata.type == 'linked' %}fwp_datasource-networked{% endif %}.png" title="Apri istanza"></a>
                             <img src="/static/resource/fwp_remove.png" class="imgbutton btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
                         </td>
@@ -88,6 +89,7 @@
                         </td>
                         <td class="proxylisting_actions">
                             <img src="/static/resource/fwp_info.png" class="imgbutton proxyrecap" id="proxyrecap_{{ proxy_id }}" title="Visualizza dettagli">
+                            <img src="/static/resource/fwp_contacts.png" class="imgbutton proxyrefbox" id="proxyrefbox_{{ proxy_id }}" title="Visualizza contatti">
                             <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/fwp_datasource-local.png" title="Apri istanza"></a>
                             <img src="/static/resource/fwp_remove.png" class="imgbutton btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
                         </td>
@@ -106,6 +108,66 @@
 
 {% block functionality %}
 
+
+    <div id="progress_proxyref" title="Salvataggio contatti">
+        <div class="progspinner" id="progspinner_proxyref">
+            <img src="/static/resource/progressbar.gif">
+        </div>
+        <div class="progressinfo" id="progress_stage_sendingref">
+            Salvataggio contatti in corso...
+        </div>
+        <div class="progressinfo feedback_good" id="proxyreffinished_success">
+            Salvataggio completato.
+        </div>
+        <div class="progressinfo feedback_bad" id="proxyreffinished_fail">
+            Salvataggio fallito.
+        </div>
+    </div>
+
+
+    <div id="infobox_proxyref" title="Contatti istanza">
+
+        <table class="proxydetailstable">
+            <tr>
+                <td colspan=2 class="proxydetails_header" id="proxyref_proxyname">
+                </td>
+            </tr>
+            <tr>
+                <td class="proxydetails_label" >
+                    Fornitore
+                </td>
+                <td class="proxydetails_info">
+                    <span id="proxyref_provider"></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="proxydetails_label">
+                    <label for="proxyref_refname">Referente</label>
+                </td>
+                <td class="proxydetails_info">
+                    <input type="text" id="proxyref_refname">
+                </td>
+            </tr>
+            <tr>
+                <td class="proxydetails_label">
+                    <label for="proxyref_refmail">Email</label>
+                </td>
+                <td class="proxydetails_info">
+                    <input type="text" id="proxyref_refmail">
+                </td>
+            </tr>
+            <tr>
+                <td class="proxydetails_label">
+                    <label for="proxyref_reftel">Telefono</label>
+                </td>
+                <td class="proxydetails_info">
+                    <input type="text" id="proxyref_reftel">
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
 
 
     <div id="infobox_proxies" title="Riepilogo istanza">
