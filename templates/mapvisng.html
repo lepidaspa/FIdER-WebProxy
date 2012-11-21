@@ -348,7 +348,7 @@
     </div>
 
     <div class="progressinfo" id="progress_stage_rendering">
-        Elaborazione mappa in corso...
+        Elaborazione dati in corso...
     </div>
 
     <div class="progressinfo feedback_good" id="maploadfinished_success">
@@ -366,6 +366,38 @@
     <div class="formwarning" id="warning_maploadrenderissues">
         <span class="warninglabel">Attenzione</span>: alcuni oggetti della mappa hanno causato anomalie durante il processo di rendering.
     </div>
+
+
+</div>
+
+    <div id="form_importmodel" title="Integrazione modelli">
+
+        <div class="formbriefing">
+            Selezionare un modello o una mappa presente nel sistema.<br>
+            È possibile selezionare solo mappe e modelli con la stessa geometria di base della mappa in uso.
+        </div>
+
+    <div class="formbriefing">Selezionare un modello o una mappa.</div>
+    <select id="models_available">
+        <optgroup label="Modelli">
+            {% for model_id, modeldata in rawmodels.items %}
+                {% if modeldata.objtype == maptype %}
+                    <option value=".mdl/{{ model_id }}">{{ model_id }}</option>
+                {% endif %}
+            {% endfor %}
+        </optgroup>
+        {% for cmeta_id, maplist in proxy_maps.items %}
+            <optgroup label="{% if cmeta_id == '.st' %}Mappe in lavorazione{% else %}Mappe in archivio{% endif %}">
+            {% for cmap_id, mapdata in maplist.items %}
+                {% if mapdata.type == maptype %}
+                    {% if cmeta_id != meta_id or cmap_id != map_id %}
+                        <option value="{{ cmeta_id }}/{{ cmap_id }}">{{ cmap_id }}</option>
+                    {% endif %}
+                {% endif  %}
+            {% endfor %}
+            </optgroup>
+        {% endfor %}
+    </select>
 
 
 </div>
@@ -446,11 +478,11 @@
 
             {% if mode == 'full' or mode == 'mapedit' %}
                 <img src="{{ STATIC_URL }}resource/visng_menu_integratemap.png" class="imgbutton menuopt" id="menu_integratemap" title="Combina una mappa">
+                <img src="{{ STATIC_URL }}resource/visng_menu_integratemodel.png" class="imgbutton menuopt" id="menu_integratemodel" title="Combina un modello">
             {% endif %}
 
-            <!-- hidden for demo purposes as of 29-10-2012
-            <img src="{{ STATIC_URL }}resource/visng_menu_integratemodel.png" class="imgbutton menuopt" id="menu_integratemodel" title="Combina un modello">
-            -->
+
+
 
             <img src="{{ STATIC_URL }}resource/visng_menu_savemap.png" class="imgbutton menuopt" id="menu_savemap" title="Salva">
 

@@ -98,7 +98,7 @@ def getProxyContacts (request, **kwargs):
 
 	return HttpResponse(json.dumps(contactdata), mimetype="application/json")
 
-
+@csrf_exempt
 def proxy_getmapmodelng (request, **kwargs):
 	"""
 	Gets the model info from a map. Note that this applies ONLY to a standalone instance

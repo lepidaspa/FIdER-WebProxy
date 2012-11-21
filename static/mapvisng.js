@@ -983,6 +983,23 @@ function initForms()
         }
     });
 
+    $("#form_importmodel").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: true,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Carica": {
+                id : "form_shadow_confirmload",
+                text: "Integra",
+                click: tryIntegrateModel
+            }
+        }
+    });
 
     $("#form_filter").dialog({
         autoOpen: false,
@@ -1183,6 +1200,8 @@ function funcIntegrateModel ()
 {
     //TODO: remove, superceded by loading a featureless modeled map
     //console.log("opening model integration dialog");
+
+    $("#form_importmodel").dialog("open");
 }
 
 function funcSaveMap ()
@@ -1418,7 +1437,10 @@ function layerToJSON(layer, mapid)
 
 
         geom = JSON.parse(gjformat.write(layer.features[fid].geometry));
-        props = layer.features[fid].attributes;
+
+        // NOTE: changed since the user can delete stuff via form even if the data is still in the map
+        //props = layer.features[fid].attributes;
+        props = [];
 
         for (var propname in modeldata['properties'])
         {
@@ -1530,12 +1552,161 @@ function loadRasterLayer()
 
 
 
-
-
     mapview.addLayer(rasterlayer);
 
     mapview.setLayerIndex(rasterlayer, 0);
 
+}
+
+function tryIntegrateModel()
+{
+
+    console.log("Trying to integrate model");
+
+    $("#form_importmodel").dialog("close");
+
+    var modreq = $("#models_available").val().split("/");
+
+    var model_area = modreq[0];
+    var model_id = modreq[1];
+
+    console.log(model_area+"/"+model_id);
+
+    if (model_area == ".mdl")
+    {
+        // Integrate at once, we already have the data stored
+        integrateMapModel(models[model_id]);
+    }
+    else
+    {
+        // load and then integrate
+
+        var urlstring = '/fwp/getmodelng/'+proxy_id+'/'+model_area+'/'+model_id+'/';
+
+        $("#progress_mapload").dialog("open");
+        $("#progress_mapload .formwarning").hide();
+        $("#progress_mapload .progressinfo").hide();
+        $("#progspinner_mapload").show();
+        $("#progress_stage_maploading").show();
+
+        $.ajax ({
+            url:    urlstring,
+            async:  true,
+            success:    function (data)
+            {
+
+                $("#progress_mapload").dialog("close");
+                integrateMapModel(data);
+
+            },
+            error:  function ()
+            {
+
+                $("#progress_mapload .progressinfo").hide();
+                $("#progspinner_mapload").hide();
+                $("#maploadfinished_fail").show();
+                $("#btn_loadprogress_close").show();
+            }
+        });
+    }
+
+}
+
+function reintegrateModel(mapdata)
+{
+
+    console.log("Integrating map model from data");
+
+    //extracts the model from a map and integrates with the current one
+    var proplist;
+
+    if (mapdata.hasOwnProperty('model'))
+    {
+        proplist = mapdata['model']['properties'];
+    }
+
+
+    for (var cfeature in mapdata['features'])
+    {
+
+        for (var propname in cfeature['properties'])
+        {
+
+            if (proplist.indexOf(propname)==-1 && cfeature['properties'][propname] != "")
+            {
+                proplist[propname] = cfeature['properties'][propname];
+            }
+        }
+
+    }
+
+    var newmodel = {'properties': proplist};
+    integrateMapModel(newmodel);
+
+
+    console.log("End of reintegration code");
+
+}
+
+function integrateMapModel(newdata)
+{
+
+    console.log("New model to integrate:");
+    console.log(newdata);
+
+    console.log("Integrating into model:");
+    console.log(modeldata);
+
+    // the model is associated with this map only by name too
+    modeldata['name'] = map_id;
+
+    for (var propname in newdata['properties'])
+    {
+
+        // does this have suggested values?
+        var hasvalues = $.isArray(newdata['properties'][propname]);
+
+        if (!modeldata['properties'].hasOwnProperty(propname))
+        {
+            //checking to see if we have to add the property at all
+            modeldata['properties'][propname] = newdata['properties'][propname];
+        }
+        else
+        {
+
+            if (hasvalues)
+            {
+                // field exists but we could have preselected values to add
+                if (!$.isArray(modeldata['properties'][propname]))
+                {
+                    modeldata['properties'][propname] = newdata['properties'][propname];
+                }
+                else
+                {
+                    for (var i = 0; i < newdata['properties'][propname].length; i++)
+                    {
+                        var cval = newdata['properties'][propname][i];
+                        if (modeldata['properties'][propname].indexOf(cval) == -1)
+                        {
+                            modeldata['properties'][propname].push(cval);
+                        }
+                    }
+                }
+            }
+
+        }
+
+
+    }
+
+    initFiltersForm();
+
+    if ((!firstload) && $("#modelview").is(":visible"))
+    {
+        console.log("Seeing the old model after integration, and we are not on first load");
+
+        funcShowModel();
+    }
 }
 
 function tryLoadMap ()
@@ -1719,8 +1890,8 @@ function applyNewMap(newdata, textStatus, jqXHR)
 
     }
 
-    // TODO: workaround to avoid full render
     renderGeoJSONCollection(newdata, vislayer);
+    reintegrateModel(newdata);
     autoZoom(mapview);
 
     $("#progress_stage_rendering").hide();
@@ -1922,6 +2093,8 @@ function reportFailedDownload (xhr,err)
 function initModelWidget()
 {
 
+
+
     var base = $("#modelstruct tbody");
     for (var propname in modeldata['properties'])
     {
@@ -2116,6 +2289,9 @@ function updateModelPropertyValue()
 
 function rebuildModelFromForm()
 {
+
+    // modified models always take the name of the map itself
+    modeldata['name'] = map_id;
 
     // rebuilds the property section of the model according to the contents of the model form
 
