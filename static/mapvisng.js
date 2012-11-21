@@ -152,7 +152,6 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
     initMenu();
     initForms();
 
-    // TODO: move inside the clause and avoid rendering
     initMapWidget();
     if (vismode != 'modeledit')
     {
@@ -189,7 +188,6 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
     $("#model_newpropname").live('change keyup mouseup', toggleAddModelProp);
     $("#autovalueselector").live('change', prefillPropertyValue);
     $("#autovalueselector").live('focusout', removeValueSelector);
-    //TODO: better focus handling to remove autovalueselector
 
     $(".button_modeladdpropvalue").live('click', addModelPropValue);
     $(".button_modelremovepropvalue").live('click', removeModelPropValue);
@@ -1198,7 +1196,6 @@ function funcIntegrateMap ()
 
 function funcIntegrateModel ()
 {
-    //TODO: remove, superceded by loading a featureless modeled map
     //console.log("opening model integration dialog");
 
     $("#form_importmodel").dialog("open");
@@ -1242,8 +1239,6 @@ function funcSaveMap ()
 
 function checkSaveMapOverwrite()
 {
-    //TODO: placeholder, implement
-    // put real check
 
     $("#warning_mapsaveoverwrite").hide();
 }
@@ -1330,7 +1325,6 @@ function trySaveMap ()
 
 function confirmSave (data, textStatus, jqXHR)
 {
-    // TODO: PLACEHOLDER, IMPLEMENT
 
     //console.log("Reporting successful save callback")
     //console.log(data);
@@ -1359,7 +1353,6 @@ function confirmSave (data, textStatus, jqXHR)
 
 function reportFailedSave (err, xhr)
 {
-    // TODO: PLACEHOLDER, IMPLEMENT
     $("#progspinner_datasave").hide();
 
     $("#progress_datasave .progressinfo").hide();
@@ -1776,8 +1769,6 @@ function verifyUploadToStandalone (data, textStatus, jqXHR) {
         var mapname =  $("#newmap_load").val().split("/")[1].replace(".zip","");
         getUploadedMap(".st", mapname);
 
-        // TODO: add to list of files on the file picker for maps
-
     }
     else
     {
@@ -2085,7 +2076,6 @@ function reportFailedDownload (xhr,err)
     }
     $("#btn_loadprogress_close").show();
 
-    // TODO: implement closing button on the dialog as BACK action of the browser in case we are in single-map mode (MAPEDIT, MAPVIEW)
 
 }
 
@@ -2190,8 +2180,6 @@ function addModelProp ()
         modeldata.properties[newpropname] = "string";
     }
 
-    // in this case we add to the model and re-render the whole table
-    // TODO: consider reversing the process
     funcShowModel();
 
     initFiltersForm();
@@ -2776,7 +2764,6 @@ function openValueSelector()
 
     var propvalues = [];
 
-    // TODO: get values from model
 
     // getting from map
     for (var fid in vislayer['features'])
@@ -2861,8 +2848,6 @@ function setPropertyValue()
 function checkReplicationChance()
 {
     // checks if replication buttons can be active (i.e. if there is a filter to >1 object
-    // TODO: implement, placeholder
-    // currently off by default
     $(".button_replicatevalue").prop('disable', filterlayer.features.length == 0);
 }
 
@@ -3051,7 +3036,6 @@ function verifyMapLoadSelection ()
         else
         {
             var fullname = splitstring[0];
-            //TODO: add warning for overwrite
             $("#form_newfile_confirmload").prop('disabled', false);
         }
     }

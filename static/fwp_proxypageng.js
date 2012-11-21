@@ -69,7 +69,6 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     populateMapWidget();
 
 
-    // TODO: solve flicker when moving between table cells
     $(".metainfo").on('hover', highlightMeta);
     $(".mapcard").on('hover', highlightMap);
     $(".metainfo").on('mouseleave', clearHighlights);
@@ -373,8 +372,6 @@ function switchMapVis()
     if (switchstate)
     {
 
-        //TODO: warning form for heavy data that leads to vismap or unchecks
-
         // check if the map layer already exists, re-enable it
 
         // load and show the requested map
@@ -383,8 +380,7 @@ function switchMapVis()
     }
     else
     {
-        //TODO: placeholder, implement
-        // remove the data from the map
+       // remove the data from the map
 
         // note: may simply make existing layer invisible
     }
@@ -449,7 +445,6 @@ function renderGeoJSONCanvas(jsondata, layer)
 
 function reportFailedVisLoad()
 {
-    //todo: placeholder, implement
 
     $("#mapvis_"+cmeta_id+"-"+cmap_id).prop('checked', false);
 
@@ -1278,7 +1273,6 @@ function isValidUrl (candidate)
     {
         try
         {
-            // TODO: implement more thorough check
             var hostname = candidate.split("//")[1];
             if (hostname.length > 0)
             {

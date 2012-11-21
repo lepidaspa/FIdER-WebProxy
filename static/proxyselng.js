@@ -703,7 +703,6 @@ function resetPage()
 
 function initCreateReadWrite ()
 {
-    //TODO: placeholder, implement
     $(".tablemap").empty();
     $("#proxycreate_readwrite").dialog("open");
     newproxymap = initMiniMap("map_createreadwrite");
@@ -1417,8 +1416,6 @@ function cleanGeoloc()
     var formid = $(this).closest(".creationdialog").attr("id");
     console.log ("Cleaning geoloc bbox for "+formid);
     var base = $(this).closest(".creatormask");
-
-    //TODO: placeholder, implement
 
     var cmap;
     var searchbox;
