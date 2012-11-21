@@ -104,7 +104,8 @@ urlpatterns = patterns('',
 	url(r'^fwp/getng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/(?P<getflag>\w*)/$', fwpviews.proxy_getmapng),
 	url(r'^fwp/getng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getmapng),
 	url(r'^fwp/getmodelng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getmapmodelng),
-	url(r'^fwp/savecontactsng/(?P<proxy_id>\w*)/$', fwpviews.proxy_saveContacts)
+	url(r'^fwp/savecontactsng/(?P<proxy_id>\w*)/$', fwpviews.proxy_saveContacts),
+	url(r'^fwp/getcontacts/(?P<proxy_id>\w*)/$', fwpviews.proxy_getcontacts)
 
 )
 

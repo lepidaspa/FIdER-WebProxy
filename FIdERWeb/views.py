@@ -99,6 +99,20 @@ def getProxyContacts (request, **kwargs):
 	return HttpResponse(json.dumps(contactdata), mimetype="application/json")
 
 @csrf_exempt
+def proxy_getcontacts (request, **kwargs):
+	"""
+	Returns the contacts for a specific proxy in json form
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	contactdata = json.load(open(os.path.join(proxyconf.baseproxypath, proxy_id, "conf", "contacts.json")))
+
+	return HttpResponse(json.dumps(contactdata), mimetype="application/json")
+
+@csrf_exempt
 def proxy_getmapmodelng (request, **kwargs):
 	"""
 	Gets the model info from a map. Note that this applies ONLY to a standalone instance
