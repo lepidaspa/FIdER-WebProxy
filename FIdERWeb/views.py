@@ -196,7 +196,7 @@ def proxy_getmapng (request, **kwargs):
 
 	if proxy_type == 'query':
 		#query data is received via query and ALWAYS federated, cannot do without conv table
-		pass
+		jsondata = proxy_query.fullQueryOnMap(proxy_id, meta_id, map_id)
 	elif proxy_type == 'local':
 		# getting from map editor we don NOT have a difference between federated and not
 		# but we still have different locations for data on archive and editor

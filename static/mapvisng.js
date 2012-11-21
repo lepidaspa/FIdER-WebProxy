@@ -305,7 +305,7 @@ function tryExportView()
         {
 
             $("#progress_imagerender").dialog("close");
-            $("#mapdloadlinkpng").empty().append("L'operazione di rendering può richiedere tempi elevati.<br>In caso di interruzione da parte del browser, premere il pulsante Continua.");
+            $("#mapdloadlinkpng").empty().append("L'operazione di rendering può richiedere tempi elevati.<br>In caso di interruzione da parte del browser, confermare l'intenzione di attendere.");
             $("#btn_maptoimage_close").hide();
             $("#maptoimage").dialog("open");
 
@@ -406,16 +406,19 @@ function renderVectorLayerToCanvas (layerfrom, destcanvas)
         }
         */
 
-        var geom = layerfrom.features[f].geometry;
 
+
+
+
+        var cfeature = layerfrom.features[f];
         if (cfeature.hasOwnProperty('_sketch') && cfeature._sketch === true)
         {
             continue;
         }
 
-
-            if (layerfrom.features[f].onScreen())
+        if (cfeature.onScreen())
         {
+            var geom = layerfrom.features[f].geometry;
             renderlayer.addFeatures(new OpenLayers.Feature.Vector(geom));
             context.drawImage(element, offsetX, offsetY);
             renderlayer.destroyFeatures();

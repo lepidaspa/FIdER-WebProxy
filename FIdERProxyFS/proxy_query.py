@@ -223,8 +223,13 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 	if wherestring != "":
 		wherestring = " WHERE "+wherestring
 
-	limitstring = " LIMIT %s" % jsonmessage['maxitems']
-	offsetstring = " OFFSET %s" % jsonmessage['offset']
+	limitstring = ""
+	offsetstring = ""
+	if jsonmessage['maxitems'] != 0:
+		limitstring = " LIMIT %s" % jsonmessage['maxitems']
+	if jsonmessage['offset'] != 0:
+		offsetstring = " OFFSET %s" % jsonmessage['offset']
+
 
 	querystring = 'SELECT '+selectcols+' FROM '+schema_id+view_id + wherestring + limitstring + offsetstring + ";"
 
@@ -260,38 +265,80 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	print "Quick conv table is %s " % fieldvalues
 
+	errors = 0
 	for row in results:
 
-		data = {}
+		try:
+			data = {}
 
-		data['type'] = "Feature"
-		data['geometry'] = json.loads(row[fields.index('geometry')])
+			data['type'] = "Feature"
+			data['geometry'] = json.loads(row[fields.index('geometry')])
 
-		#print "GEOM: %s " % data['geometry']
+			#print "GEOM: %s " % data['geometry']
 
-		properties = {}
+			properties = {}
 
-		for key in forced.keys():
-			properties[key] = forced[key]['']
+			for key in forced.keys():
+				properties[key] = forced[key]['']
 
-		for field in fields:
-			if field != 'geometry':
-				clientvalue = row[fields.index(field)]
-				if field in fieldvalues.keys() and clientvalue in fieldvalues[field]:
-					properties[field] = fieldvalues[field][clientvalue]
-				else:
-					properties[field] = clientvalue
+			for field in fields:
+				if field != 'geometry':
+					clientvalue = row[fields.index(field)]
+					if field in fieldvalues.keys() and clientvalue in fieldvalues[field]:
+						properties[field] = fieldvalues[field][clientvalue]
+					else:
+						properties[field] = clientvalue
 
-		data['properties'] = properties
+			data['properties'] = properties
 
-		collection.append(data)
+			collection.append(data)
+
+		except Exception as ex:
+			errors += 1
+
+	print "Found %s elements with %s errors" % (len(collection), errors)
 
 
+	return collection
 
-	print "Found "+str(len(collection))+" elements"
 
-	print str(collection)
+def fullQueryOnMap (proxy_id, meta_id, map_id):
+	"""
+	Makes a non parametrised query on the map and returns a FeatureCollection
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:return:
+	"""
 
+	collection = {
+	"type": "FeatureCollection",
+	"features" : [],
+	"properties":
+		{
+			"proxy": proxy_id,
+			"meta": meta_id,
+			"map": map_id,
+			"errors": []
+		}
+	}
+
+
+	jsondict = {
+		'query' : {
+			'BB': [],
+			'inventory': [],
+			'time': ''
+			},
+		'maxitems': 0,
+		'offset': 0
+	}
+
+	featurelist = makeSelectFromJson(proxy_id, meta_id, map_id, jsondict)
+
+	print "Query result for map %s" % map_id
+
+	collection['features'] = featurelist
 
 	return collection
 
