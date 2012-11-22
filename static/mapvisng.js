@@ -175,6 +175,7 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
         else
         {
             console.log("Creating new map from model "+map_id);
+            firstload = false;
             createNewMap(map_id);
         }
 
