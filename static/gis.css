@@ -156,16 +156,16 @@ Graphics replacemente CSS for OpenLayers
 
 .olControlEditingToolbar .olLabsControlRebaseItemInactive
 {
-    background-image: url("/static/gis-0.1/mActionZoomToLayer-inactive.png");
+    background-image: url("/static/resource/visng_controls_home_inactive.png");
 }
 
 .olControlEditingToolbar .olLabsControlRebaseItemActive
 {
-    background-image: url("/static/gis-0.1/mActionZoomToLayer.png");
+    background-image: url("/static/resource/visng_controls_home_active.png");
     border-bottom:      1px solid #000000;
 }
 
 .olControlEditingToolbar .olLabsControlRebaseItemInactive:hover
 {
-    background-image: url("/static/gis-0.1/mActionZoomToLayer.png");
+    background-image: url("/static/resource/visng_controls_home_active.png");
 }
