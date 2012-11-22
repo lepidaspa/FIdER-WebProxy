@@ -352,3 +352,13 @@ tr, tr *
     border: 1px solid #ff8800;
 
 }
+
+#mapdesctable td
+{
+    margin-right:   2em;
+}
+
+.mapdesc_info
+{
+    font-weight:        normal;
+}

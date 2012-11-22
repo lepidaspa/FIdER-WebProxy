@@ -1309,6 +1309,10 @@ function trySaveMap ()
 
     var urlstring = "/fwst/saveng/"+proxy_id+"/"+mapmeta+"/"+mapname+"/";
 
+    console.log("Sending ajax data for map save");
+    console.log(mapjson);
+
+
     $.ajax (
         {
             url:    urlstring,
@@ -1318,7 +1322,16 @@ function trySaveMap ()
             },
             async:  true,
             type:   'POST',
-            success: confirmSave,
+            success: function(data, textStatus, jqXHR)
+            {
+                if (mapmeta == '.st')
+                {
+                    map_id = mapname;
+                    $("#mapdesc_mapname").empty().append(map_id);
+                }
+                confirmSave(data, textStatus, jqXHR);
+
+            },
             error: reportFailedSave
         }
     );
@@ -1360,7 +1373,7 @@ function reportFailedSave (err, xhr)
 
     $("#progress_datasave .progressinfo").hide();
     $("#datasave_fail").show();
-    $("#datasavefail_explain").append(err);
+    $("#datasavefail_explain").empty().append(err);
     $("#datasavefail_explain").show();
     $("#btn_saveprogress_close").show();
 
@@ -1436,7 +1449,7 @@ function layerToJSON(layer, mapid)
 
         // NOTE: changed since the user can delete stuff via form even if the data is still in the map
         //props = layer.features[fid].attributes;
-        props = [];
+        props = {};
 
         for (var propname in modeldata['properties'])
         {
@@ -1907,6 +1920,7 @@ function applyNewMap(newdata, textStatus, jqXHR)
 
     initFiltersForm();
 
+    $("#mapdesc_mapfeatures").empty().append(vislayer.features.length);
 
 }
 
@@ -2598,6 +2612,8 @@ function setMapControlsEdit()
     vislayer.events.register('featureselected', mapview, renderFeatureCard);
     vislayer.events.register('featureunselected', mapview, freeSelection);
     vislayer.events.register('featuremodified', mapview, realignFilter);
+    vislayer.events.register('featureadded', mapview, freeSelection);
+
 }
 
 
@@ -2861,6 +2877,19 @@ function freeSelection()
     $("#measuredetails").hide();
     $("#featuredesc tbody").empty();
     $("#featurecard").hide();
+
+    try
+    {
+        console.log("Map now has "+vislayer.features.length+" features");
+        $("#mapdesc_mapfeatures").empty().append(vislayer.features.length);
+    }
+    catch (err)
+    {
+        console.log("Could not rewrite map stats");
+        console.log(err);
+    }
+
+
 
 }
 

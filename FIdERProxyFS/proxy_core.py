@@ -820,7 +820,6 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		print "****>"+str(datasource)
 	except Exception as ex:
 		print "ERROR during OGR parse on %s: %s" % (path_shape, ex)
-		#TODO: better/proper debug
 		raise
 
 

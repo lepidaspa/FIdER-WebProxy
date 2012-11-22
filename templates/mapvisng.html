@@ -70,15 +70,53 @@
 
     <!-- map details, temporary -->
     <div id="mapdetails">
-    {% if mode == 'mapview' or mode == 'mapedit' or model == 'modeledit' %}
-        <span class="proxytitle">{% if meta_id == ".st" %}Area di lavorazione{% else %}{% if meta_id == ".create" %}Nuova mappa{% else %}{{ meta_id }}{% endif %}{% endif %}:
-            {% if meta_id == ".create" %}
-                {% for modelid, model in  rawmodels.items %}
-                    {% if modelid == map_id %}
-                        {{ model.name }}
+    {% if mode == 'mapview' or mode == 'mapedit' or mode == 'modeledit' %}
+
+
+        <table id="mapdesctable">
+            <tr>
+                <td class="mapdesc_label">
+                    {% if proxy_type == 'local' %}
+                        Area
+                        {% else %}
+                        Catalogo
                     {% endif %}
-                {% endfor %}
-            {% else %}{{ map_id }}{% endif %}</span>
+                </td>
+                <td class="mapdesc_info">
+                    {% if meta_id == '.st' %}
+                        Area di lavorazione
+                        {% else %}
+                    {{ meta_id }}{% endif %}</td>
+            </tr>
+            <tr>
+                <td class="mapdesc_label">
+                    {% if proxy_type == 'query' %}
+                        Connessione
+                        {% else %}
+                        {% if meta_id == '.create' %}Nuova mappa{% else %}Mappa{% endif %}
+                    {% endif %}
+                </td>
+                <td class="mapdesc_info" id="mapdesc_mapname">{% if meta_id == ".create" %}
+                    {% for modelid, model in  rawmodels.items %}
+                        {% if modelid == map_id %}
+                            {{ model.name }}
+                        {% endif %}
+                    {% endfor %}
+                {% else %}{{ map_id }}{% endif %}</td>
+            </tr>
+            <tr>
+                <td class="mapdesc_label">
+                    {% if maptype == 'LineString' %}
+                        Tratte
+                        {% else %}
+                        Punti
+                        {% endif %}
+                </td>
+                <td class="mapdesc_info" id="mapdesc_mapfeatures"></td>
+            </tr>
+
+        </table>
+
     {% endif %}
     </div>
 

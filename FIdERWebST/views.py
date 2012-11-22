@@ -530,6 +530,7 @@ def saveVisMap (request, **kwargs):
 			print "Rebuilding data locally"
 			proxy_core.replicateShapeData(proxy_core.rebuildShape(proxy_id, meta_id, map_id, False), proxy_id, meta_id, map_id, False)
 
+
 			print "Rebuilding data on linker"
 			destproxy = proxy_core.findLinkedBy(proxy_id)
 			if destproxy is not None:
