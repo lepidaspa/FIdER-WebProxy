@@ -1664,12 +1664,6 @@ def proxy_read_full (request, **kwargs):
 
 """
 def readFederatedFull (request, **kwargs):
-	"""
-
-	:param request:
-	:param kwargs:
-	:return:
-	"""
 
 	jsondata = {}
 
