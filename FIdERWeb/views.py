@@ -1639,9 +1639,16 @@ def proxy_read_full (request, **kwargs):
 	:return:
 	"""
 
+	#semi-superseded by read federated full
+
 	read_result = {}
 
 	proxy_id = kwargs['proxy_id']
+
+	#TODO: clean up and extend the rebuild to all data transfer mode
+	print "DJANGO: performing full rebuild of proxy %s for read " % proxy_id
+
+	proxy_core.rebuildAllData(proxy_id)
 
 	print "DJANGO: performing full read of proxy %s " % proxy_id
 
@@ -1654,6 +1661,27 @@ def proxy_read_full (request, **kwargs):
 
 
 	return HttpResponse(read_result, mimetype="application/json")
+
+"""
+def readFederatedFull (request, **kwargs):
+	"""
+
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	jsondata = {}
+
+	proxy_id = kwargs['proxy_id']
+
+	#getting the list of metas and maps
+
+
+
+	# getting FED data, converted to json WITH translation
+	jsondata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, True)
+"""
 
 
 @csrf_exempt
