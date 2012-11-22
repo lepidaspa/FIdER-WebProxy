@@ -513,7 +513,7 @@ def handleReadMeta (proxy_id, meta_id):
 			fullmapjson = convertShapeFileToJson(proxy_id, meta_id, map_id, True)
 			meta_json += fullmapjson['features']
 		except:
-			raise RuntimeProxyException ("Could not access map data %s for meta %s on proxy %s" % (map_id, meta_id, proxy_id))
+			print ("Could not access map data %s for meta %s on proxy %s" % (map_id, meta_id, proxy_id))
 
 	return meta_json
 
@@ -534,7 +534,10 @@ def handleReadFull (proxy_id):
 	meta_dict = {}
 	for meta_id in buildReadList(proxy_id):
 		#meta_dict [meta_id] = locker.performLocked(assembleMetaJson, proxy_id, meta_id)
-		meta_dict[meta_id] = locker.performLocked(handleReadMeta, proxy_id, meta_id)
+		try:
+			meta_dict[meta_id] = locker.performLocked(handleReadMeta, proxy_id, meta_id)
+		except RuntimeProxyException as ex:
+			print "Exception encountered: %s" % ex.message
 
 	print "Read performed"
 

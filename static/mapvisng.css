@@ -81,6 +81,7 @@
 
     padding:        0 8px 8px 8px;
     border-top:       1px solid #ff8800;
+    background-color:   #cccccc;
 
 }
 
@@ -362,3 +363,4 @@ tr, tr *
 {
     font-weight:        normal;
 }
+

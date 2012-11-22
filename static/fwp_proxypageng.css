@@ -81,6 +81,8 @@ td
     right:          0;
 
     padding:        0 8px 8px 8px;
+
+    background-color:   #cccccc;
 }
 
 .formbriefing, .formwarning, #uploadfail_explain, .progressinfo

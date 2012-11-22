@@ -1543,21 +1543,19 @@ function loadRasterLayer()
 
     //var wmsidx = mapview.layers.indexOf(rasterlayer);
 
-    var testmap = 'http://eusoils.jrc.ec.europa.eu/wrb/wms_Primary.asp?&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG:3035&BBOX=1988372,1400000,6411627,5400000&FORMAT=image/png&WIDTH=1200&HEIGHT=900';
-    var testlayer = 'PEAT';
-
+    //var testmap = 'http://eusoils.jrc.ec.europa.eu/wrb/wms_Primary.asp?&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG:3035&BBOX=1988372,1400000,6411627,5400000&FORMAT=image/png&WIDTH=1200&HEIGHT=900';
+    //var testlayer = 'PEAT';
+    //rasterlayer = new OpenLayers.Layer.WMS( "Cartografia esterna", testmap, {layers: testlayer, transparent: true} );
 
     //console.log("Replacing WMS layer in position "+wmsidx);
 
-    /*
+
     rasterlayer = new OpenLayers.Layer.WMS( "Boston",
         "http://boston.freemap.in/cgi-bin/mapserv?",
-        {map: '/www/freemap.in/boston/map/gmaps.map', layers: 'border,water,roads', format: 'png', 'transparent': false});
-        */
+        {map: '/www/freemap.in/boston/map/gmaps.map', layers: 'border,water,roads', 'transparent': true});
 
-    rasterlayer = new OpenLayers.Layer.WMS( "Cartografia esterna",
-        testmap, {layers: testlayer} );
-    rasterlayer.isBaseLayer = false;
+
+
 
 
 
