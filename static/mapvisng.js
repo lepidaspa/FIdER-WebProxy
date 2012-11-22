@@ -2612,7 +2612,7 @@ function setMapControlsEdit()
     vislayer.events.register('featureselected', mapview, renderFeatureCard);
     vislayer.events.register('featureunselected', mapview, freeSelection);
     vislayer.events.register('featuremodified', mapview, realignFilter);
-    vislayer.events.register('featureadded', mapview, freeSelection);
+    vislayer.events.register('featureadded', mapview, addFeatureCB);
 
 }
 
@@ -2870,6 +2870,16 @@ function checkReplicationChance()
     $(".button_replicatevalue").prop('disable', filterlayer.features.length == 0);
 }
 
+function addFeatureCB()
+{
+    // wrapper to avoid heavy loops when loading a big map
+
+    if (!firstload)
+    {
+        freeSelection();
+    }
+}
+
 function freeSelection()
 {
     $("#featuredetails").empty();
@@ -2880,8 +2890,14 @@ function freeSelection()
 
     try
     {
-        console.log("Map now has "+vislayer.features.length+" features");
-        $("#mapdesc_mapfeatures").empty().append(vislayer.features.length);
+
+            var realfeatures = ($.grep(vislayer.features, function (a) { return !a.hasOwnProperty("_sketch"); })).length;
+            //console.log("Map now has "+realfeatures+" features");
+
+            $("#mapdesc_mapfeatures").empty().append(realfeatures);
+
+
+
     }
     catch (err)
     {
