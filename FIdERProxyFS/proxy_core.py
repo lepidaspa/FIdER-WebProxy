@@ -493,6 +493,31 @@ def buildReadList (proxy_id, timestamp=None):
 
 	return metalist
 
+
+def handleReadMeta (proxy_id, meta_id):
+	"""
+	Same as assembleMetaJson but with real-time rebuild
+	:param proxy_id:
+	:param meta_id:
+	:return:
+	"""
+
+	meta_json = []
+
+	metadir = os.path.join (conf.baseproxypath, proxy_id, conf.path_mirror, meta_id)
+
+	filelist = os.listdir(metadir)
+
+	for map_id in filelist:
+		try:
+			fullmapjson = convertShapeFileToJson(proxy_id, meta_id, map_id, True)
+			meta_json += fullmapjson['features']
+		except:
+			raise RuntimeProxyException ("Could not access map data %s for meta %s on proxy %s" % (map_id, meta_id, proxy_id))
+
+	return meta_json
+
+
 def handleReadFull (proxy_id):
 	"""
 	Reads everything in the specified proxy and returns it as a json message
@@ -508,7 +533,8 @@ def handleReadFull (proxy_id):
 
 	meta_dict = {}
 	for meta_id in buildReadList(proxy_id):
-		meta_dict [meta_id] = locker.performLocked(assembleMetaJson, proxy_id, meta_id)
+		#meta_dict [meta_id] = locker.performLocked(assembleMetaJson, proxy_id, meta_id)
+		meta_dict[meta_id] = locker.performLocked(handleReadMeta, proxy_id, meta_id)
 
 	print "Read performed"
 
