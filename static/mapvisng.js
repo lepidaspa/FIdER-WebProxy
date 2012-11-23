@@ -57,7 +57,8 @@ var menufunctions = {
     'menu_showmodel': funcShowModel,
     'menu_filter': funcCreateFilter,
     'menu_dloadimage': tryExportView,
-    'menu_dloadmapdata': tryExportMapData
+    'menu_dloadmapdata': tryExportMapData,
+    'menu_loadimage': initAddImageLayerForm
 };
 
 // map controls
@@ -107,7 +108,6 @@ var vpCropHeight;
 var limitHeight;
 var limitWidth;
 var sizeMultip;
-
 
 
 
@@ -869,7 +869,7 @@ function geosearch(locationdesc)
 function tryUnselectMode (event)
 {
 
-    console.log(event);
+    //console.log(event);
 
     if (event.keyCode == keycode_ESC)
     {
@@ -984,6 +984,25 @@ function initForms()
 
         }
     });
+
+    $("#form_addimagelayer").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: true,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Carica": {
+                id: "btn_addimagelayer",
+                text: "Carica",
+                click: loadImageLayer
+            }
+        }
+    });
+    $(".field_imagelayer").bind('change keyup mouseup', checkImageLayerSetup);
 
     $("#form_importmodel").dialog({
         autoOpen: false,
@@ -1529,7 +1548,69 @@ function tryLoadShadow()
 }
 
 
-function loadRasterLayer()
+function initAddImageLayerForm()
+{
+    $("#form_addimagelayer").dialog('open');
+    checkImageLayerSetup();
+}
+
+function checkImageLayerSetup()
+{
+
+    // checks if the values added in the image layer form can be used
+
+    var validated = true;
+
+    var bboxfields = $(".field_imagelayer.mapcoords");
+    for (var i = 0; i < bboxfields.length; i++)
+    {
+        var cval = parseFloat($(bboxfields[i]).val());
+
+        var coordmin;
+        var coordmax;
+        if (bboxfields[i].id == 'addimagelayer_bbox_east' || bboxfields[i].id == 'addimagelayer_bbox_west')
+        {
+            coordmin = -180;
+            coordmax = 180;
+        }
+        else
+        {
+            coordmin = -90;
+            coordmax = 90;
+        }
+
+
+        if (isNaN(cval) || cval < coordmin || cval > coordmax)
+        {
+            validated = false;
+            console.log("Non valid bbox")
+        }
+    }
+
+    var imageurl = $("#addimagelayer_from").val();
+    var hasvalidurl = false;
+    var prefix = ['http://', 'https://'];
+    for (var i = 0; i < prefix.length; i++)
+    {
+        if (imageurl.substr(0,prefix[i].length) == prefix[i])
+        {
+            hasvalidurl = true;
+            console.log("valid url");
+        }
+    }
+    if (!hasvalidurl)
+    {
+        validated = false;
+        console.log("No valid url");
+    }
+
+    $("#btn_addimagelayer").prop('disabled', !validated);
+
+
+
+}
+
+function loadImageLayer()
 {
 
 
@@ -1542,28 +1623,85 @@ function loadRasterLayer()
         // ignore, no raster layer in use
     }
 
-    //var wmsidx = mapview.layers.indexOf(rasterlayer);
 
-    //var testmap = 'http://eusoils.jrc.ec.europa.eu/wrb/wms_Primary.asp?&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG:3035&BBOX=1988372,1400000,6411627,5400000&FORMAT=image/png&WIDTH=1200&HEIGHT=900';
-    //var testlayer = 'PEAT';
-    //rasterlayer = new OpenLayers.Layer.WMS( "Cartografia esterna", testmap, {layers: testlayer, transparent: true} );
+    var alpha;
+    try
+    {
+        alpha = parseFloat($("#addimagelayer_alpha").val());
+    }
+    catch (err)
+    {
+        alpha = 1;
+    }
 
-    //console.log("Replacing WMS layer in position "+wmsidx);
+    var layeroptions = {
+        alwaysInRange: true,
+        isBaseLayer: false,
+        opacity: alpha,
+        displayOutsideMaxExtent: true
+    };
+
+    var bbox=[];
+    var imagebounds;
+    try
+    {
+
+        bbox[0] = $("#addimagelayer_bbox_west").val();
+        bbox[1] = $("#addimagelayer_bbox_south").val();
+        bbox[2] = $("#addimagelayer_bbox_east").val();
+        bbox[3] = $("#addimagelayer_bbox_north").val();
+
+        var bounds_endA = new OpenLayers.LonLat(bbox[0], bbox[1]).transform(new OpenLayers.Projection(proj_WGS84), new OpenLayers.Projection(proj_900913));
+        var bounds_endB = new OpenLayers.LonLat(bbox[2], bbox[3]).transform(new OpenLayers.Projection(proj_WGS84), new OpenLayers.Projection(proj_900913));
+
+        console.log("Setting bounds");
+        console.log(bounds_endA);
+        console.log(bounds_endB);
+
+        imagebounds = new OpenLayers.Bounds(bounds_endA.lon, bounds_endA.lat, bounds_endB.lon, bounds_endB.lat);
+    }
+    catch (err)
+    {
+        imagebounds = mapview.getExtent();
+    }
 
 
-    rasterlayer = new OpenLayers.Layer.WMS( "Boston",
-        "http://boston.freemap.in/cgi-bin/mapserv?",
-        {map: '/www/freemap.in/boston/map/gmaps.map', layers: 'border,water,roads', 'transparent': true});
+    var imageurl = $("#addimagelayer_from").val();
+
+    console.log(imageurl);
+    console.log(imagebounds);
+
+    rasterlayer = new OpenLayers.Layer.Image(
+        'Sfondo aggiuntivo',
+        imageurl,
+        imagebounds,
+        new OpenLayers.Size(1,1),
+        layeroptions
+    );
 
 
 
 
+    /*
+    rasterlayer = new OpenLayers.Layer.Image(
+        'Rasterlayer test',
+        //'http://openlayers.org/dev/examples/data/4_m_citylights_lg.gif',
+        '/static/test4_m_citylights_lg.gif',
+        //mapview.getMaxExtent(),
+        //new OpenLayers.Bounds(11.34506, 44.4932, 11.3466, 44.49),
+        new OpenLayers.Bounds(1239885.8798371, 5532484.7385381, 1277454.6792341,  5553046.2991439),
+        new OpenLayers.Size(1, 1),
+        options
+    );
+    */
 
 
     mapview.addLayer(rasterlayer);
 
     mapview.setLayerIndex(rasterlayer, 0);
 
+    console.log(rasterlayer.div);
+    $("#form_addimagelayer").dialog('close');
 }
 
 function tryIntegrateModel()

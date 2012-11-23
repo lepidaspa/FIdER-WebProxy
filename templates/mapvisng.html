@@ -250,6 +250,40 @@
 
 </div>
 
+<div id="form_addimagelayer" title="Caricamento sfondo">
+
+    <div class="formbriefing">
+        Per caricare uno sfondo è necessario indicare l'indirizzo di una risorsa immagine disponibile su web e le coordinate WGS 84 dell'area di riferimento.<br>
+        È anche possibile specificare il livello di trasparenza.
+    </div>
+
+    <table>
+        <tr>
+            <td>URL immagine</td>
+            <td><input class="field_imagelayer" type="url" id="addimagelayer_from"></td>
+        </tr>
+        <tr>
+            <td>Limiti ovest-est</td>
+            <td><input class="field_imagelayer mapcoords" type="number" id="addimagelayer_bbox_west"><br><input class="field_imagelayer mapcoords" type="number" id="addimagelayer_bbox_east"></td>
+        </tr>
+        <tr>
+            <td>Limiti sud-nord</td>
+            <td><input class="field_imagelayer mapcoords" type="number" id="addimagelayer_bbox_south"><br><input class="field_imagelayer mapcoords" type="number" id="addimagelayer_bbox_north"></td>
+        </tr>
+        <tr>
+            <td>Trasparenza</td>
+            <td><select id="addimagelayer_alpha">
+                <option value="1.0" selected>Nessuna trasparenza</option>
+                <option value="0.6">Immagine molto visible</option>
+                <option value="0.3">Immagine poco visible</option>
+            </select></td>
+        </tr>
+    </table>
+
+
+
+</div>
+
 <div id="form_loadmap" title="Integrazione mappe">
 
     <input type="file" id="uploadfield" accept="application/zip">
@@ -529,6 +563,7 @@
             {% if mode == 'full' or mode == 'mapedit' %}
 
                 <img src="{{ STATIC_URL }}resource/visng_layers.png" class="imgbutton menuopt" id="menu_loadsnapmap" title="Carica un riferimento">
+                <img src="{{ STATIC_URL }}resource/visng_controls_loadimage.png" class="imgbutton menuopt" id="menu_loadimage" title="Carica uno sfondo">
             {% endif %}
 
             {% if mode == 'full' or mode == 'mapedit' %}
