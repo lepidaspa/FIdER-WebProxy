@@ -24,6 +24,12 @@ var defaultLon = 11.1;
 var defaultLat = 44.5;
 var defaultBounds;
 
+var defaultNorth = 47.0920;
+var defaultSouth = 43.73189080;
+var defaultEast = 13.91885250;
+var defaultWest = 6.62672010;
+
+
 var newproxymap;
 var newmetamap;
 // full hard proxy map
@@ -86,8 +92,8 @@ function pageInit(proxylist)
     var pobj_google = new OpenLayers.Projection(proj_900913);
 
     defaultBounds = new OpenLayers.Bounds();
-    defaultBounds.extend(new OpenLayers.LonLat(9.1980988, 43.73086379999999).transform(pobj_wgs84, pobj_google));
-    defaultBounds.extend(new OpenLayers.LonLat(12.7558364, 45.1395245).transform(pobj_wgs84, pobj_google));
+    defaultBounds.extend(new OpenLayers.LonLat(defaultEast, defaultSouth).transform(pobj_wgs84, pobj_google));
+    defaultBounds.extend(new OpenLayers.LonLat(defaultWest, defaultNorth).transform(pobj_wgs84, pobj_google));
 
 
     OpenLayers.Lang.setCode("it");
@@ -171,7 +177,6 @@ function initProxyMap()
     var switcher = new ItaLayerSwitcher();
     proxymap.addControl(switcher);
 
-    //zoomToCenter(proxymap, defaultLon, defaultLat, 8);
     proxymap.zoomToExtent(defaultBounds);
 
 
