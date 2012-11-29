@@ -1679,28 +1679,10 @@ function loadImageLayer()
         layeroptions
     );
 
-
-
-
-    /*
-    rasterlayer = new OpenLayers.Layer.Image(
-        'Rasterlayer test',
-        //'http://openlayers.org/dev/examples/data/4_m_citylights_lg.gif',
-        '/static/test4_m_citylights_lg.gif',
-        //mapview.getMaxExtent(),
-        //new OpenLayers.Bounds(11.34506, 44.4932, 11.3466, 44.49),
-        new OpenLayers.Bounds(1239885.8798371, 5532484.7385381, 1277454.6792341,  5553046.2991439),
-        new OpenLayers.Size(1, 1),
-        options
-    );
-    */
-
-
     mapview.addLayer(rasterlayer);
-
     mapview.setLayerIndex(rasterlayer, 0);
 
-    console.log(rasterlayer.div);
+    //console.log(rasterlayer.div);
     $("#form_addimagelayer").dialog('close');
 }
 

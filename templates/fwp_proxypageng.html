@@ -74,6 +74,7 @@ Gestione dati e cataloghi
             <img class="imgbutton metarecap" id="metarecap_{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
             {% if proxy_type != 'linked' and proxy_type != 'local' and proxy_type != 'query' %}
             <img class="imgbutton newdata new_file" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_newfromfile.png" title="Nuova mappa da file">
+                <img class="imgbutton newdata new_ftp" id="new_ftp_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova mappa da FTP">
             <img class="imgbutton newdata new_wfs" id="new_wfs_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova mappa da WFS">
             {% else %}
                 {% if proxy_type == 'query' %}
@@ -554,7 +555,7 @@ Gestione dati e cataloghi
     </div>
 
     <div class="formbriefing" id="dataremove_details">
-        <!-- filled by script -->
+        {#  filled by script #}
     </div>
 
 </div>
@@ -625,6 +626,31 @@ Gestione dati e cataloghi
         <span class="warninglabel">Attenzione</span>: il file selezionato non è nel formato corretto.
     </div>
 
+
+</div>
+
+
+
+<div id="form_newftp" title="Nuova mappa da FTP">
+
+    <div class="formbriefing">
+        Il sistema accetta dati da servizi FTP in formato Shapefile, GeoJSON e MapInfo.<br>
+        I file della mappa devono essere inseriti in un archivio Zip unico.<br>
+        La mappa caricata deve contenere un solo tipo di oggetto geografico (tratta o punto).
+    </div>
+
+    <table>
+
+        <tr><td>Host</td><td><input class="newftp_param" type="text" id="newremote_ftphost"></tr>
+        <tr><td>Utente</td><td><input type="text" class="newftp_param" id="newremote_ftpusername"></td></tr>
+        <tr><td>Password</td><td><input class="newftp_param" type="password" id="newremote_ftppassword"></td></tr>
+        <tr><td>File</td><td><input class="newftp_param" type="tet" id="newremote_ftppath"></td></tr>
+
+    </table>
+
+    <div class="formwarning" id="warning_ftpoverwrite">
+        <span class="warninglabel">Attenzione</span>: esiste già una mappa con questo nome. Caricare questa fonte sovrascriverà i dati caricati in precedenza.
+    </div>
 
 </div>
 

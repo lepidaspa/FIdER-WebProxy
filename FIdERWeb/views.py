@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+import re
 import shutil
 from django.core.servers.basehttp import FileWrapper
 from io import StringIO
@@ -806,26 +807,80 @@ def proxy_refresh_remote (request, **kwargs):
 		meta_id = item['meta_id']
 		conf_file = item['mapconf']
 		map_id = conf_file[:-4]
+		maptype = conf_file[-3:]
 
 
 		conf_fp = open(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id, conf_file))
 		connect = json.load(conf_fp)
 		conf_fp.close()
 
-		response_wfsupdate = ProxyFS.uploadWFS (proxy_id, meta_id, map_id, connect)
+		if maptype == 'wfs':
+			response_wfsupdate = ProxyFS.uploadWFS (proxy_id, meta_id, map_id, connect)
+			print response_wfsupdate
+			if response_wfsupdate['success'] is True:
+				response_refresh_remote['report']['updated'].append([proxy_id, meta_id, map_id])
+			else:
+				response_refresh_remote['report']['errors'].append([proxy_id, meta_id, map_id])
+		elif maptype == 'ftp':
+			response_ftpupdate = ProxyFS.uploadFTP (proxy_id, meta_id, map_id, connect)
+			print response_ftpupdate
+			if response_wfsupdate['success'] is True:
+				response_refresh_remote['report']['updated'].append([proxy_id, meta_id, map_id])
+			else:
+				response_refresh_remote['report']['errors'].append([proxy_id, meta_id, map_id])
 
-		print response_wfsupdate
-
-		if response_wfsupdate['success'] is True:
-			response_refresh_remote['report']['updated'].append([proxy_id, meta_id, map_id])
-		else:
-			response_refresh_remote['report']['errors'].append([proxy_id, meta_id, map_id])
-
-	response_refresh_remote['success'] = True
+		response_refresh_remote['success'] = True
 
 	print "Refresh result: %s" % response_refresh_remote
 
 	return HttpResponse(json.dumps(response_refresh_remote), mimetype="application/json")
+
+@csrf_exempt
+def proxy_uploadftp (request, **kwargs):
+	"""
+	Loads a map file from an FTP source into the system
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	response_upload = {
+		'success': False,
+		'report': ""
+	}
+
+	if not request.POST['path'].endswith(".zip"):
+		response_upload['report'] = "Tipo di file non supportato."
+		return HttpResponse(json.dumps(response_upload), mimetype="application/json")
+
+	print 'Loading from FTP'
+	print kwargs
+	#args = request.POST
+	#print args
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	filename = request.POST['path'].split("/")[-1]
+
+	filename = re.sub(r'[^\w._]+', "", filename)
+
+	connect = {
+		'host': request.POST['host'],
+		'user': request.POST['user'],
+		'pass': request.POST['pass'],
+		'path': str(request.POST['path'])
+	}
+
+	print connect
+	print proxy_id, meta_id, filename
+
+	response_upload = ProxyFS.uploadFTP(proxy_id, meta_id, filename[:-4], connect, True)
+
+
+	return HttpResponse(json.dumps(response_upload), mimetype="application/json")
+
+
+
 
 
 
@@ -1291,6 +1346,8 @@ def proxy_uploadmap (request, **kwargs):
 		if shape_id is None or shape_id == "":
 			shape_id = upload.name[:-4]
 
+		shape_id = re.sub(r'[^\w._]+', "", shape_id)
+
 		print "FORM: Uploading file to %s/%s/%s" % (proxy_id, meta_id, shape_id)
 
 
@@ -1560,7 +1617,11 @@ def saveMapFile (uploaded, proxy_id, meta_id, shape_id=None):
 	:return:
 	"""
 
-	print "Uploading file %s, size %s " % (uploaded.name, uploaded.size)
+	try:
+		print "Uploading file (POST) %s, size %s " % (uploaded.name, uploaded.size)
+	except:
+		print "Uploading file (FTP) %s" % shape_id
+
 	#print "Data: %s " % (str(uploaded.read()))
 
 	isvalid = proxy_core.verifyShapeArchiveStructure(uploaded)
@@ -1569,6 +1630,7 @@ def saveMapFile (uploaded, proxy_id, meta_id, shape_id=None):
 
 	if shape_id is None:
 		shape_id = uploaded.name[:-4]
+		shape_id = re.sub(r'[^\w._]+', "", shape_id)
 		if os.path.exists(os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, uploaded.name)):
 			os.remove(os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, uploaded.name))
 		fs = FileSystemStorage(location=os.path.join(proxyconf.baseuploadpath))

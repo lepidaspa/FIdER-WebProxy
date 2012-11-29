@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import re
+import urllib2
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -372,7 +374,77 @@ def sideloadST (proxy_id, meta_id, stmap_id, saveto_id):
 			'report': 'Importazione di %s fallita. Causa: %s' % (stmap_id, ex)
 		}
 
-	return response_sideload
+
+def uploadFTP (proxy_id, meta_id, map_id, connect, setforupdate=False):
+	"""
+	Loads a remote FTP resource to the proxy/meta/map combination in the request. Distinct from first time load which can be found in FIdERWeb
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:param connect: dictionary with connection info: url, user, pass, layer
+	:param setforupdate: boolean, whether to write the connection configuration in the remoteres directory for future updates. This is off by default as the function is called more often as an update than for creation
+	:return: a report dict with keys success (bool) and report (string)
+	"""
+
+	response_upload = {
+	'success': False,
+	'report': ''
+	}
+
+	filename = re.sub(r'[^\w._]+', "", connect['path'].split("/")[-1])
+
+	authstring = ""
+	if connect['user'] not in (None, ""):
+		authstring = connect['user']
+		if connect['pass'] not in (None, ""):
+			authstring = authstring+":"+connect['pass']
+		authstring += "@"
+
+	connectstring = "ftp://"+authstring+connect['host']+"/"+connect['path']
+
+	try:
+		upload = urllib2.urlopen(connectstring)
+		if map_id is None or map_id == "":
+			map_id = filename[:-4]
+
+		print "FORM: Uploading file to %s/%s/%s" % (proxy_id, meta_id, map_id)
+
+		uploadedpath = os.path.join(conf.baseuploadpath, proxy_id, meta_id, filename)
+
+		fp = open(uploadedpath, 'w+')
+		fp.write(upload.read())
+		fp.close()
+		upload.close()
+
+		response_upload['success'] = True
+		#response_upload['report'] = "Invio del file %s su %s per integrazione completato." % (filename, proxy_id)
+
+		print "File uploaded, proceeding with conversion to geojson"
+
+		handleFSChange(uploadedpath)
+		response_upload['report'] = "Integrazione del file %s su %s completata" % (filename, proxy_id)
+
+		if setforupdate is True:
+			try:
+				fppath = os.path.join(conf.baseproxypath, proxy_id, conf.path_remoteres, meta_id)
+				try:
+					os.makedirs(fppath)
+				except:
+					# already exists: not a problem, if more severe we will get a different error later and handle that
+					pass
+				fp_ftpres = open(os.path.join(fppath, map_id+".ftp"), 'w+')
+				json.dump(connect, fp_ftpres)
+				fp_ftpres.close()
+				response_upload['report'] += "Configurato l'aggiornamento automatico."
+			except Exception as ex:
+				print "ERROR while saving as remote resource: %s " % ex
+				response_upload['report'] += "Aggiornamento automatico non configurato."
+
+	except Exception as ex:
+		print "ERROR: %s (%s)" % (ex, ex.message)
+		response_upload['response'] = 'Caricamento dei dati da FTP fallito.'
+
+	return response_upload
 
 
 def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):

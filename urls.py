@@ -50,6 +50,7 @@ urlpatterns = patterns('',
 	url(r'^fwp/upload/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.proxy_uploadmap),
 	url(r'^fwp/download/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_uploadwfs),
 	url(r'^fwp/download/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.proxy_uploadwfs),
+	url(r'^fwp/ftpdload/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.proxy_uploadftp),
 	url(r'^fwp/rebuild/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_rebuildmap),
 	url(r'^fwp/reconvert/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<map_id>\w*)/', fwpviews.proxy_reconvert_map),
 	url(r'^fwp/control/', fwpviews.proxy_controller),
@@ -62,13 +63,12 @@ urlpatterns = patterns('',
 
 	#urls for active operations, called by the clients
 
-	#old proxy page,to be removed
-	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
+	#old proxy pages,to be removed
+	#url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
 	url(r'^fwp/get/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getSingleMap),
-	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
-	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\.st)/$', fwpviews.metapage),
-
-	url(r'^fwp/$', fwpviews.proxysel),
+	#url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
+	#url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\.st)/$', fwpviews.metapage),
+	#url(r'^fwp/$', fwpviews.proxysel),
 
 	# standalone tool v2
 

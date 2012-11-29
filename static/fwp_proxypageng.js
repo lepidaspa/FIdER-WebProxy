@@ -269,6 +269,25 @@ function initForms ()
         }
     });
 
+    $("#form_newftp").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: false,
+        width:  "auto",
+        buttons: {
+            "Annulla": {
+                text: "Annulla",
+                click: function() {$( this ).dialog( "close" );}
+            },
+            "Carica": {
+                id : "form_newftp_upload",
+                text: "Carica",
+                click: tryUploadNewFTP
+            }
+        }
+    });
+    $(".newftp_param").live('change keyup mouseup', checkCandidateFTPParams);
+
     $("#form_newwfs").dialog({
         autoOpen: false,
         modal: true,
@@ -1192,6 +1211,10 @@ function addNewSource ()
     {
         addNewSource_WFS(this.id);
     }
+    else if ($(this).hasClass('new_ftp'))
+    {
+        addNewSource_FTP(this.id);
+    }
     else if ($(this).hasClass('new_query'))
     {
         addNewSource_Query(this.id);
@@ -1212,6 +1235,18 @@ function addNewSource_File(callerid)
     $("#form_newfile_upload").prop("disabled", true);
     $("#form_newfile").dialog("open");
 
+}
+
+function addNewSource_FTP (callerid)
+{
+
+    var prefix = 'new_ftp_';
+    var dest = callerid.substr(prefix.length).split("-");
+
+    cmeta_id = dest[1];
+
+    $("#form_newftp").dialog("open");
+    checkCandidateFTPParams();
 }
 
 
@@ -1295,6 +1330,54 @@ function isValidUrl (candidate)
     }
 }
 
+function checkCandidateFTPParams()
+{
+    var cansend = true;
+
+    // cannot send request if
+    // 1. no host
+    // 2. no file path
+    // 3. has password but no username (while no user (anonymous) or passless user is acceptable)
+
+    $("#warning_ftpoverwrite").hide();
+    var newmappath = $("#newremote_ftppath").val();
+    try
+    {
+        var newmapsplit = newmappath.split("/");
+        var newmapfilename = newmapsplit[newmapsplit.length-1];
+        var newmapname = newmapfilename.substr(0,newmapfilename.length-4);
+
+        var maplist = [];
+        for (var map_id in proxy_maps[cmeta_id])
+        {
+            maplist.push(map_id);
+        }
+
+        if (maplist.indexOf(newmapname) != -1)
+        {
+            console.log("Map id "+newmapname+" found in maplist ");
+            console.log(maplist);
+            $("#warning_ftpoverwrite").show();
+        }
+
+    }
+    catch (err)
+    {
+
+    }
+
+
+
+
+    if ( ($("#newremote_ftphost").val()=="") || (newmappath=="") || ($("#newremote_ftppass").val()!="" && $("#newremote_ftpusernanme").val()=="") )
+    {
+        cansend = false;
+    }
+
+    $("#form_newftp_upload").prop('disabled', !cansend);
+
+
+}
 
 function checkCandidateMapname()
 {
@@ -1373,6 +1456,81 @@ function checkCandidateFilename()
 
 }
 
+function tryUploadNewFTP()
+{
+    var urlstring = "/fwp/ftpdload/"+proxy_id+"/"+cmeta_id+"/";
+
+    var ftpparams = {};
+
+    ftpparams['host'] = $("#newremote_ftphost").val();
+    ftpparams['user'] = $("#newremote_ftpusername").val();
+    ftpparams['pass'] = $("#newremote_ftppassword").val();
+    ftpparams['path'] = $("#newremote_ftppath").val();
+
+    var map_id = ftpparams['path'];
+
+    if (ftpparams['user'] == "")
+    {
+        ftpparams['user'] = null;
+    }
+    if (ftpparams['pass'] == "")
+    {
+        ftpparams['pass'] = null;
+    }
+
+
+
+    $("#form_newftp").dialog("close");
+    $("#progress_newdata").dialog("open");
+
+    $("#btn_newdata_resetpage").hide();
+    $("#btn_newdata_closedialog").hide();
+
+    $("#progress_newdata .progressinfo").hide();
+    $("#progspinner_newdata").show();
+    $("#progress_stage_uploading").show();
+
+
+    $.ajax ({
+        url: urlstring,
+        data: ftpparams,
+        async: true,
+        type: 'POST',
+        success: function(data) {
+
+            if (data['success'] == true)
+            {
+                $("#progress_newdata .progressinfo").hide();
+                map_id = map_id.replace(/[^\w._]+/,"");
+
+                rebuildShapeData(cmeta_id, map_id);
+            }
+            else
+            {
+                $("#progress_newdata .progressinfo").hide();
+                $("#progspinner_newdata").hide();
+                $("#uploadfinished_fail").show();
+                $("#uploadfail_explain").empty().append(data['report']);
+                $("#uploadfail_explain").show();
+                $("#btn_newdata_closedialog").show();
+            }
+
+        },
+        error: function (data)
+        {
+            $("#progress_newdata .progressinfo").hide();
+            $("#progspinner_newdata").hide();
+            $("#uploadfinished_fail").show();
+            $("#uploadfail_explain").empty().append(data);
+            $("#uploadfail_explain").show();
+            $("#btn_newdata_closedialog").show();
+        }
+    });
+
+
+
+}
+
 function tryUploadNewRemote()
 {
 
@@ -1429,7 +1587,7 @@ function tryUploadNewRemote()
                 $("#progress_newdata .progressinfo").hide();
                 $("#progspinner_newdata").hide();
                 $("#uploadfinished_fail").show();
-                $("#uploadfail_explain").append(data['report']);
+                $("#uploadfail_explain").empty().append(data['report']);
                 $("#uploadfail_explain").show();
                 $("#btn_newdata_closedialog").show();
             }
@@ -1440,7 +1598,7 @@ function tryUploadNewRemote()
             $("#progress_newdata .progressinfo").hide();
             $("#progspinner_newdata").hide();
             $("#uploadfinished_fail").show();
-            $("#uploadfail_explain").append(data);
+            $("#uploadfail_explain").empty().append(data);
             $("#uploadfail_explain").show();
             $("#btn_newdata_closedialog").show();
         }
@@ -1579,7 +1737,7 @@ function tryCreateQuery()
                 $("#progress_newquery .progressinfo").hide();
                 $("#progspinner_newquery").hide();
                 $("#creationfinished_fail").show();
-                $("#creationfail_explain").append(data['report']);
+                $("#creationfail_explain").empty().append(data['report']);
                 $("#creationfail_explain").show();
                 $("#btn_newquery_closedialog").show();
 
@@ -1646,7 +1804,10 @@ function tryUploadNewFile()
                 $("#progress_newdata .progressinfo").hide();
                 if (cmeta_id != ".st")
                 {
+                    map_id = map_id.replace(/[^\w._]+/,"");
+                    console.log("Rebuilding "+map_id);
                     rebuildShapeData(cmeta_id, map_id);
+
                 }
                 else
                 {
@@ -1661,7 +1822,7 @@ function tryUploadNewFile()
                 $("#progress_newdata .progressinfo").hide();
                 $("#progspinner_newdata").hide();
                 $("#uploadfinished_fail").show();
-                $("#uploadfail_explain").append(data['report']);
+                $("#uploadfail_explain").empty().append(data['report']);
                 $("#uploadfail_explain").show();
                 $("#btn_newdata_closedialog").show();
             }
@@ -1671,7 +1832,7 @@ function tryUploadNewFile()
             $("#progress_newdata .progressinfo").hide();
             $("#progspinner_newdata").hide();
             $("#uploadfinished_fail").show();
-            $("#uploadfail_explain").append(data);
+            $("#uploadfail_explain").empty().append(data);
             $("#uploadfail_explain").show();
             $("#btn_newdata_closedialog").show();
         }
@@ -1708,7 +1869,7 @@ function rebuildShapeData (meta_id, map_id)
             $("#progress_newdata .progressinfo").hide();
             $("#progspinner_newdata").hide();
             $("#uploadfinished_fail").show();
-            $("#uploadfail_explain").append(data);
+            $("#uploadfail_explain").empty().append(data);
             $("#uploadfail_explain").show();
             $("#btn_newdata_resetpage").show();
         }
@@ -1750,7 +1911,7 @@ function saveConnection(currentconn)
             $("#progress_stage_saving").hide();
             $("#progspinner_newquery").hide();
             $("#creationfinished_fail").show();
-            $("#creationfail_explain").append(data);
+            $("#creationfail_explain").empty().append(data);
             $("#creationfail_explain").show();
             $("#btn_newquery_closedialog").show();
         }
