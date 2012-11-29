@@ -521,8 +521,13 @@ Gestione dati e cataloghi
 
     </div>
 
+    {% if proxy_type == 'query' %}
+    <div id="querywarning">
+        Per salvare e utilizzare la conversione è necessario indicare un campo di origine per il campo federato Geometria.
+    </div>
+    {% endif %}
 
-<div id="modelselect">
+    <div id="modelselect">
     <label for="convtable_modelselect">Modello di riferimento</label>
     <select id="convtable_modelselect">
 
