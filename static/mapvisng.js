@@ -2840,9 +2840,10 @@ function renderFeatureCard(caller)
         var pos = reverseGeoSearch(feature.geometry, idpos);
     }
 
+    var featuretypename = singleobjstring.hasOwnProperty(modeldata['objtype']) ? singleobjstring[modeldata['objtype']] : modeldata['objtype'];
 
 
-    $("#featuredetails").append("<span class=textlabel>Oggetto selezionato</span>: "+singleobjstring[modeldata['objtype']]);
+    $("#featuredetails").append("<span class=textlabel>Oggetto selezionato</span>: "+featuretypename);
 
     //for (var propname in feature.attributes)
     for (var propname in modeldata['properties'])
