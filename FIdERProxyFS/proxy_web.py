@@ -154,8 +154,25 @@ def deleteMap (proxy_id, meta_id, shape_id):
 	locker = proxy_lock.ProxyLocker (retries=3, wait=5)
 
 
-
 	if proxytype != 'query' and meta_id != ".st":
+
+		#first we check for remote reload info
+
+
+		print "Checking for remote load info"
+
+		try:
+
+			if proxy_core.isRemoteMap:
+				os.remove(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id, shape_id+'.wfs'))
+
+			if proxy_core.isFTPMap:
+				os.remove(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id, shape_id+'.ftp'))
+		except Exception as ex:
+			feedback ['report'] = 'Cancellazione dei dati di riferimento remoto fallita: %s' % ex
+			return feedback
+
+
 
 		# we do not need to remove stuff in the geojson dir if the proxy is query
 
@@ -163,7 +180,7 @@ def deleteMap (proxy_id, meta_id, shape_id):
 		if os.path.exists(uploadpath):
 			try:
 				os.remove(uploadpath)
-			except Exception, ex:
+			except Exception as ex:
 				feedback ['report'] = 'Cancellazione fallita: %s' % ex
 				return feedback
 
@@ -174,7 +191,7 @@ def deleteMap (proxy_id, meta_id, shape_id):
 			#proxy_core.handleDelete(proxy_id, meta_id, shape_id)
 			feedback['success'] = True
 			feedback['report'] = "Cancellazione della mappa %s completata." % shape_id
-		except Exception, ex:
+		except Exception as ex:
 			feedback['report'] = 'Cancellazione interrotta: %s' % ex
 
 
