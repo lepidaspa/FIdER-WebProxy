@@ -415,7 +415,7 @@ Gestione dati e cataloghi
                             <td class="mapdetails_label">
                                 URL
                             </td>
-                            <td>
+                            <td class="mapdetails_long">
                                 {{ mapdata.remotedata.url }}
                             </td>
                         </tr>
@@ -451,7 +451,50 @@ Gestione dati e cataloghi
 
                         </tbody>
                 {% endif %}
+                {% if mapdata.source == 'FTP' %}
+                    <tbody class="remoteconf">
+                    <tr><th colspan=2 class="mapdetails_header">Dati di connessione</th></tr>
 
+                    <tr>
+                        <td class="mapdetails_label">
+                            Host
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.host }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Percorso
+                        </td>
+                        <td class="mapdetails_long">
+                            {{ mapdata.remotedata.path}}
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Utente
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.user}}
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Password
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.pass }}
+                        </td>
+                    </tr>
+
+                    </tbody>
+                {% endif %}
 
                 </table>
 

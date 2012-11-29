@@ -112,6 +112,7 @@ def makeMapCard (proxy_id, meta_id, map_id, proxy_type):
 	if proxy_type != 'query':
 		mapdata = getMapFileStats(mappath)
 		if isRemoteMap(proxy_id, meta_id, map_id):
+
 			mapsource = "WFS"
 
 			#adding remotedata info (connection parameters)
@@ -124,7 +125,9 @@ def makeMapCard (proxy_id, meta_id, map_id, proxy_type):
 				"Password": remotedataraw['pass']
 			}
 			"""
-
+		if isFTPMap (proxy_id, meta_id, map_id):
+			mapsource = "FTP"
+			remotedata = json.load(open(os.path.join(conf.baseproxypath, proxy_id, "conf", "remote", meta_id, map_id+".ftp")))
 	else:
 		mapsource = "Query"
 		mapdata = getQueryInfo (proxy_id, meta_id, map_id)
@@ -164,6 +167,17 @@ def isRemoteMap (proxy_id, meta_id, map_id):
 	"""
 
 	return os.path.exists(os.path.join(conf.baseproxypath, proxy_id, conf.path_remoteres, meta_id, map_id+'.wfs'))
+
+def isFTPMap (proxy_id, meta_id, map_id):
+	"""
+
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:return: boolean
+	"""
+
+	return os.path.exists(os.path.join(conf.baseproxypath, proxy_id, conf.path_remoteres, meta_id, map_id+'.ftp'))
 
 def getMapsSummary (proxy_id):
 	"""
