@@ -1299,6 +1299,7 @@ function funcShowModel ()
 {
     //console.log("switching to model display");
     //$("#standalonebar").hide();
+    freeSelection();
     $("#mapview").hide();
     $("#modelview").show();
     $("#modelstruct tbody").empty();
