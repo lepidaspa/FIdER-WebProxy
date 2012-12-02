@@ -25,7 +25,9 @@ var defaultLat = 44.5;
 var defaultBounds;
 
 var defaultNorth = 47.0920;
-var defaultSouth = 43.73189080;
+// actual South of Northern Italy bounding box
+// var defaultSouth = 43.73189080;
+var defaultSouth = 42.9117485798
 var defaultEast = 13.91885250;
 var defaultWest = 6.62672010;
 
