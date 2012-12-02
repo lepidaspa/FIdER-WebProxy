@@ -2214,8 +2214,12 @@ function initModelWidget()
 
 
     var base = $("#modelstruct tbody");
-    for (var propname in modeldata['properties'])
+
+    var propsorted = Object.keys(modeldata.properties).sort();
+
+    for (var i in propsorted)
     {
+        var propname = propsorted[i];
         base.append('<tr class="modelprop_widget" id="modelprop_widget_'+propname+'">' +
             '<td><b>' + propname + '</b></td>' +
             '<td class="valuetabletd"></td>' +
@@ -2225,7 +2229,9 @@ function initModelWidget()
 
     }
 
-    for ( propname in modeldata['properties'])
+
+
+    for (propname in modeldata['properties'])
     {
         var setvalues = modeldata['properties'][propname];
 
@@ -2839,9 +2845,13 @@ function renderFeatureCard(caller)
 
     $("#featuredetails").append("<span class=textlabel>Oggetto selezionato</span>: "+featuretypename);
 
+    var propsorted = Object.keys(modeldata.properties).sort();
+
     //for (var propname in feature.attributes)
-    for (var propname in modeldata['properties'])
+    for (var i in propsorted)
     {
+
+        var propname = propsorted[i];
 
         var propvalue;
         try
