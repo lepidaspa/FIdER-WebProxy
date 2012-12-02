@@ -42,7 +42,7 @@
             <thead>
                 <tr><td colspan=3>Istanze proxy</td><td class="proxylisting_actions">                    <img src="/static/resource/fwp_newdatasource_networked.png" class="imgbutton" id="btn_newdatasource_networked" title="Crea proxy read/write">
                     <img src="/static/resource/fwp_newdatasource_query.png" class="imgbutton" id="btn_newdatasource_query" title="Crea proxy query">
-                    <img src="/static/resource/fwp_newdatasource_networked.png" class="imgbutton" id="btn_newdatasource_linker" title="Crea proxy di collegamento standalone"></td></tr>
+                    <img src="/static/resource/fwp_newdatasource_proxylocal.png" class="imgbutton" id="btn_newdatasource_linker" title="Crea proxy di collegamento standalone"></td></tr>
             </thead>
             <tbody>
             {% for proxy_id, proxydata in proxiesdj.items %}
@@ -62,7 +62,7 @@
                         <td class="proxylisting_actions">
                             <img src="/static/resource/fwp_info.png" class="imgbutton proxyrecap" id="proxyrecap_{{ proxy_id }}" title="Visualizza dettagli">
                             <img src="/static/resource/fwp_contacts.png" class="imgbutton proxyrefbox" id="proxyrefbox_{{ proxy_id }}" title="Visualizza contatti">
-                            <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/{% if proxydata.type == 'query' %}fwp_datasource-query{% endif %}{% if proxydata.type == 'read' or proxydata.type == 'write' or proxydata.type == 'linked' %}fwp_datasource-networked{% endif %}.png" title="Apri istanza"></a>
+                            <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/{% if proxydata.type == 'query' %}fwp_datasource-query{% endif %}{% if proxydata.type == 'read' or proxydata.type == 'write'%}fwp_datasource-networked{% endif %}{% if proxydata.type == 'linked' %}fwp_datasource-proxylocal{% endif %}.png" title="Apri istanza"></a>
                             <img src="/static/resource/fwp_remove.png" class="imgbutton btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
                         </td>
                     </tr>
