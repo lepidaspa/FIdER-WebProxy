@@ -181,7 +181,7 @@ td
     text-align:         right;
 }
 
-#proxycreate_linked .formbriefing, #proxydelete .formbriefing
+#proxycreate_linked .formbriefing, #proxydelete .formbriefing, .failinfo
 {
     max-width:              400px;
 }
@@ -209,3 +209,5 @@ td
     padding-top:    8px;
     /*border-bottom:      1px dotted #cccccc; */
 }
+
+
