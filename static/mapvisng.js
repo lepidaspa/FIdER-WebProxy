@@ -88,7 +88,6 @@ var rasterlayer;
 // format used to translate and output coordinates from the map
 var gjformat;
 
-
 // if this is the first load of the page;
 // (first loading screen is closed automatically)
 var firstload = true;
@@ -178,11 +177,7 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
             firstload = false;
             createNewMap(map_id);
         }
-
     }
-
-
-
 
     $(".autocombofield").live('click', openValueSelector);
     $(".autocombofield").live('change keyup mouseup', setPropertyValue);
@@ -222,7 +217,6 @@ function tryExportMapData()
 
     $("#mapdloadlinkjson").empty().append(linkstring);
 
-
 }
 
 
@@ -235,9 +229,7 @@ function tryExportView()
     $("#renderfinished_fail").hide();
     $("#btn_renderprogress_close").hide();
 
-
     console.log("Trying to export the viewport");
-
 
     var drawcenter = new OpenLayers.LonLat(mapview.getCenter().lon, mapview.getCenter().lat).transform(mapview.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
 
@@ -644,7 +636,6 @@ function applyFilters()
                         verified[pkey] = true;
                     }
                 }
-
             }
         }
 
@@ -2528,7 +2519,7 @@ function initMapWidget()
 
 
     // SNAP layer
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#FF33FC", strokeColor: "#FF33FC", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 8});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#FFFFFF", strokeColor: "#FFFFFF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 8});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     snaplayer= new OpenLayers.Layer.Vector("Allineamento", {styleMap: featurestylemap});
 
@@ -2570,7 +2561,7 @@ function setMapControlsNav ()
     ItaLayerSwitcher.prototype.constructor = ItaLayerSwitcher;
     function ItaLayerSwitcher()
     {
-        OpenLayers.Control.LayerSwitcher.call(this, { displayClass: "olLabsLayerSwitcher"});                                         // derived constructor = call super-class constructor
+        OpenLayers.Control.LayerSwitcher.call(this, { displayClass: "olLabsLayerSwitcher"});                              // derived constructor = call super-class constructor
     }
 
     ItaLayerSwitcher.prototype.loadContents = function()                                 // redefine Method
