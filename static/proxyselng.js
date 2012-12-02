@@ -122,6 +122,12 @@ function initProxyMap()
     gjformat = new OpenLayers.Format.GeoJSON({'externalProjection': new OpenLayers.Projection(proj_WGS84), 'internalProjection': proxymap.getProjectionObject()});
 
     //Base Maps from Google
+    proxymap.addLayer(new OpenLayers.Layer.Google("Google Hybrid", {
+        type : google.maps.MapTypeId.HYBRID,
+        numZoomLevels : 20,
+        visibility : false
+    }));
+
     proxymap.addLayer(new OpenLayers.Layer.Google("Google Physical", {
         type : google.maps.MapTypeId.TERRAIN,
         visibility : false
@@ -131,11 +137,6 @@ function initProxyMap()
         numZoomLevels : 20
     }));
     proxymap.addLayer(new OpenLayers.Layer.Google("Google Streets", {
-        numZoomLevels : 20,
-        visibility : false
-    }));
-    proxymap.addLayer(new OpenLayers.Layer.Google("Google Hybrid", {
-        type : google.maps.MapTypeId.HYBRID,
         numZoomLevels : 20,
         visibility : false
     }));

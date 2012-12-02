@@ -2484,23 +2484,25 @@ function initMapWidget()
     mapview.displayProjection = new OpenLayers.Projection(proj_WGS84);
 
     //Base Maps from Google
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Hybrid", {
+        type : google.maps.MapTypeId.HYBRID,
+        numZoomLevels : 20,
+        visibility : false
+    }));
     mapview.addLayer(new OpenLayers.Layer.Google("Google Terrain", {
         type : google.maps.MapTypeId.TERRAIN,
         visibility : false
     }));
     mapview.addLayer(new OpenLayers.Layer.Google("Google Satellite", {
         type : google.maps.MapTypeId.SATELLITE,
-        numZoomLevels : 20
+        numZoomLevels : 20,
+        visibility: false
     }));
     mapview.addLayer(new OpenLayers.Layer.Google("Google Roadmap", {
         numZoomLevels : 20,
         visibility : false
     }));
-    mapview.addLayer(new OpenLayers.Layer.Google("Google Hybrid", {
-        type : google.maps.MapTypeId.HYBRID,
-        numZoomLevels : 20,
-        visibility : false
-    }));
+
 
     var osmlayer = new OpenLayers.Layer.OSM();
     mapview.addLayer(osmlayer);

@@ -2031,6 +2031,11 @@ function buildMapWidget()
 
 
     //Base Maps from Google
+    proxymap.addLayer(new OpenLayers.Layer.Google("Google Hybrid", {
+        type : google.maps.MapTypeId.HYBRID,
+        numZoomLevels : 20,
+        visibility : false
+    }));
     proxymap.addLayer(new OpenLayers.Layer.Google("Google Physical", {
         type : google.maps.MapTypeId.TERRAIN,
         visibility : false
@@ -2039,11 +2044,7 @@ function buildMapWidget()
         numZoomLevels : 20,
         visibility : false
     }));
-    proxymap.addLayer(new OpenLayers.Layer.Google("Google Hybrid", {
-        type : google.maps.MapTypeId.HYBRID,
-        numZoomLevels : 20,
-        visibility : false
-    }));
+
     proxymap.addLayer(new OpenLayers.Layer.Google("Google Satellite", {
         type : google.maps.MapTypeId.SATELLITE,
         numZoomLevels : 20
