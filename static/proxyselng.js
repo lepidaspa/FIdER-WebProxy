@@ -1703,7 +1703,7 @@ function renderMetaTable (base)
             '<td class="metainfo_actions"></td>' +
             '</tr>');
 
-        var removemeta = '<img class="imgbutton removemeta" src="/static/resource/visng_model_deletevalue.png" id="removemeta_'+i+'">';
+        var removemeta = '<img title="Elimina catalogo" class="imgbutton removemeta" src="/static/resource/visng_model_deletevalue.png" id="removemeta_'+i+'">';
 
 
         metarow.find(".metainfo_name").append(newmetalist[i]['name']);
