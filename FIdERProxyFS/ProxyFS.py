@@ -114,7 +114,7 @@ def createSoftProxy (proxy_id, manifest, linkedto=None):
 		# creation succeeded but data import failed
 		if not databuildresult['success']:
 			success = False
-			message = "Creazione del proxy %s riuscita con importazione mappe incompleta. Metadati da verificare: %s" % (proxy_id, databuildresult['errors'],)
+			message = "Creazione del proxy %s riuscita con importazione mappe incompleta. Cataloghi da verificare: %s" % (proxy_id, databuildresult['errors'],)
 
 	return success, message
 

@@ -240,7 +240,7 @@ def makeSoftProxy (proxy_id, manifest, linkedto=None):
 	uploadpath = os.path.join(conf.baseuploadpath, proxy_id)
 
 	if os.path.exists(os.path.join(conf.baseproxypath, proxy_id)):
-		raise ProxyAlreadyExistsException ("A proxy %s already exists" % proxy_id)
+		raise ProxyAlreadyExistsException ("Esiste già un proxy %s" % proxy_id)
 
 	#creating base proxy paths: main and upload
 	os.makedirs (basepath)
