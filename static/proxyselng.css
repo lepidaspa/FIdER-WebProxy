@@ -202,3 +202,10 @@ td
     font-weight:    bold;
     text-align:     center;
 }
+
+.proxylisting_instance td
+{
+
+    padding-top:    8px;
+    /*border-bottom:      1px dotted #cccccc; */
+}
