@@ -54,6 +54,8 @@ var allcolors = [
     "#FFC88A",    "#A6ABFF",      "#D7A1FF",      "#FFB9A6"
 ];
 var nextcoloridx = 0;
+var proxymap_visstyles = {};
+
 
 function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
 {
@@ -497,17 +499,18 @@ function reVisMap (cmeta_id, cmap_id)
     {
         mapcolors[idstring] = nextcoloridx;
         nextcoloridx = (nextcoloridx+1)%(allcolors.length);
+        var ccolor = allcolors[mapcolors[idstring]];
+        proxymap_visstyles [idstring] = {"fillColor": ccolor, "strokeColor": ccolor };
+        proxymap_vislayer.styleMap.addUniqueValueRules("default", "source", proxymap_visstyles);
     }
 
-    var ccolor = allcolors[mapcolors[idstring]];
+
+
     // escaping the dot in .st
     var jqstring = "#mapcolorcode_"+idstring.replace(".", "\\.");
 
     $(jqstring).css("background-color", ccolor);
 
-    var featurestyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: ccolor, strokeColor: ccolor, strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6,strokeLinecap: "round" });
-    var featurestylemap = new OpenLayers.StyleMap(featurestyle);
-    proxymap_vislayer.styleMap = featurestylemap;
 
     renderGeoJSONCollection (featuredata[idstring], proxymap_vislayer);
 
@@ -2221,10 +2224,13 @@ function buildMapWidget()
     proxymap.addLayer(proxymap_activemap);
 
 
-    var featurestyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: "#FFFFFF", strokeColor: "#FFFFFF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6,strokeLinecap: "round" });
+    // layer for single map display
+    var featurestyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: "#FFFFFF", strokeColor: "#FFFFFF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6,strokeLinecap: "round" }, {rules: []});
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
     proxymap_vislayer = new OpenLayers.Layer.Vector("Elementi", {name: "Strutture", styleMap: featurestylemap, renderers: ["Canvas"]});
     proxymap.addLayer(proxymap_vislayer);
+
+
 
     proxymap.addControl(new OpenLayers.Control.Navigation());
     proxymap.addControl(new OpenLayers.Control.PanZoomBar());
