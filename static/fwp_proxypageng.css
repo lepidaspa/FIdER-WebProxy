@@ -266,3 +266,8 @@ td.mapdetails_long
     word-wrap:      break-word;
     max-width:      400px;
 }
+
+.maptitle
+{
+    word-wrap:      break-word;
+}

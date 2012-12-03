@@ -97,7 +97,7 @@ Gestione dati e cataloghi
         {% for map_id, mapdata in maplist.items %}
 
             <tr class="mapcard" id="mapcard_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">
-                <td class="maptitle">{% if proxy_type != 'query' %}<!--<input type="checkbox" class="switchmapvis" id="mapvis_{{ meta_id }}-{{ map_id }}"> -->{% endif %}{{ map_id }}</td> <td>{{  mapdata.source }}</td>
+                <td class="maptitle"><span class="mapcolorcode" id="mapcolorcode_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">&nbsp;</span>{% if proxy_type != 'query' %}<input type="checkbox" class="switchmapvis" id="mapvis_{{ meta_id }}-{{ map_id }}">{% endif %}{{ map_id }}</td> <td>{{  mapdata.source }}</td>
                 <td class="actionstd">
                         <img class="imgbutton maprecap" id="maprecap_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
                     {% if proxy_type != 'query' %}
@@ -676,6 +676,39 @@ Gestione dati e cataloghi
 
 
 </div>
+
+    <div id="progress_mapload" title="Caricamento dati">
+
+        <div class="progspinner" id="progspinner_mapload">
+            <img src="{{ STATIC_URL }}resource/progressbar.gif">
+        </div>
+
+        <div class="progressinfo" id="progress_stage_maploading">
+            Caricamento dei dati in corso...
+        </div>
+
+        <div class="progressinfo" id="progress_stage_rendering">
+            Elaborazione dati in corso...
+        </div>
+
+        <div class="progressinfo feedback_good" id="maploadfinished_success">
+            Dati caricati con successo.
+        </div>
+
+        <div class="progressinfo feedback_bad" id="maploadfinished_fail">
+            Caricamento dati fallito.
+            <div id="maploadfail_explain">
+            </div>
+        </div>
+
+
+
+        <div class="formwarning" id="warning_maploadrenderissues">
+            <span class="warninglabel">Attenzione</span>: alcuni oggetti della mappa hanno causato anomalie durante il processo di rendering.
+        </div>
+
+
+    </div>
 
 
 

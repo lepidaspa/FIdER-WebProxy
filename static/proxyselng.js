@@ -148,12 +148,12 @@ function initProxyMap()
     proxymap.addLayer(osmlayer);
 
 
-    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.2, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid"});
+    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.1, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid"});
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
     mapsumlayer = new OpenLayers.Layer.Vector("Istanze", {styleMap: featurestylemap});
     proxymap.addLayer(mapsumlayer);
 
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.2, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.1, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     mapvislayer = new OpenLayers.Layer.Vector("Istanze selezionate", {styleMap: featurestylemap});
     proxymap.addLayer(mapvislayer);

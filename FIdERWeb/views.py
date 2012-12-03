@@ -221,6 +221,61 @@ def proxy_getmapng (request, **kwargs):
 	return response
 
 
+def proxy_getnaked (request, **kwargs):
+	"""
+	Sends the "naked" map, only geographical data with no properties
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	print "Downloading single map from proxy in naked mode"
+	print "URL params: %s" % kwargs
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, getProxyManifest(proxy_id))
+
+	print "Download context is: %s (%s) / %s / %s" % (proxy_id, proxy_type, meta_id, map_id)
+	#getflag is federated or not federated
+	try:
+		getflag = kwargs['getflag']
+	except:
+		getflag = 'src'
+
+	print "Getflag set to %s" % getflag
+
+	jsondata = {}
+
+	if proxy_type == 'query':
+		#query data is received via query and ALWAYS federated, cannot do without conv table
+		jsondata = proxy_query.fullQueryOnMap(proxy_id, meta_id, map_id)
+	elif proxy_type == 'local':
+		# getting from map editor we don NOT have a difference between federated and not
+		# but we still have different locations for data on archive and editor
+		if meta_id == '.st':
+			#map editor
+			path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
+		else:
+			#archive
+			path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id, map_id+".geojson")
+		jsondata = json.load(open(path))
+	else:
+		# getting PURE data, converted to json WITHOUT translation
+		jsondata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, False)
+
+	# cleaning up the data, leaving only the source of the map itself
+	for feature in jsondata['features']:
+		feature['properties'] = {'source': proxy_id+"-"+meta_id+"-"+map_id}
+
+
+	return HttpResponse(json.dumps(jsondata), mimetype="application/json")
+
+
+
+
 def proxyselng (request, **kwargs):
 	"""
 	Shows the basic proxy selection screen (new version). From here the user can also create a new proxy

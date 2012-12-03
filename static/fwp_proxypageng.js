@@ -24,7 +24,8 @@ var proxymap;
 var proxymap_metalayer;
 var proxymap_activemeta;
 var proxymap_activemap;
-
+// visualization layer that summarises the contents of the various proxies, canvas rendered as it is NOT interactive
+var proxymap_vislayer;
 
 var cmeta_id;
 // used essentially for the conversion table
@@ -42,6 +43,17 @@ var conv_models;
 
 var forcefieldstring = "+";
 
+// which of the maps (by metaid+mapid currently loaded in the assetslist are actually rendered)
+var renderedmaps = [];
+// data downloaded from the server in the form of featurelists, ordered by meta+mapid
+var featuredata = {};
+
+var mapcolors = {};
+var allcolors = [
+    "#fff700",    "#ff00b3",    "#00D9FF",      "#73DB1E",      "#FF0036",      "#A81BFF",
+    "#FFC88A",    "#A6ABFF",      "#D7A1FF",      "#FFB9A6"
+];
+var nextcoloridx = 0;
 
 function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
 {
@@ -174,7 +186,7 @@ function initForms ()
         }
     });
 
-    $("#progress_visload").dialog({
+    $("#progress_mapload").dialog({
         autoOpen: false,
         modal: true,
         closeOnEscape: false,
@@ -386,56 +398,190 @@ function switchMapVis()
     var cmap_id = dest[1];
     var switchstate = $(this).prop('checked');
 
+    var idstring = proxy_id+"-"+cmeta_id+"-"+cmap_id;
+
     console.log("Vis switch for "+cmeta_id+"/"+cmap_id+" modified to "+switchstate);
 
     if (switchstate)
     {
 
         // check if the map layer already exists, re-enable it
-
-        // load and show the requested map
-        tryVisMap();
+        // featuredata: features grouped by map, renderedmaps: maps currently rendered
+        if (!featuredata.hasOwnProperty(cmeta_id+"-"+cmap_id))
+        {
+            loadNakedMap(cmeta_id, cmap_id);
+        }
+        else
+        {
+            renderedmaps.push(idstring);
+            reVisMap(cmeta_id, cmap_id);
+        }
 
     }
     else
     {
-       // remove the data from the map
+        // remove the data from the map
 
-        // note: may simply make existing layer invisible
+        var mapidx = renderedmaps.indexOf(idstring);
+        renderedmaps.splice(mapidx, 1);
+        reVisMap(cmeta_id, cmap_id);
+
     }
 
 }
 
-function tryVisMap ()
+
+function loadNakedMap (cmeta_id, cmap_id)
 {
+
+    // TODO: placeholder, implement
 
 
     var urlstring;
-    if (meta_id == ".st")
-    {
-        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id+"/";
-    }
-    else
-    {
-        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id+"/";
-    }
+    urlstring = "/fwp/miniget/"+proxy_id+"/"+cmeta_id+"/"+cmap_id+"/";
 
     console.log("Loading: "+urlstring);
 
-    $("#progress_visload").dialog("open");
-    $("#progress_visload").hide();
-    $("#progress_visload .progressinfo").hide();
-    $("#progspinner_visload").show();
-    $("#progress_stage_visloading").show();
+    $("#progress_mapload").dialog("open");
+    $("#progress_mapload .formwarning").hide();
+    $("#progress_mapload .progressinfo").hide();
+    $("#progspinner_mapload").show();
+    $("#progress_stage_maploading").show();
+    $("#btn_loadprogress_close").hide();
 
     $.ajax ({
-        url:            urlstring,
-        async:          true,
-        success:        addVisLayer,
-        error:          reportFailedVisLoad
+        url:    urlstring,
+        async:  true,
+        success:    function (data)
+        {
+            var idstring = proxy_id+"-"+cmeta_id+"-"+cmap_id;
+
+            featuredata [idstring] = data;
+
+            renderedmaps.push(idstring);
+            reVisMap (cmeta_id, cmap_id);
+        },
+        error:  function ()
+        {
+
+            //TODO: use actual dialog
+            alert("ERROR LOADING MAP");
+        }
     });
+}
+
+
+function reVisMap (cmeta_id, cmap_id)
+{
+    // this only handles elements ADDED to the map, removed ones are handled directly by switchMapVis
+
+    //TODO: PLACEHOLDER, implement
+    $("#progress_mapload").dialog("close");
+
+
+    // TODO: add render warning mask
+
+    var idstring = proxy_id+"-"+cmeta_id+"-"+cmap_id;
+    // cleaning up to avoid accidental double loads
+    proxymap_vislayer.destroyFeatures(proxymap_vislayer.getFeaturesByAttribute("source", idstring));
+
+    if (renderedmaps.indexOf(idstring)==-1)
+    {
+        // we do not redraw anything in this case;
+        return;
+    }
+
+    // TODO: add STYLING for specific map
+
+    if (!mapcolors.hasOwnProperty(idstring))
+    {
+        mapcolors[idstring] = nextcoloridx;
+        nextcoloridx = (nextcoloridx+1)%(allcolors.length);
+    }
+
+    var ccolor = allcolors[mapcolors[idstring]];
+    // escaping the dot in .st
+    var jqstring = "#mapcolorcode_"+idstring.replace(".", "\\.");
+
+    $(jqstring).css("background-color", ccolor);
+
+    var featurestyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: ccolor, strokeColor: ccolor, strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6,strokeLinecap: "round" });
+    var featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    proxymap_vislayer.styleMap = featurestylemap;
+
+    renderGeoJSONCollection (featuredata[idstring], proxymap_vislayer);
+
 
 }
+
+
+function renderGeoJSONCollection (jsondata, layer)
+{
+    // renders a geojson collection to the visualisation layer
+
+
+    var render_errors = [];
+    for (var i in jsondata['features'])
+    {
+
+        // 3d coordinates are flattened to avoid rendering and saving issues
+        // MULTILINE and MULTIPOINT have already been sorted out when uploading and translating the map
+        try
+        {
+            var info2d = jsondata['features'][i];
+            var objtype = info2d['geometry']['type'];
+            if (objtype.toUpperCase() == "LINESTRING")
+            {
+
+                for (var pt in info2d['geometry']['coordinates'])
+                {
+                    info2d['geometry']['coordinates'][pt] = info2d['geometry']['coordinates'][pt].slice(0,2);
+                }
+            }
+            else if (objtype.toUpperCase() == "POINT")
+            {
+                info2d['geometry']['coordinates'] = info2d['geometry']['coordinates'].slice(0,2);
+            }
+
+            var fstring = JSON.stringify(info2d);
+            var fmap = gjformat.read(fstring);
+            layer.addFeatures(fmap);
+
+        }
+        catch (err)
+        {
+            if (render_errors.length < 100)
+            {
+                console.log(err);
+            }
+            render_errors.push(i);
+        }
+
+
+
+    }
+
+
+    if (render_errors.length > 0)
+    {
+
+        $("#warning_maploadrenderissues").show();
+
+
+        if (render_errors.length > 100)
+        {
+            console.log("Error reporting stopped at 100th errors of "+render_errors.length);
+        }
+        console.log("Error sample:");
+        console.log(render_errors[0]);
+    }
+
+
+
+
+}
+
+/* not needed anymore, kept temporarily
 
 function addVisLayer(jsondata, textStatus, jqXHR)
 {
@@ -455,12 +601,15 @@ function addVisLayer(jsondata, textStatus, jqXHR)
     proxymap.addLayer(proxymap_newvislayer);
 }
 
+
+
 function renderGeoJSONCanvas(jsondata, layer)
 {
 
     //todo: placeholder, implement
 
 }
+ */
 
 function reportFailedVisLoad()
 {
@@ -2003,12 +2152,12 @@ function populateMapWidget()
      */
 
     var bboxes = [];
-    for (var meta_id in proxy_maps)
+    for (var cmeta_id in proxy_maps)
     {
         //var metabbox = proxy_meta[meta_id]['area'];
-        var metabbox = getBbox (meta_id);
+        var metabbox = getBbox (cmeta_id);
 
-        console.log("Rendering bbox for "+meta_id);
+        console.log("Rendering bbox for "+cmeta_id);
         console.log(metabbox);
 
         bboxes.push(bboxToFeature(metabbox, proxymap));
@@ -2056,20 +2205,26 @@ function buildMapWidget()
     proxymap.addLayer(osmlayer);
 
 
-    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.2, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid"});
+    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.1, fillColor: "#ff9900", strokeColor: "#ff9900", strokeWidth: 2, strokeDashstyle: "solid"});
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
     proxymap_metalayer = new OpenLayers.Layer.Vector("Cataloghi", {styleMap: featurestylemap});
     proxymap.addLayer(proxymap_metalayer);
 
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.2, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.1, fillColor: "#0000ff", strokeColor: "#0000ff", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     proxymap_activemeta = new OpenLayers.Layer.Vector("Catalogo attivo", {styleMap: featurestylemap});
     proxymap.addLayer(proxymap_activemeta);
 
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#009900", strokeColor: "#009900", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.1, fillColor: "#009900", strokeColor: "#009900", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     proxymap_activemap = new OpenLayers.Layer.Vector("Mappa attiva", {styleMap: featurestylemap});
     proxymap.addLayer(proxymap_activemap);
+
+
+    var featurestyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: "#FFFFFF", strokeColor: "#FFFFFF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6,strokeLinecap: "round" });
+    var featurestylemap = new OpenLayers.StyleMap(featurestyle);
+    proxymap_vislayer = new OpenLayers.Layer.Vector("Elementi", {name: "Strutture", styleMap: featurestylemap, renderers: ["Canvas"]});
+    proxymap.addLayer(proxymap_vislayer);
 
     proxymap.addControl(new OpenLayers.Control.Navigation());
     proxymap.addControl(new OpenLayers.Control.PanZoomBar());
