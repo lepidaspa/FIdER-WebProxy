@@ -196,7 +196,8 @@ function initForms ()
         height: "auto",
         buttons: {
             "Chiudi": {
-                text: "Annulla",
+                id: "btn_loadvis_close",
+                text: "Chiudi",
                 click: function() {$( this ).dialog( "close" );}
             }
         }
@@ -409,7 +410,7 @@ function switchMapVis()
 
         // check if the map layer already exists, re-enable it
         // featuredata: features grouped by map, renderedmaps: maps currently rendered
-        if (!featuredata.hasOwnProperty(cmeta_id+"-"+cmap_id))
+        if (!featuredata.hasOwnProperty(idstring))
         {
             loadNakedMap(cmeta_id, cmap_id);
         }
@@ -445,6 +446,7 @@ function loadNakedMap (cmeta_id, cmap_id)
     console.log("Loading: "+urlstring);
 
     $("#progress_mapload").dialog("open");
+    $("#btn_loadvis_close").hide();
     $("#progress_mapload .formwarning").hide();
     $("#progress_mapload .progressinfo").hide();
     $("#progspinner_mapload").show();
@@ -459,15 +461,20 @@ function loadNakedMap (cmeta_id, cmap_id)
             var idstring = proxy_id+"-"+cmeta_id+"-"+cmap_id;
 
             featuredata [idstring] = data;
-
             renderedmaps.push(idstring);
             reVisMap (cmeta_id, cmap_id);
+
+
         },
         error:  function ()
         {
 
-            //TODO: use actual dialog
-            alert("ERROR LOADING MAP");
+            //alert("ERROR LOADING MAP");
+            $("#progspinner_mapload").hide();
+            $(".progressinfo").hide();
+            $("#maploadfinished_fail").show();
+            $("#btn_loadvis_close").show();
+
         }
     });
 }
@@ -477,11 +484,12 @@ function reVisMap (cmeta_id, cmap_id)
 {
     // this only handles elements ADDED to the map, removed ones are handled directly by switchMapVis
 
-    //TODO: PLACEHOLDER, implement
-    $("#progress_mapload").dialog("close");
+    $("#progress_mapload").dialog("open");
+    $(".progressinfo").hide();
+    $("#progspinner_mapload").show();
+    $("#progress_stage_rendering").show();
 
 
-    // TODO: add render warning mask
 
     var idstring = proxy_id+"-"+cmeta_id+"-"+cmap_id;
     // cleaning up to avoid accidental double loads
@@ -490,13 +498,13 @@ function reVisMap (cmeta_id, cmap_id)
     if (renderedmaps.indexOf(idstring)==-1)
     {
         // we do not redraw anything in this case;
+        $("#progress_mapload").dialog("close");
         return;
     }
 
-    // TODO: add STYLING for specific map
-
     if (!mapcolors.hasOwnProperty(idstring))
     {
+        console.log("Setting styler for this map, first time load only");
         mapcolors[idstring] = nextcoloridx;
         nextcoloridx = (nextcoloridx+1)%(allcolors.length);
         var ccolor = allcolors[mapcolors[idstring]];
@@ -508,11 +516,12 @@ function reVisMap (cmeta_id, cmap_id)
 
     // escaping the dot in .st
     var jqstring = "#mapcolorcode_"+idstring.replace(".", "\\.");
-
     $(jqstring).css("background-color", ccolor);
 
+    console.log("Readied styler, ready to render");
 
     renderGeoJSONCollection (featuredata[idstring], proxymap_vislayer);
+    $("#progress_mapload").dialog("close");
 
 
 }
@@ -522,10 +531,19 @@ function renderGeoJSONCollection (jsondata, layer)
 {
     // renders a geojson collection to the visualisation layer
 
+    layer.setVisibility(false);
+
+    console.log("Rendering "+jsondata['features'].length+" features");
 
     var render_errors = [];
     for (var i in jsondata['features'])
     {
+        /* used for debug on canvas renderer
+        if (i % 50 == 0)
+        {
+            console.log("Rendered "+i+" features");
+        }
+        */
 
         // 3d coordinates are flattened to avoid rendering and saving issues
         // MULTILINE and MULTIPOINT have already been sorted out when uploading and translating the map
@@ -579,8 +597,8 @@ function renderGeoJSONCollection (jsondata, layer)
         console.log(render_errors[0]);
     }
 
-
-
+    console.log("Rendering completed");
+    layer.setVisibility(true);
 
 }
 
@@ -2227,7 +2245,7 @@ function buildMapWidget()
     // layer for single map display
     var featurestyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: "#FFFFFF", strokeColor: "#FFFFFF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6,strokeLinecap: "round" }, {rules: []});
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
-    proxymap_vislayer = new OpenLayers.Layer.Vector("Elementi", {name: "Strutture", styleMap: featurestylemap, renderers: ["Canvas"]});
+    proxymap_vislayer = new OpenLayers.Layer.Vector("Elementi", {name: "Strutture", styleMap: featurestylemap});
     proxymap.addLayer(proxymap_vislayer);
 
 
