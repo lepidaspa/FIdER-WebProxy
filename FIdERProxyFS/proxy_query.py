@@ -13,6 +13,7 @@ __docformat__ = 'restructuredtext en'
 
 import psycopg2
 import psycopg2.extensions
+import hashlib
 
 import proxy_config_core as proxyconf
 
@@ -274,7 +275,8 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 			data['type'] = "Feature"
 			data['geometry'] = json.loads(row[fields.index('geometry')])
 
-			#print "GEOM: %s " % data['geometry']
+			data['IDPiper'] = hashlib.md5(json.dumps(data['geometry'])).hexdigest()
+
 
 			properties = {}
 
@@ -288,6 +290,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 						properties[field] = fieldvalues[field][clientvalue]
 					else:
 						properties[field] = clientvalue
+
 
 			data['properties'] = properties
 
