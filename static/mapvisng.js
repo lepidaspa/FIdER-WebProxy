@@ -2183,6 +2183,94 @@ function getMapModel (jsondata)
 
 }
 
+/*
+ Work in progress. Left in for experimentation only, does NOT scale upwards and can cause lockups
+function renderGeoJSONCollectionV2 (jsondata, layer)
+{
+    // renders a geojson collection to the visualisation layer
+
+
+    var render_errors = [];
+    var render_list = [];
+    for (var i in jsondata['features'])
+    {
+
+        // 3d coordinates are flattened to avoid rendering and saving issues
+        // MULTILINE and MULTIPOINT have already been sorted out when uploading and translating the map
+        try
+        {
+            var info2d = jsondata['features'][i];
+            var objtype = info2d['geometry']['type'];
+            var regeom;
+            var newgeom;
+            if (objtype.toUpperCase() == "LINESTRING")
+            {
+                regeom = [];
+                var pregeom;
+                for (var pt in info2d['geometry']['coordinates'])
+                {
+                    info2d['geometry']['coordinates'][pt] = info2d['geometry']['coordinates'][pt].slice(0,2);
+                    console.log("Try reproj to regeom");
+                    console.log(info2d['geometry']['coordinates'][pt]);
+                    pregeom = OpenLayers.LonLat.fromArray(info2d['geometry']['coordinates'][pt]);
+                    regeom[pt] = new OpenLayers.Geometry.Point(regeom.lon, regeom.lat);
+
+                }
+
+                newgeom = new OpenLayers.Geometry.LineString(regeom);
+                newgeom.transform(proj_WGS84, mapview.getProjectionObject());
+
+            }
+            else if (objtype.toUpperCase() == "POINT")
+            {
+                info2d['geometry']['coordinates'] = info2d['geometry']['coordinates'].slice(0,2);
+
+                regeom = OpenLayers.LonLat.fromArray(info2d['geometry']['coordinates']);
+                newgeom = new OpenLayers.Geometry.Point(regeom.lon, regeom.lat);
+                newgeom.transform(proj_WGS84, mapview.getProjectionObject());
+
+
+            }
+
+
+            render_list.push(new OpenLayers.Feature.Vector(newgeom, info2d['properties']));
+        }
+        catch (err)
+        {
+            if (render_errors.length < 100)
+            {
+                console.log(err);
+            }
+            render_errors.push(i);
+        }
+
+
+
+    }
+
+
+    layer.addFeatures(render_list);
+
+
+
+    if (render_errors.length > 0)
+    {
+
+        $("#warning_maploadrenderissues").show();
+
+
+        if (render_errors.length > 100)
+        {
+            console.log("Error reporting stopped at 100th errors of "+render_errors.length);
+        }
+        console.log("Error sample:");
+        console.log(render_errors[0]);
+    }
+}
+
+ */
+
+
 function renderGeoJSONCollection (jsondata, layer)
 {
     // renders a geojson collection to the visualisation layer
