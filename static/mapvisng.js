@@ -58,7 +58,8 @@ var menufunctions = {
     'menu_filter': funcCreateFilter,
     'menu_dloadimage': tryExportView,
     'menu_dloadmapdata': tryExportMapData,
-    'menu_loadimage': initAddImageLayerForm
+    'menu_loadimage': initAddImageLayerForm,
+    'menu_removepoi': unsetPOI
 };
 
 // map controls
@@ -84,6 +85,9 @@ var snaplayer;
 var filterlayer;
 // layer used for WMS background
 var rasterlayer;
+// layer used for markers
+var poilayer;
+
 
 // format used to translate and output coordinates from the map
 var gjformat;
@@ -108,7 +112,7 @@ var limitHeight;
 var limitWidth;
 var sizeMultip;
 
-
+var firstModelView = true;
 
 function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_type, req_manifest, req_proxy_maps, req_models)
 {
@@ -833,6 +837,7 @@ function geosearch(locationdesc)
                     gqdata.results[0].geometry.viewport.northeast.lat).transform(proj_WGS84,
                     proj_900913));
                 mapview.zoomToExtent(gq);
+                setPOI();
 
             }
             else
@@ -960,6 +965,20 @@ function initForms()
 
         }
     });
+
+    $("#modelWarning").dialog({
+        autoOpen: false,
+        modal: true,
+        closeOnEscape: true,
+        width:  "auto",
+        buttons: {
+            "OK": {
+                text: "OK",
+                click: function() {$( this ).dialog( "close" );}
+            }
+        }
+    });
+
 
     $("#maptojson").dialog({
         autoOpen: false,
@@ -1630,7 +1649,9 @@ function loadImageLayer()
         alwaysInRange: true,
         isBaseLayer: false,
         opacity: alpha,
-        displayOutsideMaxExtent: true
+        displayOutsideMaxExtent: true,
+        displayInLayerSwitcher: false
+
     };
 
     var bbox=[];
@@ -1677,6 +1698,62 @@ function loadImageLayer()
     //console.log(rasterlayer.div);
     $("#form_addimagelayer").dialog('close');
 }
+
+function setPOI ()
+{
+
+    //var centerLonLat = mapview.center.transform (new OpenLayers.Projection(proj_WGS84), new OpenLayers.Projection(proj_900913));
+
+    try
+    {
+        poilayer.destroy();
+    }
+    catch (err)
+    {
+        // ignore, no raster layer in use
+    }
+
+    var layeroptions = {
+        alwaysInRange: true,
+        isBaseLayer: false,
+        opacity: 1,
+        displayOutsideMaxExtent: true
+    };
+
+    var imageurl = "/static/resource/icon_poi.png";
+
+    poilayer= new OpenLayers.Layer.Markers(
+        'Punto di riferimento',
+        {
+            displayInLayerSwitcher: false
+        }
+    );
+    mapview.addLayer(poilayer);
+
+
+    var size = new OpenLayers.Size(32, 37);
+    var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+    var icon = new OpenLayers.Icon(imageurl, size, offset);
+    poilayer.addMarker(new OpenLayers.Marker(mapview.center ,icon));
+
+
+
+
+
+}
+
+function unsetPOI()
+{
+    try
+    {
+        poilayer.destroy();
+    }
+    catch (err)
+    {
+        // nothing to do
+    }
+}
+
 
 function tryIntegrateModel()
 {
@@ -2211,7 +2288,11 @@ function reportFailedDownload (xhr,err)
 function initModelWidget()
 {
 
-
+    if (firstModelView)
+    {
+        $("#modelWarning").dialog("open");
+        firstModelView = false;
+    }
 
     var base = $("#modelstruct tbody");
 
@@ -2529,7 +2610,7 @@ function initMapWidget()
     // SNAP layer
     featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#FFFFFF", strokeColor: "#FFFFFF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 8});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
-    snaplayer= new OpenLayers.Layer.Vector("Allineamento", {styleMap: featurestylemap});
+    snaplayer= new OpenLayers.Layer.Vector("Mappa di riferimento", {styleMap: featurestylemap});
 
     // FILTER layer
     featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#188E01", strokeColor: "#188E01", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
@@ -2542,6 +2623,7 @@ function initMapWidget()
     var drawstyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: "#0000FF", strokeColor: "#0000FF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6});
     featurestylemap = new OpenLayers.StyleMap ({'default': defaultstyle, 'select': selectstyle, 'temporary': drawstyle});
     vislayer= new OpenLayers.Layer.Vector("Mappa", {styleMap: featurestylemap});
+
 
     mapview.addLayers([snaplayer, filterlayer, vislayer]);
 
