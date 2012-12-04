@@ -59,7 +59,8 @@ var menufunctions = {
     'menu_dloadimage': tryExportView,
     'menu_dloadmapdata': tryExportMapData,
     'menu_loadimage': initAddImageLayerForm,
-    'menu_removepoi': unsetPOI
+    'menu_removepoi': unsetPOI,
+    'menu_findpoi': tryGeoSearchClick
 };
 
 // map controls
@@ -756,7 +757,11 @@ function tryGeoSearch (event)
         geosearch($('#text_geosearch').val());
         event.preventDefault();
     }
+}
 
+function tryGeoSearchClick ()
+{
+    geosearch($('#text_geosearch').val());
 }
 
 function reverseGeoSearch (featuregeom, writetoid)
@@ -928,7 +933,7 @@ function toggleMenuItems ()
 function interceptCallback ()
 {
     var callerid = this.id;
-    console.log("Intercepted callback for "+callerid);
+    //console.log("Intercepted callback for "+callerid);
     //console.log(menufunctions[callerid]);
 
     menufunctions[callerid]();

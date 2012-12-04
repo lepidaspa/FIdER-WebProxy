@@ -75,12 +75,13 @@ td
 #proxymap
 {
     position:       absolute;
-    top:            0;
+    top:            24px;
     bottom:         0;
     left:           0;
     right:          0;
 
     padding:        0 8px 8px 8px;
+    border-top:       1px solid #ff8800;
 
     background-color:   #cccccc;
 }
@@ -270,4 +271,44 @@ td.mapdetails_long
 .maptitle
 {
     word-wrap:      break-word;
+}
+
+#controlsbar
+{
+    position:       absolute;
+    top:            0;
+    left:           0;
+    right:          0;
+    height:         24px;
+
+    padding:        2px 0px 4px 8px;
+    background-color:   #ffffff;
+
+    vertical-align: middle;
+}
+
+#geofindertool
+{
+    margin-right:               24px;
+
+}
+
+#geofindertool *
+{
+    font-size:                  small;
+    padding-top:                0;
+    margin-top:                 0;
+    vertical-align:             top;
+}
+
+#controlsbar .imgbutton
+{
+    cursor:         pointer;
+    border:         1px solid #ffffff;
+}
+
+#controlsbar .imgbutton:active
+{
+    cursor:         pointer;
+    border:         1px solid #ff8800;
 }

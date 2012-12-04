@@ -6,6 +6,8 @@
  * To change this template use File | Settings | File Templates.
  */
 
+var keycode_ENTER = 13;
+var keycode_ESC = 27;
 
 var proj_WGS84 = "EPSG:4326";
 var proj_900913 = "EPSG:900913";
@@ -26,6 +28,7 @@ var proxymap_activemeta;
 var proxymap_activemap;
 // visualization layer that summarises the contents of the various proxies, canvas rendered as it is NOT interactive
 var proxymap_vislayer;
+var poilayer;
 
 var cmeta_id;
 // used essentially for the conversion table
@@ -55,6 +58,13 @@ var allcolors = [
 ];
 var nextcoloridx = 0;
 var proxymap_visstyles = {};
+
+
+var menufunctions = {
+    'menu_removepoi': unsetPOI,
+    'menu_findpoi': tryGeoSearchClick
+};
+
 
 
 function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
@@ -120,7 +130,24 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $(".maprecap").live('click', openMapRecap);
     $(".metarecap").live('click', openMetaRecap);
 
+    $(".menuopt").live('click', interceptCallback);
+    $("#text_geosearch").live("keyup", tryGeoSearch)
 
+
+}
+
+
+function interceptCallback ()
+{
+    var callerid = this.id;
+    //console.log("Intercepted callback for "+callerid);
+    //console.log(menufunctions[callerid]);
+
+    menufunctions[callerid]();
+
+
+    // stop propagation
+    return false;
 
 }
 
@@ -432,6 +459,130 @@ function switchMapVis()
     }
 
 }
+
+
+
+function tryGeoSearch (event)
+{
+    if (event.keyCode == keycode_ENTER)
+    {
+        //console.log("Enter pressed, launching geosearch");
+        geosearch($('#text_geosearch').val());
+        event.preventDefault();
+    }
+}
+
+function tryGeoSearchClick ()
+{
+    geosearch($('#text_geosearch').val());
+}
+
+
+function setPOI ()
+{
+
+    try
+    {
+        poilayer.destroy();
+    }
+    catch (err)
+    {
+        // ignore, no raster layer in use
+    }
+
+    var layeroptions = {
+        alwaysInRange: true,
+        isBaseLayer: false,
+        opacity: 1,
+        displayOutsideMaxExtent: true
+    };
+
+    var imageurl = "/static/resource/icon_poi.png";
+
+    poilayer= new OpenLayers.Layer.Markers(
+        'Punto di riferimento',
+        {
+            displayInLayerSwitcher: false
+        }
+    );
+    proxymap.addLayer(poilayer);
+
+
+    var size = new OpenLayers.Size(32, 37);
+    var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+    var icon = new OpenLayers.Icon(imageurl, size, offset);
+    poilayer.addMarker(new OpenLayers.Marker(proxymap.center ,icon));
+
+
+
+}
+
+function unsetPOI()
+{
+    try
+    {
+        poilayer.destroy();
+    }
+    catch (err)
+    {
+        // nothing to do
+    }
+}
+
+function geosearch(locationdesc)
+{
+
+    var jg;
+    var path = '/external/maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
+        + locationdesc;
+
+    console.log("Recentering map by search: "+path);
+
+
+    $.getJSON(path, function(gqdata){
+        //console.log(gqdata);
+        if(gqdata.status == "OK"){
+            if (gqdata.results.length > 0){
+
+                //console.log("Results found");
+
+                gq = new OpenLayers.Bounds();
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.southwest.lng,
+                    gqdata.results[0].geometry.viewport.southwest.lat).transform(proj_WGS84,
+                    proj_900913));
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.northeast.lng,
+                    gqdata.results[0].geometry.viewport.northeast.lat).transform(proj_WGS84,
+                    proj_900913));
+                proxymap.zoomToExtent(gq);
+                setPOI();
+
+            }
+            else
+            {
+
+                //console.log("No location found");
+                alert("Impossibile individuare la posizione richiesta.");
+                //console.log(gqdata.results);
+            }
+        }
+        else
+        {
+            //console.log("No location found");
+            alert("Impossibile individuare la posizione richiesta.");
+            //console.log(gqdata.results);
+        }
+    });
+
+    //console.log("DEBUG: codewise after getJSON function, possibly waiting for return value");
+
+
+}
+
+
+
+
 
 
 function loadNakedMap (cmeta_id, cmap_id)
