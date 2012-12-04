@@ -671,13 +671,26 @@ function reVisMap (cmeta_id, cmap_id)
 
     console.log("Readied styler, ready to render");
 
-    renderGeoJSONCollection (featuredata[idstring], proxymap_vislayer);
+    renderGeoJSONCollectionToCanvas (featuredata[idstring], proxymap_vislayer);
     $("#progress_mapload").dialog("close");
 
 
 }
 
+function renderGeoJSONCollectionToCanvas (jsondata, layer)
+{
+    layer.setVisibility(false);
+    console.log("Rendering (for canvas)"+jsondata['features'].length+" features");
 
+    var fstring = JSON.stringify(jsondata);
+    var fmap = gjformat.read(fstring);
+    layer.addFeatures(fmap);
+
+    layer.setVisibility(true);
+
+}
+
+/* no longer needed, kept for backup IF any issues come up with canvas renderer */
 function renderGeoJSONCollection (jsondata, layer)
 {
     // renders a geojson collection to the visualisation layer
@@ -753,35 +766,6 @@ function renderGeoJSONCollection (jsondata, layer)
 
 }
 
-/* not needed anymore, kept temporarily
-
-function addVisLayer(jsondata, textStatus, jqXHR)
-{
-    $("#progress_visload .progressinfo").hide();
-    $("#progspinner_visload").show();
-    $("#progress_stage_visrendering").show();
-
-    var layername = cmeta_id+"-"+cmap_id;
-
-    var featurestyle = new OpenLayers.Style ({fillOpacity: 0.3, fillColor: "#ffffff", strokeColor: "#ffffff", strokeWidth: 2, strokeDashstyle: "solid"});
-    var featurestylemap = new OpenLayers.StyleMap(featurestyle);
-    var proxymap_newvislayer = new OpenLayers.Layer.Vector(layername, {name: layername, styleMap: featurestylemap});
-
-
-    renderGeoJSONCanvas(jsondata, proxymap_newvislayer);
-
-    proxymap.addLayer(proxymap_newvislayer);
-}
-
-
-
-function renderGeoJSONCanvas(jsondata, layer)
-{
-
-    //todo: placeholder, implement
-
-}
- */
 
 function reportFailedVisLoad()
 {
@@ -2396,7 +2380,7 @@ function buildMapWidget()
     // layer for single map display
     var featurestyle = new OpenLayers.Style ( {fillOpacity: 0.3, fillColor: "#FFFFFF", strokeColor: "#FFFFFF", strokeWidth: 3, strokeDashstyle: "solid", pointRadius: 6,strokeLinecap: "round" }, {rules: []});
     var featurestylemap = new OpenLayers.StyleMap(featurestyle);
-    proxymap_vislayer = new OpenLayers.Layer.Vector("Elementi", {name: "Strutture", styleMap: featurestylemap});
+    proxymap_vislayer = new OpenLayers.Layer.Vector("Elementi", {name: "Strutture", styleMap: featurestylemap, renderers: ["Canvas", "SVG", "VML"]});
     proxymap.addLayer(proxymap_vislayer);
 
 
