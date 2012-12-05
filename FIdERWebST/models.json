@@ -4,11 +4,11 @@
         "objtype": "Point",
         "name": "Nodo",
         "properties": {
-            "OwnerID": "str",
-            "Owner": "str",
-            "Depth": "int",
-            "Type": "str",
-            "Infrastructure": ["TLC", "Illuminazione", "Rete elettrica", "Rete idrica"]
+            "IDProprietario": "str",
+            "Proprietario": "str",
+            "Profondità": "int",
+            "Tipo": "str",
+            "Infrastruttura": ["Telecomunicazioni", "Pubblica illuminazione", "Rete elettrica", "Rete idrica", "Rete semaforica", "Rete gas", "Piste ciclabili", "Fognature", "Teleriscaldamento", ]
         }
     },
     "DefaultLine" :
@@ -16,14 +16,14 @@
         "objtype": "LineString",
         "name": "Tratta",
         "properties": {
-            "OwnerID": "str",
-            "Owner": "str",
-            "Length": "int",
-            "Depth": "int",
-            "Type": "str",
-            "StartID": "str",
-            "EndID": "str",
-            "Infrastructure": ["TLC", "Illuminazione", "Rete elettrica", "Rete idrica"]
+            "IDProprietario": "str",
+            "Proprietario": "str",
+            "Lunghezza": "int",
+            "Profondità": "int",
+            "Tipo": "str",
+            "IDInizio": "str",
+            "IDFine": "str",
+            "Infrastruttura": ["Telecomunicazioni", "Pubblica illuminazione", "Rete elettrica", "Rete idrica", "Rete semaforica", "Rete gas", "Piste ciclabili", "Fognature", "Teleriscaldamento", ]
         }
     }
 }
