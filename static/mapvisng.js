@@ -206,6 +206,9 @@ function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_ty
 
     $("#text_geosearch").live("keyup", tryGeoSearch)
 
+
+    initFiltersForm();
+
 }
 
 function tryExportMapData()
