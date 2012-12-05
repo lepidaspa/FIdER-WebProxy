@@ -158,47 +158,31 @@ def getModels ():
 	"""
 
 	#print os.getcwd()
-	models = json.load(open(os.path.join("FIdERWebST", "models.json")))
-
-	"""
-	models = {
-		'DefaultPoint' :
-			{
-				'objtype': 'Point',
-				'name': 'Nodo',
-				'properties': {
-					'OwnerID': 'str',
-					'Owner': 'str',
-					'Depth': 'int',
-					'Type': 'str',
-					'Infrastructure': ['TLC', 'Illuminazione', 'Rete elettrica', 'Rete idrica']
-				}
-			},
-		'DefaultLine' :
-			{
-				'objtype': 'LineString',
-				'name': 'Tratta',
-				'properties': {
-					'OwnerID': 'str',
-					'Owner': 'str',
-					'Length': 'int',
-					'Depth': 'int',
-					'Type': 'str',
-					'StartID': 'str',
-					'EndID': 'str',
-					'Infrastructure': ['TLC', 'Illuminazione', 'Rete elettrica', 'Rete idrica']
-				}
-			}
-	}
-	"""
-
+	modelfile = os.path.join("FIdERWebST", "models.json")
+	backupfile = os.path.join ("FIdERWebST", "models.json.backup")
+	fp = open(modelfile)
+	models = json.load(fp)
+	fp.close()
 
 	# maps models are not "registered" and will be loaded from the editor itself "on the fly"
 
 	hasmodels, models_fider = Components.getModelsFromServer()
 	if hasmodels:
-		for model_key in models_fider.keys():
-			models[model_key] = models_fider[model_key]
+		print "received models from external server: %s" % models_fider.keys()
+		try:
+			for model_key in models_fider.keys():
+				models[model_key] = models_fider[model_key]
+			fp = open(backupfile, 'w+')
+			json.dump(models, fp)
+			fp.close()
+		except Exception as ex:
+			print "could not add server models to local models dict"
+		else:
+			shutil.copy(backupfile, modelfile)
+
+
+	else:
+		print "did not receive models from external server"
 
 	return models
 
