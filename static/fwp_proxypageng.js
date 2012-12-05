@@ -930,6 +930,8 @@ function openConversionScreen()
 {
     // hides the map widget to show the conversion widget
     $("#proxymap").hide();
+    $("#controlsbar").hide();
+
     $("#form_setconversion").show();
     $("#convtable_headers").hide();
     $("#valueconv_save").hide();
@@ -1101,7 +1103,10 @@ function closeConversionScreen()
     $("#convtable_modelselect").empty();
     $("#convtable_datasets").empty();
     $("#form_setconversion").hide();
+
+
     $("#proxymap").show();
+    $("#controlsbar").show();
 }
 
 function renderConvSelection (jsondata)
