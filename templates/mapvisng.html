@@ -452,15 +452,13 @@
 
         <div class="formbriefing">
             Selezionare un modello o una mappa presente nel sistema.<br>
-            È possibile selezionare solo mappe e modelli con la stessa geometria di base della mappa in uso.<br>
-            Questa modifica non può essere annullata.
-        </div>
+            È possibile selezionare solo mappe e modelli con la stessa geometria di base della mappa in uso.        </div>
 
     <select id="models_available">
         <optgroup label="Modelli">
             {% for model_id, modeldata in rawmodels.items %}
                 {% if modeldata.objtype == maptype %}
-                    <option value=".mdl/{{ model_id }}">{{ model_id }}</option>
+                    <option value=".mdl/{{ model_id }}">{{ modeldata.name }}</option>
                 {% endif %}
             {% endfor %}
         </optgroup>
@@ -476,7 +474,9 @@
             </optgroup>
         {% endfor %}
     </select>
-
+        <div class="formbriefing" >
+            <span class="warninglabel">Attenzione</span>: questa modifica non può essere annullata.
+        </div>
 
 </div>
 
