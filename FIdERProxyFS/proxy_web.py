@@ -163,10 +163,10 @@ def deleteMap (proxy_id, meta_id, shape_id):
 
 		try:
 
-			if proxy_core.isRemoteMap:
+			if proxy_core.isRemoteMap(proxy_id, meta_id, shape_id):
 				os.remove(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id, shape_id+'.wfs'))
 
-			if proxy_core.isFTPMap:
+			if proxy_core.isFTPMap(proxy_id, meta_id, shape_id):
 				os.remove(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id, shape_id+'.ftp'))
 		except Exception as ex:
 			feedback ['report'] = 'Cancellazione dei dati di riferimento remoto fallita: %s' % ex
