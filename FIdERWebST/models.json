@@ -8,7 +8,7 @@
             "Proprietario": "str",
             "Profondità": "int",
             "Tipo": "str",
-            "Infrastruttura": ["Telecomunicazioni", "Pubblica illuminazione", "Rete elettrica", "Rete idrica", "Rete semaforica", "Rete gas", "Piste ciclabili", "Fognature", "Teleriscaldamento", ]
+            "Infrastruttura": ["Telecomunicazioni", "Pubblica illuminazione", "Rete elettrica", "Rete idrica", "Rete semaforica", "Rete gas", "Piste ciclabili", "Fognature", "Teleriscaldamento" ]
         }
     },
     "DefaultLine" :
@@ -23,7 +23,7 @@
             "Tipo": "str",
             "IDInizio": "str",
             "IDFine": "str",
-            "Infrastruttura": ["Telecomunicazioni", "Pubblica illuminazione", "Rete elettrica", "Rete idrica", "Rete semaforica", "Rete gas", "Piste ciclabili", "Fognature", "Teleriscaldamento", ]
+            "Infrastruttura": ["Telecomunicazioni", "Pubblica illuminazione", "Rete elettrica", "Rete idrica", "Rete semaforica", "Rete gas", "Piste ciclabili", "Fognature", "Teleriscaldamento" ]
         }
     }
 }
