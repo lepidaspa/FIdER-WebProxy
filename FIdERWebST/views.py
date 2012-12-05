@@ -173,10 +173,11 @@ def getModels ():
 			for model_key in models_fider.keys():
 				models[model_key] = models_fider[model_key]
 			fp = open(backupfile, 'w+')
-			json.dump(models, fp)
+			json.dump({"DefaultLine": models['DefaultLine'], "DefaultPoint": models['DefaultPoint']}, fp)
 			fp.close()
 		except Exception as ex:
 			print "could not add server models to local models dict"
+			print ex
 		else:
 			shutil.copy(backupfile, modelfile)
 

@@ -1255,6 +1255,8 @@ function funcSaveMap ()
 
 
     var basesavename = map_id;
+    if (basesavename == "DefaultLine") { basesavename = "Tratte" };
+    if (basesavename == "DefaultPoint") { basesavename = "Nodi" };
     if (map_id.length > 9 && map_id.substring(map_id.length-9).match(/_[0-9]{8}/))
     {
         basesavename = map_id.substring(0,map_id.length-9);
