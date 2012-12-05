@@ -726,7 +726,6 @@ def proxy_create_conversion (request):
 		shape_path = os.path.join (proxyconf.baseproxypath, proxy_id, "conf/mappings", meta_id, shape_id)
 
 		try:
-			#TODO: add lock file support (really needed?)
 			fp = open(shape_path, 'w+')
 			json.dump(convtable, fp)
 			fp.close()

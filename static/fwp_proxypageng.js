@@ -960,7 +960,7 @@ function saveConversionTable()
     $("#progress_stage_convsaving").show();
 
 
-    var conversion = { "fields": {}, "forcedfields": {}};
+    var conversion = { "fields": {}, "forcedfields": {}, "unmapped": []};
 
     conversion ['modelid'] = model_id;
 
@@ -979,6 +979,7 @@ function saveConversionTable()
 
         if (sourcefield == "")
         {
+            conversion['unmapped'].push(fieldname);
             continue;
         }
 

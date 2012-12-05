@@ -1224,7 +1224,7 @@ def adaptGeoJson (jsondata, conversiontable=None):
 
 
 	if conversiontable is None or (not conversiontable.has_key('forcedfields')) or (not conversiontable.has_key('fields')):
-		conversiontable = {'forcedfields':{}, 'fields':{}}
+		conversiontable = {'forcedfields':{}, 'fields':{}, 'unmapped':{}}
 
 	newdict = {}
 	try:
@@ -1262,7 +1262,15 @@ def adaptGeoJson (jsondata, conversiontable=None):
 	for itemto in forcedlist:
 		newdict[itemto] = forcedlist[itemto]['']
 
+	try:
+		for unmapped in conversiontable['unmapped']:
+			newdict[unmapped] = None
+	except Exception as ex:
+		#  supporting older conversion tables
+		pass
+
 	jsondata['properties'] = newdict
+
 
 	return jsondata
 
