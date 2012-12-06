@@ -275,7 +275,6 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 			data['type'] = "Feature"
 			data['geometry'] = json.loads(row[fields.index('geometry')])
 
-			data['IDPiper'] = 'query_'+proxy_id+hashlib.md5(json.dumps(data['geometry'])).hexdigest()
 
 
 			properties = {}
@@ -293,6 +292,9 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 
 			data['properties'] = properties
+			data['properties']['IDPiper'] = 'query_'+proxy_id+hashlib.md5(json.dumps(data['geometry'])).hexdigest()
+
+
 
 			collection.append(data)
 
