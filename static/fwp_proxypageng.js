@@ -133,6 +133,8 @@ function pageInit (req_proxy_id, req_proxy_type, req_manifest, req_proxy_maps)
     $(".menuopt").live('click', interceptCallback);
     $("#text_geosearch").live("keyup", tryGeoSearch)
 
+    // fix for Mozilla Firefox quickreload quirk
+    $('input[type=checkbox]').attr('checked',false);
 
 }
 
