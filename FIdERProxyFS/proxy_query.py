@@ -294,7 +294,12 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 			data['properties'] = properties
 			data['properties']['IDPiper'] = 'query_'+proxy_id+hashlib.md5(json.dumps(data['geometry'])).hexdigest()
 
-
+			try:
+				for unmapped in valuestable['unmapped']:
+					data['properties'][unmapped] = None
+			except Exception as ex:
+				#  supporting older conversion tables
+				pass
 
 			collection.append(data)
 
