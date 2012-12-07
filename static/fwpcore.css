@@ -30,6 +30,22 @@ body
     font-weight:        bold;
 }
 
+input[type=button]
+{
+    color:              #ffffff;
+    background-color:   #ff8800;
+    border:             1px solid #ff8800;
+}
+
+.button, .fbutton
+{
+    color:              #ffffff;
+    background-color:   #ff8800;
+    border:             1px solid #ff8800;
+    text-align:         center;
+
+}
+
 
 .ui-button
 {
@@ -42,11 +58,6 @@ body
     color:              #000000;
 }
 
-.ui-button:disabled
-{
-    background:         #bbb7b9;
-    color:              #000000;
-}
 
 .ui-button:active
 {
@@ -54,6 +65,11 @@ body
     color:              #ffffff;
 }
 
+.ui-button:disabled
+{
+    background:         #bbb7b9;
+    color:              #000000;
+}
 
 a
 {
@@ -154,21 +170,7 @@ input:disabled, select:disabled
 
 
 
-input[type=button]
-{
-    color:              #ffffff;
-    background-color:   #ff8800;
-    border:             1px solid #ff8800;
-}
 
-.button, .fbutton
-{
-    color:              #ffffff;
-    background-color:   #ff8800;
-    border:             1px solid #ff8800;
-    text-align:         center;
-
-}
 
 a.backtrack
 {
