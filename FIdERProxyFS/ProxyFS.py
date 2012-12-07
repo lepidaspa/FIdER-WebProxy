@@ -353,9 +353,11 @@ def sendUpdatesWrite (proxy_id):
 
 def sideloadST (proxy_id, meta_id, stmap_id, saveto_id):
 
+	saveto_id = re.sub(r'[^\w._]+', "_", saveto_id)
 
 	uploadpath = os.path.join(conf.baseuploadpath, proxy_id, meta_id, saveto_id+".zip")
 	frompath = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, stmap_id)
+
 
 	with zipfile.ZipFile(uploadpath, 'w') as datazip:
 		datazip.write(frompath, stmap_id+".geojson")
@@ -391,7 +393,7 @@ def uploadFTP (proxy_id, meta_id, map_id, connect, setforupdate=False):
 	'report': ''
 	}
 
-	filename = re.sub(r'[^\w._]+', "", connect['path'].split("/")[-1])
+	filename = re.sub(r'[^\w._]+', "_", connect['path'].split("/")[-1])
 
 	authstring = ""
 	if connect['user'] not in (None, ""):
@@ -494,6 +496,8 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 		return response_upload
 
 	print "Received WFS data"
+
+	map_id= re.sub(r'[^\w._]+', "_", map_id)
 
 	gjfeatures = []
 	for feature in layer:

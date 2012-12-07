@@ -88,6 +88,8 @@ var filterlayer;
 var rasterlayer;
 // layer used for markers
 var poilayer;
+// layer to keep highlighted feature when in measure mode
+var hllayer;
 
 
 // format used to translate and output coordinates from the map
@@ -114,6 +116,9 @@ var limitWidth;
 var sizeMultip;
 
 var firstModelView = true;
+
+
+var highlighted = null;
 
 function pageInit( req_proxy_id, req_meta_id, req_map_id, req_mode, req_proxy_type, req_manifest, req_proxy_maps, req_models)
 {
@@ -2990,8 +2995,6 @@ function renderFeatureCard(caller)
     cfid  = feature.id;
 
     console.log("Viewing/editing feature "+cfid);
-    console.log(feature);
-
 
     var isline = feature.geometry.hasOwnProperty('components');
     var desthtml;
@@ -3186,11 +3189,23 @@ function addFeatureCB()
 
 function freeSelection()
 {
+
+    try
+    {
+        hllayer.destroy();
+    }
+    catch (err)
+    {
+        // pass, layer already destroyed
+    }
+
     $("#featuredetails").empty();
     $("#featureloc").empty();
     $("#measuredetails").hide();
     $("#featuredesc tbody").empty();
     $("#featurecard").hide();
+
+    highlighted = null;
 
     try
     {

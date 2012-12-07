@@ -1400,7 +1400,7 @@ def proxy_uploadmap (request, **kwargs):
 		if shape_id is None or shape_id == "":
 			shape_id = upload.name[:-4]
 
-		shape_id = re.sub(r'[^\w._]+', "", shape_id)
+		shape_id = re.sub(r'[^\w._]+', "_", shape_id)
 
 		print "FORM: Uploading file to %s/%s/%s" % (proxy_id, meta_id, shape_id)
 
