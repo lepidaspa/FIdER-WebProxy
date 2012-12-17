@@ -266,6 +266,8 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 	print "Quick conv table is %s " % fieldvalues
 
+
+
 	errors = 0
 	for row in results:
 
@@ -292,7 +294,11 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 
 
 			data['properties'] = properties
-			data['properties']['IDPiper'] = 'query_'+proxy_id+hashlib.md5(json.dumps(data['geometry'])).hexdigest()
+			piperhash = hashlib.new('md5')
+			piperhash.digest_size = 8
+			piperhash.update(json.dumps(data['geometry']))
+			#data['properties']['IDPiper'] = 'query_'+proxy_id+hashlib.md5(json.dumps(data['geometry'])).hexdigest()
+			data['properties']['IDPiper'] = 'query_'+proxy_id+piperhash.hexdigest()
 
 			try:
 				for unmapped in valuestable['unmapped']:
