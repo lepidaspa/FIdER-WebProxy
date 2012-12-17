@@ -293,7 +293,7 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 						properties[field] = clientvalue
 
 
-			data['properties']['IDPiper'] = 'query_'+hashlib.md5(proxy_id+json.dumps(data['geometry'])).hexdigest()[:8]
+			data['properties']['IDPiper'] = 'query_'+hashlib.md5(json.dumps(data['geometry'])).hexdigest()[:8]
 
 			try:
 				for unmapped in valuestable['unmapped']:
