@@ -293,8 +293,8 @@ def makeSelectFromJson (proxy_id, meta_id, map_id, jsonmessage):
 						properties[field] = clientvalue
 
 			piperhash = hashlib.md5(json.dumps(data['geometry'])).hexdigest()
-			print piperhash
-
+			#print piperhash
+			data['properties'] = properties
 			data['properties']['IDPiper'] = 'query_'+piperhash[:8]
 
 			try:
