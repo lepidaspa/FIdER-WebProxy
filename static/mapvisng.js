@@ -1353,6 +1353,7 @@ function trySaveMap ()
 
     var mapjson = layerToJSON(vislayer, mapname);
 
+
     var urlstring = "/fwst/saveng/"+proxy_id+"/"+mapmeta+"/"+mapname+"/";
 
     console.log("Sending ajax data for map save");
@@ -1500,9 +1501,13 @@ function layerToJSON(layer, mapid)
         for (var propname in modeldata['properties'])
         {
             // we add empty values for any property that should not be already created in the feature
-            if (!props.hasOwnProperty(propname))
+            if (!layer.features[fid].hasOwnProperty(propname))
             {
                 props[propname] = "";
+            }
+            else
+            {
+                props[propname] = layer.features[fid][propname];
             }
         }
 
@@ -2100,8 +2105,8 @@ function applyNewMap(newdata, textStatus, jqXHR)
 
     }
 
-    renderGeoJSONCollection(newdata, vislayer);
     reintegrateModel(newdata);
+    renderGeoJSONCollection(newdata, vislayer);
     autoZoom(mapview);
 
     $("#progress_stage_rendering").hide();
@@ -2119,6 +2124,10 @@ function applyNewMap(newdata, textStatus, jqXHR)
     if (vismode == 'modeledit')
     {
         funcShowModel();
+    }
+    else
+    {
+        funcShowMap();
     }
 
     initFiltersForm();
