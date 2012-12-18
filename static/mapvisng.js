@@ -1501,13 +1501,13 @@ function layerToJSON(layer, mapid)
         for (var propname in modeldata['properties'])
         {
             // we add empty values for any property that should not be already created in the feature
-            if (!layer.features[fid].hasOwnProperty(propname))
+            if (!layer.features[fid]['properties'].hasOwnProperty(propname))
             {
                 props[propname] = "";
             }
             else
             {
-                props[propname] = layer.features[fid][propname];
+                props[propname] = layer.features[fid]['properties'][propname];
             }
         }
 
