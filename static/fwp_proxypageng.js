@@ -34,15 +34,12 @@ var cmeta_id;
 // used essentially for the conversion table
 var cmap_id;
 
-
 var conv_hasmodels;
 var conv_hastable;
-
 
 var conv_table;
 var conv_fields;
 var conv_models;
-
 
 var forcefieldstring = "+";
 
@@ -54,7 +51,7 @@ var featuredata = {};
 var mapcolors = {};
 var allcolors = [
     "#fff700",    "#ff00b3",    "#00D9FF",      "#73DB1E",      "#FF0036",      "#A81BFF",
-    "#FFC88A",    "#A6ABFF",      "#D7A1FF",      "#8AFF92",     "#00A557"
+    "#FFC88A",    "#A6ABFF",      "#D7A1FF",      "#8AFF92"
 ];
 var nextcoloridx = 0;
 var proxymap_visstyles = {};
