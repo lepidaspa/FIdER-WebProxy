@@ -222,7 +222,7 @@ function tryExportMapData()
 
     $("#maptojson").dialog("open");
 
-    var linkstring = $("<a>Scarica mappa</a>");
+    var linkstring = $("<a>Scarica vista</a>");
     var metadesc = meta_id == ".st" ? "Lavorazione" : meta_id;
 
     linkstring.attr('href', "/fwp/getng/"+proxy_id+"/"+meta_id+"/"+map_id+"/src/");
