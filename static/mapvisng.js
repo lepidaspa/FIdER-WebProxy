@@ -358,7 +358,7 @@ function renderExportableMap (rawimagedata)
         renderVectorLayerToCanvas(vislayer, canvas);
 
 
-        var linkstring = $("<a>Scarica mappa</a>");
+        var linkstring = $("<a>Scarica vista</a>");
         linkstring.attr('href', canvas.toDataURL());
         linkstring.attr('download', map_id+".png");
         $("#mapdloadlinkpng").empty().append(linkstring);
