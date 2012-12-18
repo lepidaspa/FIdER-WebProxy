@@ -2393,7 +2393,7 @@ function initModelWidget()
 
     if (firstModelView)
     {
-        $("#modelWarning").dialog("open");
+        //$("#modelWarning").dialog("open");
         firstModelView = false;
     }
 
