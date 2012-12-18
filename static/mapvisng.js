@@ -1830,7 +1830,7 @@ function reintegrateModel(mapdata)
     console.log("Integrating map model from data");
 
     //extracts the model from a map and integrates with the current one
-    var proplist;
+    var proplist = {};
 
     if (mapdata.hasOwnProperty('model'))
     {
