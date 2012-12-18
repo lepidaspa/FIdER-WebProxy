@@ -109,8 +109,13 @@
                     {% if maptype == 'LineString' %}
                         Tratte
                         {% else %}
-                        Nodi
+                            {% if maptype == 'Point' %}
+                                Nodi
+                            {% else %}
+                                Elementi
+                            {% endif %}
                         {% endif %}
+                    {% endif %}
                 </td>
                 <td class="mapdesc_info" id="mapdesc_mapfeatures">0</td>
             </tr>

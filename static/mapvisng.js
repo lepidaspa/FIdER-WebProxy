@@ -1357,7 +1357,7 @@ function trySaveMap ()
     var urlstring = "/fwst/saveng/"+proxy_id+"/"+mapmeta+"/"+mapname+"/";
 
     console.log("Sending ajax data for map save");
-    console.log(mapjson);
+    //console.log(mapjson);
 
 
     $.ajax (
@@ -1501,13 +1501,13 @@ function layerToJSON(layer, mapid)
         for (var propname in modeldata['properties'])
         {
             // we add empty values for any property that should not be already created in the feature
-            if (!layer.features[fid]['properties'].hasOwnProperty(propname))
+            if (!layer.features[fid]['attributes'].hasOwnProperty(propname))
             {
                 props[propname] = "";
             }
             else
             {
-                props[propname] = layer.features[fid]['properties'][propname];
+                props[propname] = layer.features[fid]['attributes'][propname];
             }
         }
 
