@@ -97,7 +97,7 @@ Gestione dati e cataloghi
         {% for map_id, mapdata in maplist.items %}
 
             <tr class="mapcard" id="mapcard_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">
-                <td class="maptitle"><span class="mapcolorcode" id="mapcolorcode_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">&nbsp;</span>{% if proxy_type != 'query' %}<input type="checkbox" class="switchmapvis" id="mapvis_{{ meta_id }}-{{ map_id }}">{% endif %}{{ map_id }}</td> <td>{{  mapdata.source }}</td>
+                <td class="maptitle"><span class="mapcolorcode" id="mapcolorcode_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">&nbsp;</span><input type="checkbox" class="switchmapvis" id="mapvis_{{ meta_id }}-{{ map_id }}">{{ map_id }}</td> <td>{{  mapdata.source }}</td>
                 <td class="actionstd">
                         <img class="imgbutton maprecap" id="maprecap_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
                     {% if proxy_type != 'query' %}
