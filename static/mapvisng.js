@@ -690,6 +690,8 @@ function applyFilters()
 
     console.log("Filtered "+filterlayer.features.length+" features");
 
+    $("#menu_filter").addClass("redbgr");
+
 
 }
 
@@ -722,6 +724,8 @@ function removeAllFilters()
     $(".filter_fieldcriteria").val("");
     $(".filter_fieldcriteria").change();
     filterlayer.destroyFeatures();
+    $("#menu_filter").removeClass("redbgr");
+
 
 }
 

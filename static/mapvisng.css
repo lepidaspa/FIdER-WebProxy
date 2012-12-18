@@ -370,3 +370,7 @@ tr, tr *
     font-weight:        normal;
 }
 
+.redbgr
+{
+    background-color:   #ff0000;
+}
