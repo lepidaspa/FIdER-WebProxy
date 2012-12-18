@@ -630,7 +630,7 @@ function loadNakedMap (cmeta_id, cmap_id)
     });
 }
 
-
+/*
 function strToInt(candidate)
 {
 
@@ -643,6 +643,7 @@ function strToInt(candidate)
     return intval;
 
 }
+*/
 
 
 function reVisMap (cmeta_id, cmap_id)
@@ -669,7 +670,7 @@ function reVisMap (cmeta_id, cmap_id)
 
 
 
-    /*
+
     if (!mapcolors.hasOwnProperty(idstring))
     {
         console.log("Setting styler for this map, first time load only");
@@ -679,13 +680,13 @@ function reVisMap (cmeta_id, cmap_id)
         proxymap_visstyles [idstring] = {"fillColor": ccolor, "strokeColor": ccolor };
         proxymap_vislayer.styleMap.addUniqueValueRules("default", "source", proxymap_visstyles);
     }
-    */
 
+    /*
     var colorcode = strToInt(idstring)%allcolors.length;
     var ccolor = allcolors[colorcode];
     proxymap_visstyles [idstring] = {"fillColor": ccolor, "strokeColor": ccolor };
     proxymap_vislayer.styleMap.addUniqueValueRules("default", "source", proxymap_visstyles);
-
+    */
     // escaping the dot in .st
     var jqstring = "#mapcolorcode_"+idstring.replace(".", "\\.");
 
