@@ -734,7 +734,7 @@ function replicatePropValue()
 
     if (filterlayer.features.length == 0)
     {
-        alert("Per replicare i valori è necessario impostare un filtro");
+        alert("Nessun elemento su cui applicare il valore.");
         return;
     }
 
@@ -1853,7 +1853,7 @@ function reintegrateModel(mapdata)
         for (var propname in cfeature['properties'])
         {
 
-            if (proplist.indexOf(propname)==-1 && cfeature['properties'][propname] != "")
+            if (proplist.indexOf(propname)==-1)
             {
                 proplist[propname] = cfeature['properties'][propname];
             }
