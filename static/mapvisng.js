@@ -1853,9 +1853,9 @@ function reintegrateModel(mapdata)
         var cfeature = mapdata['features'][i];
         for (var propname in cfeature['properties'])
         {
-            if (proplist.indexOf(propname)==-1)
+            if (!proplist.hasOwnProperty(propname))
             {
-                proplist[propname] = cfeature['properties'][propname];
+                proplist[propname] = "str";
             }
         }
 
