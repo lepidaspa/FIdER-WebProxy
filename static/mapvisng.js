@@ -1847,12 +1847,12 @@ function reintegrateModel(mapdata)
     }
 
 
-    for (var cfeature in mapdata['features'])
+    for (var i = 0; i < mapdata['features'].length; i++)
     {
 
+        var cfeature = mapdata['features'][i];
         for (var propname in cfeature['properties'])
         {
-
             if (proplist.indexOf(propname)==-1)
             {
                 proplist[propname] = cfeature['properties'][propname];
@@ -2109,7 +2109,7 @@ function applyNewMap(newdata, textStatus, jqXHR)
 
     }
 
-    reintegrateModel(getMapModel(newdata));
+    reintegrateModel(newdata);
     renderGeoJSONCollection(newdata, vislayer);
     autoZoom(mapview);
 
