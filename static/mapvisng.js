@@ -2109,7 +2109,7 @@ function applyNewMap(newdata, textStatus, jqXHR)
 
     }
 
-    reintegrateModel(newdata);
+    reintegrateModel(getMapModel(newdata));
     renderGeoJSONCollection(newdata, vislayer);
     autoZoom(mapview);
 
