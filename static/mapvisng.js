@@ -571,7 +571,9 @@ function initFilterValueList()
 function applyFilters()
 {
 
+    $("#mapdesc_filterfeatures").empty();
     filterlayer.destroyFeatures();
+
 
     var conditions = [];
     var fieldsels = $(".filter_fieldcriteria");
@@ -690,6 +692,8 @@ function applyFilters()
 
     console.log("Filtered "+filterlayer.features.length+" features");
 
+    $("#mapdesc_filterfeatures").append("(filtro: "+filterlayer.features.length+")");
+
     $("#menu_filter").addClass("redbgr");
 
 
@@ -723,8 +727,10 @@ function removeAllFilters()
 
     $(".filter_fieldcriteria").val("");
     $(".filter_fieldcriteria").change();
+    $("#mapdesc_filterfeatures").empty();
     filterlayer.destroyFeatures();
     $("#menu_filter").removeClass("redbgr");
+
 
 
 }
@@ -2137,7 +2143,7 @@ function applyNewMap(newdata, textStatus, jqXHR)
     initFiltersForm();
 
     $("#mapdesc_mapfeatures").empty().append(vislayer.features.length);
-
+    $("#mapdesc_filterfeatures").empty();
 }
 
 
