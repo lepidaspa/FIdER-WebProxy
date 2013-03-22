@@ -1,0 +1,663 @@
+{% extends "fwpcore.html" %}
+
+
+
+{% block title %}
+
+    {% if mode == 'modeledit' %}
+        Gestione modello
+    {% endif %}
+
+    {% if mode == 'mapview' %}
+        Visualizzazione dati
+    {% endif %}
+
+    {% if mode == 'mapedit' %}
+        Modifica mappe
+    {% endif %}
+
+    {% if mode == 'full' %}
+        Area di lavorazione
+    {% endif %}
+
+{% endblock %}
+
+
+{% block headers %}
+
+    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false" xmlns="http://www.w3.org/1999/html"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}mapvisng.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwstui.css">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}mapvisng.css">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}gis.css">
+
+{% endblock %}
+
+
+{% block navigation %}
+
+
+
+<div id="proxyinfo">
+
+
+    <a title="Riepilogo istanza" href="/fwp/proxyng/{{ proxy_id }}/" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a>
+
+    {% if proxy_type != 'local' %}
+        {% if proxy_type != 'linked' %}
+            Proxy
+        {% else %}
+            Proxy standalone
+        {% endif %}
+    {% else %}
+        Piattaforma standalone
+    {% endif %}
+
+    <span class="proxytitle">{{ proxy_name }}</span>
+
+</div>
+
+
+<div id="operations">
+
+
+    <!-- to be removed -->
+
+
+</div>
+
+
+    <!-- map details, temporary -->
+    <div id="mapdetails">
+    {% if mode == 'mapview' or mode == 'mapedit' or mode == 'modeledit' %}
+
+
+        <table id="mapdesctable">
+            <tr>
+                <td class="mapdesc_label">
+                    {% if proxy_type == 'local' %}
+                        Area
+                        {% else %}
+                        Catalogo
+                    {% endif %}
+                </td>
+                <td class="mapdesc_info">
+                    {% if meta_id == '.st' or meta_id == '.create' %}
+                        Area di lavorazione
+                        {% else %}
+                    {{ meta_id }}{% endif %}</td>
+            </tr>
+            <tr>
+                <td class="mapdesc_label">
+                    {% if proxy_type == 'query' %}
+                        Connessione
+                        {% else %}
+                        {% if meta_id == '.create' %}Nuova mappa{% else %}Mappa{% endif %}
+                    {% endif %}
+                </td>
+                <td class="mapdesc_info" id="mapdesc_mapname">{% if meta_id == ".create" %}
+                    {% for modelid, model in  rawmodels.items %}
+                        {% if modelid == map_id %}
+                            {{ model.name }}
+                        {% endif %}
+                    {% endfor %}
+                {% else %}{{ map_id }}{% endif %}</td>
+            </tr>
+            <tr>
+                <td class="mapdesc_label">
+                    {% if maptype == 'LineString' %}
+                        Tratte
+                        {% else %}
+                            {% if maptype == 'Point' %}
+                                Nodi
+                            {% else %}
+                                Elementi
+                            {% endif %}
+                    {% endif %}
+
+
+                </td>
+                <td class="mapdesc_info"><span id="mapdesc_mapfeatures">0</span> <span id="mapdesc_filterfeatures"></span></td>
+            </tr>
+
+        </table>
+
+    {% endif %}
+    </div>
+
+    <div id="featurecard">
+
+        {%  if mode == 'mapedit' or mode == 'full' %}
+            <img id="button_removefeature" class="imgbtn" title="Elimina oggetto" src="{{ STATIC_URL }}resource/visng_controls_deleteitem.png">
+        {% endif %}
+
+        <div id="featuredetails"></div>
+        <div id="featureloc"></div>
+
+        <table id="featuredesc">
+            <thead>
+                <tr>
+                    <td>Campo</td>
+                    <td>Valore</td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+
+
+    </div>
+
+    <div id="measuredetails">
+
+        <table id="measuredata">
+            <tr>
+                <td><span class=textlabel>Distanza totale</span></td><td id="measure_overall"></td>
+                </tr><tr>
+                <td><span class=textlabel>Ampiezza nord-sud</span></td><td id="measure_ns"></td>
+        </tr><tr>
+                <td><span class=textlabel>Ampiezza est-ovest</span></td><td id="measure_ew"></td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+
+
+
+{% endblock %}
+
+
+
+
+{% block functionality %}
+
+
+<div id="form_loadsnap" title="Caricamento riferimenti">
+
+    <div class="formbriefing">
+        Selezionare una mappa presente nel sistema.<br>
+        Gli oggetti della mappa verranno usati come punti di aggancio per gli oggetti tracciati sulla mappa attiva.
+    </div>
+
+    <select id="newsnap_load">
+        <option value=""></option>
+        {% for cmeta_id, maplist in proxy_maps.items %}
+            <optgroup label="{% if cmeta_id == ".st" %}Area di lavorazione{% else %}{{ cmeta_id }}{% endif %}">
+                {% for map_id, mapdata in maplist.items %}
+                    <option value="{{ cmeta_id }}/{{ map_id }}">{{ map_id }}</option>
+                {% endfor %}
+            </optgroup>
+        {% endfor %}
+    </select>
+
+</div>
+
+<div id="form_loadmodel" title="Integrazione modelli">
+
+
+
+</div>
+
+
+
+
+<div id="form_geoshift" title="Traslazione mappa">
+
+    <div class="formbriefing">
+        Questo strumento sposta tutti i punti della mappa della distanza indicata.<br>
+        Lo strumento non effettua una riproiezione ma una traslazione.
+    </div>
+
+    <table>
+        <tr>
+            <td>Traslazione verso nord:</td><td><input type="text" class="geoshift_floatfield" value="0" id="txt_geoshift_movey"></td><td>metri</td>
+            </tr><tr>
+            <td>Traslazione verso est:</td><td><input type="text" value="0" class="geoshift_floatfield" id="txt_geoshift_movex"></td><td>metri</td>
+        </tr>
+    </table>
+
+</div>
+
+
+
+<div id="form_filter" title="Filtro">
+
+    <div class="formbriefing">
+        La funzione di filtro permette di evidenziare degli elementi sulla mappa.<br>
+        È possibile copiare i valori di un elemento selezionato sugli elementi indicati dal filtro.
+    </div>
+
+    <div id="filterbox">
+
+
+        <table id="layout_filter">
+            <tr>
+                <td>
+                    <select class="filter_fieldcriteria" id="filter_fieldcriteria_1">
+                    </select>
+                </td>
+                <td class="layout_filterfield">
+                    <select class="filter_valuecriteria" id="filter_valuecriteria_1">
+                    </select>
+                </td>
+                <td>
+                    <img class="imgbutton" id="btn_addfilter" src="{{ STATIC_URL }}resource/visng_model_addproperty.png" title="Aggiungi criterio">
+                </td>
+            </tr>
+        </table>
+
+    </div>
+
+</div>
+
+<div id="form_addimagelayer" title="Caricamento sfondo">
+
+    <div class="formbriefing">
+        Per caricare uno sfondo è necessario indicare l'indirizzo di una risorsa immagine disponibile su web e le coordinate WGS 84 dell'area di riferimento.<br>
+        È anche possibile specificare il livello di trasparenza.
+    </div>
+
+    <table>
+        <tr>
+            <td>URL immagine</td>
+            <td><input class="field_imagelayer" type="url" id="addimagelayer_from"></td>
+        </tr>
+        <tr>
+            <td>Limiti ovest-est</td>
+            <td><input class="field_imagelayer mapcoords" type="number" id="addimagelayer_bbox_west"><br><input class="field_imagelayer mapcoords" type="number" id="addimagelayer_bbox_east"></td>
+        </tr>
+        <tr>
+            <td>Limiti sud-nord</td>
+            <td><input class="field_imagelayer mapcoords" type="number" id="addimagelayer_bbox_south"><br><input class="field_imagelayer mapcoords" type="number" id="addimagelayer_bbox_north"></td>
+        </tr>
+        <tr>
+            <td>Trasparenza</td>
+            <td><select id="addimagelayer_alpha">
+                <option value="1.0" selected>Nessuna trasparenza</option>
+                <option value="0.6">Immagine molto visible</option>
+                <option value="0.3">Immagine poco visible</option>
+            </select></td>
+        </tr>
+    </table>
+
+
+
+</div>
+
+<div id="form_loadmap" title="Integrazione mappe">
+
+    <input type="file" id="uploadfield" accept="application/zip">
+
+    <div class="formbriefing">
+        Selezionare una mappa presente nel sistema.<br>
+        È possibile selezionare solo mappe con lo stesso modello geometrico di base della mappa in uso.
+    </div>
+
+    <select id="newmap_load">
+        <option value=""></option>
+    {% if mode == 'full' %}
+        <optgroup  id="newmap_section_fromfile" label="Da file">
+            <option value=".file" id="newmap_load_fromfile">Seleziona...</option>
+        </optgroup>
+    {% endif %}
+
+        {% for cmeta_id, maplist in proxy_maps.items %}
+            <optgroup label="{% if cmeta_id == ".st" %}Area di lavorazione{% else %}{{ cmeta_id }}{% endif %}">
+                {% for cmap_id, mapdata in maplist.items %}
+                    {% if mapdata.type == maptype %}
+                        {% if cmeta_id != meta_id or cmap_id != map_id %}
+                            <option value="{{ cmeta_id }}/{{ cmap_id }}">{{ cmap_id }}</option>
+                        {% endif %}
+
+                    {% endif  %}
+                {% endfor %}
+            </optgroup>
+        {% endfor %}
+
+    </select>
+
+
+    <div class="formwarning" id="warning_maploadlosechanges">
+        <span class="warninglabel">Attenzione</span>: eventuali modifiche non salvate andranno perdute.
+    </div>
+
+    <div class="formwarning" id="warning_maploadoverwrite">
+        <span class="warninglabel">Attenzione</span>: esiste già una mappa con questo nome. I dati esistenti per questa mappa nell'area di lavorazione verranno sovrascritti.
+    </div>
+
+    <div class="formwarning" id="warning_maploadwrongformat">
+        <span class="warninglabel">Attenzione</span>: formato del file non valido.
+    </div>
+
+</div>
+
+
+<div id="maptojson" title="Esportazione vista">
+
+    <div class="formbriefing">
+        Per esportare la vista, fare clic su "Scarica vista".<br>
+        {% if meta_id == ".st" %}
+        Per mantenere la coerenza dei dati, la vista scaricata corrisponde all'ultimo salvataggio sul server.
+        {% endif %}
+    </div>
+
+    <div class="formbriefing mapdloadlink" id="mapdloadlinkjson">
+
+    </div>
+
+</div>
+
+<div id="maptoimage" title="Esportazione vista">
+
+    <div class="formbriefing">
+        Per esportare la vista mostrata nell'anteprima, fare clic su "Scarica vista".
+    </div>
+
+
+
+    <div id="exportcanvas">
+
+    </div>
+
+    <div class="formbriefing mapdloadlink" id="mapdloadlinkpng">
+
+    </div>
+
+    <img id="exportcanvasshadow">
+
+
+
+</div>
+
+
+<div id="progress_imagerender" title="Rendering vista">
+
+    <div class="progspinner" id="progspinner_imagerender">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_imagerender">
+        Rendering cartografico in corso...
+    </div>
+
+    <div class="progressinfo feedback_bad" id="renderfinished_fail">
+        Errore nell'accesso ai dati. Riprovare in un altro momento.
+    </div>
+
+</div>
+
+<div id="progress_upload" title="Invio dati">
+
+    <div class="progspinner" id="progspinner_upload">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_uploading">
+        Invio dei dati in corso...
+    </div>
+
+    <div class="progressinfo feedback_good" id="uploadfinished_success">
+        Dati inviati con successo.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="uploadfinished_fail">
+        Invio dei dati fallito.
+        <div id="uploadfail_explain">
+        </div>
+    </div>
+
+</div>
+
+
+<div id="progress_mapload" title="Caricamento dati">
+
+    <div class="progspinner" id="progspinner_mapload">
+        <img src="{{ STATIC_URL }}resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_maploading">
+        Caricamento dei dati in corso...
+    </div>
+
+    <div class="progressinfo" id="progress_stage_rendering">
+        Elaborazione dati in corso...
+    </div>
+
+    <div class="progressinfo feedback_good" id="maploadfinished_success">
+        Dati caricati con successo.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="maploadfinished_fail">
+        Caricamento dati fallito.
+        <div id="maploadfail_explain">
+        </div>
+    </div>
+
+
+
+    <div class="formwarning" id="warning_maploadrenderissues">
+        <span class="warninglabel">Attenzione</span>: alcuni oggetti della mappa hanno causato anomalie durante il processo di rendering.
+    </div>
+
+
+</div>
+
+    <div id="modelWarning" title="Modifica del modello">
+        <div class="formwarning formbriefing">
+            <span class="warninglabel">Attenzione</span>: le modifiche al modello della mappa non possono essere annullate. Per annullare una modifica al modello è necessario ricaricare uno stato precedente della mappa.
+        </div>
+    </div>
+
+    <div id="form_importmodel" title="Integrazione modelli">
+
+        <div class="formbriefing">
+            Selezionare un modello o una mappa presente nel sistema.<br>
+            È possibile selezionare solo mappe e modelli con la stessa geometria di base della mappa in uso.        </div>
+
+    <select id="models_available">
+        <optgroup label="Modelli">
+            {% for model_id, modeldata in rawmodels.items %}
+                {% if modeldata.objtype == maptype %}
+                    <option value=".mdl/{{ model_id }}">{{ modeldata.name }}</option>
+                {% endif %}
+            {% endfor %}
+        </optgroup>
+        {% for cmeta_id, maplist in proxy_maps.items %}
+            <optgroup label="{% if cmeta_id == '.st' %}Mappe in lavorazione{% else %}Mappe in archivio{% endif %}">
+            {% for cmap_id, mapdata in maplist.items %}
+                {% if mapdata.type == maptype %}
+                    {% if cmeta_id != meta_id or cmap_id != map_id %}
+                        <option value="{{ cmeta_id }}/{{ cmap_id }}">{{ cmap_id }}</option>
+                    {% endif %}
+                {% endif  %}
+            {% endfor %}
+            </optgroup>
+        {% endfor %}
+    </select>
+        <div class="formbriefing" >
+            <span class="warninglabel">Attenzione</span>: questa modifica non può essere annullata.
+        </div>
+
+</div>
+
+
+<div id="form_datasave" title="Salvataggio dati">
+
+    <div class="formbriefing">
+        Selezionare un nome per il salvataggio dei dati.<br>
+        È possibile salvare i dati nell'area di lavorazione (impostazione predefinita) o nell'archivio pubblico.
+    </div>
+
+    <div class="formbriefing">
+        <input type="text" value="{{ map_id }}" id="savemapto_filename">
+        <select id="savemapto_dest">
+        <option value=".st" selected>Area di lavorazione</option>
+            {% for cmeta_id in proxy_meta %}
+                {% if cmeta_id != ".st" %}
+                    <option value="{{ cmeta_id }}">{{ cmeta_id }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+
+
+    <div class="formwarning" id="warning_mapsaveoverwrite">
+        <span class="warninglabel">Attenzione</span>: esistono già dati con questo nome. I dati esistenti verranno sovrascritti.
+    </div>
+
+
+</div>
+
+
+<div id="progress_datasave" title="Salvataggio dati">
+
+    <div class="progspinner" id="progspinner_datasave">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_datasaving">
+        Salvataggio dei dati...
+    </div>
+
+    <div class="progressinfo feedback_good" id="datasave_success">
+        Salvataggio completato.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="datasave_fail">
+        Salvataggio fallito.
+        <div id="datasavefail_explain">
+        </div>
+    </div>
+
+</div>
+
+
+
+
+
+    <div id="standalonebar">
+
+
+        <span id="appcontrolsbar">
+
+        {% if mode != 'mapview' %}
+
+            {% if mode == 'full' or mode == 'mapedit' %}
+                <img src="{{ STATIC_URL }}resource/visng_menu_viewmap.png" class="imgbutton menuopt" id="menu_showmap" title="Visualizza mappa">
+                <img src="{{ STATIC_URL }}resource/visng_menu_viewmodel.png" class="imgbutton menuopt" id="menu_showmodel" title="Visualizza modello">
+
+                &nbsp;&nbsp;
+            {% endif %}
+
+            {% if mode == 'full' %}
+                <img src="{{ STATIC_URL }}resource/fwp_newmapedit.png" class="imgbutton" id="menu_createnewmap" title="Crea nuova mappa">
+                <img src="{{ STATIC_URL }}resource/fwp_editmap.png" class="imgbutton" id="menu_loadmap" title="Carica una mappa">
+            {% endif %}
+
+            {% if mode == 'full' or mode == 'mapedit' %}
+                <img src="{{ STATIC_URL }}resource/visng_menu_integratemap.png" class="imgbutton menuopt" id="menu_integratemap" title="Combina una mappa">
+                <img src="{{ STATIC_URL }}resource/visng_menu_integratemodel.png" class="imgbutton menuopt" id="menu_integratemodel" title="Combina un modello">
+            {% endif %}
+
+
+
+
+            <img src="{{ STATIC_URL }}resource/visng_menu_savemap.png" class="imgbutton menuopt" id="menu_savemap" title="Salva">
+
+            &nbsp;&nbsp;
+
+            {% if mode == 'full' or mode == 'mapedit' %}
+
+                <img src="{{ STATIC_URL }}resource/visng_layers.png" class="imgbutton menuopt" id="menu_loadsnapmap" title="Carica un riferimento">
+                <img src="{{ STATIC_URL }}resource/visng_controls_loadimage.png" class="imgbutton menuopt" id="menu_loadimage" title="Carica uno sfondo">
+            {% endif %}
+
+            {% if mode == 'full' or mode == 'mapedit' %}
+                <img src="{{ STATIC_URL }}resource/visng_menu_geoshift.png" class="imgbutton menuopt" id="menu_geoshift" title="Trasla mappa">
+                <img src="{{ STATIC_URL }}resource/visng_controls_filter.png" class="imgbutton menuopt" id="menu_filter" title="Filtra">
+            {% endif %}
+
+            &nbsp;&nbsp;
+
+        {% endif %}
+
+
+        {% if proxy_type != 'query' %}
+
+        {# <img src="{{ STATIC_URL }}resource/visng_dload_mapdata.png" class="imgbutton menuopt" id="menu_dloadmapdata" title="Scarica mappa"> #}
+
+        {% endif %}
+        <img src="{{ STATIC_URL }}resource/visng_dload_image.png" class="imgbutton menuopt" id="menu_dloadimage" title="Esporta vista">
+
+
+         </span>
+
+        <span id="geofindertool">
+
+            <label for="text_geosearch">Vai a</label> <input type="text" id="text_geosearch">
+            <img id="menu_findpoi" class="imgbutton menuopt" title="Individua punto di interesse" src="{{ STATIC_URL }}resource/fwp_focus.png">
+            <img id="menu_removepoi" class="imgbutton menuopt" title="Rimuovi punto di interesse" src="{{ STATIC_URL }}resource/fwp_clear.png">
+        </span>
+
+
+
+
+
+    </div>
+
+    <div id="modelview">
+
+        <table id="modelstruct">
+            <thead>
+            <tr>
+                <td><b>CAMPO</b></td>
+                <td><b>VALORI</b></td>
+                <td></td>
+            </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+            <tfoot>
+            <tr>
+                <td class="newpropnametd"><input type="text" id="model_newpropname"></td>
+                <td><img class="imgbtn" id="model_addnewprop" src="/static/resource/visng_model_addproperty.png" title="Aggiungi proprietà"></td>
+            </tr>
+            </tfoot>
+
+        </table>
+
+
+    </div>
+
+
+
+    <div id="mapview"></div>
+
+
+
+{% endblock %}
+
+
+{% block contextguide %}
+
+    <div class="help">
+        WORK IN PROGRESS
+    </div>
+
+
+{%  endblock %}
+
+
+{% block starterscript %}
+    <script>
+        pageInit('{{ proxy_id }}', '{{ meta_id }}', '{{ map_id }}', '{{ mode }}', '{{ proxy_type }}', {{ manifest }}, {{ mapsforjs }}, {{ proxy_models }});
+    </script>
+
+{% endblock %}

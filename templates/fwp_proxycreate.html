@@ -4,6 +4,8 @@
 
 <div id="proxycreate_mask">
 
+    <div class="sectionbanner">ISTANZA</div>
+
     <div class="sectionmask" id="create_proxydef">
 
         <div id="map_proxy_new" class="elementmask">
@@ -16,12 +18,24 @@
 
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Nome
+                        Nome istanza
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newproxy_name">
                     </div>
                 </div>
+
+                <div class="fieldmask">
+                    <div class="subfieldmask">
+                        Fornitore
+                    </div>
+                    <div class="subfieldmask">
+                        <input type="text" list="fed_providers" id="newproxy_provider" class="datalisted">
+                        <datalist id="fed_providers">
+                        </datalist>
+                    </div>
+                </div>
+
                 <div class="fieldmask">
                     <div class="subfieldmask">
                         Valido dal
@@ -39,15 +53,16 @@
                     </div>
                 </div>
 
-                <!--
-                <div class="fieldmask" id="proxyedit_buttons">
+                <div class="fieldmask">
                     <div class="subfieldmask">
-                        <input type="button" value="*Nav" id="tool_nav_proxy" >
-                        <input type="button" value="*Draw" id="tool_draw_proxy" >
+                        Area <img class="imgbutton" id="btn_trygeoloc_proxy" src="/static/resource/fwp_focus.png">
+                        <img class="imgbutton" id="btn_cleangeoloc_proxy" src="/static/resource/fwp_clear.png">
                     </div>
-
+                    <div class="subfieldmask geoloc_combo">
+                        <input type="text" id="newproxy_geoloc">
+                    </div>
                 </div>
-                -->
+
 
             </div>
 
@@ -56,7 +71,13 @@
 
         <div id="ops_proxy_new" class="elementmask">
 
-            <div class="multifieldmask">
+            <div class="multifieldmask" id="params_standalone">
+                <div class="fieldmask" >
+
+                </div>
+            </div>
+
+            <div class="multifieldmask" id="params_proxy">
 
                 <div class="fieldmask">
                     <div class="subfieldmask">
@@ -67,14 +88,11 @@
                             <option value="read">Lettura</option>
                             <option value="write">Scrittura</option>
                             <option value="query">Query</option>
-                            <option value="none">Standalone</option>
                         </select>
+
                     </div>
                 </div>
 
-                <div class="fieldmask opsdetail_sel" id="proxy_opsmode_none">
-                    ATTENZIONE: questa modalità di funzionamento è completamente autonoma e non prevede interazioni federate.
-                </div>
 
 
                 <div class="fieldmask opsdetail_sel" id="proxy_opsmode_read">
@@ -139,10 +157,10 @@
                         Business Intelligence
                     </div>
                     <div class="subfieldmask">
-                        <select class="fields_query" id="proxy_options_query_bi" disabled>
+                        <select class="fields_query" id="proxy_options_query_bi">
                             <option value="full">Completa</option>
                             <option value="simple">Semplice</option>
-                            <option value="none" selected>Non disponibile</option>
+                            <option value="none">Non disponibile</option>
                         </select>
                     </div>
 
@@ -168,17 +186,20 @@
 
     </div>
 
+    <div class="sectionbanner">METADATI</div>
+
     <div class="sectionmask" id="create_metalist">
 
         <table id="new_meta_table" class="elementmask">
 
             <tr>
-                <th class="newmeta_namefield">Nome</th><th class="newmeta_datefrom">Valido dal</th><th class="newmeta_dateto">Valido al</th><th class="newmeta_bb">Area</th><th class="newmeta_ctrldelete">Canc</th>
+                <th class="newmeta_namefield">Nome</th><th class="newmeta_datefrom">Valido dal</th><th class="newmeta_dateto">Valido al</th><th class="newmeta_bb">Area</th><th class="newmeta_ctrldelete">Cancella</th>
             </tr>
 
         </table>
 
     </div>
+
 
     <div class="sectionmask" id="create_metadef">
 
@@ -192,7 +213,7 @@
 
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Nome
+                        Nome metadato
                     </div>
                     <div class="subfieldmask">
                         <input type="text" id="newmeta_name">
@@ -217,14 +238,17 @@
 
                 <div class="fieldmask">
                     <div class="subfieldmask">
-                        Area <input type="checkbox" id="newmeta_bbox_use" checked="checked">
+                        Area <input type="checkbox" id="newmeta_bbox_use" checked="checked"> <img class="imgbutton" id="btn_trygeoloc_meta" src="/static/resource/fwp_focus.png"> <img id="btn_cleangeoloc_meta" class="imgbutton" src="/static/resource/fwp_clear.png">
+                    </div>
+                    <div class="subfieldmask geoloc_combo">
+                        <input type="text" id="newmeta_geoloc">
                     </div>
 
                 </div>
 
                 <div class="fieldmask" id="newmeta_buttons">
                     <div class="subfieldmask">
-                        <input type="button" value="Aggiungi" id="newmeta_confirm">
+                        <input type="button" value="Aggiungi metadato" id="newmeta_confirm">
                     </div>
 
                 </div>
@@ -235,13 +259,14 @@
 
         <div id="reports_pre" class="elementmask">
 
+
         </div>
 
 
     </div>
 
     <div id="create_actions">
-        <input type="button" value="Crea Proxy" id="proxy_create_confirm">
+        <input type="button" value="Crea istanza" id="proxy_create_confirm">
     </div>
 
 

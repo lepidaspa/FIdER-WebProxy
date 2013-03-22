@@ -1,0 +1,376 @@
+#opsmenu
+{
+    width:      100%;
+}
+
+.menuopt
+{
+    cursor:         pointer;
+}
+
+.valuetabletd
+{
+    min-width:300px;
+}
+
+.newpropnametd
+{
+    min-width:  140px;
+}
+
+#model_newpropname
+{
+    width:      98%;
+}
+
+
+.textfield_modelpropvalue
+{
+    min-width:  85%;
+}
+
+
+.flexmenu
+{
+    border-left:        1px solid #ff8800;
+    border-bottom:        1px solid #ff8800;
+}
+
+.submenu
+{
+    border-bottom:      1px dashed #cccccc;
+}
+
+.submenu:last-child
+{
+    border-bottom:  none;
+}
+
+
+#proxyinfo
+{
+    font-size:          medium;
+    font-weight:        bold;
+}
+
+#mapdetails
+{
+    font-size:          medium;
+    font-weight:        bold;
+    margin-top:         0.5em;
+}
+
+.submenu
+{
+    font-weight:        bold;
+}
+
+
+.menuopt
+{
+    font-weight:        normal;
+}
+
+#mapview
+{
+    position:       absolute;
+    top:            24px;
+    bottom:         0;
+    left:           0;
+    right:          0;
+
+    padding:        0 8px 8px 8px;
+    border-top:       1px solid #ff8800;
+    background-color:   #cccccc;
+
+}
+
+#modelview
+{
+    position:       absolute;
+    top:            24px;
+    bottom:         0;
+    left:           0;
+    right:          0;
+
+    padding:        8px;
+    border-top:       1px solid #ff8800;
+
+}
+
+#standalonebar
+{
+    position:       absolute;
+    top:            0;
+    left:           0;
+    right:          0;
+    height:         24px;
+
+    padding:        2px 0px 4px 8px;
+    background-color:   #ffffff;
+
+    vertical-align: middle;
+}
+
+#standalonebar .imgbutton
+{
+    cursor:         pointer;
+    border:         1px solid #ffffff;
+}
+
+#standalonebar .imgbutton:active
+{
+    cursor:         pointer;
+    border:         1px solid #ff8800;
+}
+
+.imgbtn
+{
+    cursor:         pointer;
+    border:         1px solid #ffffff;
+}
+
+.imgbtn:active
+{
+    border:         1px solid #ff8800;
+}
+
+#standalonebar .activebutton
+{
+    border:         1px solid #ff8800;
+}
+
+#newmap_load
+{
+    width:          100%;
+}
+
+.formbriefing, .formwarning, #uploadfail_explain, .progressinfo
+{
+    width:          400px;
+}
+
+#newfile_chooser
+{
+    width:          inherit;
+}
+
+.feedback_good
+{
+    border-bottom:         1px solid #009900;
+}
+
+.feedback_bad
+{
+    border-bottom:         1px solid #ff0000;
+}
+
+#uploadfield
+{
+    position:       absolute;
+    right:          -3000;
+    top:            -3000;
+    visibility:     hidden;
+}
+
+.warninglabel
+{
+    font-weight:    bold;
+}
+
+
+#button_removefeature
+{
+    float:          right;
+    margin-right:   2px;
+    margin-top:     2px;
+}
+
+#featurecard
+{
+    border-top:     1px solid #ff8800;
+    margin-top:     8px;
+    padding-top:    8px;
+
+
+}
+
+#measuredetails
+{
+    border-top:     1px solid #ff8800;
+    margin-top:     8px;
+    padding-top:    8px;
+
+
+}
+
+#featureloc
+{
+    margin-top:     8px;
+}
+
+#featuredesc
+{
+    margin-top:     0.5em;
+    width:          100%;
+}
+
+
+#featuredesc thead
+{
+    font-weight:    bold;
+    text-align:     left;
+}
+
+
+.modelprop_widget, #modelstruct tfoot
+{
+    border-top:     1px dashed #ff8800;
+}
+
+.modelprop_widget:first-child
+{
+    border-top:     none;
+}
+
+.modelprop_widget
+{
+    font-size:          small;
+}
+
+#modelstruct
+{
+    border-collapse:        collapse;
+}
+
+#appcontrolsbar
+{
+    margin-right:                  24px;
+}
+
+#geofindertool
+{
+    margin-right:               24px;
+
+}
+
+#geofindertool *
+{
+    font-size:                  small;
+    padding-top:                0;
+    margin-top:                 0;
+    vertical-align:             top;
+}
+
+
+tr, tr *
+{
+    vertical-align:         middle;
+}
+
+
+
+#featuredesc input, #featuredesc select
+{
+    width:          99%;
+}
+
+#autovalueselector
+{
+    border-top:     0;
+    margin-top:     -4px;
+}
+
+#drawingarea
+{
+
+    padding:    0;
+    background: #cccccc;
+
+}
+
+#maptoimage
+{
+    width:      600px;
+    height:     500px;
+}
+
+#exportcanvas
+{
+    left:       auto;
+    right:      auto;
+    width:      600px;
+    height:     300px;
+    overflow:   auto;
+}
+
+#filterbox
+{
+    width:      100%;
+}
+
+#layout_filter
+{
+    width:      100%;
+}
+
+
+.layout_filterfield
+{
+    width:          100%;
+}
+
+.filter_valuecriteria
+{
+    width:          100%;
+}
+
+#form_filter
+{
+    max-width:      400px;
+}
+
+
+#exportcanvasshadow
+{
+    visibility: hidden;
+    display:    none;
+}
+
+
+
+#maptoimage .formbriefing
+{
+    width:          99%;
+}
+
+.mapdloadlink
+{
+    margin-top: 8px;
+    margin-bottom:  8px;
+
+    text-align:  center;
+}
+
+.mapdloadlink a
+{
+    padding:6px;
+
+    border: 1px solid #ff8800;
+
+}
+
+#mapdesctable td
+{
+    margin-right:   2em;
+}
+
+.mapdesc_info
+{
+    font-weight:        normal;
+}
+
+.redbgr
+{
+    background-color:   #ff0000;
+}

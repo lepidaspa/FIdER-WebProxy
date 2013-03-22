@@ -7,16 +7,29 @@
 
 }
 
+
+
 .ctx_topic
 {
     display:    table-row;
 
 }
 
+#mod_xlate, #view_goto
+{
+    border-top: 1px solid #ff8800;
+}
+
+
 .ctx_fieldval
 {
     padding-left:    2px;
     padding-right:   2px;
+}
+
+.ctx_header
+{
+    font-style:     italic;
 }
 
 .ctx_fieldval input, .ctx_fieldval select
@@ -32,6 +45,12 @@
 input[type=image]
 {
     border:         none;
+}
+
+input[type=button]:active
+{
+    color:          #ffffff;
+    background-color:   #ff8800;
 }
 
 #view_context, #view_mapmodel, #view_feature
@@ -72,7 +91,7 @@ hr
     visibility:     hidden;
 }
 
-#view_context *:disabled
+#navigation *:disabled
 {
     color:          #000000;
     background:     #cccccc;
@@ -97,6 +116,10 @@ hr
     font-weight:    bold;
 }
 
+#btn_addprop
+{
+    color:          #000000;
+}
 
 
 #model_newpropname

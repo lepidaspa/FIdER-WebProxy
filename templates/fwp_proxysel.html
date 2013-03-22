@@ -11,10 +11,25 @@
     <script language="JavaScript" src="{{ STATIC_URL }}fwp_proxysel.js"></script>
 {% endblock %}
 
+{% block servicetoolbar %}
+    <div id="servicetoolbar">
+        <span class='tbbutton'><a href="/fwp/fed/settings/">Federatore</a></span>
+    </div>
+{% endblock %}
+
+
+
 {% block navigation %}
 
+    <div class="tabbar">
+        <span class="subtab" id="tabsel_proxy">
+            PROXY <img id="proxy_create_new" class="imgbutton" src="{{ STATIC_URL }}resource/fwp_newfromfile.png" title="Crea nuovo proxy">
+        </span>
+        <span class="subtab" id="tabsel_standalone">
+            STRUMENTI STANDALONE <img id="standalone_create_new" class="imgbutton" src="{{ STATIC_URL }}resource/fwp_newfromfile.png" title="Crea nuova istanza standalone">
+        </span>
+    </div>
 
-    <div class="button wide" id="proxy_create_new">Crea nuovo proxy</div>
     <div class="button wide" id="proxy_show_map">Mappa principale</div>
 
     <div class="statemess" id="proxy_created"></div>
@@ -54,15 +69,15 @@
 {% block contextguide %}
 
     <div class="help">
-La mappa principale permette di visualizzare l'area di interesse geografico dei vari proxy. I proxy non visibili nell'area visibile sulla mappa vengono indicati in grigio. È possibile cliccare sul nome di un proxy per passare alla pagina relativa.
+La mappa principale permette di visualizzare l'area di interesse geografico delle varie istanze di proxy e strumenti Standalone. Le istanze non visibili nell'area sulla mappa vengono indicate in grigio. È possibile cliccare sul nome di un'istanza per passare alla pagina relativa.
     <br><br>
-  Per creare un nuovo proxy è necessario inserire un nome, una data d'inizio validità e un metadato. Nel caso dei proxy query è necessario attivare anche almeno una delle tre modalità di query elencate.<br><br>Ogni metadato deve avere un nome unico (rispetto agli altri metadati dello stesso proxy). I nomi di proxy e metadati possono comprendere fino a 20 caratteri (sono ammesse le lettere dalla A alla Z maiuscole e minuscole, numeri e il simbolo underscore _ ).<br><br>
-        I proxy possono funzionare in modalità Lettura, Scrittura, Query e Standalone. I dati presenti nei proxy Standalone non entrano a far parte del processo di federazione.
+  Per creare una nuova istanza è necessario inserire un nome, il nome del fornitore dei dati, una data d'inizio validità e almeno un metadato. Nel caso dei proxy query è necessario attivare anche almeno una delle tre modalità di query elencate.<br><br>Ogni metadato deve avere un nome unico (rispetto agli altri metadati della stessa istanza). I nomi di proxy e metadati possono comprendere fino a 20 caratteri (sono ammesse le lettere dalla A alla Z maiuscole e minuscole, numeri e il simbolo underscore _ ).<br><br>
+        I proxy possono funzionare in modalità Lettura, Scrittura, Query. I dati presenti nelle istanze Standalone non entrano a far parte del processo di federazione.
     <br><br>
   Le  aree di interesse vengono rilevate automaticamente dall'inquadratura della minimappa.<br>
-    Date e aree di interesse non specificate nella descrizione dei metadati verranno allineate a quelle del proxy. Se questi intervalli andranno oltre quelli specificati per il proxy nel suo complesso, verranno ridotti automaticamente per rientrare in quelli del proxy.<br>
+    Date e aree di interesse non specificate nella descrizione dei metadati verranno allineate a quelle complessive dell'istanza. Se questi intervalli andranno oltre quelli specificati per l'istanza nel suo complesso, verranno ridotti automaticamente per rientrare in quelli dell'istanza.<br>
     Gli intervalli di tempo sono inclusivi della data di inizio ed esclusivi di quella di fine.<br><br>
 
-        La struttura e le modalità di funzionamento di un proxy non possono essere modificati dopo la creazione.
+        La struttura e le modalità di funzionamento di un'istanza non possono essere modificate dopo la creazione.
     </div>
 {%  endblock %}

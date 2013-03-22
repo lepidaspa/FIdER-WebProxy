@@ -11,7 +11,11 @@ __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
 def validateFieldAsAnomaly (fielddata):
-
+	"""
+	Validates the requested field as an anomaly description
+	:param fielddata:
+	:return:
+	"""
 
 	process_field_anomaly = (
 	(("BB",),((validateFieldAsBoundingBox,True, None, None),)),

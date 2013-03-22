@@ -6,6 +6,7 @@
 from exceptions import Exception
 import Common.TemplatesModels
 import FIdERProxyFS.proxy_config_core as conf
+import traceback
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -15,6 +16,7 @@ import os.path
 import os
 import sys
 import shutil
+import copy
 import zipfile
 import time
 import json
@@ -33,13 +35,200 @@ from Common.Components import createMessageFromTemplate, sendMessageToServer
 
 
 def getManifest (proxy_id):
-
+	"""
+	Returns the manifest file for a specified softproxy
+	:param proxy_id:
+	:return:
+	"""
+	print "Requested manifest for proxy %s" % proxy_id
 	return json.load(open(os.path.join(conf.basemanifestpath, proxy_id+".manifest")))
 
 
-	#return json.load(open(os.path.join(conf.baseproxypath,proxy_id,conf.path_manifest)))
+def getMapFileStats(mappath):
+	"""
+	Loads a mapfile and returns map type (line/point), number of features, bbox if applicable
+	:param mappath:
+	:return:
+	"""
 
-def makeSoftProxy (proxy_id, manifest):
+	rawdata = json.load(open(mappath))
+
+	# we get the maptype from the model or from the first feature, inconsistencies should have already been checked
+	try:
+		maptype = rawdata['model']['objtype']
+	except:
+		maptype = rawdata['features'][0]['geometry']['type']
+
+	try:
+		bbox = rawdata['bbox']
+	except:
+		#note: should never happen since the transformation process adds it
+		bbox = None
+
+	try:
+		features = len(rawdata['features'])
+	except:
+		features = 0
+
+	return {'type': maptype, 'features': features, 'bbox': bbox}
+
+
+def getQueryInfo (proxy_id, meta_id, map_id):
+	"""
+	Returns generic info on the query with the same structure as getMapStats (essentially the objtype from the conversion, everything else is nulled out)
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:return:
+	"""
+
+
+	bbox = None
+	features = None
+	maptype = None
+
+	return {'type': maptype, 'features': features, 'bbox': bbox}
+
+
+def makeMapCard (proxy_id, meta_id, map_id, proxy_type):
+	"""
+
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:param proxy_type:
+	:return:
+	"""
+
+	if proxy_type == 'query':
+		mappath = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, map_id)
+	elif proxy_type != 'local' or meta_id != '.st':
+		mappath = os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, map_id)
+	else:
+		mappath = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, map_id)
+
+	remotedata = None
+	mapsource = "File"
+	if proxy_type != 'query':
+		mapdata = getMapFileStats(mappath)
+		if isRemoteMap(proxy_id, meta_id, map_id):
+
+			mapsource = "WFS"
+
+			#adding remotedata info (connection parameters)
+			remotedata = json.load(open(os.path.join(conf.baseproxypath, proxy_id, "conf", "remote", meta_id, map_id+".wfs")))
+			"""
+			remotedata = {
+				"URL": remotedataraw['url'],
+				"Mappa": remotedataraw['layer'],
+				"Utente": remotedataraw['user'],
+				"Password": remotedataraw['pass']
+			}
+			"""
+		if isFTPMap (proxy_id, meta_id, map_id):
+			mapsource = "FTP"
+			remotedata = json.load(open(os.path.join(conf.baseproxypath, proxy_id, "conf", "remote", meta_id, map_id+".ftp")))
+	else:
+		mapsource = "Query"
+		mapdata = getQueryInfo (proxy_id, meta_id, map_id)
+
+		#adding remotedata info (connection parameters)
+		remotedata = json.load(open(os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, map_id)))
+		"""
+		remotedata = {
+			'Host':		remotedataraw['connection']['host']+":"+remotedataraw['connection']['port'],
+			'Utente':	remotedataraw['connection']['user'],
+			'Password':	remotedataraw['connection']['pass'],
+			'Database': remotedataraw['connection']['dbname'],
+			'Schema':	remotedataraw['query']['schema'],
+			'Vista':	remotedataraw['query']['view']
+		}
+		"""
+
+
+	mapcard = {
+		'name': map_id,
+		'source': mapsource,
+		'type': mapdata['type'],
+		'bbox': mapdata['bbox'],
+		'features': mapdata['features'],
+		'remotedata': remotedata
+	}
+
+	return mapcard
+
+def isRemoteMap (proxy_id, meta_id, map_id):
+	"""
+
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:return: boolean
+	"""
+
+	return os.path.exists(os.path.join(conf.baseproxypath, proxy_id, conf.path_remoteres, meta_id, map_id+'.wfs'))
+
+def isFTPMap (proxy_id, meta_id, map_id):
+	"""
+
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:return: boolean
+	"""
+
+	return os.path.exists(os.path.join(conf.baseproxypath, proxy_id, conf.path_remoteres, meta_id, map_id+'.ftp'))
+
+def getMapsSummary (proxy_id):
+	"""
+	Returns a list of all the maps with their core stats (name, type, source, number of shapes),grouped by meta
+	:param proxy_id:
+	:return: dict
+	"""
+
+	print "Loading the map summary for proxy %s" % proxy_id
+
+	wfslist = getRemotesList(proxy_id)
+	mapslist = {}
+
+	manifest = getManifest(proxy_id)
+	proxy_type = learnProxyTypeAdv(proxy_id, manifest)
+
+	basequerypath = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror)
+	basemapspath = os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson)
+
+
+	for metadata in manifest['metadata']:
+		meta_id = metadata['name']
+
+		mapslist[meta_id] = {}
+
+		if proxy_type == 'query':
+			mapspath = os.path.join (basequerypath, meta_id)
+		else:
+			mapspath = os.path.join (basemapspath, meta_id)
+		metamapslist = os.listdir(mapspath)
+
+		for map_id in metamapslist:
+
+			mapslist[meta_id][map_id] = makeMapCard(proxy_id, meta_id, map_id, proxy_type)
+
+
+	if proxy_type == 'local':
+
+		meta_id = ".st"
+		mapspath = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone)
+		stmapslist = os.listdir(mapspath)
+
+		mapslist [meta_id] = {}
+		for map_id in stmapslist:
+			mapslist[meta_id][map_id] = makeMapCard(proxy_id, meta_id, map_id, proxy_type)
+
+
+	return mapslist
+
+
+def makeSoftProxy (proxy_id, manifest, linkedto=None):
 	"""
 	Creates the filestructure for a softproxy using the chosen id and the manifest
 	:param proxy_id:
@@ -51,7 +240,7 @@ def makeSoftProxy (proxy_id, manifest):
 	uploadpath = os.path.join(conf.baseuploadpath, proxy_id)
 
 	if os.path.exists(os.path.join(conf.baseproxypath, proxy_id)):
-		raise ProxyAlreadyExistsException ("A proxy %s already exists" % proxy_id)
+		raise ProxyAlreadyExistsException ("Esiste già un proxy %s" % proxy_id)
 
 	#creating base proxy paths: main and upload
 	os.makedirs (basepath)
@@ -66,11 +255,20 @@ def makeSoftProxy (proxy_id, manifest):
 	#creating directories for data
 	os.makedirs(os.path.join(basepath, "next"))
 	os.makedirs(os.path.join(basepath, conf.path_geojson))
-	os.makedirs(os.path.join(basepath, conf.path_mirror))
+
+	if linkedto is None:
+		os.makedirs(os.path.join(basepath, conf.path_mirror))
+	else:
+		os.symlink(os.path.join(conf.baseproxypath, linkedto, conf.path_contacts), os.path.join(basepath, conf.path_contacts))
+		os.symlink(os.path.join(conf.baseproxypath, linkedto, conf.path_mirror), os.path.join(basepath, conf.path_mirror))
+		linkerdict = { 'linkedto': linkedto }
+		json.dump(linkerdict, open(os.path.join(basepath, "conf", "linkedto.json"), 'w+'))
+
+
 	os.makedirs(os.path.join(basepath, conf.path_standalone))
 
-
 	#TODO: remove after cleaning up any code that leads to this file
+	# (old proxy manifest location)
 	fp_manifest = open(os.path.join(basepath,conf.path_manifest),'w+')
 	json.dump(manifest, fp_manifest)
 	fp_manifest.close()
@@ -86,7 +284,83 @@ def makeSoftProxy (proxy_id, manifest):
 		os.makedirs (os.path.join(basepath, conf.path_remoteres, meta_id))
 		os.makedirs (os.path.join(uploadpath, meta_id))
 		os.makedirs (os.path.join(basepath, conf.path_geojson, meta_id))
-		os.makedirs (os.path.join(basepath, conf.path_mirror, meta_id))
+		if linkedto is None:
+			os.makedirs (os.path.join(basepath, conf.path_mirror, meta_id))
+
+	if linkedto is not None:
+		print "Linker proxy: trying to rebuild all maps inherited from the current state of the linked standalone"
+		try:
+			rebuildAllData(proxy_id)
+			print "Autorebuild successful"
+		except Exception as ex:
+			print "Autorebuild failed because of %s" % ex
+
+def findLinkedBy (proxy_id):
+	"""
+	Returns which proxy_id is the id of a linker proxy linked to the current one. Returns None if the current proxy is not a standalone or if it has no linker
+	:param proxy_id:
+	:return:
+	"""
+
+	linkedBy = None
+
+	for candidate_id in getProxyList():
+		path_linkinfo = os.path.join(conf.baseproxypath, candidate_id, "conf", "linkedto.json")
+		try:
+			linkdataraw = json.load(open(path_linkinfo, 'r'))
+			linked_id = linkdataraw['linkedto']
+			if linked_id == proxy_id:
+				linkedBy = candidate_id
+		except:
+			pass
+
+	print "LinkedBy output: %s is linked by proxy %s" % (proxy_id, linkedBy)
+
+	return linkedBy
+
+
+
+def rebuildAllData (proxy_id):
+	"""
+	Rebuilds all maps in the softproxy from the mirror directory
+	:param proxy_id:
+	:return:
+	"""
+
+
+	manifest = getManifest(proxy_id)
+
+	result = {
+	'success': [],
+	'error': []
+	}
+
+	for cmeta in manifest['metadata']:
+		meta_id = cmeta['name']
+
+		mapdir = os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id)
+		for mapfile in os.listdir(mapdir):
+			os.unlink(os.path.join(mapdir, mapfile))
+
+		try:
+
+			mapslist = os.listdir (os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id))
+			print "Rebuilding %s" % mapslist
+			for shape_id in mapslist:
+				print "Rebuilding map %s" % shape_id
+				mapdata = rebuildShape(proxy_id, meta_id, shape_id, False)
+				mapdata['id'] = shape_id
+				replicateShapeData(mapdata, proxy_id, meta_id, shape_id, False)
+			result['success'].append(meta_id)
+			print "Rebuilt %s" % meta_id
+		except Exception as ex:
+			traceback.print_exc()
+
+			print "Failed to rebuild %s" % meta_id
+			result['error'].append(meta_id)
+
+	return result
+
 
 
 
@@ -143,13 +417,24 @@ def handleDelete (proxy_id, meta_id, shape_id):
 	:return:
 	"""
 
-	path_mirror = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
+	if meta_id != '.st':
 
-	if not os.path.exists(path_mirror):
-		raise Exception ("Data for %s/%s already deleted in the mirror section of proxy %s" % (meta_id, shape_id, proxy_id))
+		path_mirror = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
+
+		if not os.path.exists(path_mirror):
+			print "WARNING: Data for %s/%s already deleted in the mirror section of proxy %s" % (meta_id, shape_id, proxy_id)
+		else:
+			#TODO: add specific handling of further exceptions or just push it up the ladder
+			shutil.rmtree(path_mirror)
+
+
+
 	else:
-		#TODO: add specific handling of further exceptions or just push it up the ladder
-		shutil.rmtree(path_mirror)
+		path_mapfile = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, shape_id)
+		os.remove(path_mapfile)
+
+
+
 
 def replicateDelete (proxy_id, meta_id, shape_id):
 	"""
@@ -162,11 +447,17 @@ def replicateDelete (proxy_id, meta_id, shape_id):
 
 	path_gj = os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id)
 
+
+
 	if not os.path.exists(path_gj):
-		raise Exception ("Data for %s/%s already deleted in the geojson section of proxy %s" % (meta_id, shape_id, proxy_id))
+		print ("WARNING: Data for %s/%s already deleted in the geojson section of proxy %s" % (meta_id, shape_id, proxy_id))
 	else:
 		#TODO: add specific handling of further exceptions or just push it up the ladder
 		os.remove(path_gj)
+
+	linkedby = findLinkedBy(proxy_id)
+	if linkedby is not None:
+		replicateDelete(linkedby, meta_id, shape_id)
 
 
 def readSingleShape (proxy_id, meta_id, shape_id):
@@ -216,6 +507,31 @@ def buildReadList (proxy_id, timestamp=None):
 
 	return metalist
 
+
+def handleReadMeta (proxy_id, meta_id):
+	"""
+	Same as assembleMetaJson but with real-time rebuild
+	:param proxy_id:
+	:param meta_id:
+	:return:
+	"""
+
+	meta_json = []
+
+	metadir = os.path.join (conf.baseproxypath, proxy_id, conf.path_mirror, meta_id)
+
+	filelist = os.listdir(metadir)
+
+	for map_id in filelist:
+		try:
+			fullmapjson = convertShapeFileToJson(proxy_id, meta_id, map_id, True)
+			meta_json += fullmapjson['features']
+		except:
+			print ("Could not access map data %s for meta %s on proxy %s" % (map_id, meta_id, proxy_id))
+
+	return meta_json
+
+
 def handleReadFull (proxy_id):
 	"""
 	Reads everything in the specified proxy and returns it as a json message
@@ -231,7 +547,11 @@ def handleReadFull (proxy_id):
 
 	meta_dict = {}
 	for meta_id in buildReadList(proxy_id):
-		meta_dict [meta_id] = locker.performLocked(assembleMetaJson, proxy_id, meta_id)
+		#meta_dict [meta_id] = locker.performLocked(assembleMetaJson, proxy_id, meta_id)
+		try:
+			meta_dict[meta_id] = locker.performLocked(handleReadMeta, proxy_id, meta_id)
+		except RuntimeProxyException as ex:
+			print "Exception encountered: %s" % ex.message
 
 	print "Read performed"
 
@@ -298,6 +618,12 @@ def handleReadTimed (proxy_id, datestring):
 
 
 def verifyShapeArchiveStructure (filedata, filename=None):
+	"""
+	Checks that a map archive of an accepted type contains the correct elements. Mostly relevant for shapefiles
+	:param filedata:
+	:param filename:
+	:return:
+	"""
 
 
 	print "Verifying archived shape %s" % (filename)
@@ -442,6 +768,9 @@ def convertShapeFileToJson (proxy_id, meta_id, shape_id, normalise=True):
 	"""
 	shapepath = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
 
+	print "Path is: %s (%s proxy type)" % (shapepath, learnProxyTypeAdv(proxy_id, getManifest(proxy_id)))
+	print "Path data will be normalised? %s " % normalise
+
 	return convertShapePathToJson(shapepath, normalise)
 
 def getCoreFile (path_mapdir):
@@ -451,7 +780,7 @@ def getCoreFile (path_mapdir):
 	:return:
 	"""
 
-	core_ext = ['shp', 'mif']
+	core_ext = ['shp', 'mif', 'geojson']
 	allfiles = os.listdir(path_mapdir)
 	#print "Seeking core file from %s" % allfiles
 	for cfile in allfiles:
@@ -487,15 +816,24 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		basepath, shape_id = os.path.split(basepath)
 	else:
 		basepath, shape_id = os.path.split(path_shape)
+
 	basepath, meta_id = os.path.split(basepath)
 
+
+	print "Work paths: %s / %s / %s" % (basepath, meta_id, shape_id)
+
+
+
 	issinglefile = len(os.listdir(path_shape)) == 1
+	print "Single file? %s" % issinglefile
 	if issinglefile:
 		#print "One file only"
 		path_shape = os.path.join(path_shape, os.listdir(path_shape)[0])
 	else:
 		#print "Multiple files, heuristic find"
 		path_shape = os.path.join(path_shape, getCoreFile(path_shape))
+
+
 	print "Main item:",path_shape
 
 
@@ -525,7 +863,6 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		print "****>"+str(datasource)
 	except Exception as ex:
 		print "ERROR during OGR parse on %s: %s" % (path_shape, ex)
-		#TODO: better/proper debug
 		raise
 
 
@@ -533,12 +870,13 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	print "Setting SRS conversion"
 	tSRS=ogr.osr.SpatialReference()
 	tSRS.ImportFromEPSG(EPSG_WGS84)
-	print "Converting to %s " % tSRS
+	#print "Converting to %s " % tSRS
 
 	#SRS CONVERSION CODE
 
 
-	if normalise:
+	print "Requiring normalisation? %s" % normalise
+	if normalise is True:
 		convtable = getConversionTable(proxy_id, meta_id, shape_id)
 		print "Data will be normalised with convtable %s" % (convtable,)
 
@@ -561,8 +899,8 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 		#print "****>"+str(dir(layer))
 
 		sSRS=layer.GetSpatialRef()
-		print "Layer %s has %s features with spatial ref %s" % (layer, layer.GetFeatureCount(), sSRS)
-
+		#print "Layer %s has %s features with spatial ref %s" % (layer, layer.GetFeatureCount(), sSRS)
+		print "Layer %s has %s features" % (layer, layer.GetFeatureCount())
 
 
 
@@ -596,16 +934,43 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 			# fixed to output actual dict
 
 			#print "DEBUG: exporting %s to JSON" % feature
-			jsondata = json.loads(feature.ExportToJson())
+			"""
+			print "Exporting feature to JSON"
+			print feature
+			rawjson = feature.ExportToJson()
+			print "Moving raw json to json dict"
+			jsondata = json.loads(rawjson)
 			#print "DEBUG: exported %s" % jsondata
+			"""
+			#print "Exporting feature to JSON"
+			#print feature.keys()
+			#print feature.items()
+			#print feature.geometry()
+			#jsondata = feature.ExportToJson(as_object=True)
+
+			#print jsondata
+
+			#print "Recreating obj struct"
+
+			jsondata = {}
+			jsondata['type'] = "Feature"
+
+			#print "Getting properties"
+			jsondata['properties'] = feature.items()
+
+			#print "Getting geometry"
+			jsondata['geometry'] = json.loads(feature.geometry().ExportToJson())
+
+			#print "Object recreated"
 
 			#print "feature.exportToJson outputs "+str(type(jsondata))
 
 			# we may want to keep to original "properties" elements
+
+
 			if normalise:
 				jsondata = adaptGeoJson(jsondata, convtable)
 
-			#TODO: handle more than point/linestring/multilinestring (currently it's implicit), move the bbox detection out of GeoJSON to the GEOMETRY element of the original feature
 
 			positions = []
 
@@ -648,7 +1013,20 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 				noid.append(len(collection['features']))
 
 
-			collection['features'].append(jsondata)
+			if ftype in ("LineString", "Point"):
+				collection['features'].append(jsondata)
+			elif ftype in ("MultiLineString", "MultiPoint"):
+				fitems = []
+				if ftype == "MultiLineString":
+					convtype = "LineString"
+				elif ftype == "MultiPoint":
+					convtype = "Point"
+				for fitem in fgeom:
+					jsonobj = copy.deepcopy (jsondata)
+					jsonobj['geometry']['type'] = convtype
+					jsonobj['geometry']['coordinates'] = fitem
+					collection['features'].append(jsonobj)
+
 
 			feature = layer.GetNextFeature()
 
@@ -661,9 +1039,36 @@ def convertShapePathToJson (path_shape, normalise=True, temp=False):
 	collection['bbox'] = boundaries
 
 	if len(collection['features']) == 0:
+		print 'Could not retrieve any feature from map %s' % shape_id
 		raise Exception ('Could not retrieve any feature from map %s') % shape_id
+	else:
+		print "Retrieved %s features " % len(collection['features'])
 
 	return collection
+
+
+def learnProxyTypeAdv (proxy_id, manifest):
+	"""
+	Returns the FUNCTIONAL proxy type, adding the specific case of the linked proxy
+	:param proxy_id:
+	:param manifest:
+	:return:
+	"""
+
+	baseproxytype = learnProxyType(manifest)
+	print "Found base proxy type %s " % baseproxytype
+	if baseproxytype in ('local', 'query'):
+		islinked = False
+	else:
+		islinked = isLinkedProxy(proxy_id, manifest['name'])
+
+	print "Proxy is linked? %s" % islinked
+
+	if islinked:
+		return 'linked'
+	else:
+		return baseproxytype
+
 
 
 def learnProxyType (manifest):
@@ -690,6 +1095,36 @@ def learnProxyType (manifest):
 		# local is a standalone-only proxy, non-federated
 		return "local"
 
+
+def isLinkedProxy (ref_id, ref_name):
+	"""
+	returns whether the reference proxy is linked to another proxy (actually a standalone tool)
+	:return:
+	"""
+
+	for proxy_cmp in getProxyList():
+
+		name_cmp = getManifest(proxy_cmp)['name']
+
+		if ref_id != proxy_cmp and name_cmp == ref_name:
+			return True
+
+	return False
+
+
+def getProxyList ():
+	"""
+	Returns a list of the softproxies on the hardproxy
+	:return:
+	"""
+
+	manifests = os.listdir(os.path.join(conf.baseproxypath, "proxies"))
+
+	listing = []
+	for proxymanfile in manifests:
+		listing.append(proxymanfile.split(".")[0])
+
+	return listing
 
 def getAllEditables ():
 	"""
@@ -720,6 +1155,8 @@ def getAllEditables ():
 
 
 	return maplist
+
+
 
 
 
@@ -783,11 +1220,22 @@ def adaptGeoJson (jsondata, conversiontable=None):
 	if isinstance(jsondata, (str, unicode)):
 		jsondata = json.loads(jsondata)
 
-	if conversiontable is None:
-		conversiontable = {}
+
+
+
+	if conversiontable is None or (not conversiontable.has_key('forcedfields')) or (not conversiontable.has_key('fields')):
+		conversiontable = {'forcedfields':{}, 'fields':{}, 'unmapped':{}}
 
 	newdict = {}
-	landing = jsondata[u'properties']
+	try:
+		landing = jsondata[u'properties']
+	except:
+		landing = {}
+
+
+	#print "GeoJson adaptation flow start"
+
+	#print "Using conversiontable:\n%s" % conversiontable
 
 
 	convlist = conversiontable['fields']
@@ -805,7 +1253,8 @@ def adaptGeoJson (jsondata, conversiontable=None):
 				cvalue = convlist[itemfrom]['values']['']
 			except:
 				applies = False
-				pass
+
+
 		if applies:
 			newdict[convlist[itemfrom]['to']] = cvalue
 
@@ -813,7 +1262,15 @@ def adaptGeoJson (jsondata, conversiontable=None):
 	for itemto in forcedlist:
 		newdict[itemto] = forcedlist[itemto]['']
 
+	try:
+		for unmapped in conversiontable['unmapped']:
+			newdict[unmapped] = None
+	except Exception as ex:
+		#  supporting older conversion tables
+		pass
+
 	jsondata['properties'] = newdict
+
 
 	return jsondata
 
@@ -862,11 +1319,17 @@ def rebuildShape (proxy_id, meta_id, shape_id, modified=True):
 	:return: dict, geojson data
 	"""
 
+	#print "Rebuilding map (core routine) %s/%s/%s" % (proxy_id, meta_id, shape_id)
+
 	path_shape = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id, shape_id)
 	if modified:
 		path_shape = os.path.join(path_shape, ".tmp")
 
-	shape_gj = convertShapePathToJson (path_shape, temp=True)
+	norm = True
+	if learnProxyType(getManifest(proxy_id)) == "local":
+		norm = False
+
+	shape_gj = convertShapePathToJson (path_shape, normalise=norm, temp=True)
 
 	return shape_gj
 
@@ -881,12 +1344,16 @@ def replicateShapeData (shapedata, proxy_id, meta_id, shape_id, modified=True):
 	"""
 
 	try:
-		shape_fp = open (os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id), 'w+')
-		json.dump(shapedata, shape_fp)
+		destpath =  os.path.join(conf.baseproxypath, proxy_id, conf.path_geojson, meta_id, shape_id)
+		shape_fp = open (destpath, 'w+')
+		json.dump(shapedata, shape_fp, encoding="latin-1")
 		shape_fp.close()
-	except:
+	except Exception as ex:
+		print "Error while saving: %s " % ex.message
 		#TODO: add more complex exception handling
 		raise
+
+	print "Correctly updated %s/%s/%s to %s" % (proxy_id, meta_id, shape_id, destpath)
 
 	if modified:
 		# we replace the mirror directory contents with the .tmp directory
@@ -917,6 +1384,9 @@ def rebuildMeta (proxy_id, meta_id, upserts=None):
 	path_meta = os.path.join(conf.baseproxypath, proxy_id, conf.path_mirror, meta_id)
 
 	shapelist = os.listdir(path_meta)
+
+	if upserts is None:
+		upserts = []
 
 	shapes_gj = {}
 	for shape_id in shapelist:

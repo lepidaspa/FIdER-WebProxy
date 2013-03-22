@@ -5,20 +5,18 @@
 {% endblock %}
 
 {% block headers %}
+    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
+
     <script language="JavaScript" src="{{ STATIC_URL }}fwstui.js"></script>
     <script language="JavaScript" src="{{ STATIC_URL }}moment.min.js"></script>
     <script language="JavaScript" src="{{ STATIC_URL }}jquery-ui-1.8.20.custom.min.js"></script>
 
-
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwstui.css">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwstui.css">
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}gis.css">
 
 
 {% endblock %}
 
-{%  block servicebar %}
-
-{% endblock %}
 
 
 {% block navigation %}
@@ -31,7 +29,7 @@
     <div id="view_context">
 
         <div class="ctx_topic" id="contextsummary">
-            <div id="backtracker"><div class="button_pre"><a title="Riepilogo proxy" href="/fwp/proxy/{{ proxy_id }}" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a> {{ proxy_name }}</div></div>
+            <div id="backtracker"><div class="button_pre"><a title="Riepilogo proxy" href="/fwp/proxy/{{ proxy_id }}/" class="backtrack"><img src="/static/resource/fwp_backtrack.png"></a> {{ proxy_name }}</div></div>
 
         </div>
 
@@ -49,6 +47,11 @@
 
         </div>
 
+
+
+
+
+
         <div class="ctx_topic" id="view_goto">
             <div class="ctx_fieldname">
                 <label for="search_geo_address">Vai a</label>
@@ -61,6 +64,7 @@
             </div>
 
         </div>
+
 
     </div>
 
@@ -79,9 +83,27 @@
 
 
 
+    <div class="ctx_topic" id="mod_xlate">
+        <div class="ctx_fieldname">
+            <label for="xlate_move_x">Sposta a est (m)</label><br><label for="xlate_move_y">Sposta a nord (m)</label>
+        </div>
+        <div class="ctx_fieldval">
+            <input type="text" id="xlate_move_x" width="48%"><br>
+            <input type="text" id="xlate_move_y" width="48%">
+        </div>
+        <div class="ctx_fieldact">
+            <input type="button" value="&gt;&gt;" id="btn_xlate">
+        </div>
+
+    </div>
+
+
+    <hr id="hr_shifter">
+
     <div id="view_filter" class="ctx_topic">
 
     </div>
+
 
 
 

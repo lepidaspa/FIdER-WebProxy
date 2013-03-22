@@ -5,6 +5,28 @@
 
 }
 
+.geoloc_combo
+{
+    white-space: pre;
+}
+
+.imgbutton
+{
+    cursor:         pointer;
+}
+
+.datalisted
+{
+    background-image:               url('/static/resource/fwp_dropdown.png');
+    background-position:            99% 50%;
+    background-repeat:              no-repeat;
+}
+
+.geoloc_combo img
+{
+    vertical-align: text-bottom;
+}
+
 #proxycreate_mask *
 {
     font-size:               small;
@@ -26,6 +48,8 @@
     border-width:           0;
 }
 
+
+
 .elementmask
 {
 
@@ -40,6 +64,25 @@
     border-right:        1px solid #ffffff;
 
 
+}
+
+.sectionbanner
+{
+    color:                       #ff8800;
+    background-color:              #ffffff;
+    left:               6px;
+    right:              6px;
+    margin-bottom:      4px;
+    text-align:         center;
+    font-weight:        bold;
+}
+
+#banner_report_pre
+{
+
+    margin-top:     -4px;
+    margin-left:    -4px;
+    margin-right:   -4px;
 }
 
 .fieldmask
@@ -96,15 +139,6 @@
 
 
 
-/*
-#new_meta_table th, #new_meta_table td
-{
-    max-width:              100%;
-}
-*/
-
-
-
 #map_meta_new, #map_proxy_new
 {
 
@@ -132,5 +166,3 @@
 {
     text-align: center;
 }
-
-

@@ -46,7 +46,7 @@ def validateJsonToTemplate (jsonmessage, model, script=None, strictness=ArDiVa.M
 
 def validateDictToTemplate (candidate, model, script=None, strictness=ArDiVa.Model.VAL_STRICT, withlog=True):
 	"""
-
+	Validates a full dict agafinst a template of the very same level
 	:param candidate:
 	:param model:
 	:param script:

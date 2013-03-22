@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import patterns, include, url
+from django.views.generic.simple import redirect_to
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -7,13 +8,14 @@ from FIdERWeb import views as fwpviews
 
 
 from FIdERWebST import views as fwstviews
+from FIdERProxyFS import proxy_config_core
 
 import settings
 
 admin.autodiscover()
 
-handler404 = 'fwpviews.error404test'
-handler500 = 'fwpviews.error500test'
+handler404 = 'fwpviews.error404'
+handler500 = 'fwpviews.error500'
 
 urlpatterns = patterns('',
     # Examples:
@@ -21,12 +23,13 @@ urlpatterns = patterns('',
     # url(r'^ProxyWeb/', include('ProxyWeb.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    #url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    url(r'^admin/', include(admin.site.urls)),
+    #url(r'^admin/', include(admin.site.urls)),
 
 	# urls for "passive" operations, called by the main server
+	url(r'^datarebuild/(?P<proxy_id>\w*)/', fwpviews.proxy_rebuildall),
 	url(r'^data/(?P<proxy_id>\w*)/', fwpviews.proxy_read_full),
 	url(r'^query/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/', fwpviews.proxy_perform_query),
 	url(r'^refreshmap/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.map_refresh_remote),
@@ -47,8 +50,9 @@ urlpatterns = patterns('',
 	url(r'^fwp/upload/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.proxy_uploadmap),
 	url(r'^fwp/download/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_uploadwfs),
 	url(r'^fwp/download/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.proxy_uploadwfs),
+	url(r'^fwp/ftpdload/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.proxy_uploadftp),
 	url(r'^fwp/rebuild/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/', fwpviews.proxy_rebuildmap),
-	url(r'^fwp/rebuild/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/', fwpviews.proxy_rebuildmeta),
+	url(r'^fwp/reconvert/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<map_id>\w*)/', fwpviews.proxy_reconvert_map),
 	url(r'^fwp/control/', fwpviews.proxy_controller),
 	url(r'^fwp/proxylist/', fwpviews.proxy_get_all),
 	url(r'^fwp/create/', fwpviews.proxy_create_new),
@@ -58,31 +62,51 @@ urlpatterns = patterns('',
 	url(r'^fwp/maplist/(?P<proxy_id>\w*)/$', fwpviews.proxy_maps_list),
 
 	#urls for active operations, called by the clients
-	url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
+
+	#old proxy pages,to be removed
+	#url(r'^fwp/proxy/(?P<proxy_id>\w*)/$', fwpviews.proxypage),
 	url(r'^fwp/get/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getSingleMap),
-	url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
-	url(r'^fwp/$', fwpviews.proxysel),
-
-
-
-
+	#url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/$', fwpviews.metapage),
+	#url(r'^fwp/proxy/(?P<proxy_id>\w*)/(?P<meta_id>\.st)/$', fwpviews.metapage),
+	#url(r'^fwp/$', fwpviews.proxysel),
 
 	# standalone tool v2
-
-
 
 	url(r'^fwst/upload/(?P<proxy_id>\w*)/$', fwstviews.uploadfile),
 	url(r'^fwst/maps/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.loadSTMap),
 	url(r'^fwst/save/(?P<proxy_id>\w*)/(?P<map_id>\w*)/$', fwstviews.saveSTMap),
+
+
 
 	url(r'^fwp/stimport', fwpviews.sideloadSTMap),
 
 	url(r'^fwst/(?P<proxy_id>\w*)/$', fwstviews.uiview),
 	# same as before but with a preloaded map from the proxy federated selection
 	url(r'^fwst/(?P<proxy_id>\w*)/(?P<meta_id>\w*)/(?P<shape_id>\w*)/$', fwstviews.uiview),
-	url(r'^external/(?P<path>.*)$', fwpviews.geosearch)
+	url(r'^fwst/(?P<proxy_id>\w*)/(?P<meta_id>\.st)/(?P<shape_id>\w*)/$', fwstviews.uiview),
 
+	url(r'^external/(?P<path>.*)$', fwpviews.geosearch),
 
+	url(r'^fwp/fed/owners/$', fwpviews.getProviders),
+	url(r'^fwp/fed/settings/$', redirect_to, {'url': proxy_config_core.URL_CONFIG}),
+	#url(r'', redirect_to, {'url': "/fwp/"})
+
+	url(r'^fwp/proxyng/(?P<proxy_id>\w*)/$', fwpviews.proxypageng),
+	url(r'^fwp/visng/(?P<vismode>\w*)/(?P<proxy_id>\w*)/$', fwstviews.mapvisng),
+	url(r'^fwp/visng/(?P<vismode>\w*)/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.mapvisng),
+	url(r'^fwst/saveng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.saveVisMap),
+	url(r'^fwp/selng/', fwpviews.proxyselng),
+	url(r'^fwp/createng/', fwpviews.proxy_create_adv),
+
+	url(r'^fwp/contacts/(?P<proxy_id>\w*)/$', fwpviews.getProxyContacts),
+	url(r'^fwp/staticdl/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwstviews.downloadStaticMap),
+	url(r'^fwp/staticdl/$', fwstviews.downloadStaticMap),
+	url(r'^fwp/getng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/(?P<getflag>\w*)/$', fwpviews.proxy_getmapng),
+	url(r'^fwp/getng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getmapng),
+	url(r'^fwp/miniget/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getnaked),
+	url(r'^fwp/getmodelng/(?P<proxy_id>\w*)/(?P<meta_id>\.?\w*)/(?P<map_id>\w*)/$', fwpviews.proxy_getmapmodelng),
+	url(r'^fwp/savecontactsng/(?P<proxy_id>\w*)/$', fwpviews.proxy_saveContacts),
+	url(r'^fwp/getcontacts/(?P<proxy_id>\w*)/$', fwpviews.proxy_getcontacts)
 
 )
 

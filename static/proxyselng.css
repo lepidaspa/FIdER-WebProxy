@@ -1,0 +1,213 @@
+#proxylisting
+{
+    margin-top:         1em;
+}
+
+.proxylistinglayout
+{
+    width:          100%;
+    border-collapse:    collapse;
+}
+
+.proxylistinglayout tr
+{
+    width:          100%;
+}
+
+.proxylistinglayout tbody
+{
+    border-left:        1px solid #ff8800;
+    border-bottom:      1px solid #ff8800;
+}
+
+.proxylisting_actions
+{
+    text-align:     right;
+}
+
+.proxylisting_emblem
+{
+    padding-left:   4px;
+    /*width:          24px;*/
+}
+
+thead *
+{
+    font-weight:        bold;
+}
+
+
+
+.tabbar
+{
+    display:            table;
+    background-color:   #ffffff;
+    width:              100%;
+    margin-bottom:      8px;
+    border-bottom:      1px solid #ff8800;
+
+    font-weight:        bold;
+
+
+    border-collapse:    collapse;
+}
+
+.tabbar, .tabbar *
+{
+    vertical-align:     middle;
+}
+
+.subtab
+{
+    display:    table-cell;
+    background-color:   #ff8800;
+    color:      #ffffff;
+    padding-left:       4px;
+
+    cursor:         pointer;
+}
+
+.subtab.unseltab
+{
+    background-color:   #ffffff;
+    color:              #ff8800;
+}
+
+
+.creatormask
+{
+    border-collapse:        collapse;
+}
+
+.creatormask td
+{
+    padding-left:           4px;
+    padding-right:          4px;
+    vertical-align:         middle;
+    white-space:            nowrap;
+}
+
+col.bordered, td.bordered
+{
+    border-right:            1px solid #ff8800;
+}
+
+
+
+.creatormask td:first-of-type
+{
+    border-left:            none;
+}
+
+
+td *
+{
+    vertical-align:         middle;
+}
+
+td
+{
+    vertical-align: top;
+}
+
+.tablemap
+{
+    width:                  200px;
+    height:                 120px;
+    background-color:       #cccccc;
+
+}
+
+.creationdialog *
+{
+    font-size:              small;
+}
+
+.tablebanner td
+{
+    font-weight:            bold;
+    text-align:             center;
+}
+
+.imgbutton
+{
+    cursor:                 pointer;
+}
+
+
+
+#proxycreate_linked select
+{
+    width:                  100%;
+}
+
+.proxylisting_instance:first-child *
+{
+    padding-top:            4px;
+}
+
+.proxylisting_instance, .proxylisting_instance *
+{
+    vertical-align:         text-bottom;
+}
+
+.creatormask .widetext, .creatormask select
+{
+    min-width:  98%;
+    width:      98%;
+    max-width:  98%;
+}
+
+#proxymap
+{
+    position:       absolute;
+    top:            0;
+    bottom:         0;
+    left:           0;
+    right:          0;
+
+    padding:        0 8px 8px 8px;
+    background-color:   #cccccc;
+
+}
+
+.newmetalist, .newmetalist tr
+{
+    width:          100%;
+}
+
+.metainfo_actions
+{
+    text-align:         right;
+}
+
+#proxycreate_linked .formbriefing, #proxydelete .formbriefing, .failinfo
+{
+    max-width:              400px;
+}
+
+#proxydelete .widetext
+{
+    width:                  100%;
+}
+
+.proxydetails_label
+{
+    font-weight:    bold;
+}
+
+
+.proxydetails_header
+{
+    font-weight:    bold;
+    text-align:     center;
+}
+
+.proxylisting_instance td
+{
+
+    padding-top:    8px;
+    /*border-bottom:      1px dotted #cccccc; */
+}
+
+
