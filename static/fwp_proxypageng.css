@@ -1,0 +1,314 @@
+#metalisting
+{
+    width:          98%;
+}
+
+#metalistinglayout
+{
+    width:              100%;
+    border-collapse:    collapse;
+}
+
+td.actionstd
+{
+    text-align:     right;
+}
+
+
+.metamaps
+{
+    border-left:    1px solid #ff8800;
+    border-spacing: 8px 0;
+    border-bottom:  1px solid #ff8800;
+}
+
+a img
+{
+    border:         none;
+}
+
+.imgbutton
+{
+    cursor:         pointer;
+    border:         1px solid #ffffff;
+}
+
+.imgbutton:active
+{
+    border:         1px solid #ff8800;
+}
+
+tbody.metadata td.metatitle, tbody.metadata td.actionstd
+{
+    padding-top:    8px;
+    /*border-bottom:      1px dotted #cccccc; */
+}
+
+.mapcard td.maptitle
+{
+    padding-left:       8px;
+}
+
+.metatitle
+{
+    font-weight:        bold;
+
+}
+
+#proxyinfo
+{
+    font-size:          medium;
+    font-weight:        bold;
+}
+
+tr
+{
+    width:              100%;
+}
+
+td
+{
+    padding-top:         4px;
+}
+
+
+#proxymap
+{
+    position:       absolute;
+    top:            24px;
+    bottom:         0;
+    left:           0;
+    right:          0;
+
+    padding:        0 8px 8px 8px;
+    border-top:       1px solid #ff8800;
+
+    background-color:   #cccccc;
+}
+
+.formbriefing, .formwarning, #uploadfail_explain, .progressinfo
+{
+    width:          400px;
+}
+
+#newfile_chooser
+{
+    width:          inherit;
+}
+
+.feedback_good
+{
+    border-bottom:         1px solid #009900;
+}
+
+.feedback_bad
+{
+    border-bottom:         1px solid #ff0000;
+}
+
+.progspinner
+{
+    text-align:     center;
+}
+
+.warninglabel
+{
+    font-weight:        bold;
+    font-style:         italic;
+}
+
+
+
+#newquerytable
+{
+    border-collapse:    separate;
+
+}
+
+
+#newquerytable tbody.subsection > tr:first-child > td
+{
+    padding-top:         8px;
+    border-top:          1px dashed #ff8800;
+}
+
+.halffield
+{
+    width:          40%;
+}
+
+.valueconvtable
+{
+    width:                  100%;
+    vertical-align:         top;
+    padding-top:            0;
+    margin-top:             0;
+    min-width:              100%;
+
+}
+
+#valueconvsection
+{
+    min-width:              300px;
+}
+
+.valueconvtable tbody, .valueconvtable tr
+{
+    width:                  100%;
+}
+
+.valueconvtable *
+{
+    white-space:nowrap;
+}
+
+.padless
+{
+    padding-top:            0;
+    padding-bottom:         0;
+    vertical-align:         top;
+}
+
+#form_setconversion_table
+{
+    border-collapse:        collapse;
+
+}
+
+.valueconvtable
+{
+    margin-top:             24px;
+}
+
+#form_setconversion_table *
+{
+    padding-top:            0;
+    padding-bottom:         0;
+    vertical-align:         top;
+    white-space:            nowrap;
+
+
+}
+
+.mainfields
+{
+    vertical-align: bottom;
+}
+
+#modelselect
+{
+    margin-bottom:  8px;
+    margin-top:     8px;
+}
+
+#convtable_headers td
+{
+    font-weight:            bold;
+}
+
+#tablecontrols
+{
+    margin-top:             8px;
+}
+
+#conversionmenu
+{
+    margin-left:            -8px;
+    padding-left:                4px;
+    width:                  100%;
+    border-bottom:          1px solid #ff8800;
+}
+
+.convtable_fieldrow
+{
+    border-top:     1px dashed #ff8800;
+}
+
+.convtable_fieldrow:first-child
+{
+    border-top:     none;
+}
+
+#conv_mapinfo
+{
+    margin-top:     8px;
+    font-weight:    bold;
+}
+
+
+
+.mapdetails_label
+{
+    font-weight:    bold;
+}
+
+
+.mapdetails_header
+{
+    font-weight:    bold;
+    text-align:     center;
+}
+
+
+.metadetails_label
+{
+    font-weight:    bold;
+}
+
+
+.metadetails_header
+{
+    font-weight:    bold;
+    text-align:     center;
+}
+
+td.mapdetails_long
+{
+    word-wrap:      break-word;
+    max-width:      400px;
+}
+
+.maptitle
+{
+    word-wrap:      break-word;
+}
+
+#controlsbar
+{
+    position:       absolute;
+    top:            0;
+    left:           0;
+    right:          0;
+    height:         24px;
+
+    padding:        2px 0px 4px 8px;
+    background-color:   #ffffff;
+
+    vertical-align: middle;
+}
+
+#geofindertool
+{
+    margin-right:               24px;
+
+}
+
+#geofindertool *
+{
+    font-size:                  small;
+    padding-top:                0;
+    margin-top:                 0;
+    vertical-align:             top;
+}
+
+#controlsbar .imgbutton
+{
+    cursor:         pointer;
+    border:         1px solid #ffffff;
+}
+
+#controlsbar .imgbutton:active
+{
+    cursor:         pointer;
+    border:         1px solid #ff8800;
+}

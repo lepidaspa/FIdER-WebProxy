@@ -120,7 +120,10 @@ def getWelcomeFromServer ():
 
 #not used, currently it is handled by the shape table component
 def getConversionsFromServer ():
-
+	"""
+	Loads the conversion tables from the main server (URL_CONVERSIONS) and returns it.
+	:return:
+	"""
 
 	try:
 		jsonresponse = urllib2.urlopen(conf.URL_CONVERSIONS)

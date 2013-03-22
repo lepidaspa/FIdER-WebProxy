@@ -1,0 +1,827 @@
+{% extends "fwpcore.html" %}
+
+
+{% block title %}
+    Selezione e creazione istanze
+{% endblock %}
+
+{% block headers %}
+
+    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false" xmlns="http://www.w3.org/1999/html"
+            xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}proxyselng.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}proxyselng.css">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}gis.css">
+
+{% endblock %}
+
+{% block navigation %}
+
+    <div class="tabbar">
+        <span class="subtab" id="tabsel_proxy">
+            AREA PROXY
+        </span>
+        <span class="subtab" id="tabsel_standalone">
+            AREA STANDALONE
+        </span>
+    </div>
+
+    <div id="proxylisting">
+
+        {% if providers|length > 0 %}
+            {# here only logically, element is not visible and is shared by different creation forms #}
+            <datalist id="providers">
+                {% for provider in providers %}
+                    <option value="{{ provider }}"></option>
+                {% endfor %}
+            </datalist>
+        {% endif %}
+
+        <table class="proxylistinglayout" id="instances_proxy">
+            <thead>
+                <tr><td colspan=3>Istanze proxy</td><td class="proxylisting_actions">                    <img src="/static/resource/fwp_newdatasource_networked.png" class="imgbutton" id="btn_newdatasource_networked" title="Crea proxy read/write">
+                    <img src="/static/resource/fwp_newdatasource_query.png" class="imgbutton" id="btn_newdatasource_query" title="Crea proxy query">
+                    <img src="/static/resource/fwp_newdatasource_proxylocal.png" class="imgbutton" id="btn_newdatasource_linker" title="Crea proxy di collegamento standalone"></td></tr>
+            </thead>
+            <tbody>
+            {% for proxy_id, proxydata in proxiesdj.items %}
+                {% if proxydata.type != 'local' %}
+                    <tr class="proxylisting_instance" id="instance_{{ proxy_id }}">
+                        <td class="proxylisting_emblem">
+
+                        </td>
+                        <td class="proxylisting_name">{{ proxydata.name }}
+                        </td>
+                        <td class="proxylisting_type">
+                            {% if proxydata.type == 'query' %}Query{% endif %}
+                            {% if proxydata.type == 'read' %}Read{% endif %}
+                            {% if proxydata.type == 'write' %}Write{% endif %}
+                            {% if proxydata.type == 'linked' %}Standalone{% endif %}
+                        </td>
+                        <td class="proxylisting_actions">
+                            <img src="/static/resource/fwp_info.png" class="imgbutton proxyrecap" id="proxyrecap_{{ proxy_id }}" title="Visualizza dettagli">
+                            <img src="/static/resource/fwp_contacts.png" class="imgbutton proxyrefbox" id="proxyrefbox_{{ proxy_id }}" title="Visualizza contatti">
+                            <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/{% if proxydata.type == 'query' %}fwp_datasource-query{% endif %}{% if proxydata.type == 'read' or proxydata.type == 'write'%}fwp_datasource-networked{% endif %}{% if proxydata.type == 'linked' %}fwp_datasource-proxylocal{% endif %}.png" title="Apri istanza"></a>
+                            <img src="/static/resource/fwp_remove.png" class="imgbutton btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+
+
+
+        <table class="proxylistinglayout" id="instances_standalone">
+            <thead>
+            <tr><td colspan=2>Istanze standalone</td>
+                <td class="proxylisting_actions">
+                    <img src="/static/resource/fwp_newdatasource_local.png" class="imgbutton" id="btn_newdatasource_standalone" title="Crea strumento standalone">
+            </td></tr>
+            </thead>
+            <tbody>
+            {% for proxy_id, proxydata in proxiesdj.items %}
+                {% if proxydata.type == 'local' %}
+                    <tr class="proxylisting_instance" id="instance_{{ proxy_id }}">
+                        <td class="proxylisting_emblem"></td>
+                        <td class="proxylisting_name">{{ proxydata.name }}
+                        </td>
+                        <td class="proxylisting_actions">
+                            <img src="/static/resource/fwp_info.png" class="imgbutton proxyrecap" id="proxyrecap_{{ proxy_id }}" title="Visualizza dettagli">
+                            <img src="/static/resource/fwp_contacts.png" class="imgbutton proxyrefbox" id="proxyrefbox_{{ proxy_id }}" title="Visualizza contatti">
+                            <a href="/fwp/proxyng/{{ proxy_id }}/"><img src="/static/resource/fwp_datasource-local.png" title="Apri istanza"></a>
+                            <img src="/static/resource/fwp_remove.png" class="imgbutton btn_proxydelete" id="btn_proxydelete_{{ proxy_id }}" title="Elimina">
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+
+
+{% endblock %}
+
+
+{% block functionality %}
+
+
+    <div id="progress_proxyref" title="Salvataggio contatti">
+        <div class="progspinner" id="progspinner_proxyref">
+            <img src="/static/resource/progressbar.gif">
+        </div>
+        <div class="progressinfo" id="progress_stage_sendingref">
+            Salvataggio contatti in corso...
+        </div>
+        <div class="progressinfo feedback_good" id="proxyreffinished_success">
+            Salvataggio completato.
+        </div>
+        <div class="progressinfo feedback_bad" id="proxyreffinished_fail">
+            Salvataggio fallito.
+        </div>
+    </div>
+
+
+    <div id="infobox_proxyref" title="Contatti istanza">
+
+        <table class="proxydetailstable">
+            <tr>
+                <td colspan=2 class="proxydetails_header" id="proxyref_proxyname">
+                </td>
+            </tr>
+            <tr>
+                <td class="proxydetails_label" >
+                    Fornitore
+                </td>
+                <td class="proxydetails_info">
+                    <span id="proxyref_provider"></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="proxydetails_label">
+                    <label for="proxyref_refname">Referente</label>
+                </td>
+                <td class="proxydetails_info">
+                    <input type="text" id="proxyref_refname">
+                </td>
+            </tr>
+            <tr>
+                <td class="proxydetails_label">
+                    <label for="proxyref_refmail">Email</label>
+                </td>
+                <td class="proxydetails_info">
+                    <input type="text" id="proxyref_refmail">
+                </td>
+            </tr>
+            <tr>
+                <td class="proxydetails_label">
+                    <label for="proxyref_reftel">Telefono</label>
+                </td>
+                <td class="proxydetails_info">
+                    <input type="text" id="proxyref_reftel">
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <div id="infobox_proxies" title="Riepilogo istanza">
+        {% for proxy_id, proxydata in proxiesdj.items %}
+
+            <div class="proxydetails" id="proxydetails_{{ proxy_id }}">
+
+            <table class="proxydetailstable">
+
+            <tr><td class="proxydetails_label">
+                {% if proxydata.type == 'local' %}
+                    Strumento standalone
+                {% endif %}
+                {% if proxydata.type == 'linked' %}
+                    Proxy standalone
+                {% endif %}
+                {% if proxydata.type == 'query' %}
+                    Proxy query
+                {% endif %}
+                {% if proxydata.type == 'read' %}
+                    Proxy lettura
+                {% endif %}
+                {% if proxydata.type == 'write' %}
+                    Proxy scrittura
+                {% endif %}
+            </td><td>{{ proxydata.name }}</td></tr>
+
+            {% if proxydata.type != 'local' %}
+
+                {% if proxydata.type == 'query' %}
+                    <tr><th colspan=2 class="proxydetails_header">Modalità operative</th></tr>
+                    <tr>
+                        <td class="proxydetails_label">Ricerca geografica</td>
+                        <td>
+                            {% if proxydata.operations.query.geographic == 'full' %}
+                                Complessa
+                            {% endif %}
+                            {% if proxydata.operations.query.geographic == 'BB' %}
+                                Bounding box
+                            {% endif %}
+                            {% if proxydata.operations.query.geographic == 'query' %}
+                                Non disponibile
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="proxydetails_label">Ricerca temporale</td>
+                        <td>
+                            {% if proxydata.operations.query.time == 'full' %}
+                                Completa
+                            {% endif %}
+                            {% if proxydata.operations.query.time == 'query' %}
+                                Non disponibile
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="proxydetails_label">Ricerca inventariale</td>
+                        <td>
+                            {% if proxydata.operations.query.inventory == 'full' %}
+                                Complessa
+                            {% endif %}
+                            {% if proxydata.operations.query.inventory == 'simple' %}
+                                Semplice
+                            {% endif %}
+                            {% if proxydata.operations.query.inventory == 'none' %}
+                                Non disponibile
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="proxydetails_label">Business intelligence</td>
+                        <td>
+                            {% if proxydata.operations.query.bi == 'full' %}
+                                Completa
+                            {% endif %}
+                            {% if proxydata.operations.query.bi == 'none' %}
+                                Non disponibile
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="proxydetails_label">Firma</td>
+                        <td>
+                            {% if proxydata.operations.query.sign == 'true'  %}
+                                Sì
+                                {% else %}
+                                No
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+
+
+
+                    {% if proxy_data.type == 'read' or proxy_data.type == 'write' %}
+
+                        <tr>
+                        <td class="proxydetails_label">
+                        Modalità operativa
+                        </td>
+                        <td>
+                            {% if proxydata.operations.read == 'full' %}
+                                Lettura completa
+                            {% endif %}
+                            {% if proxydata.operations.read == 'diff' %}
+                                Lettura incrementale
+                            {% endif %}
+                            {% if proxydata.operations.write == 'full' %}
+                                Scrittura continua
+                            {% endif %}
+                            {% if proxydata.operations.read == 'sync' %}
+                                Scrittura periodica
+                            {% endif %}
+                        </td>
+                        </tr>
+
+                    {% endif %}
+
+
+                {% endif %}
+            {% endif %}
+
+                <tr><th colspan=2 class="proxydetails_header">Ambito d'interesse</th></tr>
+
+                <tr><td class="proxydetails_label">Valido dal</td><td>
+                    {{ proxydata.time.0|slice:":10" }}
+                </td></tr>
+                <tr><td class="proxydetails_label">Valido al</td><td>
+                    {% if proxydata.time.1 != "" %}
+                        {{ proxydata.time.1|slice:":10" }}
+                    {% else %}
+                        (corrente)
+                    {% endif %}
+                </td></tr>
+
+                <tr>
+                    <td class="proxydetails_label">
+                        Latitudine
+                    </td>
+                    <td class="proxydetails_info">
+                        da {{ proxydata.area.1 }}<br>a {{ proxydata.area.3 }}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="proxydetails_label">
+                        Longitudine
+                    </td>
+                    <td class="proxydetails_info">
+                        da {{ proxydata.area.0 }}<br>a {{ proxydata.area.2 }}
+                    </td>
+                </tr>
+
+
+
+
+
+
+            </table>
+
+            </div>
+        {% endfor %}
+    </div>
+
+
+
+
+    <div class="creationdialog" id="proxycreate_readwrite" title="Creazione proxy lettura/scrittura">
+
+
+
+        <table class="creatormask" id="layout_createreadwrite">
+            <colgroup>
+                <col class="bordered" span=3>
+                <col span=2>
+            </colgroup>
+            <tbody class="tablebanner"><tr>
+                <td colspan=5>ISTANZA</td>
+            </tr></tbody>
+            <tbody class="tablebanner"><tr>
+                <td colspan=3 class="bordered">Funzionalità</td><td colspan=2>Contatti</td>
+            </tr></tbody>
+            <tr>
+                <td rowspan=5>
+                    <div class="tablemap map_newproxy" id="map_createreadwrite"></div>
+                </td>
+                <td>
+                    <label for="field_createreadwrite_name">Nome **</label></td><td><input type="text" id="field_createreadwrite_name" class="widetext proxynamefield">
+                </td>
+                <td><label for="field_createreadwrite_owner">Fornitore **</label></td>
+                <td><input type="text" id="field_createreadwrite_owner" class="widetext proxyfieldprovider {% if providers|length > 0 %}datalisted" list="providers{% endif %}">
+
+
+                </td>
+            </tr>
+
+
+            <tr>
+
+                <td><label for="field_createreadwrite_mode">Modalità **</label></td>
+                <td>
+                    <select id="field_createreadwrite_mode">
+                        <optgroup label="Lettura">
+                            <option value="read/full">Lettura completa</option>
+                            <option value="read/diff">Lettura incrementale</option>
+                        </optgroup>
+                        <optgroup label="Scrittura">
+                            <option value="write/full">Scrittura continua</option>
+                            <option value="write/sync">Scrittura periodica</option>
+                        </optgroup>
+                    </select>
+                </td>
+
+
+                <td><label for="field_createreadwrite_contactname">Referente</label></td>
+                <td><input type="text" id="field_createreadwrite_contactname" class="widetext proxyfieldcontactdata proxyfieldcontactname"></td>
+            </tr>
+            <tr>
+
+                <td><label for="field_createreadwrite_datefrom">Valido dal **</label></td>
+                <td><input type="text" id="field_createreadwrite_datefrom" class="widetext proxydatefield datefromfield">
+                </td>
+
+
+                <td><label for="field_createreadwrite_contactemail">Email referente ***</label></td><td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createreadwrite_contactemail"></td>
+
+            </tr>
+
+            <tr>
+
+                <td>
+
+                    <label for="field_createreadwrite_dateto">Valido al</label> <input type="checkbox" id="field_createreadwrite_hasdateto" class="proxyhasdateto"></td><td><input type="text" id="field_createreadwrite_dateto" class="widetext proxydatefield datetofield">
+            </td>
+
+
+                <td>
+                    <label for="field_createreadwrite_contactphone">Telefono referente ***</label></td><td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createreadwrite_contactphone">
+                </td>
+                </tr>
+
+            <tr>
+                <td><label for="field_createreadwrite_area_geosearch">Area</label> <img class="imgbutton btn_proxy_geoloc btn_trygeoloc" id="btn_trygeoloc_proxyrw" src="/static/resource/fwp_focus.png"><img class="imgbutton cleangeoloc_proxy" id="btn_cleangeoloc_proxyrw" src="/static/resource/fwp_clear.png"></td><td>
+                <input type="text" id="field_createreadwrite_area_geosearch" class="widetext field_proxy_geoloc">
+
+            </td>
+            </tr>
+
+
+            <tbody class="tablebanner"><tr>
+                <td colspan=5>CATALOGHI *</td>
+            </tr></tbody>
+
+            <tbody class="tablebanner"><tr>
+                <td colspan=3>Nuovo catalogo</td><td colspan=2>Cataloghi inseriti</td>
+            </tr></tbody>
+
+            <tbody class="metadata_info">
+            <tr>
+                <td rowspan=5>
+                    <div class="tablemap map_newmeta" id="map_metareadwrite"></div>
+                </td>
+                <td>
+
+
+                    <label for="field_metareadwrite_name">Nome **</label></td><td><input type="text" id="field_metareadwrite_name" class="widetext newmeta_name"></td><td id="createdmetalistrw" rowspan=4 colspan=2>
+
+                <table class="newmetalist" id="newmetalist_readwrite">
+                </table>
+
+
+                    </td></tr>
+            <tr><td>
+                    <label for="field_metareadwrite_datefrom">Valido dal</label> <input type="checkbox" class="metadatefieldswitch hasdatefrom" id="field_metareadwrite_hasdatefrom"></td><td><input type="text" id="field_metareadwrite_datefrom" class="widetext metadatefrom proxymetadatefield"></td></tr>
+            <tr><td>
+                    <label for="field_metareadwrite_dateto">Valido al</label> <input type="checkbox" class="metadatefieldswitch hasdateto" id="field_metareadwrite_hasdateto"></td><td><input type="text" id="field_metareadwrite_dateto" class="widetext metadateto proxymetadatefield"></td></tr>
+
+            <tr><td>
+                    <label for="field_metareadwrite_area_geosearch">Area</label> <input type="checkbox" class="metabboxfieldswitch hasbbox" id="field_metareadwrite_hasbbox"> <img class="imgbutton btn_meta_geoloc btn_trygeoloc" id="btn_trygeoloc_proxyrwmeta" src="/static/resource/fwp_focus.png">
+                    <img class="imgbutton cleangeoloc_meta" id="btn_cleangeoloc_proxyrwmeta" src="/static/resource/fwp_clear.png"></td><td><input type="text" id="field_metareadwrite_area_geosearch" class="widetext field_meta_geoloc">
+
+                </td>
+            </tr>
+            <tr>
+                <td colspan=2 style="text-align: center"><input type="button" class="newmeta_create" value="Crea catalogo" id="btn_newmetarw_create"></td>
+            </tr>
+
+            </tbody>
+        </table>
+
+        <div class="formbriefing" style="margin-top: 0.5em">
+            * È obbligatorio creare almeno un catalogo. ** Campo obbligatorio. *** È obbligatorio riempire almeno uno di questi campi.<br>
+            I nomi delle istanze e dei cataloghi possono contenere lettere da A a Z (maiuscole e minuscole), numeri e il carattere di sottolineatura.
+        </div>
+
+    </div>
+
+
+
+
+    <div class="creationdialog" id="proxycreate_query" title="Creazione proxy query">
+
+
+        <table class="creatormask" id="layout_createquery">
+
+            <tbody class="tablebanner"><tr>
+                <td colspan=7>ISTANZA</td>
+            </tr></tbody>
+            <tbody class="tablebanner"><tr>
+                <td colspan=5 class="bordered">Funzionalità</td><td colspan=2>Contatti</td>
+            </tr></tbody>
+            <tr>
+                <td rowspan=5>
+                    <div class="tablemap map_newproxy" id="map_createquery"></div>
+                </td>
+                <td>
+                    <label for="field_createquery_name">Nome **</label></td><td><input type="text" id="field_createquery_name" class="widetext proxynamefield">
+            </td>
+
+                <td><label for="newquery_mode_geo">Ricerca geografica</label></td>
+                <td class="bordered">
+                    <select id="newquery_mode_geo">
+                        <option value="full">Complessa</option>
+                        <option value="BB">Bounding box</option>
+                        <option value="none">Non disponibile</option>
+                    </select>
+                </td>
+
+
+
+                <td><label for="field_createquery_owner">Fornitore **</label></td>
+                <td><input type="text" class="proxyfieldprovider widetext{% if providers|length > 0 %} datalisted{% endif %}" id="field_createquery_owner" {% if providers|length > 0 %}list="providers"{% endif %}>
+                   </td>
+            </tr>
+
+
+            <tr>
+                <td><label for="field_createquery_datefrom">Valido dal **</label></td>
+                <td><input type="text" id="field_createquery_datefrom" class="proxydatefield widetext datefromfield">
+                </td>
+
+                <td><label for="newquery_mode_inv">Ricerca inventariale</label></td>
+                <td class="bordered">
+                    <select id="newquery_mode_inv">
+                    <option value="full">Completa</option>
+                    <option value="simple">Semplice</option>
+                    <option value="none">Non disponibile</option>
+                </select></td>
+
+
+                <td><label for="field_createquery_contactname">Referente</label></td>
+                <td><input type="text" class="widetext proxyfieldcontactdata proxyfieldcontactname" id="field_createquery_contactname"></td>
+            </tr>
+            <tr>
+
+                <td>
+
+                    <label for="field_createquery_dateto">Valido al</label> <input type="checkbox" id="field_createquery_hasdateto" class="proxyhasdateto"></td><td><input type="text" id="field_createquery_dateto" class="proxydatefield datetofield widetext">
+            </td>
+
+                <td><label for="newquery_mode_time">Ricerca temporale</label></td>
+                <td class="bordered">
+                    <select id="newquery_mode_time">
+                        <option value="full">Completa</option>
+                        <option value="none">Non disponibile</option>
+                    </select>
+                </td>
+
+
+                <td><label for="field_createquery_contactemail">Email referente ***</label></td><td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createquery_contactemail"></td>
+
+            </tr>
+
+            <tr>
+
+                <td><label for="field_createquery_area_geosearch">Area</label> <img class="imgbutton btn_trygeoloc btn_proxy_geoloc" id="btn_trygeoloc_proxyquery" src="/static/resource/fwp_focus.png"><img class="imgbutton cleangeoloc_proxy" id="btn_cleangeoloc_proxyquery" src="/static/resource/fwp_clear.png"></td><td>
+                <input type="text" class="widetext field_proxy_geoloc" id="field_createquery_area_geosearch">
+
+            </td>
+
+                <td><label for="newquery_mode_bi">Business intelligence</label></td>
+                <td class="bordered">
+                    <select id="newquery_mode_bi">
+                        <option value="full">Completa</option>
+                        <option value="simple">Semplice</option>
+                        <option value="none">Non disponibile</option>
+                    </select>
+                </td>
+
+                <td>
+                    <label for="field_createquery_contactphone">Telefono referente ***</label></td><td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createquery_contactphone">
+            </td>
+            </tr>
+
+
+            <tr>
+                <td colspan=2>
+                </td>
+
+                <td><label for="newquery_mode_sign">Firma</label></td>
+                <td class="bordered">
+                    <select id="newquery_mode_sign">
+                        <option value="false">No</option>
+                        <option value="true">Sì</option>
+                </select></td>
+
+            </tr>
+
+
+            <tbody class="tablebanner"><tr>
+                <td colspan=7>CATALOGHI *</td>
+            </tr></tbody>
+
+            <tbody class="tablebanner"><tr>
+                <td colspan=3 class="bordered">Nuovo catalogo</td><td colspan=4>Cataloghi inseriti</td>
+            </tr></tbody>
+
+            <tbody class="metadata_info">
+            <tr>
+                <td rowspan=5>
+                    <div class="tablemap map_newmeta" id="map_metaquery"></div>
+                </td>
+                <td>
+
+
+                    <label for="field_metaquery_name">Nome **</label></td><td class="bordered"><input type="text" class="widetext newmeta_name" id="field_metaquery_name"></td><td id="createdmetalistquery" rowspan=4 colspan=2>
+
+                    <table class="newmetalist" id="newmetalist_query">
+                    </table>
+
+
+                    </td></tr>
+            <tr><td>
+                <label for="field_metaquery_datefrom">Valido dal</label> <input type="checkbox" class="metadatefieldswitch hasdatefrom" id="field_metaquery_hasdatefrom"></td><td class="bordered"><input class="widetext metadatefrom proxymetadatefield" type="text" id="field_metaquery_datefrom"></td></tr>
+            <tr><td>
+                <label for="field_metaquery_dateto">Valido al</label> <input type="checkbox" id="field_metaquery_hasdateto" class="metadatefieldswitch hasdateto"></td><td class="bordered"><input type="text" id="field_metaquery_dateto" class="proxymetadatefield metadateto widetext"></td></tr>
+
+            <tr><td>
+                <label for="field_metaquery_area_geosearch">Area</label> <input type="checkbox" class="metabboxfieldswitch hasbbox" id="field_metaquery_hasbbox"> <img class="imgbutton btn_trygeoloc btn_meta_geoloc" id="btn_trygeoloc_proxyquerymeta" src="/static/resource/fwp_focus.png">
+                <img class="imgbutton cleangeoloc_meta" id="btn_cleangeoloc_proxyquerymeta" src="/static/resource/fwp_clear.png"></td><td class="bordered"><input class="widetext field_meta_geoloc" type="text" id="field_metaquery_area_geosearch">
+
+            </td>
+            </tr>
+            <tr>
+                <td colspan=2 style="text-align: center" class="bordered"><input type="button" value="Crea catalogo" class="newmeta_create" id="btn_newmetaquery_create"></td>
+            </tr>
+            </tbody>
+
+        </table>
+
+        <div class="formbriefing" style="margin-top: 0.5em">
+            * È obbligatorio creare almeno un catalogo. ** Campo obbligatorio. *** È obbligatorio riempire almeno uno di questi campi.<br>
+            I nomi delle istanze e dei cataloghi possono contenere lettere da A a Z (maiuscole e minuscole), numeri e il carattere di sottolineatura.
+        </div>
+
+
+
+
+
+    </div>
+
+
+
+
+    <div class="creationdialog" id="proxycreate_linked" title="Creazione proxy di collegamento standalone">
+
+        {% if freest|length > 0 %}
+
+            <div class="formbriefing">
+                Selezionare uno strumento standalone da inserire in federazione.<br>
+                Il processo di federazione collega automaticamente le mappe dell'Archivio pubblico dello strumento standalone al federatore.
+            </div>
+
+            <select id="proxycreate_linked_choosesource">
+                <option></option>
+                {% for proxy_id, proxydata in proxiesdj.items %}
+                    {% if proxy_id in  freest %}
+                        <option value="{{ proxy_id }}">{{ proxydata.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+
+
+        {% else %}
+
+            <div class="formbriefing">
+                Sul sistema non sono presenti istanze standalone non federate.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+
+
+
+    <div class="deletedialog" id="proxydelete" title="Eliminazione istanza">
+
+        <div class="formbriefing">
+            L'istanza e tutti i suoi dati verranno eliminati permanentemente.<br>
+            Questa operazione è irreversibile.<br>
+        </div>
+
+        <div class="formbriefing">
+            Per confermare la richiesta di eliminazione, inserire la frase "confermo la richiesta di eliminazione" nel riquadro sottostante e fare clic sul pulsante Elimina.
+        </div>
+
+        <input type="text" class="widetext" id="deleterequest_confirmationstring" value="">
+        <input type="hidden" id="deleterequest_verificationstring" value="confermo la richiesta di eliminazione">
+
+
+    </div>
+
+
+
+
+
+    <div class="creationdialog" id="proxycreate_standalone" title="Creazione istanza standalone">
+
+
+
+        <table class="creatormask" id="layout_createstandalone">
+            <colgroup>
+                <col class="bordered" span=3>
+                <col span=2>
+            </colgroup>
+            <tbody class="tablebanner"><tr>
+                <td colspan=3>Funzionalità</td>
+                <td colspan=2>Contatti</td>
+            </tr></tbody>
+            <tr>
+                <td rowspan=5>
+                    <div class="tablemap map_newproxy" id="map_createstandalone"></div>
+                </td>
+                <td>
+                    <label for="field_createstandalone_name">Nome **</label>
+                </td>
+                <td>
+                    <input type="text" class="widetext proxynamefield" id="field_createstandalone_name">
+                </td>
+                <td>
+                    <label for="field_createstandalone_owner">Fornitore **</label>
+                </td>
+                <td>
+                    <input type="text" class="proxyfieldprovider widetext {% if providers|length > 0 %}datalisted{% endif %}" id="field_createstandalone_owner" {% if providers|length > 0 %}list="providers"{% endif %}>
+
+                </td>
+            </tr>
+
+            <tr>
+                <td><label for="field_createstandalone_datefrom">Valido dal **</label></td>
+                <td><input type="text" class="widetext proxydatefield datefromfield" id="field_createstandalone_datefrom"></td>
+                <td><label for="field_createstandalone_contactname">Referente</label></td>
+                <td><input type="text" class="widetext proxyfieldcontactdata proxyfieldcontactname" id="field_createstandalone_contactname"></td>
+            </tr>
+
+            <tr>
+                <td><label for="field_createstandalone_dateto">Valido al</label> <input type="checkbox" id="field_createstandalone_hasdateto" class="proxyhasdateto"></td>
+                <td><input type="text" class="widetext proxydatefield datetofield" id="field_createstandalone_dateto"></td>
+                <td><label for="field_createstandalone_contactemail">Email referente ***</label></td>
+                <td><input type="text" class="widetext proxyfieldemail proxyfieldcontactdata" id="field_createstandalone_contactemail"></td>
+            </tr>
+            <tr>
+                <td><label for="field_createstandalone_area_geosearch">Area</label> <img class="imgbutton btn_proxy_geoloc btn_trygeoloc" id="btn_trygeoloc_proxy" src="/static/resource/fwp_focus.png">
+                    <img class="imgbutton cleangeoloc_proxy" id="btn_cleangeoloc_st" src="/static/resource/fwp_clear.png"></td>
+                <td><input type="text" class="widetext field_proxy_geoloc" id="field_createstandalone_area_geosearch"></td>
+                <td><label for="field_createstandalone_contactphone">Telefono referente ***</label></td>
+                <td><input type="text" class="widetext proxyfieldphone proxyfieldcontactdata" id="field_createstandalone_contactphone"></td>
+            </tr>
+
+        </table>
+
+        <div class="formbriefing" style="margin-top: 0.5em">
+            ** Campo obbligatorio. *** È obbligatorio riempire almeno uno di questi campi.<br>
+            I nomi delle istanze possono contenere lettere da A a Z (maiuscole e minuscole), numeri e il carattere di sottolineatura.
+        </div>
+
+    </div>
+
+
+
+    <div id="creation_progress" title="Creazione istanza">
+
+        <div class="progspinner" id="progspinner_creation">
+            <img src="/static/resource/progressbar.gif">
+        </div>
+
+        <div class="progressinfo" id="progress_stage_sendinginfo">
+            Creazione istanza in corso...
+        </div>
+
+        <div class="progressinfo feedback_good" id="creationfinished_success">
+            Creazione completata.
+        </div>
+
+        <div class="progressinfo feedback_bad" id="creationfinished_fail">
+            Creazione fallita.
+            <div class="failinfo" id="creationfail_explain">
+            </div>
+        </div>
+
+
+    </div>
+
+
+
+    <div id="delete_progress" title="Eliminazione istanza">
+
+        <div class="progspinner" id="progspinner_delete">
+            <img src="/static/resource/progressbar.gif">
+        </div>
+
+        <div class="progressinfo" id="progress_stage_makingrequest">
+            Eliminazione istanza in corso...
+        </div>
+
+        <div class="progressinfo feedback_good" id="deletefinished_success">
+            Eliminazione completata.
+        </div>
+
+        <div class="progressinfo feedback_bad" id="deletefinished_fail">
+            Eliminazione fallita.
+            <div class="failinfo" id="deletefail_explain">
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <div id="proxymap"></div>
+
+
+
+{% endblock %}
+
+
+{% block starterscript %}
+    <script>
+        pageInit({{ proxiesjs }});
+    </script>
+{% endblock %}
+
+
+{% block contextguide %}
+
+    <div class="help">
+        WORK IN PROGRESS
+    </div>
+{%  endblock %}
+
+
+
+

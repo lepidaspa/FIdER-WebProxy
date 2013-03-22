@@ -296,6 +296,7 @@ function saveConnection(currentconn)
             //unsetLoadingState();
 
             //we put the message anyway just in case there's anything to delay the refresh;
+            unsetLoadingState();
             postFeedbackMessage(data['success'], data['report']+"<br>Per accedere ai dati è necessario creare uno schema di conversione.", container);
 
 
@@ -321,7 +322,7 @@ function editExistingTranslation (caller)
     var query_id = caller.srcElement.id.substring(prefix.length);
     console.log("Editing conversions for "+query_id);
 
-    var urlstring = "/fwp/reviewqueryconn/"+proxy_id+"/"+meta_id+"/"+query_id;
+    var urlstring = "/fwp/reviewqueryconn/"+proxy_id+"/"+meta_id+"/"+query_id+"/";
 
     setLoadingState();
 

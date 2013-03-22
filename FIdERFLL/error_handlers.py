@@ -5,6 +5,9 @@ __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
 class ValidationError (Exception):
+	"""
+	Standard exception used when data validation fails for any reason
+	"""
 
 	def __init__ (self, candidate=None, errormsg="Undefined validation exception"):
 		super(ValidationError, self).__init__()

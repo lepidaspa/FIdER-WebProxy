@@ -14,6 +14,8 @@ var manifest;
 
 var minimap;
 
+// if the proxy is a standalone instance
+var islocal;
 
 var proxymap;
 var proxymap_metalayer;
@@ -25,25 +27,31 @@ function pageInit(req_id, req_manifest)
     proxy_id = req_id;
     manifest = req_manifest;
 
-    // checking if not a query proxy
-    if (manifest['operations']['query']['time'] == 'none' &&
-        manifest['operations']['query']['geographic'] == 'none' &&
-        manifest['operations']['query']['bi'] == 'none' &&
-        manifest['operations']['query']['inventory'] == 'none')
+
+    var isquery = !(manifest['operations']['query']['time'] == 'none' &&
+            manifest['operations']['query']['geographic'] == 'none' &&
+            manifest['operations']['query']['bi'] == 'none' &&
+            manifest['operations']['query']['inventory'] == 'none');
+
+    islocal = (!isquery && manifest['operations']['read'] == 'none' &&
+            manifest['operations']['write'] == 'none');
+
+    var function_access = "";
+    if (!isquery)
     {
-        console.log("Creating access for standalone");
-        $('<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'">Gestione mappe</a></div><div class="button wide" id="maps_dload"><span id="maps_dload_toggle">Scaricamento mappe</span></div>').insertAfter("#minimap");
+        if (islocal)
+        {
+            function_access += '<div class="button wide" id="proxy_standalone"><a href="/fwst/'+proxy_id+'/">Editor di mappe</a></div>';
+        }
+        function_access += '<div class="button wide" id="maps_dload"><span id="maps_dload_toggle">Download mappe</span></div>';
 
+        $(function_access).insertAfter("#minimap");
         renderMapDownloader();
-
-
     }
-
 
 
     //alert(JSON.stringify(manifest['metadata']));
 
-    //TODO: import theme to local and replace this after DEMO (or before?)
     OpenLayers.ImgPath = "/static/OpenLayers/themes/dark/";
 
     minimap= new OpenLayers.Map('minimap', {controls: []});
@@ -55,16 +63,8 @@ function pageInit(req_id, req_manifest)
 
     minimap.addLayer(layer);
 
-    //mapvis.addControl(new OpenLayers.Control.OverviewMap());
-
-
-    //mapvis.events.register('moveend', mapvis, showProxyList);
-    //mapvis.events.register('zoomend', null, filterProxies);
-
-
     var bbox = (manifest['area']);
     zoomToBBox(minimap, bbox);
-
 
     buildProxyMap();
     renderMetaData();
@@ -82,7 +82,7 @@ function tryDownloadMap()
         return;
     }
 
-    var urlstring = "/fwp/get/"+proxy_id+"/"+mapid;
+    var urlstring = "/fwp/get/"+proxy_id+"/"+mapid+"/";
     console.log("Downloading: "+urlstring);
 
     window.open(urlstring);
@@ -98,9 +98,7 @@ function renderMapDownloader()
 {
     var dloadmask = $('<div id="downloadermask"></div>');
 
-    //TODO: add ajax call and use result to fill the mapslist, THEN make the button visible
-
-    var urlstring = "/fwp/maplist/"+proxy_id;
+    var urlstring = "/fwp/maplist/"+proxy_id+"/";
 
     $.ajax ({
             url:    urlstring,
@@ -130,13 +128,18 @@ function buildMapList (jsondata)
 
     var container = $("<div id='maps_dload_sel'><select id='sel_maps_dload'><option></option></select></div>");
 
-    var ctx_mapsel = $('<optgroup label="Archivio"></optgroup>');
-    for (var m in maps_st)
+    if (islocal)
     {
-        ctx_mapsel.append('<option value=".st/'+maps_st[m]+'">'+maps_st[m]+'</option>');
+        var ctx_mapsel = $('<optgroup label="Area di lavorazione"></optgroup>');
+        for (var m in maps_st)
+        {
+            ctx_mapsel.append('<option value=".st/'+maps_st[m]+'">'+maps_st[m]+'</option>');
+        }
+
+        container.find("#sel_maps_dload").append(ctx_mapsel);
     }
 
-    container.find("#sel_maps_dload").append(ctx_mapsel);
+
 
     for (var meta_id in maps_fider)
     {
@@ -224,6 +227,15 @@ function renderMetaData()
 
         $(".metadesc").hover(showSelArea, hideSelArea);
 
+    }
+
+    // adding a special metadata selection box for the internal archive of standalone instances
+
+
+    if (islocal)
+    {
+        metastring = '<div class="metadesc" id="meta_'+i+'"><a href="/fwp/proxy/'+proxy_id+'/.st/">Area di lavorazione</a></div>';
+        $("#metalisting").append(metastring);
     }
 
 }

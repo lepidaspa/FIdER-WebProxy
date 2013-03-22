@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2012 Laboratori Guglielmo Marconi S.p.A. <http://www.labs.it>
+import re
+import shutil
 from django.core.servers.basehttp import FileWrapper
 from io import StringIO
 
@@ -31,16 +33,26 @@ __docformat__ = 'restructuredtext en'
 
 
 
-def error404test (request):
+def error404 (request):
+	"""
+	Standard 404 error template
+	:param request:
+	:return:
+	"""
 
-	htmldata = "<html><body>Error 404 test: </body></html>"
+	htmldata = "<html><body>Error 404 </body></html>"
 	return HttpResponse(htmldata)
 
 
 
-def error500test (request):
+def error500 (request):
+	"""
+	Standard 500 error template
+	:param request:
+	:return:
+	"""
 	type, value, tb = sys.exc_info()
-	htmldata = "<html><body>Error 500 test: <br><pre>"+str(request)+"\n"+str(value)+"</pre><br> </body></html>"
+	htmldata = "<html><body>Error 500: <br><pre>"+str(request)+"\n"+str(value)+"</pre><br> </body></html>"
 	print "ERROR: %s %s\n%s" % (type, value, tb)
 	return HttpResponse(htmldata)
 
@@ -51,8 +63,6 @@ def proxysel (request):
 	:return:
 	"""
 
-	#TODO: replace with more complete version, to take into account query proxies too
-	#list_proxy = os.listdir(os.path.join(proxyconf.basemanifestpath))
 
 	proxydict = getManifests()
 
@@ -62,9 +72,257 @@ def proxysel (request):
 		proxies [proxy_id]['area'] = proxydict[proxy_id]['area']
 		proxies [proxy_id]['time'] = proxydict[proxy_id]['time']
 		proxies [proxy_id]['name'] = proxydict[proxy_id]['name']
+		proxies [proxy_id]['type'] = learnProxyType(proxydict[proxy_id])
+
+	print "Proxy listing:\n%s" % proxies
 
 
 	return render_to_response ('fwp_proxysel.html', {'proxies': SafeString(json.dumps(proxies))},
+		context_instance=RequestContext(request))
+
+def getProxyContacts (request, **kwargs):
+	"""
+	Returns a json with the complete contacts for the requested proxy
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+
+	try:
+	#for legacy proxies, can be ignored in production
+		contactdata = json.load(open(os.path.join(proxyconf.baseproxypath, proxy_id, "conf", "contacts.json")))
+	except:
+		contactdata = {"owner": "(sconosciuto)", "phone": "", "contact": "", "email": ""}
+
+
+	return HttpResponse(json.dumps(contactdata), mimetype="application/json")
+
+@csrf_exempt
+def proxy_getcontacts (request, **kwargs):
+	"""
+	Returns the contacts for a specific proxy in json form
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	contactdata = json.load(open(os.path.join(proxyconf.baseproxypath, proxy_id, "conf", "contacts.json")))
+
+	return HttpResponse(json.dumps(contactdata), mimetype="application/json")
+
+@csrf_exempt
+def proxy_getmapmodelng (request, **kwargs):
+	"""
+	Gets the model info from a map. Note that this applies ONLY to a standalone instance
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	print "Downloading the map itself"
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, getProxyManifest(proxy_id))
+
+	if proxy_type != 'local':
+		raise Exception ("Wrong proxy type, function only applies to standalone tools")
+
+	if meta_id == '.st':
+		#map editor
+		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
+	else:
+		#archive
+		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id, map_id+".geojson")
+	mapdataraw= json.load(open(path))
+
+
+	print "Getting the actual model out"
+
+	if mapdataraw.has_key('model'):
+		mapmodel = mapdataraw['model']
+	else:
+
+		mapmodel = {}
+
+		mapmodel['name'] = meta_id+"/"+map_id
+		mapmodel['objtype'] = mapdataraw['features'][0]['geometry']['type']
+		mapmodel['properties'] = {}
+
+		for cfeature in mapdataraw['features']:
+			for propname in cfeature['properties'].keys():
+				if not mapmodel['properties'].has_key(propname):
+					mapmodel['properties'][propname] = 'str'
+
+
+	return HttpResponse(json.dumps(mapmodel), mimetype="application/json")
+
+
+
+
+
+@csrf_exempt
+def proxy_getmapng (request, **kwargs):
+	"""
+	Gets a map in geojson format. Allows choice between federated and non-federated output, plus proxy-query
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	print "Downloading single map from proxy"
+	print "URL params: %s" % kwargs
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, getProxyManifest(proxy_id))
+
+	print "Download context is: %s (%s) / %s / %s" % (proxy_id, proxy_type, meta_id, map_id)
+	#getflag is federated or not federated
+	try:
+		getflag = kwargs['getflag']
+	except:
+		getflag = 'src'
+
+	print "Getflag set to %s" % getflag
+
+	jsondata = {}
+
+	if proxy_type == 'query':
+		#query data is received via query and ALWAYS federated, cannot do without conv table
+		jsondata = proxy_query.fullQueryOnMap(proxy_id, meta_id, map_id)
+	elif proxy_type == 'local':
+		# getting from map editor we don NOT have a difference between federated and not
+		# but we still have different locations for data on archive and editor
+		if meta_id == '.st':
+			#map editor
+			path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
+		else:
+			#archive
+			path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id, map_id+".geojson")
+		jsondata = json.load(open(path))
+	else:
+		if getflag == 'fed':
+			# getting FED data, converted to json WITH translation
+			jsondata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, True)
+		elif getflag == 'src':
+			# getting PURE data, converted to json WITHOUT translation
+			jsondata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, False)
+
+	response = HttpResponse(json.dumps(jsondata), mimetype="application/json")
+	response['Content-Disposition'] = 'attachment; filename=' + map_id+".geojson"
+	return response
+
+
+def proxy_getnaked (request, **kwargs):
+	"""
+	Sends the "naked" map, only geographical data with no properties
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	print "Downloading single map from proxy in naked mode"
+	print "URL params: %s" % kwargs
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, getProxyManifest(proxy_id))
+
+	print "Download context is: %s (%s) / %s / %s" % (proxy_id, proxy_type, meta_id, map_id)
+	#getflag is federated or not federated
+	try:
+		getflag = kwargs['getflag']
+	except:
+		getflag = 'src'
+
+	print "Getflag set to %s" % getflag
+
+	jsondata = {}
+
+	if proxy_type == 'query':
+		#query data is received via query and ALWAYS federated, cannot do without conv table
+		jsondata = proxy_query.fullQueryOnMap(proxy_id, meta_id, map_id)
+	elif proxy_type == 'local':
+		# getting from map editor we don NOT have a difference between federated and not
+		# but we still have different locations for data on archive and editor
+		if meta_id == '.st':
+			#map editor
+			path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
+		else:
+			#archive
+			path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id, map_id+".geojson")
+		jsondata = json.load(open(path))
+	else:
+		# getting PURE data, converted to json WITHOUT translation
+		jsondata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, False)
+
+	# cleaning up the data, leaving only the source of the map itself
+	for feature in jsondata['features']:
+		feature['properties'] = {'source': proxy_id+"-"+meta_id+"-"+map_id}
+
+
+	return HttpResponse(json.dumps(jsondata), mimetype="application/json")
+
+
+
+
+def proxyselng (request, **kwargs):
+	"""
+	Shows the basic proxy selection screen (new version). From here the user can also create a new proxy
+	:return:
+	"""
+
+	proxydict = getManifests()
+
+	proxies = {}
+	# list of standalone without a linker
+	standalone = {}
+	federatedst = {}
+	for proxy_id in proxydict:
+		proxies [proxy_id] = {}
+		proxies [proxy_id]['area'] = proxydict[proxy_id]['area']
+		proxies [proxy_id]['time'] = proxydict[proxy_id]['time']
+		proxies [proxy_id]['name'] = proxydict[proxy_id]['name']
+		proxies [proxy_id]['type'] = proxy_core.learnProxyTypeAdv(proxy_id, proxydict[proxy_id])
+		proxies [proxy_id]['operations'] = proxydict[proxy_id]['operations']
+		try:
+			#for legacy proxies, can be ignored in production
+			proxies [proxy_id]['contacts'] = json.load(open(os.path.join(proxyconf.baseproxypath, proxy_id, "conf", "contacts.json")))
+		except:
+			proxies [proxy_id]['contacts'] = {"owner": "(sconosciuto)", "phone": "", "contact": "", "email": ""}
+		if proxies[proxy_id]['type'] == 'local':
+			standalone[proxies[proxy_id]['name']] = proxy_id
+		if proxies[proxy_id]['type'] == 'linked':
+			federatedst[proxies[proxy_id]['name']] = proxy_id
+
+	# non federated standalone  ids
+	unfed = []
+	for proxyname in standalone.keys():
+		if not federatedst.has_key(proxyname):
+			unfed.append(standalone[proxyname])
+
+
+	print "Proxy listing:\n%s" % proxies
+
+	try:
+		providers = json.loads(urllib2.urlopen(proxyconf.URL_PROVIDERS).read())
+		print "Providers found: %s" % providers
+	except Exception as ex:
+		print "Provider list is empty or missing"
+		print "Exception: %s " % ex
+		providers = []
+
+	return render_to_response ('fwp_proxyselng.html', {'proxiesdj': proxies, 'proxiesjs': SafeString(json.dumps(proxies)), 'freest': unfed, 'providers': providers},
 		context_instance=RequestContext(request))
 
 
@@ -82,6 +340,30 @@ def proxypage (request, **kwargs):
 
 
 
+def proxypageng (request, **kwargs):
+	"""
+	Shows the metadata and map selection, plus all proxy-specific actions.
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+	manifest = getProxyManifest(proxy_id)
+
+	proxy_type = proxy_core.learnProxyTypeAdv(proxy_id, manifest)
+
+	mapsdata = proxy_core.getMapsSummary(proxy_id)
+
+	proxy_meta = mapsdata.keys()
+	proxy_mapsbymeta = {}
+	for meta_id in proxy_meta:
+		proxy_mapsbymeta [meta_id] = mapsdata[meta_id].keys()
+
+	print "Proxy maps list: %s " % proxy_mapsbymeta
+	print "Proxy maps data: %s" % mapsdata
+
+	return render_to_response ('fwp_proxypageng.html', {'proxy_id': proxy_id, 'manifest': SafeString(json.dumps(manifest)), 'proxy_name': manifest['name'], 'proxy_meta': proxy_meta, 'proxy_type': proxy_type, 'mapsbymeta': proxy_mapsbymeta, 'proxy_maps': mapsdata, 'mapsforjs': SafeString(json.dumps(mapsdata)), 'manifestfordj': manifest}, context_instance=RequestContext(request))
+
+
 def metapage (request, **kwargs):
 	"""
 	Shows the meta selection screen for a selected proxy and any other proxy-specific option. Includes a small static view of the proxy bounding box
@@ -90,47 +372,66 @@ def metapage (request, **kwargs):
 
 	proxy_id = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
+
 	manifest = getProxyManifest(proxy_id)
 
 	proxytype = learnProxyType(manifest)
 
 
-	if proxytype != 'query':
-		metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)
-
-		proxymaps = []
-		for mapfile in os.listdir(metadir):
-			proxymaps.append(mapfile)
-
-
-		remotedir = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id)
-		remotemaps = []
-		for conffile in os.listdir(remotedir):
-			remotemaps.append(conffile[:-4])
-
+	if proxytype == 'read' or proxytype == 'write' or proxytype == 'local':
 		maplist_st = os.listdir(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone))
+		if meta_id != '.st':
+			metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_geojson, meta_id)
+
+			proxymaps = []
+			for mapfile in os.listdir(metadir):
+				proxymaps.append(mapfile)
 
 
-	else:
+			remotedir = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id)
+			remotemaps = []
+			for conffile in os.listdir(remotedir):
+				remotemaps.append(conffile[:-4])
+		else:
+			proxymaps = maplist_st
+
+
+
+
+	elif proxytype == 'query':
 		metadir = os.path.join(proxyconf.baseproxypath,proxy_id, proxyconf.path_mirror, meta_id)
 		proxymaps = {}
 		for mapfile in os.listdir(metadir):
 			proxymaps[mapfile] = json.load(open(os.path.join(metadir, mapfile)))
 
+
+
 	kwargs = {'proxy_id': proxy_id, 'proxy_name': manifest['name'], 'manifest': SafeString(json.dumps(manifest)), 'meta_id': meta_id, 'proxy_type': proxytype, 'maps': SafeString(json.dumps(proxymaps))}
 
-	if proxytype != 'query':
+
+	if proxytype == 'read' or proxytype == 'write':
 		template = 'fwp_metapage.html'
 		kwargs['remote'] = SafeString(json.dumps(remotemaps))
-		kwargs['maps_st'] = SafeString(json.dumps(maplist_st))
+		kwargs['islinked'] = json.dumps(ProxyFS.isLinkedProxy (proxy_id, manifest['name']));
+		print "%s is a linked proxy" % proxy_id
 
-	else:
+
+	elif proxytype == 'query':
 		template = 'fwp_querypage.html'
-		#Handling connection errors
+
+	elif proxytype == 'local':
+		template = 'fwp_metapage.html'
+		kwargs['maps_st'] = SafeString(json.dumps(maplist_st))
+		if meta_id != '.st':
+			kwargs['remote'] = SafeString(json.dumps(remotemaps))
+			kwargs['islinked'] = json.dumps(False);
+
+
 
 
 	# models are loaded at start for both
 	try:
+
 		kwargs['models'] = SafeString(json.dumps(getModels()))
 	except:
 		kwargs['models'] = {}
@@ -140,13 +441,18 @@ def metapage (request, **kwargs):
 	return render_to_response (template, kwargs, context_instance=RequestContext(request))
 
 def proxy_loadmap (request, **kwargs):
+	"""
+	Returns a map in geojson form from the proxy internal archive (no upload dir)
+	:param request:
+	:param kwargs:
+	:return:
+	"""
 
 	proxy_id = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
 	shape_id = kwargs['shape_id']
 
 	print "Loading map data for map %s/%s/%s" % (proxy_id, meta_id, shape_id)
-
 	if os.path.exists(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_geojson, meta_id, shape_id)):
 		jsondata = readSingleShape (proxy_id, meta_id, shape_id)
 	else:
@@ -154,6 +460,9 @@ def proxy_loadmap (request, **kwargs):
 
 	return HttpResponse(jsondata, mimetype="application/json")
 
+
+
+@csrf_exempt
 def proxy_getModels (request):
 	"""
 	Returns a json with the main server models and acceptable values
@@ -161,10 +470,9 @@ def proxy_getModels (request):
 	:return:
 	"""
 
-	#TODO: decide whether to return NULL or error (500) in case of error in getModels
+	# lets exceptions bubble up from getModels()
 
 	return HttpResponse(json.dumps(getModels()), mimetype="application/json")
-
 
 
 def getModels ():
@@ -190,7 +498,7 @@ def getModels ():
 		print "Error when requesting conversion table from %s: %s" % (proxyconf.URL_CONVERSIONS, errormess)
 
 		#todo: replace with handling at JS level
-		raise
+		raise Exception ("Tabella di conversione non ricevuta: %s" % errormess)
 
 	return convtable
 
@@ -215,19 +523,21 @@ def getConversionInfo (request, **kwargs):
 		mapconv = proxy_core.getConversionTable(kwargs["proxy_id"], kwargs["meta_id"], kwargs["shape_id"])
 		print "Received conversion table: %s" % mapconv
 		if mapconv is None:
+			print "No conversion table for this map"
 			mapconv = {}
 	except Exception as ex:
 		print "Error when loading shape conversion table: %s" % ex
 		mapconv = {}
 
 	# very simple check to be sure the conversion table has the correct structure, i.e. is in the most recent format
-	if not (mapconv.has_key('modelid') and mapconv.has_key('fields')):
+	if mapconv != {} and not (mapconv.has_key('modelid') and mapconv.has_key('fields')):
 		print "Conversion table is in the wrong format"
 		mapconv = {}
 
 	# creating the full list of fields for this map
 	sourcefields = []
 	if learnProxyType(getProxyManifest(proxy_id)) != 'query':
+
 		mapdata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, shape_id, False)
 		for feature in mapdata ['features']:
 			for property in feature['properties'].keys():
@@ -257,7 +567,7 @@ def getConversionInfo (request, **kwargs):
 
 def component_shapefile_table (request, **kwargs):
 	"""
-
+	Returns the conversion table for  specific shapefile according to its structure, available model etc.
 	:param request:
 	:param kwargs:
 	:return:
@@ -305,11 +615,7 @@ def component_shapefile_table (request, **kwargs):
 
 	conversionfrom = []
 	for feature in shapedata['features']:
-		#print "Feature: %s *** (%s)" % (feature, type(feature))
-		#print "Properties: %s " % feature['properties']
-		#for key in feature['properties'].keys():
-		#	if not conversionfrom.has_key (key):
-		#		conversionfrom[key] = str(type(feature['properties'][key])).split("'")[1]
+
 		for ckey in feature['properties'].keys():
 			if ckey not in conversionfrom:
 				conversionfrom.append(ckey)
@@ -344,7 +650,6 @@ def proxy_getSingleMap (request, **kwargs):
 		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_standalone, map_id)
 		mapdata = json.load(open(path))
 	else:
-		path = os.path.join (proxyconf.baseproxypath, proxy_id, proxyconf.path_mirror, meta_id, map_id)
 		mapdata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, False)
 
 
@@ -354,6 +659,36 @@ def proxy_getSingleMap (request, **kwargs):
 	response['Content-Disposition'] = 'attachment; filename=' + map_id+".geojson"
 
 	return response
+
+
+def proxy_reconvert_map (request, **kwargs):
+	"""
+	Reconverts an existing map from the mirror dir (already in geojson format) to the gj directory. Used to implement updates to the conversion table in the ng version of the proxy
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id =  kwargs['proxy_id']
+	meta_id =  kwargs['meta_id']
+	map_id = kwargs['map_id']
+
+	response_reconversion = {
+	'success': True,
+	'report': ''
+	}
+
+	try:
+		gjdata = proxy_core.rebuildShape(proxy_id, meta_id, map_id, False)
+		proxy_core.replicateShapeData(gjdata, proxy_id, meta_id, map_id, False)
+	except Exception as ex:
+		response_reconversion['success'] = False
+		response_reconversion['report'] = ex
+
+
+	return HttpResponse(json.dumps(response_reconversion), mimetype="application/json")
+
+
 
 
 
@@ -391,7 +726,6 @@ def proxy_create_conversion (request):
 		shape_path = os.path.join (proxyconf.baseproxypath, proxy_id, "conf/mappings", meta_id, shape_id)
 
 		try:
-			#TODO: add lock file support (really needed?)
 			fp = open(shape_path, 'w+')
 			json.dump(convtable, fp)
 			fp.close()
@@ -527,31 +861,91 @@ def proxy_refresh_remote (request, **kwargs):
 		meta_id = item['meta_id']
 		conf_file = item['mapconf']
 		map_id = conf_file[:-4]
+		maptype = conf_file[-3:]
 
 
 		conf_fp = open(os.path.join(proxyconf.baseproxypath, proxy_id, proxyconf.path_remoteres, meta_id, conf_file))
 		connect = json.load(conf_fp)
 		conf_fp.close()
 
-		response_wfsupdate = ProxyFS.uploadWFS (proxy_id, meta_id, map_id, connect)
+		if maptype == 'wfs':
+			response_wfsupdate = ProxyFS.uploadWFS (proxy_id, meta_id, map_id, connect)
+			print response_wfsupdate
+			if response_wfsupdate['success'] is True:
+				response_refresh_remote['report']['updated'].append([proxy_id, meta_id, map_id])
+			else:
+				response_refresh_remote['report']['errors'].append([proxy_id, meta_id, map_id])
+		elif maptype == 'ftp':
+			response_ftpupdate = ProxyFS.uploadFTP (proxy_id, meta_id, map_id, connect)
+			print response_ftpupdate
+			if response_wfsupdate['success'] is True:
+				response_refresh_remote['report']['updated'].append([proxy_id, meta_id, map_id])
+			else:
+				response_refresh_remote['report']['errors'].append([proxy_id, meta_id, map_id])
 
-		print response_wfsupdate
-
-		if response_wfsupdate['success'] is True:
-			response_refresh_remote['report']['updated'].append([proxy_id, meta_id, map_id])
-		else:
-			response_refresh_remote['report']['errors'].append([proxy_id, meta_id, map_id])
-
-	response_refresh_remote['success'] = True
+		response_refresh_remote['success'] = True
 
 	print "Refresh result: %s" % response_refresh_remote
 
 	return HttpResponse(json.dumps(response_refresh_remote), mimetype="application/json")
 
+@csrf_exempt
+def proxy_uploadftp (request, **kwargs):
+	"""
+	Loads a map file from an FTP source into the system
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	response_upload = {
+		'success': False,
+		'report': ""
+	}
+
+	if not request.POST['path'].endswith(".zip"):
+		response_upload['report'] = "Tipo di file non supportato."
+		return HttpResponse(json.dumps(response_upload), mimetype="application/json")
+
+	print 'Loading from FTP'
+	print kwargs
+	#args = request.POST
+	#print args
+
+	proxy_id = kwargs['proxy_id']
+	meta_id = kwargs['meta_id']
+	filename = request.POST['path'].split("/")[-1]
+
+	filename = re.sub(r'[^\w._]+', "", filename)
+
+	connect = {
+		'host': request.POST['host'],
+		'user': request.POST['user'],
+		'pass': request.POST['pass'],
+		'path': str(request.POST['path'])
+	}
+
+	print connect
+	print proxy_id, meta_id, filename
+
+	response_upload = ProxyFS.uploadFTP(proxy_id, meta_id, filename[:-4], connect, True)
+
+
+	return HttpResponse(json.dumps(response_upload), mimetype="application/json")
+
+
+
+
 
 
 @csrf_exempt
 def proxy_uploadwfs (request, **kwargs):
+	"""
+	Loads a map file from a WFS source into the system
+	:param request:
+	:param kwargs:
+	:return:
+	"""
 
 	response_upload = {
 		'success': False,
@@ -587,28 +981,53 @@ def proxy_uploadwfs (request, **kwargs):
 	return HttpResponse(json.dumps(response_upload), mimetype="application/json")
 
 @csrf_exempt
-def proxy_create_new (request):
+def proxy_create_adv (request):
 	"""
-	Creates a new proxy from a partially compiled manifest and performs the full communication with the main server. Returns success only if the proxy is correctly registered
+	Creates a new proxy from a partially compiled manifest and performs the full communication with the main server. Returns success only if the proxy is correctly registered. NOTE: also saves contacts, compared to proxy_create_new
 	:param request:
 	:return:
 	"""
 
+	#NOTE: linked proxies work differently in terms of using the data from the request, as both manifest and contacts take data from the original
+
 	print "Trying to create a new proxy"
-	print request.POST
+	print "Request: %s" % request.POST
+	payload_dict = json.loads(request.POST['jsonmessage'])
+	print "Payload dict: %s" % payload_dict
+	if payload_dict.has_key("linkedto"):
+		linkedto = payload_dict['linkedto']
+		print "Creating from standalone %s" % linkedto
+		request = None
+	else:
+		print "Creating from premanifest"
+		print request.POST
+		linkedto = None
+
+	if request is None and linkedto is None:
+		raise Exception ("Missing manifest or linkage data for new proxy")
 
 	result = {
 		'success':  False,
 		'result': ""
 	}
 
+
+	#NOTE: manifest is STILL referred to as jsonmessage for a quick transition from the old version of this function.
+
 	try:
 
 		# creating the pre-manifest
-		jsonmessage = json.loads(request.POST['jsonmessage'])
+		if request is not None:
+			jsonmessage = (json.loads(request.POST['jsonmessage']))['manifest']
+			jsoncontacts = (json.loads(request.POST['jsonmessage']))['contacts']
+		elif linkedto is not None:
+			jsonmessage = json.load(open(os.path.join(proxyconf.baseproxypath, proxyconf.basemanifestpath, linkedto+".manifest")))
+			jsonmessage['operations']['read'] = 'full'
+		#local proxies have no token in the manifest (it's never used anyway
+		#jsonmessage.pop('token')
+
+
 		premanifest = ArDiVa.Model(MessageTemplates.model_response_capabilities)
-
-
 
 		#TODO: check that BASEURL receives the correct value
 
@@ -639,23 +1058,202 @@ def proxy_create_new (request):
 
 			message = {'token': "local_"+str(uuid.uuid4()).replace("-","_")}
 
+
+
+
 		if accepted:
 			#assembling the manifest
 
 			proxy_id = message['token']
+			print "RECEIVED TOKEN %s" % proxy_id
 			jsonmessage['token'] = proxy_id
 			filledok, manifest = premanifest.fillSafely(jsonmessage)
 
 
 			if not islocal:
 				approved, response = Components.sendProxyManifestRaw (json.dumps(manifest))
+
+				print "RECEIVED RESPONSE FOR RAW MANIFEST: %s" % approved
+				print response
+
 			else:
 				approved = True
+
+
+
 
 			if approved:
 
 
-				created, message = ProxyFS.createSoftProxy(proxy_id, manifest)
+				created, message = ProxyFS.createSoftProxy(proxy_id, manifest, linkedto)
+
+				if created:
+					success = True
+
+					print "Adding CONTACTS info"
+					if linkedto is None:
+						ProxyFS.setProxyContacts(proxy_id, jsoncontacts)
+
+					report = "Creazione del proxy %s completata." % jsonmessage['name']
+				else:
+					success = False
+					report = "Creazione del proxy %s fallita. Errore locale: %s" % (jsonmessage['name'], str(message))
+
+			else:
+
+				success = False
+				report = "Creazione del proxy %s fallita. Errore dal federatore: %s" % (jsonmessage['name'], str(response))
+
+
+		else:
+			success = False
+			report = "Creazione del proxy %s fallita, riprovare.<br>(%s)" % (jsonmessage['name'], message)
+
+
+		result = {
+		'success': success,
+		'report': report
+		}
+
+	except Exception as ex:
+
+		traceback.print_exc()
+		print (type(ex))
+		print ex
+		result = {
+		'success':	False,
+		'report':	"Errore nella procedura: %s" % str(ex)
+		}
+
+
+	print json.dumps(result)
+
+	return HttpResponse(json.dumps(result), mimetype="application/json")
+
+@csrf_exempt
+def proxy_saveContacts (request, **kwargs):
+	"""
+	Saves proxy contacts independently from proxy creation
+	:param request:
+	:param kwargs: proxy_id
+	:return:
+	"""
+
+	print "Saving proxy contacts"
+
+	proxy_id = kwargs['proxy_id']
+
+	try:
+		ProxyFS.setProxyContacts(proxy_id, json.loads(request.REQUEST['jsonmessage']))
+	except Exception as ex:
+		print "Error while saving contacts for %s: %s (%s)" % (proxy_id, ex, ex.message)
+		raise
+
+	return HttpResponse('')
+
+
+
+
+
+@csrf_exempt
+def proxy_create_new (request):
+	"""
+	Creates a new proxy from a partially compiled manifest and performs the full communication with the main server. Returns success only if the proxy is correctly registered
+	:param request:
+	:return:
+	"""
+
+	print "Trying to create a new proxy"
+	if request.REQUEST.has_key("linkedto"):
+		linkedto = request.REQUEST['linkedto']
+		print "Creating from standalone %s" % linkedto
+		request = None
+	else:
+		print "Creating from premanifest"
+		print request.POST
+		linkedto = None
+
+	if request is None and linkedto is None:
+		raise Exception ("Missing manifest or linkage data for new proxy");
+
+
+
+	result = {
+		'success':  False,
+		'result': ""
+	}
+
+	try:
+
+		# creating the pre-manifest
+		if request is not None:
+			jsonmessage = json.loads(request.POST['jsonmessage'])
+		elif linkedto is not None:
+			jsonmessage = json.load(open(os.path.join(proxyconf.baseproxypath, proxyconf.basemanifestpath, linkedto+".manifest")))
+			jsonmessage['operations']['read'] = 'full'
+			#local proxies have no token in the manifest (it's never used anyway
+			#jsonmessage.pop('token')
+
+
+		premanifest = ArDiVa.Model(MessageTemplates.model_response_capabilities)
+
+		#TODO: check that BASEURL receives the correct value
+
+		#print "SENT:",jsonmessage
+		#print "PRE:",premanifest
+
+		#verify if the proxy is local or not (i.e. if all modes are none)
+		islocal = (
+			jsonmessage['operations']['read'] == 'none' and
+			jsonmessage['operations']['write'] == 'none' and
+			jsonmessage['operations']['query']['bi'] == 'none' and
+			jsonmessage['operations']['query']['geographic'] == 'none' and
+			jsonmessage['operations']['query']['inventory'] == 'none' and
+			jsonmessage['operations']['query']['time'] == 'none'
+		)
+
+
+		# Getting the token from the main  server
+		# or creating a uuid locally
+
+		# note that we only get around the main server parts rather than rewriting the whole process for more consistent maintainance as local and federated proxies are functionally the same
+
+		if not islocal:
+			accepted, message = Components.getWelcomeFromServer()
+		else:
+			# local proxy are automatic
+			accepted = True
+
+			message = {'token': "local_"+str(uuid.uuid4()).replace("-","_")}
+
+
+
+
+		if accepted:
+			#assembling the manifest
+
+			proxy_id = message['token']
+			print "RECEIVED TOKEN %s" % proxy_id
+			jsonmessage['token'] = proxy_id
+			filledok, manifest = premanifest.fillSafely(jsonmessage)
+
+
+			if not islocal:
+				approved, response = Components.sendProxyManifestRaw (json.dumps(manifest))
+
+				print "RECEIVED RESPONSE FOR RAW MANIFEST: %s" % approved
+				print response
+
+			else:
+				approved = True
+
+
+
+
+			if approved:
+
+
+				created, message = ProxyFS.createSoftProxy(proxy_id, manifest, linkedto)
 
 				if created:
 					success = True
@@ -681,6 +1279,8 @@ def proxy_create_new (request):
 		}
 
 	except Exception as ex:
+
+		traceback.print_exc()
 		print (type(ex))
 		print ex
 		result = {
@@ -705,7 +1305,9 @@ def proxy_controller (request):
 	"""
 
 	actions = {
-		'delete': proxy_web.deleteMap
+		'delete': proxy_web.deleteMap,
+		'deleteproxy': proxy_web.deleteProxy,
+		#'fiderst': proxy_web.createStProxy
 	}
 
 	action = request.POST['action']
@@ -733,9 +1335,20 @@ def proxy_controller (request):
 
 
 
-def proxy_rebuildmeta (request, **kwargs):
-	#TODO: placeholder, implement
-	pass
+def proxy_rebuildall (request, **kwargs):
+	"""
+	Rebuilds all maps in all metas in the proxy
+	:param request:
+	:param kwargs:
+	:return:
+	"""
+
+	proxy_id = kwargs['proxy_id']
+
+	return HttpResponse (json.dumps(proxy_core.rebuildAllData(proxy_id)), mimetype="application/json")
+
+
+
 
 
 
@@ -787,15 +1400,19 @@ def proxy_uploadmap (request, **kwargs):
 		if shape_id is None or shape_id == "":
 			shape_id = upload.name[:-4]
 
+		shape_id = re.sub(r'[^\w._]+', "_", shape_id)
+
 		print "FORM: Uploading file to %s/%s/%s" % (proxy_id, meta_id, shape_id)
 
 
 		success, output = saveMapFile(upload, proxy_id, meta_id, shape_id)
 		if success:
+			print "Invio del file %s su %s per integrazione completato." % (upload.name, output)
 			response_upload['success'] = True
 			response_upload['report'] = "Invio del file %s su %s per integrazione completato." % (upload.name, output)
 		else:
-			response_upload['report']= "Invio del file %s fallito. Causa: %s <br>" % (upload.name, output)
+			print "Invio del file %s fallito.<br>Causa: %s." % (upload.name, output)
+			response_upload['report']= "Invio del file %s fallito.<br>Causa: %s." % (upload.name, output)
 
 
 	return HttpResponse(json.dumps(response_upload), mimetype="application/json")
@@ -803,14 +1420,24 @@ def proxy_uploadmap (request, **kwargs):
 
 
 def proxy_rebuildmap (request, **kwargs):
-
+	"""
+	Rebuilds the geojson version of a single map in the geojson directory from the mirror directory, including the translation section
+	:param request:
+	:param kwargs:
+	:return:
+	"""
 
 	proxy_id  = kwargs['proxy_id']
 	meta_id = kwargs['meta_id']
 	shape_id = kwargs['shape_id']
 
+	print "Rebuilding map %s/%s/%s" % (proxy_id, meta_id, shape_id)
+
 	try:
 		ProxyFS.handleFileEvent (os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, shape_id+".zip"))
+		#quick hack for first time uploads
+		if shape_id == "undefined":
+			shape_id = ""
 		response_rebuild = {
 			'success': True,
 			'report': 'Mappa %s aggiornata.' % shape_id
@@ -821,6 +1448,7 @@ def proxy_rebuildmap (request, **kwargs):
 			'success': False,
 			'report': unicode(ex)
 		}
+
 
 
 
@@ -875,19 +1503,23 @@ def getManifests ():
 	proxylist = {}
 	for manifestfile in os.listdir(proxyconf.basemanifestpath):
 		proxy_id = manifestfile.partition(".manifest")[0]
+		print "Loading manifest for %s" % proxy_id
 		fp_manifest = open(os.path.join(proxyconf.basemanifestpath, manifestfile))
 		proxylist[proxy_id] = json.load(fp_manifest)
 		fp_manifest.close()
 
-	print proxylist
+	#print proxylist
 	return proxylist
 
 
 
 
 def getProxyManifest (proxy_id):
-
-	#TODO: move to proxy_core or ProxyFS, add error handling
+	"""
+	Returns the manifest of the specified softproxy from the manifests directory
+	:param proxy_id:
+	:return:
+	"""
 
 	filename = os.path.join(proxyconf.basemanifestpath, proxy_id+".manifest")
 	fp = open(filename, 'r')
@@ -1039,7 +1671,11 @@ def saveMapFile (uploaded, proxy_id, meta_id, shape_id=None):
 	:return:
 	"""
 
-	print "Uploading file %s, size %s " % (uploaded.name, uploaded.size)
+	try:
+		print "Uploading file (POST) %s, size %s " % (uploaded.name, uploaded.size)
+	except:
+		print "Uploading file (FTP) %s" % shape_id
+
 	#print "Data: %s " % (str(uploaded.read()))
 
 	isvalid = proxy_core.verifyShapeArchiveStructure(uploaded)
@@ -1048,6 +1684,7 @@ def saveMapFile (uploaded, proxy_id, meta_id, shape_id=None):
 
 	if shape_id is None:
 		shape_id = uploaded.name[:-4]
+		shape_id = re.sub(r'[^\w._]+', "", shape_id)
 		if os.path.exists(os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, uploaded.name)):
 			os.remove(os.path.join(proxyconf.baseuploadpath, proxy_id, meta_id, uploaded.name))
 		fs = FileSystemStorage(location=os.path.join(proxyconf.baseuploadpath))
@@ -1076,12 +1713,23 @@ def saveMapFile (uploaded, proxy_id, meta_id, shape_id=None):
 
 
 def set_access_control_headers(response):
+	"""
+	HTTP function to make the POST+FILES requests work on all browsers
+	:param response:
+	:return:
+	"""
+
 	response['Access-Control-Allow-Origin'] = '*'
 	response['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
 	response['Access-Control-Max-Age'] = 1000
 	response['Access-Control-Allow-Headers'] = '*'
 
+
+
 class HttpOptionsDecorator(object):
+	"""
+	HTTP decorator to make the POST+FILES requests work on all browsers
+	"""
 	def __init__(self, f):
 		self.f = f
 
@@ -1107,9 +1755,16 @@ def proxy_read_full (request, **kwargs):
 	:return:
 	"""
 
+	#semi-superseded by read federated full
+
 	read_result = {}
 
 	proxy_id = kwargs['proxy_id']
+
+	#TODO: clean up and extend the rebuild to all data transfer mode
+	print "DJANGO: performing full rebuild of proxy %s for read " % proxy_id
+
+	proxy_core.rebuildAllData(proxy_id)
 
 	print "DJANGO: performing full read of proxy %s " % proxy_id
 
@@ -1122,6 +1777,21 @@ def proxy_read_full (request, **kwargs):
 
 
 	return HttpResponse(read_result, mimetype="application/json")
+
+"""
+def readFederatedFull (request, **kwargs):
+
+	jsondata = {}
+
+	proxy_id = kwargs['proxy_id']
+
+	#getting the list of metas and maps
+
+
+
+	# getting FED data, converted to json WITH translation
+	jsondata = proxy_core.convertShapeFileToJson(proxy_id, meta_id, map_id, True)
+"""
 
 
 @csrf_exempt
@@ -1173,12 +1843,28 @@ def sideloadSTMap (request, **kwargs):
 
 	return HttpResponse(json.dumps(response_sideload), mimetype="application/json")
 
+def getProviders(request):
+	"""
+	Gets the full list of data providers from the main server
+	:param request:
+	:return:
+	"""
+
+	return HttpResponse(urllib2.urlopen(proxyconf.URL_PROVIDERS), mimetype="application/json")
 
 
 def geosearch(request, path):
+	"""
+	Performs an http request, used from Javascript for geocoding checks on Google
+	:param request:
+	:param path:
+	:return:
+	"""
 	import httplib2
 	conn = httplib2.Http()
 
+
+	print "Requesting external path %s" % path
 
 	url = path
 
@@ -1190,5 +1876,7 @@ def geosearch(request, path):
 			url = "http://" + url
 			data = request.POST.urlencode()
 			response, content = conn.request(url, request.method, data)
+
+	print "Returning content on response %s:\n%s" % (response, content)
 	return HttpResponse(content, status = int(response['status']),
 mimetype = response['content-type'])

@@ -12,8 +12,6 @@ var defaultobjtype = {
 };
 
 
-
-
 //TODO: remove, used only for setting the bounding box, which will be wrecked anyway as soon as we merge two maps and should be handled differently
 var mapdata;
 
@@ -81,6 +79,8 @@ var filtercriteria_propval;
 function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fider, req_maps_st, req_models)
 {
 
+    OpenLayers.Lang.setCode("it");
+
     proxy_id = req_proxy_id;
     proxy_manifest = req_proxy_manifest;
     proxy_meta = req_proxy_meta;
@@ -126,6 +126,7 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
     $("#btn_destroyfeature").live("click", destroyFeature);
 
     $(".btn_removeprop").live("click", removeProperty);
+    $(".btn_importpropval").live("click", importPropertyValue);
     $("#model_newpropname").live("change mouseup keyup", checkNewPropName);
     $("#btn_addprop").live("click", addProperty);
     $("#btn_filter_apply").live("change mouseup", applyFilterByClick);
@@ -139,9 +140,84 @@ function pageInit(req_proxy_id, req_proxy_manifest, req_proxy_meta, req_maps_fid
 
     $("#txt_filter_propvalue").live("change mouseup keyup", unsetFilterCheckbox);
 
+    $("#xlate_move_x").live("change mouseup keyup", checkXlateFields);
+    $("#xlate_move_y").live("change mouseup keyup", checkXlateFields);
+    $("#btn_xlate").live("click", xlateMap);
+    checkXlateFields();
+
+
     initSearchBox();
 
 }
+
+function checkXlateFields()
+{
+
+    var offset_x = parseFloat($("#xlate_move_x").val());
+    var offset_y = parseFloat($("#xlate_move_y").val());
+
+    if (isNaN(offset_x) || isNaN(offset_y))
+    {
+        $("#btn_xlate").prop("disabled", true);
+        //console.log("disabling xlate button");
+    }
+    else
+    {
+        $("#btn_xlate").prop("disabled", false);
+        //console.log("enabling xlate button");
+    }
+
+}
+
+function xlateMap ()
+{
+
+    var offset_x = parseFloat($("#xlate_move_x").val());
+    var offset_y = parseFloat($("#xlate_move_y").val());
+
+    console.log("Trying translation by "+offset_x+","+offset_y);
+
+    if (isNaN(offset_x) || isNaN(offset_y))
+    {
+        $("#btn_xlate").prop("disabled", true);
+        //console.log("disabling xlate button");
+        return;
+    }
+
+    var f;
+    for (f in vislayer.features)
+    {
+        xlateFeature (vislayer.features[f], offset_x, offset_y);
+    }
+
+    for (f in filterlayer.features)
+    {
+        xlateFeature (filterlayer.features[f], offset_x, offset_y);
+    }
+
+    vislayer.redraw();
+    vislayer.refresh();
+    filterlayer.redraw();
+    filterlayer.refresh();
+
+    parseFloat($("#xlate_move_x").val(""));
+    parseFloat($("#xlate_move_y").val(""));
+    checkXlateFields();
+    setSaverHint(true);
+
+}
+
+function xlateFeature (feature, offset_x, offset_y)
+{
+
+    console.log("Feature move from");
+    console.log(feature);
+    feature.geometry.move(offset_x, offset_y);
+    console.log("Feature move to");
+    console.log(feature);
+
+}
+
 
 function unsetFilterCheckbox ()
 {
@@ -152,17 +228,27 @@ function unsetFilterCheckbox ()
 function initSearchBox()
 {
     $("#btn_geosearch").live('click', geosearch);
+    $("#search_geo_address").bind('keyup', checkgeosearchEnter);
+}
+
+function checkgeosearchEnter(event)
+{
+
+    //console.log("keyupevent on geosearch field: "+event.which);
+    if (event.which == 13)
+    {
+        console.log("geosearch launched by keyboard");
+        event.preventDefault();
+        geosearch();
+    }
 }
 
 function geosearch()
 {
 
-
-
-
     var jg;
     var path = '/external/maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
-        + $('#search_geo_address').val()
+        + $('#search_geo_address').val();
 
     console.log("Recentering map by search: "+path);
 
@@ -203,6 +289,7 @@ function geosearch()
         }
     });
 
+    console.log("DEBUG: codewise after getJSON function, possibly waiting for return value");
 
 
 }
@@ -250,7 +337,7 @@ function setExtenders()
     {
 
         // extend to selection only
-        $(".btn_extendpropval").val('>>Selezione');
+        $(".btn_extendpropval").val('Replica');
 
         // extenders are active only if there are items to extend the value to (potentially, we do not check if they already have this value
         if (filterlayer.features.length > 1)
@@ -265,11 +352,19 @@ function setExtenders()
     }
     else
     {
+        $(".btn_extendpropval").prop('disabled', true);
+    }
+
+
+    /* Removed, too risky
+    else
+    {
         //extend to ALL objects on map
         $(".btn_extendpropval").val('>>Tutti');
         $(".btn_extendpropval").prop('disabled', false);
 
     }
+    */
 
 
 
@@ -328,7 +423,7 @@ function applyFilter()
         return
     }
 
-    // if the checkbox is activated, we (try) render the requested features
+    // if the checkbox is activated, we (try to) render the requested features
 
     var propname = filtercriteria_propname;
     var propval  = filtercriteria_propval;
@@ -434,12 +529,10 @@ function resetFilterSuggestions()
         $("#txt_filter_propvalue").addClass("datalisted");
     }
 
-
-
-
-
-
 }
+
+
+
 
 function checkNewPropName ()
 {
@@ -504,6 +597,43 @@ function addProperty()
 
 }
 
+function importPropertyValue ()
+{
+
+    var prefix = "btn_importpropval_";
+    var cid = $(this).prop('id');
+
+    var propname = cid.slice(prefix.length);
+
+    console.log("Importing prop vals for property "+propname);
+
+    var mapvalues = [];
+    for (var i in vislayer.features)
+    {
+        var current = vislayer.features[i].attributes[propname];
+        if (current && current != "" && mapvalues.indexOf(current) == -1)
+        {
+            mapvalues.push(current);
+        }
+
+    }
+
+    if (mapvalues.length > 0)
+    {
+        if (!$.isArray(activemodel['properties'][propname]))
+        {
+            activemodel['properties'][propname] = [];
+        }
+
+
+        activemodel['properties'][propname] = activemodel['properties'][propname].concat(mapvalues);
+    }
+
+
+    renderMapCard();
+
+}
+
 function removeProperty()
 {
     var prefix = "btn_removeprop_";
@@ -520,8 +650,15 @@ function removeProperty()
 
 function destroyFeature()
 {
-    vislayer.removeFeatures(vislayer.getFeatureById(cfid));
-    vislayer.destroyFeatures(vislayer.getFeatureById(cfid));
+
+    var feature = vislayer.getFeatureById(cfid);
+    vislayer.removeFeatures([feature]);
+    vislayer.destroyFeatures([feature]);
+
+    editcontrol.deactivate();
+    editcontrol.activate();
+
+
     freeSelection();
 }
 
@@ -589,6 +726,11 @@ function unlockContext()
     // re-enables interactions with the context area
     console.log("Re-enabling context after load");
     $("#progspinner").hide();
+
+    $("#mod_xlate").show();
+    $("#hr_shifter").show();
+
+
     $("#view_context select").prop('disabled', false);
     $("#view_context input").prop('disabled', false);
     checkSaveName();
@@ -602,6 +744,8 @@ function unlockContext()
         setMapControlsEdit();
         renderMapCard();
     }
+
+    checkXlateFields();
 
     $("body").removeClass("passive");
 }
@@ -696,11 +840,11 @@ function tryLoadShadow ()
     var urlstring;
     if (meta_id == ".st")
     {
-        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id;
+        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id+"/";
     }
     else
     {
-        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id;
+        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id+"/";
     }
 
     $.ajax ({
@@ -717,7 +861,7 @@ function applyNewSnap (data, textStatus, jqXHR)
 {
 
     renderGeoJSONCollection(data, snaplayer, true);
-    $("#hr_stateview").hide()
+    $("#hr_stateview").hide();
     unlockContext();
 
 }
@@ -875,7 +1019,7 @@ function confirmSave (data, textStatus, jqXHR)
 
     if (data['success'] == true)
     {
-        reportFeedback(true, "Mappa salvata con successo");
+        reportFeedback(true, "Mappa salvata correttamente");
         setSaverHint(false);
     }
     else
@@ -980,7 +1124,9 @@ function buildSaver()
         defaultname = activemap;
     }
 
-    var savewidget = $('<div class="ctx_fieldname">Salva</div><div class="ctx_fieldval"><input id="ctx_saveto" type="text" value="'+defaultname+'"></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_savemap"></div>');
+    var savetypesel = '<select id="ctx_savewhat" disabled><option value="data">mappa</option><option value="model">modello</option></select>';
+
+    var savewidget = $('<div class="ctx_fieldname">Salva ('+savetypesel+')</div><div class="ctx_fieldval"><input id="ctx_saveto" type="text" value="'+defaultname+'"></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_savemap"></div>');
 
     $("#contextsaver").empty();
     $("#contextsaver").append(savewidget);
@@ -1015,7 +1161,7 @@ function uploadFileToStandalone()
 function checkCompleteUpload (data, textStatus, jqXHR)
 {
     // TODO: placeholder, implement
-    console.log("Reporting completed upload of the file in use");
+    console.log("Reporting (tentatively) completed upload of the file in use");
     //console.log(data);
 
     if (data['success'] == true)
@@ -1026,6 +1172,7 @@ function checkCompleteUpload (data, textStatus, jqXHR)
     }
     else
     {
+        console.log(data);
         reportFeedback(false, "Caricamento file fallito");
         unlockContext();
     }
@@ -1039,12 +1186,14 @@ function getUploadedMap (meta_id, map_id)
     var urlstring;
     if (meta_id == ".st")
     {
-        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id;
+        urlstring = "/fwst/maps/"+proxy_id+"/"+map_id+"/";
     }
     else
     {
-        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id;
+        urlstring = "/fwp/maps/"+proxy_id+"/"+meta_id+"/"+map_id+"/";
     }
+
+    console.log("Loading: "+urlstring);
 
     $.ajax ({
         url:    urlstring,
@@ -1113,6 +1262,11 @@ function applyNewMap (newdata, textStatus, jqXHR)
     if (canintegrate)
     {
         renderGeoJSONCollection(newdata, vislayer, cleanup);
+
+
+        mapview.zoomToExtent(vislayer.getDataExtent());
+
+
         integrateMapModel(mapmodel, cleanup);
         if (action == 'open')
         {
@@ -1172,8 +1326,14 @@ function extractMapModel (jsondata)
     // we check for the model notation in the dict itself, to start with
     // if any element other than name is missing, we ignore this
     var validmodel = false;
+
+    //console.log("Extracting model from json data:");
+    //console.log(jsondata);
     if (jsondata.hasOwnProperty('model'))
     {
+
+        console.log("Has model:");
+        console.log(jsondata.model);
 
         if (jsondata.model.hasOwnProperty('objtype') && jsondata.model.hasOwnProperty('properties'))
         {
@@ -1249,13 +1409,57 @@ function renderGeoJSONCollection (jsondata, layer, cleanup)
     }
 
 
-
+    var geojson_format = new OpenLayers.Format.GeoJSON({'externalProjection':new OpenLayers.Projection(proj_WGS84), 'internalProjection':layer.map.getProjectionObject()});
+    /* REPLACING WITH SAFER METHOD for undesidered geometries
     var stringmap = JSON.stringify(jsondata);
     var formatmap = gjformat.read(stringmap);
-
     //console.log(formatmap);
-
     layer.addFeatures(formatmap);
+    */
+
+    var render_errors = [];
+    for (var i in jsondata['features'])
+    {
+        try
+        {
+            var info2d = jsondata['features'][i];
+
+            var objtype = info2d['geometry']['type'];
+            if (objtype.toUpperCase() == "LINESTRING")
+            {
+
+                for (var pt in info2d['geometry']['coordinates'])
+                {
+                    info2d['geometry']['coordinates'][pt] = info2d['geometry']['coordinates'][pt].slice(0,2);
+                }
+
+            }
+            else if (objtype.toUpperCase() == "POINT")
+            {
+                info2d['geometry']['coordinates'] = info2d['geometry']['coordinates'].slice(0,2);
+
+            }
+
+            var fstring = JSON.stringify(info2d);
+            var fmap = geojson_format.read(fstring);
+            layer.addFeatures(fmap);
+        }
+        catch (err)
+        {
+            if (render_errors.length < 100)
+            {
+                console.log(err);
+            }
+            render_errors.push(i);
+        }
+
+    }
+    console.log ("Rendered with "+render_errors.length+" errors");
+    if (render_errors.length > 0)
+    {
+        console.log("Error sample:");
+        console.log(render_errors[0]);
+    }
 
 
 
@@ -1263,6 +1467,7 @@ function renderGeoJSONCollection (jsondata, layer, cleanup)
     {
         setSaverHint(true);
     }
+
 
 
 }
@@ -1285,6 +1490,7 @@ function reportFeedback (positive, message)
         $("#statemessage").addClass("badnews");
     }
     $("#statemessage").text(message);
+    $("#statemessage").show();
     $("#hr_stateview").show();
 
 }
@@ -1319,6 +1525,8 @@ function uiReset()
     $("#progspinner").hide();
     $("#hr_stateview").hide();
 
+
+
     // rebuilds the UI elements; does NOT reinit the elements and variables
 
     //buildContext();
@@ -1336,6 +1544,8 @@ function uiReset()
 
     $("#statemessage").empty();
     $("#hr_stateview").hide();
+    $("#mod_xlate").hide();
+    $("#hr_shifter").hide();
 
     checkFileUpload();
     checkSnapLoad();
@@ -1435,8 +1645,8 @@ function buildLoader()
     // creates the mask to load/add files and models to the current map
 
     var ctx_actionsel = '<select id="sel_action_newmap">' +
-        '<option value="open">Crea</option>' +
-        '<option value="merge">Integra</option>' +
+        '<option value="open">Nuovo</option>' +
+        '<option value="merge">Aggiungi</option>' +
         '</select>';
 
     var ctx_loadnew = $('<div class="ctx_fieldname">'+ctx_actionsel+'</div><div class="ctx_fieldval"><select id="ctx_sel_newmap"><option value=""></option><optgroup id="ctx_newmap_file_grp" label="Da file"><option id="ctx_newmap_fileopt" value=".file">Seleziona...</option></optgroup></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newmap"></div>');
@@ -1460,7 +1670,7 @@ function buildLoader()
 
 function buildSnapChooser ()
 {
-    var ctx_snapchooser = $('<div class="ctx_fieldname">Allinea a</div><div class="ctx_fieldval"><select id="ctx_sel_snapmap"><option value=""></option></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newsnap"></div>');
+    var ctx_snapchooser = $('<div class="ctx_fieldname">Allineamento</div><div class="ctx_fieldval"><select id="ctx_sel_snapmap"><option value=""></option></select></div><div class="ctx_fieldact"><input type="button" value="&gt;&gt;" id="btn_newsnap"></div>');
     ctx_snapchooser.children('#ctx_sel_snapmap').append(buildMapList());
 
     $("#view_shadow").empty();
@@ -1484,17 +1694,47 @@ function buildMapWidget()
     var baselayer = new OpenLayers.Layer.OSM();
     mapview.addLayer(baselayer);
 
+
+    //Base Maps from Google
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Satellite", {
+        type : google.maps.MapTypeId.SATELLITE,
+        numZoomLevels : 20
+    }));
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Physical", {
+        type : google.maps.MapTypeId.TERRAIN,
+        numZoomLevels : 20,
+        visibility : false
+    }));
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Streets", {
+        numZoomLevels : 20,
+        visibility : false
+    }));
+    mapview.addLayer(new OpenLayers.Layer.Google("Google Hybrid", {
+        type : google.maps.MapTypeId.HYBRID,
+        numZoomLevels : 20,
+        visibility : false
+    }));
+
+
     // setting the format to translate geometries out of the map
     gjformat = new OpenLayers.Format.GeoJSON({'externalProjection': new OpenLayers.Projection(proj_WGS84), 'internalProjection': mapview.getProjectionObject()});
 
     var featurestyle;
     var featurestylemap;
 
+
+
+
+
+
+
+
+
     // setting style
-    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#888888", strokeColor: "#888888", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 6});
+    featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#888888", strokeColor: "#888888", strokeWidth: 2, strokeDashstyle: "solid", pointRadius: 8});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     // adding the "background" layer
-    snaplayer= new OpenLayers.Layer.Vector("Riferimento", {styleMap: featurestylemap});
+    snaplayer= new OpenLayers.Layer.Vector("Allineamento", {styleMap: featurestylemap});
     //mapview.addLayer(snaplayer);
 
 
@@ -1502,7 +1742,7 @@ function buildMapWidget()
     featurestyle = new OpenLayers.Style ({fillOpacity: 0.4, fillColor: "#188E01", strokeColor: "#188E01", strokeWidth: 6, strokeDashstyle: "solid", pointRadius: 10});
     featurestylemap = new OpenLayers.StyleMap(featurestyle);
     // adding the "background" layer
-    filterlayer = new OpenLayers.Layer.Vector("Ricerca", {styleMap: featurestylemap});
+    filterlayer = new OpenLayers.Layer.Vector("Filtro", {styleMap: featurestylemap});
     //mapview.addLayer(filterlayer);
 
 
@@ -1530,6 +1770,30 @@ function setMapControlsNav ()
     mapview.addControl(new OpenLayers.Control.Navigation());
     mapview.addControl(new OpenLayers.Control.PanZoomBar());
     mapview.addControl(new OpenLayers.Control.MousePosition());
+
+
+    //Inheriting of OpenLayers.Control.LayerSwitcher
+    ItaLayerSwitcher.prototype = new OpenLayers.Control.LayerSwitcher;           // Define sub-class
+    ItaLayerSwitcher.prototype.constructor = ItaLayerSwitcher;
+    function ItaLayerSwitcher()
+    {
+        OpenLayers.Control.LayerSwitcher.call(this, { displayClass: "olLabsLayerSwitcher"});                                         // derived constructor = call super-class constructor
+    };
+
+    ItaLayerSwitcher.prototype.loadContents = function()                                 // redefine Method
+    {
+        OpenLayers.Control.LayerSwitcher.prototype.loadContents.call(this);         // Call super-class method
+        this.baseLbl.innerHTML = 'Sfondi';                                   //change title for base layers
+        this.dataLbl.innerHTML = 'Livelli';                                   //change title for overlays (empty string "" is an option, too)
+    };
+
+    var switcher = new ItaLayerSwitcher();
+
+
+
+    mapview.addControl(switcher);
+
+
 
 }
 
@@ -1564,7 +1828,8 @@ function setMapControlsEdit ()
 
     // Adding editing controls
     panel = new OpenLayers.Control.Panel({
-        displayClass: "olControlEditingToolbar"
+        displayClass: "olControlEditingToolbar",
+        allowDepress: true
     });
 
 
@@ -1680,10 +1945,43 @@ function handleMeasure(event)
         precision = 3;
     }
 
-    var measure = event.measure.toFixed(precision);
+    console.log("Measure data");
+    //console.log(event);
+    //console.log(event.geometry.getBounds());
 
-    var measureinfo = "Distanza: "+measure+" "+units;
-    console.log(measureinfo);
+    var measure = event.measure.toFixed(precision);
+    var bbox = event.geometry.getBounds();
+
+    console.log(bbox);
+
+    var span_x = bbox['right'] - bbox ['left'];
+    var unitx = "m";
+    var precisionx = 2;
+    if (span_x > 1000)
+    {
+        span_x /= 1000;
+        unitx = "km";
+        precisionx = 3;
+    }
+
+    var span_y = bbox['top'] - bbox ['bottom'];
+    var unity = "m";
+    var precisiony = 2;
+    if (span_y > 1000)
+    {
+        span_y /= 1000;
+        unity = "km";
+        precisiony = 3;
+    }
+
+    var measureinfo = "<table>" +
+        "<tr><td>Distanza totale</td><td>"+measure+" "+units+"</td></tr>" +
+        "<tr><td>Ampiezza est-ovest</td><td>"+span_x.toFixed(precisionx)+" "+unitx+"</td></tr>" +
+        "<tr><td>Ampiezza nord-sud</td><td>"+span_y.toFixed(precisiony)+" "+unity+"</td></tr>" +
+        "</table>";
+
+
+    console.log(measure);
 
     $("#view_measure").append(measureinfo)
 
@@ -1745,19 +2043,45 @@ function renderFeatureCard(caller)
         var datalist = "";
         var listref = "";
         var listclass = "";
+
+        datalist = $('<datalist id="modprop_'+propname+'"></datalist>');
+        listref = ' list="modprop_'+propname+'"';
+        listclass = " datalisted";
+
+        // choices from model
+        var modelvalues = [];
         if ($.isArray(activemodel['properties'][propname]))
         {
-            datalist = $('<datalist id="modprop_'+propname+'"></datalist>');
-            listref = ' list="modprop_'+propname+'"';
-            listclass = " datalisted";
+            modelvalues = modelvalues.concat(activemodel['properties'][propname]);
             for (var i in activemodel['properties'][propname])
             {
                 datalist.append('<option value="'+activemodel['properties'][propname][i]+'"></option>');
+
             }
             console.log(datalist);
-
-            //TODO: if range of values, add option to set a button to set the same property to ALL elements (very careful...)
         }
+
+        // choices from map
+
+        // mining the map on the fly
+        var mapvalues = [];
+        for (var i in vislayer.features)
+        {
+            var current = vislayer.features[i].attributes[propname];
+            if (current && current != "" && mapvalues.indexOf(current) == -1 && modelvalues.indexOf(current) == -1)
+            {
+                mapvalues.push(current);
+                datalist.append('<option value="'+current+'"></option>');
+            }
+
+            if (mapvalues.length > 100)
+            {
+                break;
+            }
+
+        }
+
+
 
         var propval = "";
         if (feature['attributes'].hasOwnProperty(propname))
@@ -1765,7 +2089,7 @@ function renderFeatureCard(caller)
               propval = feature['attributes'][propname];
         }
 
-        var button_extend = '<input type="button" class="btn_extendpropval" value="Estendi" id="btn_extendpropval_'+propname+'">';
+        var button_extend = '<input type="button" class="btn_extendpropval" value="Replica" id="btn_extendpropval_'+propname+'">';
 
         var cprop = $('<div class="ctx_topic"><div class="ctx_fieldname">'+propname+'</div>' +
             '<div class="ctx_fieldval"><input type="text" value="'+propval+'" class="featureedit'+listclass+'" id="'+propprefix+propname+'" '+listref+'>'+
@@ -1873,6 +2197,10 @@ function freeSelection ()
             }
         );
     }
+    else
+    {
+
+    }
 
 
 
@@ -1957,10 +2285,13 @@ function renderMapCard()
     // showing the map type
     $("#view_mapmodel").append('<div class="ctx_topic"><div class="ctx_fieldname">Tipologia</div><div class="ctx_fieldval"  id="maptypedef">'+getMapTypeName()+'</div>');
 
+    $("#view_mapmodel").append('<div class="ctx_topic"><div class="ctx_fieldname ctx_header">Campi</div><div class="ctx_fieldname ctx_header">Valori consigliati</div></div>');
+
     for (var propname in activemodel['properties'])
     {
 
         var button_destroy = '<input type="button" class="btn_modelform btn_removeprop" value="-" id="btn_removeprop_'+propname+'">';
+        var button_import = '<input type="button" class="btn_modelform btn_importpropval" value="Importa" id="btn_importpropval_'+propname+'">';
         //var button_destroy = '<input type="image" src="/static/resource/fwp_remove.png" id="btn_removeprop_'+propname+'">';
 
         var suggestions = "";
@@ -1974,7 +2305,7 @@ function renderMapCard()
                 suggestions+=proprange[i]+";";
             }
         }
-        $("#view_mapmodel").append('<div class="ctx_topic ctx_mapmodel"><div class="ctx_fieldname">'+propname+'</div><div class="ctx_fieldval"><input class="ctx_propvalues" id="txt_propvalues_'+propname+'" type="text" value="'+suggestions+'"></div><div class="ctx_fieldact">'+button_destroy+'</div></div>');
+        $("#view_mapmodel").append('<div class="ctx_topic ctx_mapmodel"><div class="ctx_fieldname">'+propname+'</div><div class="ctx_fieldval"><input class="ctx_propvalues" id="txt_propvalues_'+propname+'" type="text" value="'+suggestions+'"></div><div class="ctx_fieldact">'+button_import+button_destroy+'</div></div>');
 
 
     }

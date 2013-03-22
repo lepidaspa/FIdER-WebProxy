@@ -1,3 +1,45 @@
+.tabbar
+{
+    display:            table;
+    background-color:   #ffffff;
+    width:              100%;
+    margin-bottom:      8px;
+    border-bottom:      1px solid #ff8800;
+
+    font-weight:        bold;
+
+
+    border-collapse:    collapse;
+}
+
+.tabbar, .tabbar *
+{
+    vertical-align:     middle;
+}
+
+.subtab
+{
+    display:    table-cell;
+    background-color:   #ff8800;
+    color:      #ffffff;
+    padding-left:       4px;
+
+    cursor:         pointer;
+}
+
+.subtab.unseltab
+{
+    background-color:   #ffffff;
+    color:              #ff8800;
+}
+
+.btn_proxydelete, .btn_stfider
+{
+    float:          right;
+    cursor:         pointer;
+    padding:        4px 4px 0 0;
+}
+
 #proxymap
 {
     position:       absolute;

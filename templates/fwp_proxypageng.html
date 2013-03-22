@@ -1,0 +1,896 @@
+{% extends "fwpcore.html" %}
+
+
+{% block title %}
+Gestione dati e cataloghi
+{% endblock %}
+
+{% block headers %}
+
+    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false" xmlns="http://www.w3.org/1999/html"></script>
+    <script language="JavaScript" src="{{ STATIC_URL }}fwp_proxypageng.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_proxypage.css">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fwp_proxypageng.css">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}gis.css">
+
+{% endblock %}
+
+
+{% block navigation %}
+
+<div id="proxyinfo">
+
+    {% if proxy_type != 'local' %}
+        {% if proxy_type != 'linked' %}
+            Proxy
+        {% else %}
+            Proxy standalone
+        {% endif %}
+    {% else %}
+        Piattaforma standalone
+    {% endif %}
+
+    <span class="proxytitle">{{ proxy_name }}</span>
+
+</div>
+
+
+
+
+<div id="metalisting">
+
+    <table id="metalistinglayout">
+
+    {% for meta_id, maplist in proxy_maps.items %}
+
+        <tbody class="metadata">
+        <tr class="metainfo" id="metacard_{{ proxy_id }}-{{ meta_id }}">
+
+        <td colspan="2" class="metatitle">
+
+        {% if proxy_type != 'local' %}
+            {% if proxy_type != 'linked' %}
+                {% if proxy_type == 'query' %}
+                    <img src="{{ STATIC_URL }}resource/fwp_datasource-query.png">
+                {% else %}
+                    <img src="{{ STATIC_URL }}resource/fwp_datasource-networked.png">
+                {% endif %}
+            {% else %}
+                <img src="{{ STATIC_URL }}resource/fwp_datasource-networked.png">
+            {% endif %}
+        {% else %}
+                <img src="{{ STATIC_URL }}resource/fwp_datasource-local.png">
+        {% endif %}
+
+        {% if meta_id == ".st" %}
+            Area di lavorazione
+        {% else %}
+            {{ meta_id }}
+        {% endif %}
+
+        </td>
+        <td class="actionstd">
+            <img class="imgbutton metarecap" id="metarecap_{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
+            {% if proxy_type != 'linked' and proxy_type != 'local' and proxy_type != 'query' %}
+            <img class="imgbutton newdata new_file" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_newfromfile.png" title="Nuova mappa da file">
+                <img class="imgbutton newdata new_ftp" id="new_ftp_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova mappa da FTP">
+            <img class="imgbutton newdata new_wfs" id="new_wfs_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova mappa da WFS">
+            {% else %}
+                {% if proxy_type == 'query' %}
+                    <img class="imgbutton newdata new_query" id="new_query_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_uploadwfs.png" title="Nuova connessione">
+                {% endif %}
+                {% if proxy_type == 'local' and meta_id == '.st' %}
+                    <img class="imgbutton newdata new_file" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/fwp_newfromfile.png" title="Nuova mappa da file">
+                        <a href="/fwp/visng/mapedit/{{ proxy_id }}/.create/DefaultLine"><img class="imgbutton newdata new_lines" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/createnewmap-lines.png" title="Nuova mappa: tratte"></a>
+                    <a href="/fwp/visng/mapedit/{{ proxy_id }}/.create/DefaultPoint"><img class="imgbutton newdata new_points" id="new_file_{{ proxy_id }}-{{ meta_id }}" src="{{ STATIC_URL }}resource/createnewmap-points.png" title="Nuova mappa: nodi"></a>
+                {% endif %}
+            {% endif %}
+        </td>
+
+        </tr>
+
+        </tbody>
+
+        <tbody class="metamaps">
+
+        {% for map_id, mapdata in maplist.items %}
+
+            <tr class="mapcard" id="mapcard_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">
+                <td class="maptitle"><span class="mapcolorcode" id="mapcolorcode_{{ proxy_id }}-{{ meta_id }}-{{ map_id }}">&nbsp;</span><input type="checkbox" class="switchmapvis" id="mapvis_{{ meta_id }}-{{ map_id }}">{{ map_id }}</td> <td>{{  mapdata.source }}</td>
+                <td class="actionstd">
+                        <img class="imgbutton maprecap" id="maprecap_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_info.png" title="Visualizza dettagli">
+                    {% if proxy_type != 'query' %}
+                            <a href="/fwp/getng/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/src/" download="{{ proxy_name }}_{% if meta_id != '.st' %}{{ meta_id }}{% else %}Lavorazione{% endif %}_{{ map_id }}.geojson"><img class="imgbutton" src="{{ STATIC_URL }}resource/visng_dload_mapdata.png" title="Scarica mappa"></a>
+                        {% else %}
+
+                        <a href="/fwp/getng/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/fed/" download="{{ proxy_name }}_{{ meta_id }}_{{ map_id }}.geojson" onclick="return confirm('ATTENZIONE: i tempi di inizio del download dipendono dai tempi di connessione e trasferimento tra database e proxy.');"><img class="imgbutton" src="{{ STATIC_URL }}resource/visng_dload_mapdata.png" title="Scarica mappa"></a>
+
+                    {% endif %}
+
+
+                    {% if proxy_type != 'local'%}
+
+                        <a href="/fwp/visng/mapview/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_focus.png" title="Visualizza mappa"></a>
+                    {%  endif %}
+                    {% if proxy_type == 'local' and meta_id == '.st' %}
+                        <a href="/fwp/visng/mapedit/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_editmap.png" title="Modifica mappa"></a>
+                    {% endif %}
+                    {% if proxy_type == 'local' and meta_id != '.st' %}
+                        <a href="/fwp/visng/mapview/{{ proxy_id }}/{{ meta_id }}/{{ map_id }}/"><img class="imgbutton" src="{{ STATIC_URL }}resource/fwp_focus.png" title="Visualizza mappa"></a>
+                    {%  endif %}
+                    {% if proxy_type != 'query' and mapdata.source != 'WFS' %}
+                        <!--<img class="imgbutton" src="{{ STATIC_URL }}resource/proxy-upload-off.png" width="16" height="16" title="Esporta mappa">-->
+                    {% endif %}
+                    {% if proxy_type != 'local' %}
+                        <img class="imgbutton convert convert_{{ mapdata.source|lower }}" id="convert_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_convert.png" title="Modifica conversioni">
+                    {% endif %}
+                    <img class="imgbutton removedata remove_{{ mapdata.source|lower }}" id="remove_{{ meta_id }}-{{ map_id }}" src="{{ STATIC_URL }}resource/fwp_remove.png" title="Elimina">
+                </td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+
+
+
+    {% endfor %}
+
+    </table>
+
+
+
+
+
+
+
+
+
+</div>
+
+
+{% endblock %}
+
+
+{% block functionality %}
+
+
+<div id="infobox_metas" title="Riepilogo catalogo">
+
+    {% if proxy_type == 'local' %}
+        {# standalone area infobox #}
+
+        <div class="metadetails" id="metadetails_.st">
+
+            <table class="metadetailstable">
+
+                <tr><td class="metadetails_label">Catalogo</td><td>Area di lavorazione</td></tr>
+                <tr><td class="metadetails_label">Valido dal</td><td>
+                        {{ manifestfordj.time.0|slice:":10" }}
+                </td></tr>
+                <tr><td class="metadetails_label">Valido al</td><td>
+                        {% if manifestfordj.time.1 != "" %}
+                            {{ manifestfordj.time.1|slice:":10" }}
+                        {% else %}
+                            (corrente)
+                        {% endif %}
+                </td></tr>
+
+                <tr>
+                    <td class="metadetails_label">
+                        Latitudine
+                    </td>
+                    <td class="metadetails_info">
+                            da {{ manifestfordj.area.1 }}<br>a {{ manifestfordj.area.3 }}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="metadetails_label">
+                        Longitudine
+                    </td>
+                    <td class="metadetails_info">
+                            da {{ manifestfordj.area.0 }}<br>a {{ manifestfordj.area.2 }}
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+
+    {% endif %}
+
+    {% for metainfo in manifestfordj.metadata  %}
+
+        <div class="metadetails" id="metadetails_{{ metainfo.name }}">
+
+            <table class="metadetailstable">
+
+                <tr><td class="metadetails_label">Catalogo</td><td>{{ metainfo.name }}</td></tr>
+                <tr><td class="metadetails_label">Valido dal</td><td>
+                    {% if metainfo.time.0 != "" %}
+                        {{ metainfo.time.0|slice:":10" }}
+                    {% else %}
+                        {{ manifestfordj.time.0|slice:":10" }}
+                    {% endif %}
+                </td></tr>
+                <tr><td class="metadetails_label">Valido al</td><td>
+                    {% if metainfo.time.1 != "" %}
+                        {{ metainfo.time.1|slice:":10" }}
+                    {% else %}
+                        {% if manifestfordj.time.1 != "" %}
+                            {{ manifestfordj.time.1|slice:":10" }}
+                        {% else %}
+                            (corrente)
+                        {% endif %}
+                    {% endif %}
+                </td></tr>
+
+                <tr>
+                    <td class="metadetails_label">
+                        Latitudine
+                    </td>
+                    <td class="metadetails_info">
+                        {% if metainfo.area.0 != "" %}
+                            da {{ metainfo.area.1 }}<br>a {{ metainfo.area.3 }}
+                        {% else %}
+                            da {{ manifestfordj.area.1 }}<br>a {{ manifestfordj.area.3 }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="metadetails_label">
+                        Longitudine
+                    </td>
+                    <td class="metadetails_info">
+                        {% if metainfo.area.0 != "" %}
+                            da {{ metainfo.area.0 }}<br>a {{ metainfo.area.2 }}
+                        {% else %}
+                            da {{ manifestfordj.area.0 }}<br>a {{ manifestfordj.area.2 }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+    {% endfor %}
+
+
+
+</div>
+
+{% if proxy_type == 'query' %}
+
+<div id="infobox_maps" title="Riepilogo query">
+
+    {% for meta_id, maplist in proxy_maps.items %}
+
+        {% for map_id, mapdata in maplist.items %}
+
+            <div class="mapdetails" id="mapdetails_{{ meta_id }}-{{ map_id }}">
+
+                <table class="mapdetailstable">
+
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Query
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.name }}
+                        </td>
+                    </tr>
+
+                    <tr><th colspan=2 class="mapdetails_header">Dati di connessione</th></tr>
+                    <tr>
+                        <td class="mapdetails_label">
+                            Host
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.connection.host }}:{{ mapdata.remotedata.connection.port }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Utente
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.connection.user }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mapdetails_label">
+                            Password
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.connection.password }}
+                        </td>
+                    </tr>
+
+                    <tr><th colspan=2 class="mapdetails_header">Parametri query</th></tr>
+                    <tr>
+                        <td class="mapdetails_label">
+                            Database
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.connection.dbname }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mapdetails_label">
+                            Schema
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.query.schema }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mapdetails_label">
+                            Vista
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.query.view }}
+                        </td>
+                    </tr>
+
+
+
+
+                </table>
+
+            </div>
+
+        {% endfor %}
+    {% endfor %}
+
+
+</div>
+
+{% else %}
+
+<div id="infobox_maps" title="Riepilogo mappa">
+
+    {% for meta_id, maplist in proxy_maps.items %}
+
+        {% for map_id, mapdata in maplist.items %}
+
+            <div class="mapdetails" id="mapdetails_{{ meta_id }}-{{ map_id }}">
+
+                <table class="mapdetailstable">
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Mappa
+                        </td>
+                        <td class="mapdetails_info">
+                            {{ map_id }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">Tipologia</td>
+                        <td>{{ mapdata.source}}</td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Elementi
+                        </td>
+                        <td class="mapdetails_info">
+                            {{ mapdata.features }}
+
+                                {% if mapdata.type == 'LineString' %}
+                                    (tratte)
+                                {% endif %}
+                                {% if mapdata.type == 'Point' %}
+                                    (punti)
+                                {% endif %}
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Latitudine
+                        </td>
+                        <td class="mapdetails_info">
+                            da {{ mapdata.bbox.1 }}<br>a {{ mapdata.bbox.3 }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Longitudine
+                        </td>
+                        <td class="mapdetails_info">
+                            da {{ mapdata.bbox.0 }}<br>a {{ mapdata.bbox.2 }}
+                        </td>
+                    </tr>
+
+
+                    {% if mapdata.source == 'WFS' %}
+
+                        <tbody class="remoteconf">
+                        <tr><th colspan=2 class="mapdetails_header">Dati di connessione</th></tr>
+
+                        <tr>
+                            <td class="mapdetails_label">
+                                URL
+                            </td>
+                            <td class="mapdetails_long">
+                                {{ mapdata.remotedata.url }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="mapdetails_label">
+                                Mappa
+                            </td>
+                            <td>
+                                {{ mapdata.remotedata.layer}}
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td class="mapdetails_label">
+                                Utente
+                            </td>
+                            <td>
+                                {{ mapdata.remotedata.user}}
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td class="mapdetails_label">
+                                Password
+                            </td>
+                            <td>
+                                {{ mapdata.remotedata.pass }}
+                            </td>
+                        </tr>
+
+                        </tbody>
+                {% endif %}
+                {% if mapdata.source == 'FTP' %}
+                    <tbody class="remoteconf">
+                    <tr><th colspan=2 class="mapdetails_header">Dati di connessione</th></tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Host
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.host }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Percorso
+                        </td>
+                        <td class="mapdetails_long">
+                            {{ mapdata.remotedata.path}}
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Utente
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.user}}
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td class="mapdetails_label">
+                            Password
+                        </td>
+                        <td>
+                            {{ mapdata.remotedata.pass }}
+                        </td>
+                    </tr>
+
+                    </tbody>
+                {% endif %}
+
+                </table>
+
+            </div>
+
+        {% endfor %}
+
+    {% endfor %}
+
+</div>
+
+{% endif %}
+
+
+<div id="form_setconversion">
+
+<div id="conversionmenu">
+
+<img class="imgbutton valueconv_quit" title="Torna alla mappa" src="{{ STATIC_URL }}resource/visng_menu_viewmap.png">
+<img class="imgbutton valueconv_save" title="Salva la conversione" src="{{ STATIC_URL }}resource/visng_menu_savemap.png">
+</div>
+
+    <div id="conv_mapinfo">
+
+    </div>
+
+    {% if proxy_type == 'query' %}
+    <div id="querywarning">
+        Per salvare e utilizzare la conversione è necessario indicare un campo di origine per il campo federato Geometria.
+    </div>
+    {% endif %}
+
+    <div id="modelselect">
+    <label for="convtable_modelselect">Modello di riferimento</label>
+    <select id="convtable_modelselect">
+
+    </select>
+</div>
+
+<table id="form_setconversion_table">
+
+    <thead id="convtable_headers" callpadding=0 cellspacing=0>
+        <tr>
+            <td colspan=2 class=mainfields>Conversione campi</td>
+            <td colspan=2 class=mainfields id="valueconvsection">Valori predefiniti</td>
+            <td></td>
+        </tr>
+    </thead>
+
+    <tbody id="convtable_datasets">
+
+
+    </tbody>
+
+</table>
+
+</div>
+
+
+<div id="progress_convdload" title="Caricamento dati per la conversione">
+
+    <div class="progspinner" id="progspinner_convdload">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_convloading">
+        Caricamento tabelle di conversione...
+    </div>
+
+    <div class="progressinfo feedback_bad" id="convdload_fail">
+        Non è stato possibile generare una tabella di conversione.
+        <div id="convdloadfail_explain">
+        </div>
+    </div>
+
+</div>
+
+
+<div id="progress_convsave" title="Salvataggio delle conversioni">
+
+    <div class="progspinner" id="progspinner_convsave">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_convsaving">
+        Salvataggio della tabella di conversione...
+    </div>
+
+    <div class="progressinfo feedback_good" id="convsave_success">
+        Salvataggio completato.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="convsave_fail">
+        Salvataggio fallito.
+        <div id="convsavefail_explain">
+        </div>
+    </div>
+
+</div>
+
+
+<div id="form_removesource" title="Richiesta di eliminazione">
+
+    <div class="formbriefing">
+        <span class="warninglabel">Attenzione</span>: i dati eliminati non possono essere recuperati.
+    </div>
+
+    <div class="formbriefing" id="dataremove_details">
+        {#  filled by script #}
+    </div>
+
+</div>
+
+
+<div id="progress_removal" title="Procedura di eliminazione">
+
+    <div class="progspinner" id="progspinner_removal">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_removereq">
+        Invio della richiesta di eliminazione...
+    </div>
+
+
+    <div class="progressinfo feedback_good" id="removalfinished_success">
+        Dati eliminati.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="removalfinished_fail">
+        Eliminazione dei dati fallita.
+        <div id="removalfail_explain">
+        </div>
+    </div>
+
+
+</div>
+
+<!--
+<div id="progress_visload" title="Visualizzazione mappa">
+
+    <div class="progspinner" id="progspinner_visload">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_visloading">
+        Caricamento mappa...
+    </div>
+
+    <div class="progressinfo" id="progress_stage_visrendering">
+        Elaborazione mappa...
+    </div>
+
+    <div class="progressinfo feedback_bad" id="visload_fail">
+        Caricamento fallito.
+        <div id="visloadfail_explain">
+        </div>
+    </div>
+
+</div>
+-->
+
+<div id="form_newfile" title="Nuova mappa da file">
+
+    <div class="formbriefing">
+    Il sistema accetta mappe in formato Shapefile, GeoJSON e MapInfo.<br>
+    I file della mappa devono essere inseriti in un archivio Zip unico.<br>
+    La mappa caricata deve contenere un solo tipo di oggetto geografico (tratta o punto).
+    </div>
+
+    <input type="file" id="newfile_chooser" name="newfile_chooser">
+
+    <div class="formwarning" id="warning_fileoverwrite">
+        <span class="warninglabel">Attenzione</span>: esiste già una mappa con questo nome. Caricare questo file sovrascriverà i dati caricati in precedenza.
+    </div>
+
+    <div class="formwarning" id="warning_fileformatwrong">
+        <span class="warninglabel">Attenzione</span>: il file selezionato non è nel formato corretto.
+    </div>
+
+
+</div>
+
+    <div id="progress_mapload" title="Caricamento dati">
+
+        <div class="progspinner" id="progspinner_mapload">
+            <img src="{{ STATIC_URL }}resource/progressbar.gif">
+        </div>
+
+        <div class="progressinfo" id="progress_stage_maploading">
+            Caricamento dei dati in corso...
+        </div>
+
+        <div class="progressinfo" id="progress_stage_rendering">
+            Elaborazione dati in corso...
+        </div>
+
+        <div class="progressinfo feedback_good" id="maploadfinished_success">
+            Dati caricati con successo.
+        </div>
+
+        <div class="progressinfo feedback_bad" id="maploadfinished_fail">
+            Caricamento dati fallito.
+            <div id="maploadfail_explain">
+            </div>
+        </div>
+
+
+
+        <div class="formwarning" id="warning_maploadrenderissues">
+            <span class="warninglabel">Attenzione</span>: alcuni oggetti della mappa hanno causato anomalie durante il processo di rendering.
+        </div>
+
+
+    </div>
+
+
+
+<div id="form_newftp" title="Nuova mappa da FTP">
+
+    <div class="formbriefing">
+        Il sistema accetta dati da servizi FTP in formato Shapefile, GeoJSON e MapInfo.<br>
+        I file della mappa devono essere inseriti in un archivio Zip unico.<br>
+        La mappa caricata deve contenere un solo tipo di oggetto geografico (tratta o punto).
+    </div>
+
+    <table>
+
+        <tr><td>Host</td><td><input class="newftp_param" type="text" id="newremote_ftphost"></tr>
+        <tr><td>Utente</td><td><input type="text" class="newftp_param" id="newremote_ftpusername"></td></tr>
+        <tr><td>Password</td><td><input class="newftp_param" type="password" id="newremote_ftppassword"></td></tr>
+        <tr><td>File</td><td><input class="newftp_param" type="tet" id="newremote_ftppath"></td></tr>
+
+    </table>
+
+    <div class="formwarning" id="warning_ftpoverwrite">
+        <span class="warninglabel">Attenzione</span>: esiste già una mappa con questo nome. Caricare questa fonte sovrascriverà i dati caricati in precedenza.
+    </div>
+
+</div>
+
+
+<div id="progress_newdata" title="Caricamento e adattamento dati">
+
+    <div class="progspinner" id="progspinner_newdata">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_uploading">
+        Caricamento dei dati in corso...
+    </div>
+
+    <div class="progressinfo" id="progress_stage_adapting">
+        Adattamento dei dati in corso...
+    </div>
+
+    <div class="progressinfo feedback_good" id="uploadfinished_success">
+        Dati caricati e adattati con successo.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="uploadfinished_fail">
+        Caricamento dati fallito.
+        <div id="uploadfail_explain">
+        </div>
+    </div>
+
+</div>
+
+<div id="progress_newquery" title="Creazione di una nuova connessione">
+
+    <div class="progspinner" id="progspinner_newquery">
+        <img src="/static/resource/progressbar.gif">
+    </div>
+
+    <div class="progressinfo" id="progress_stage_probing">
+        Ricerca database in corso...
+    </div>
+
+    <div class="progressinfo" id="progress_stage_saving">
+        Salvataggio dati di connessione in corso...
+    </div>
+
+    <div class="progressinfo feedback_good" id="creationfinished_success">
+        Connessione creata correttamente.<br>
+        Prima di rendere disponibili i dati al sistema federato e alla consultazione locale è necessario compilare la tabella di conversione.
+    </div>
+
+    <div class="progressinfo feedback_bad" id="creationfinished_fail">
+        Connessione fallita.
+        <div id="creationfail_explain">
+        </div>
+    </div>
+
+</div>
+
+
+
+<div id="form_newwfs" title="Nuova mappa da web">
+
+    <div class="formbriefing">
+        Il sistema accetta dati da servizi web WFS.
+    </div>
+
+    <table>
+
+        <tr><td>URL</td><td><input type="text" id="newremote_url"></tr>
+        <tr><td>Mappa</td><td><input type="tet" id="newremote_mapname"></td></tr>
+        <tr><td>Utente</td><td><input type="text" id="newremote_username"></td></tr>
+        <tr><td>Password</td><td><input type="password" id="newremote_password"></td></tr>
+
+    </table>
+
+    <div class="formwarning" id="warning_wfsoverwrite">
+        <span class="warninglabel">Attenzione</span>: esiste già una mappa con questo nome. Caricare questa fonte sovrascriverà i dati caricati in precedenza.
+    </div>
+
+</div>
+
+
+
+
+
+
+<div id="form_newquery" title="Nuova connessione a database">
+
+    <div class="formbriefing">
+        Il sistema si collega a database PostgreSQL con supporto geografico PostGIS.<br>
+        Ogni vista deve contenere un solo tipo di oggetto geografico (tratta o punto).
+    </div>
+
+
+
+    <table id="newquerytable">
+
+        <tr><td>Nome</td><td><input type="text" id="conn_name_new" name="conn_name_new"></tr>
+
+        <tbody class="subsection">
+            <tr><td>Host</td><td><input type="text" id="conn_host_new" name="conn_host_new"></td></tr>
+            <tr><td>Porta</td><td><input type="text" id="conn_port_new" name="conn_port_new"></td></tr>
+            <tr><td>Utente</td><td><input type="text" id="conn_user_new" name="conn_user_new"></td></tr>
+            <tr><td>Password</td><td><input type="text" id="conn_pass_new" name="conn_pass_new"></td></tr>
+        </tbody>
+        <tbody class="subsection">
+            <tr><td>Database</td><td><input type="text" id="conn_db_new" name="conn_db_new"></td></tr>
+            <tr><td>Schema</td><td><input type="text" id="conn_schema_new" name="conn_schema_new"></td></tr>
+            <tr><td>Vista</td><td><input type="text" id="conn_view_new" name="conn_view_new"></td></tr>
+        </tbody>
+
+
+    </table>
+
+
+    <div class="formwarning" id="warning_queryoverwrite">
+        <span class="warninglabel">Attenzione</span>: esiste già una connessione con questo nome. Creare questa connessione sovrascriverà quella creata in precedenza.
+    </div>
+
+</div>
+
+
+    <div id="controlsbar">
+
+
+        <span id="geofindertool">
+
+            <label for="text_geosearch">Vai a</label> <input type="text" id="text_geosearch">
+            <img id="menu_findpoi" class="imgbutton menuopt" title="Individua punto di interesse" src="{{ STATIC_URL }}resource/fwp_focus.png">
+            <img id="menu_removepoi" class="imgbutton menuopt" title="Rimuovi punto di interesse" src="{{ STATIC_URL }}resource/fwp_clear.png">
+        </span>
+
+
+    </div>
+
+
+<div id="proxymap"></div>
+
+
+{% endblock %}
+
+
+{% block contextguide %}
+
+<div class="help">
+    WORK IN PROGRESS
+
+
+
+</div>
+{%  endblock %}
+
+
+{% block starterscript %}
+<script>
+    pageInit('{{ proxy_id }}', '{{ proxy_type }}', {{ manifest }}, {{ mapsforjs }});
+</script>
+
+{% endblock %}

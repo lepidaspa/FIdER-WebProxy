@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import re
+import urllib2
 
 __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
@@ -79,15 +81,42 @@ def logEvent (eventdata, iserror=False):
 		pass
 
 
-def createSoftProxy (proxy_id, manifest):
+def setProxyContacts (proxy_id, contactsjson):
+	"""
+	Writes the contacts file for this proxy. No check on the contents of contactsjson, will work as long as it's json-dumpable. No feedback given unless there is an exceptions
+	:param proxy_id:
+	:param contactsjson:
+	:return:
+	"""
+
+	print "Setting contacts info for proxy %s:\n%s" % (proxy_id, contactsjson)
+
+	#NOTE: since the linked proxy uses a symlink to the standalone tool, changing  this will always change the contacts on both instances
+	contactspath = os.path.join(conf.baseproxypath, proxy_id, conf.path_contacts)
+	json.dump(contactsjson, open(contactspath, 'w+'))
+
+
+
+def createSoftProxy (proxy_id, manifest, linkedto=None):
+
+	success = True
+	message = manifest
 
 	try:
-		proxy_core.makeSoftProxy(proxy_id, manifest)
+		proxy_core.makeSoftProxy(proxy_id, manifest, linkedto)
 	except Exception as ex:
 		traceback.print_exc()
 		return False, "Creazione del proxy %s fallita. Errore: %s" % (proxy_id, ex.message)
 
-	return True, manifest
+	# only for linker proxies
+	if linkedto is not None:
+		databuildresult = proxy_core.rebuildAllData(proxy_id)
+		# creation succeeded but data import failed
+		if not databuildresult['success']:
+			success = False
+			message = "Creazione del proxy %s riuscita con importazione mappe incompleta. Cataloghi da verificare: %s" % (proxy_id, databuildresult['errors'],)
+
+	return success, message
 
 
 
@@ -182,7 +211,6 @@ def handleFileEvent (eventpath):
 
 
 
-
 def rebuildFullShapesList (proxy_id):
 
 	"""
@@ -215,7 +243,20 @@ def rebuildFullShapesList (proxy_id):
 			handleFileEvent (os.path.join (conf.baseuploadpath, proxy_id, meta_id, shape_id))
 
 
+def isLinkedProxy (ref_id, ref_name):
+	"""
+	returns whether the reference proxy is linked to another proxy (actually a standalone tool)
+	:return:
+	"""
 
+	for proxy_cmp in getProxyList():
+
+		name_cmp = proxy_core.getManifest(proxy_cmp)['name']
+
+		if ref_id != proxy_cmp and name_cmp == ref_name:
+			return True
+
+	return False
 
 def createMessageUpdatesRead (proxy_id, timestamp):
 	"""
@@ -312,9 +353,11 @@ def sendUpdatesWrite (proxy_id):
 
 def sideloadST (proxy_id, meta_id, stmap_id, saveto_id):
 
+	saveto_id = re.sub(r'[^\w._]+', "_", saveto_id)
 
 	uploadpath = os.path.join(conf.baseuploadpath, proxy_id, meta_id, saveto_id+".zip")
 	frompath = os.path.join(conf.baseproxypath, proxy_id, conf.path_standalone, stmap_id)
+
 
 	with zipfile.ZipFile(uploadpath, 'w') as datazip:
 		datazip.write(frompath, stmap_id+".geojson")
@@ -333,7 +376,77 @@ def sideloadST (proxy_id, meta_id, stmap_id, saveto_id):
 			'report': 'Importazione di %s fallita. Causa: %s' % (stmap_id, ex)
 		}
 
-	return response_sideload
+
+def uploadFTP (proxy_id, meta_id, map_id, connect, setforupdate=False):
+	"""
+	Loads a remote FTP resource to the proxy/meta/map combination in the request. Distinct from first time load which can be found in FIdERWeb
+	:param proxy_id:
+	:param meta_id:
+	:param map_id:
+	:param connect: dictionary with connection info: url, user, pass, layer
+	:param setforupdate: boolean, whether to write the connection configuration in the remoteres directory for future updates. This is off by default as the function is called more often as an update than for creation
+	:return: a report dict with keys success (bool) and report (string)
+	"""
+
+	response_upload = {
+	'success': False,
+	'report': ''
+	}
+
+	filename = re.sub(r'[^\w._]+', "_", connect['path'].split("/")[-1])
+
+	authstring = ""
+	if connect['user'] not in (None, ""):
+		authstring = connect['user']
+		if connect['pass'] not in (None, ""):
+			authstring = authstring+":"+connect['pass']
+		authstring += "@"
+
+	connectstring = "ftp://"+authstring+connect['host']+"/"+connect['path']
+
+	try:
+		upload = urllib2.urlopen(connectstring)
+		if map_id is None or map_id == "":
+			map_id = filename[:-4]
+
+		print "FORM: Uploading file to %s/%s/%s" % (proxy_id, meta_id, map_id)
+
+		uploadedpath = os.path.join(conf.baseuploadpath, proxy_id, meta_id, filename)
+
+		fp = open(uploadedpath, 'w+')
+		fp.write(upload.read())
+		fp.close()
+		upload.close()
+
+		response_upload['success'] = True
+		#response_upload['report'] = "Invio del file %s su %s per integrazione completato." % (filename, proxy_id)
+
+		print "File uploaded, proceeding with conversion to geojson"
+
+		handleFSChange(uploadedpath)
+		response_upload['report'] = "Integrazione del file %s su %s completata" % (filename, proxy_id)
+
+		if setforupdate is True:
+			try:
+				fppath = os.path.join(conf.baseproxypath, proxy_id, conf.path_remoteres, meta_id)
+				try:
+					os.makedirs(fppath)
+				except:
+					# already exists: not a problem, if more severe we will get a different error later and handle that
+					pass
+				fp_ftpres = open(os.path.join(fppath, map_id+".ftp"), 'w+')
+				json.dump(connect, fp_ftpres)
+				fp_ftpres.close()
+				response_upload['report'] += "Configurato l'aggiornamento automatico."
+			except Exception as ex:
+				print "ERROR while saving as remote resource: %s " % ex
+				response_upload['report'] += "Aggiornamento automatico non configurato."
+
+	except Exception as ex:
+		print "ERROR: %s (%s)" % (ex, ex.message)
+		response_upload['response'] = 'Caricamento dei dati da FTP fallito.'
+
+	return response_upload
 
 
 def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
@@ -383,6 +496,8 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 		return response_upload
 
 	print "Received WFS data"
+
+	map_id= re.sub(r'[^\w._]+', "_", map_id)
 
 	gjfeatures = []
 	for feature in layer:
@@ -447,17 +562,17 @@ def uploadWFS (proxy_id, meta_id, map_id, connect, setforupdate=False):
 
 
 def getProxyList ():
-
+	"""
+	Returns a list of the softproxies on the hardproxy
+	:return:
+	"""
 
 	#TODO: update to new system with centralised manifests
-	listing = os.listdir(os.path.join(conf.baseproxypath))
-	excludepath = ["log", "next", "locks", "proxies"]
+	manifests = os.listdir(os.path.join(conf.baseproxypath, "proxies"))
 
-	for excluded in excludepath:
-		try:
-			listing.remove(excluded)
-		except:
-			pass
+	listing = []
+	for proxymanfile in manifests:
+		listing.append(proxymanfile.split(".")[0])
 
 	return listing
 
@@ -540,7 +655,6 @@ def getProxyStamps (precompiled=True, dated=False):
 				meta_stamped[proxy][meta] = ""
 
 	return meta_stamped
-
 
 if __name__ == "__main__":
 	handleFSChange (sys.argv[1])

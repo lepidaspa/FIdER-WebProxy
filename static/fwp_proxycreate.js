@@ -26,8 +26,14 @@ var metadata = {};
 var dateregex = new RegExp ("\\d{2}-\\d{2}-\\d{4}");
 
 
+
+var tempgeoloc_proxy = null;
+var tempgeoloc_meta = null;
+
 function create_initForm()
 {
+
+    creationmode = true;
 
     if ((newmetamap == null) && (newproxymap == null))
     {
@@ -52,7 +58,11 @@ function create_initForm()
     setOpsModeVisibility();
     $("#proxymap").hide();
     $("#proxy_create_new").hide();
+    $("#standalone_create_new").hide();
     $("#proxy_show_map").show();
+
+    $("#btn_trygeoloc_proxy").live('click', geosearch);
+    $("#btn_trygeoloc_meta").live('click', geosearch);
 
 /*
     $("#tool_nav_proxy").click(create_setNavControlsHere);
@@ -61,6 +71,18 @@ function create_initForm()
 
     create_CheckNewMetaInfo();
     create_CheckForSubmission();
+
+    if (proxycreationmode == "standalone")
+    {
+        $("#params_proxy").hide();
+        $("#params_standalone").show();
+
+    }
+    else if (proxycreationmode == "proxy")
+    {
+        $("#params_proxy").show();
+        $("#params_standalone").hide();
+    }
 
 
 }
@@ -72,6 +94,11 @@ function bindInputFields()
     $("#newproxy_name").keyup(create_CheckForSubmission);
     $("#newproxy_name").mouseup(create_CheckForSubmission);
     $("#newproxy_name").change(create_CheckForSubmission);
+
+
+    $("#newproxy_provider").keyup(create_CheckForSubmission);
+    $("#newproxy_provider").mouseup(create_CheckForSubmission);
+    $("#newproxy_provider").change(create_CheckForSubmission);
 
 
     $("#newproxy_datefrom").datepicker( {onClose: create_CheckForSubmission, changeYear: true, dateFormat: "dd-mm-yy"});
@@ -99,7 +126,52 @@ function bindInputFields()
 
     $("#proxy_create_confirm").click(create_CreateProxy);
 
+    $("#newmeta_bbox_use").live('change', setMetaAreaControls);
+
+
+    $("#btn_cleangeoloc_proxy").live('click', cleanGeoloc);
+    $("#btn_cleangeoloc_meta").live('click', cleanGeoloc);
+
 }
+
+function cleanGeoloc ()
+{
+    var prefix = "btn_cleangeoloc_";
+    var context = this.id.substr(prefix.length);
+
+    if (context == 'meta')
+    {
+        tempgeoloc_meta = null;
+        renderbbox(tempgeoloc_meta, newmetamap, false);
+    }
+    else if (context == 'proxy')
+    {
+        tempgeoloc_proxy = null;
+        renderbbox(tempgeoloc_proxy, newproxymap, false);
+    }
+
+}
+
+function setMetaAreaControls ()
+{
+    if ($('#newmeta_bbox_use').is(':checked'))
+    {
+        $("#btn_trygeoloc_meta").prop('disabled', false);
+        $("#newmeta_geoloc").prop('disabled', false);
+
+    }
+    else
+    {
+        $("#btn_trygeoloc_meta").prop('disabled', true);
+        $("#newmeta_geoloc").prop('disabled', true);
+        $("#newmeta_geoloc").val("");
+        tempgeoloc_meta = null;
+        renderbbox(tempgeoloc_meta, newmetamap, false);
+    }
+
+
+}
+
 
 function create_RemoveMeta()
 {
@@ -238,9 +310,13 @@ function renderMetaList()
                 //alert("Index: "+i);
                 if (i == 2)
                 {
-                    str_bb += "<br>";
+                    str_bb += " ";
                 }
-                str_bb += " "+meta_bb[i].toFixed(5);
+                else
+                {
+                    str_bb += "&nbsp;";
+                }
+                str_bb += meta_bb[i].toFixed(5);
             }
         }
         else
@@ -345,10 +421,15 @@ function create_setNavControlsHere ()
 
 function backToMaps()
 {
+
+    creationmode = false;
+
     $("#proxy_builder").hide();
     $("#proxycreate_mask").hide();
 
     $("#proxy_create_new").show();
+    $("#standalone_create_new").show();
+
     $("#proxy_show_map").hide();
 
     $("#proxymapcanvas").hide();
@@ -358,6 +439,7 @@ function backToMaps()
 
     // we do this to properly reset the main map
     pageInit(proxies);
+
 
 }
 
@@ -595,16 +677,29 @@ function create_CheckForSubmission()
         errors += 1;
     }
 
-    // IF the proxy is a query proxy, AT LEAST one type of query must be enabled beyond the 'none' level
-    var proxymode = $("#proxy_opsmode").val();
-    if (proxymode == "query")
+    var proxyprovider = $("#newproxy_provider").val();
+    if (proxyprovider.length == 0)
     {
-        // proxy_options_query_geo, proxy_options_query_inv, proxy_options_query_time, proxy_options_query_bi
-        if ( ($("#proxy_options_query_geo").val() == "none") && ($("#proxy_options_query_inv").val() == "none") && ($("#proxy_options_query_time").val() == "none") )
+        errors += 1;
+    }
+
+    // IF the proxy is a query proxy, AT LEAST one type of query must be enabled beyond the 'none' level
+    // default to standalone tool
+    var proxymode = "none";
+    if (proxycreationmode == "proxy")
+    {
+        proxymode = $("#proxy_opsmode").val();
+        if (proxymode == "query")
         {
-            errors += 1;
+            // proxy_options_query_geo, proxy_options_query_inv, proxy_options_query_time, proxy_options_query_bi
+            if ( ($("#proxy_options_query_geo").val() == "none") && ($("#proxy_options_query_inv").val() == "none") && ($("#proxy_options_query_time").val() == "none") )
+            {
+                errors += 1;
+            }
         }
     }
+
+
 
     // The proxy MUST have a starting date, can be without an ending date if the specific checkbox is activated (permanent proxy)
     var proxydatefrom = $("#newproxy_datefrom").val();
@@ -653,16 +748,21 @@ function create_CheckForSubmission()
 
 
         var proxy_bb;
-        if (newproxymap.layers[1].features.length == 0)
+        if (tempgeoloc_proxy == null)
         {
-            //alert ("Using auto bb");
+            console.log ("Using PROXY auto bb");
             proxy_bb = newproxymap.getExtent().transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
         }
         else
         {
-            //alert ("Using given bb");
-            proxy_bb = newproxymap.layers[1].features[0].geometry.bounds.transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84)).toArray();
+            console.log ("Using PROXY drawn bb");
+            console.log(tempgeoloc_proxy.toArray());
+            proxy_bb = new OpenLayers.Bounds.fromArray(tempgeoloc_proxy.toArray());
+            proxy_bb.transform(newproxymap.getProjectionObject(), new OpenLayers.Projection(proj_WGS84));
+            proxy_bb = proxy_bb.toArray();
         }
+
+        console.log(proxy_bb);
 
 
 
@@ -674,6 +774,7 @@ function create_CheckForSubmission()
 
             if (meta_bb != null)
             {
+                console.log("Comparing "+meta_bb+" with "+proxy_bb);
                 var bbox_match = compareBboxArrays(meta_bb, proxy_bb);
             }
             else
@@ -740,8 +841,7 @@ function create_CheckForSubmission()
     }
     else
     {
-
-        //TODO: add error message saying meta cannot be parsed without a full proxy description?
+        // NOTHING, we simply keep the button greyed out, other warnings would be too intrusive.
     }
 
 
@@ -758,7 +858,10 @@ function create_CheckForSubmission()
     var str_warn_areas = warnings_areas.length > 0 ? "AUTOFIX BBOX: "+JSON.stringify(warnings_areas) : "";
     */
 
+    var report_pre_header = '<div class="sectionbanner" id="banner_report_pre">INFORMAZIONI</div>';
+
     $("#reports_pre").text(str_err_times+"\n"+str_err_areas+"\n"+str_warn_areas+"\n"+str_warn_times);
+    $("#reports_pre").prepend(report_pre_header);
 
     // overall check
     if (errors > 0)
@@ -802,25 +905,20 @@ function compareBboxArrays (can_bb, ref_bb)
     var candidate = OpenLayers.Bounds.fromArray(can_bb);
     var reference = OpenLayers.Bounds.fromArray(ref_bb);
 
-
-    if (reference.intersectsBounds(candidate))
+    if (reference.containsBounds(candidate))
     {
-        //we have at least a partial match
-        if (reference.containsBounds(candidate))
-        {
-            // full containment
-            return 1;
-        }
-        else
-        {
-            // confirmed as partial
-            return 0;
-        }
+        // candidate is fully contained;
+        return 1;
+    }
+    else if (reference.intersectsBounds(candidate))
+    {
+        // candidate intersects
+        return 0;
     }
     else
     {
-        // no intersection/containment at all
-        return -1;
+        // candidate is entirely out
+        return -1
     }
 
 
@@ -885,6 +983,113 @@ function validateDateField (datestring)
 
 }
 
+function renderbbox (bounds, mapview, zoomto)
+{
+
+    var vectorlayer = mapview.layers[1];
+    vectorlayer.destroyFeatures();
+
+    if (bounds != null)
+    {
+        if (zoomto)
+        {
+            mapview.zoomToExtent(bounds);
+        }
+        var cfeature = new OpenLayers.Feature.Vector(bounds.toGeometry());
+
+        vectorlayer.addFeatures(cfeature);
+        console.log(bounds.toGeometry());
+        console.log(vectorlayer);
+    }
+
+
+}
+
+function geosearch(caller)
+{
+
+
+    var cmap;
+    var geostring;
+    if (caller.srcElement.id == 'btn_trygeoloc_meta')
+    {
+        cmap = newmetamap;
+        geostring = $('#newmeta_geoloc').val();
+    }
+    else if  (caller.srcElement.id == 'btn_trygeoloc_proxy')
+    {
+        cmap = newproxymap;
+        geostring = $('#newproxy_geoloc').val();
+    }
+
+
+    var jg;
+    var path = '/external/maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
+        + geostring;
+
+    console.log("Recentering meta map by search: "+path);
+
+
+    $.getJSON(path, function(gqdata){
+        console.log(gqdata);
+        if(gqdata.status == "OK"){
+            if (gqdata.results.length > 0){
+
+                console.log("Results found");
+
+                gq = new OpenLayers.Bounds();
+
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.southwest.lng,
+                    gqdata.results[0].geometry.viewport.southwest.lat).transform(proj_WGS84,
+                    proj_900913));
+                gq.extend(new
+                    OpenLayers.LonLat(gqdata.results[0].geometry.viewport.northeast.lng,
+                    gqdata.results[0].geometry.viewport.northeast.lat).transform(proj_WGS84,
+                    proj_900913));
+
+
+
+                // moved inside renderbbox
+                //cmap.zoomToExtent(gq);
+
+                // using the data for either the proxy or the current meta
+                if (caller.srcElement.id == 'btn_trygeoloc_meta')
+                {
+                    console.log("Rendering meta bbox");
+                    tempgeoloc_meta = gq;
+                }
+                else if  (caller.srcElement.id == 'btn_trygeoloc_proxy')
+                {
+                    console.log("Rendering proxy bbox");
+                    tempgeoloc_proxy = gq;
+                }
+                renderbbox (gq, cmap, true);
+
+
+                cleanupFeedback("#proxy_created");
+
+            }
+            else
+            {
+
+                console.log("No location found");
+                postFeedbackMessage(false, "Impossibile individuare la locazione specificata.", "#proxy_created", true);
+                console.log(gqdata.results);
+            }
+        }
+        else
+        {
+            console.log("No location found");
+            postFeedbackMessage(false, "Impossibile individuare la locazione specificata.", "#proxy_created", true);
+            console.log(gqdata.results);
+        }
+    });
+
+
+
+}
+
 
 function create_CreateProxy ()
 {
@@ -900,8 +1105,9 @@ function create_CreateProxy ()
     // first we must re-check the proxy names, in case somebody create a proxy with the same name (that must be unique, though the actual identifier is the token provided by the server; except for this, all other validations have already been carried out and will NOT be repeated)
 
     var proxy_name = $("#newproxy_name").val();
+    var proxy_provider = $("#newproxy_provider").val();
 
-    var urlstring = "/fwp/proxylist";
+    var urlstring = "/fwp/proxylist/";
 
     var success = true;
     var newnameslist = new Array();
@@ -928,7 +1134,7 @@ function create_CreateProxy ()
         },
         error: function (data)
         {
-            postFeedbackMessage("fail", "ERRORE: "+JSON.stringify(data), container);
+            postFeedbackMessage(false, "ERRORE: "+JSON.stringify(data), container);
             success = false;
         }
     });
@@ -945,6 +1151,7 @@ function create_CreateProxy ()
     var manifest = {};
 
     manifest['name'] = proxy_name;
+    manifest['provider'] = proxy_provider;
 
     if (newproxymap.layers[1].features.length == 0)
     {
@@ -979,7 +1186,13 @@ function create_CreateProxy ()
 
     var ops_prefix = "proxy_options_";
 
-    var opsmode = $("#proxy_opsmode").val();
+    var opsmode = "none";
+    if (proxycreationmode == "proxy")
+    {
+        opsmode = $("#proxy_opsmode").val();
+    }
+
+    console.log("CREATING AN INSTANCE WITH OPSMODE "+opsmode);
 
     var opsdict = {
         'read' : 'none',
@@ -1006,7 +1219,7 @@ function create_CreateProxy ()
 
         opsdict[opsmode]['signs'] = $("#"+ops_prefix+opsmode+'_bi').val() == "true";
     }
-    else
+    else if (opsmode == 'none')
     {
         //PLACEHOLDER: if the proxy has no mode, we can keep the template description
     }
@@ -1121,6 +1334,14 @@ function create_CreateProxy ()
 
 
 
+function cleanupFeedback (widgetid)
+{
+    $(widgetid).empty();
+    $(widgetid).removeClass("success");
+    $(widgetid).removeClass("fail");
+
+}
+
 //copied from fwp_metapage.js, removed closeAllMasks()
 function postFeedbackMessage (success, report, widgetid, cleanup)
 {
@@ -1151,7 +1372,6 @@ function postFeedbackMessage (success, report, widgetid, cleanup)
 
     var feedbackmess = '<div class="feedback '+feedbackclass+'">' +message+ '</div>';
 
-    //TODO: PRIORITY: check why does not display
 
     $(widgetid).append(feedbackmess);
     $(widgetid).show();

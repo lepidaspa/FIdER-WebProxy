@@ -4,6 +4,79 @@ body
     background-color:   #ffffff;
 }
 
+.ui-widget
+{
+    font-size:          small;
+    font-family:        sans-serif;
+    border:             none;
+}
+
+.ui-widget *
+{
+    font-size:          small;
+}
+
+/* making background more standard */
+.ui-widget-header
+{
+    background:         #ff8800;
+    color:              #ffffff;
+    border:             none;
+}
+
+.ui-dialog-title
+{
+    font-size:          medium;
+    font-weight:        bold;
+}
+
+input[type=button]
+{
+    color:              #ffffff;
+    background-color:   #ff8800;
+    border:             1px solid #ff8800;
+}
+
+.button, .fbutton
+{
+    color:              #ffffff;
+    background-color:   #ff8800;
+    border:             1px solid #ff8800;
+    text-align:         center;
+
+}
+
+
+.ui-button
+{
+    border:             1px solid #ff8800;
+}
+
+.ui-button
+{
+    background:         #ffffff;
+    color:              #000000;
+}
+
+
+.ui-button:active
+{
+    background:         #ff8800;
+    color:              #ffffff;
+}
+
+.ui-button:disabled
+{
+    background:         #bbb7b9;
+    color:              #000000;
+}
+
+a
+{
+    text-decoration: inherit;
+    color:          inherit;
+}
+
 body.passive
 {
     cursor: wait;
@@ -13,15 +86,16 @@ input:disabled, select:disabled
 {
     background-color:   #bbb7b9;
     color:              #ffffff;
-
 }
 
-#progspinner
+#progspinner, .progspinner
 {
     text-align:     center;
     right:          auto;
     left:           auto;
 }
+
+
 
 .cornermap
 {
@@ -36,6 +110,13 @@ input:disabled, select:disabled
     margin-top:         8px;
     padding-top:        4px;
     clear:              both;
+}
+
+.btn_closeallmasks {
+    float:              right;
+    margin-right:       2px;
+    margin-top:         2px;
+    cursor:             pointer;
 }
 
 .textbutton
@@ -89,21 +170,7 @@ input:disabled, select:disabled
 
 
 
-input [type=button]
-{
-    color:              #ffffff;
-    background-color:   #ff8800;
-    border:             1px solid #ff8800;
-}
 
-.button, .fbutton
-{
-    color:              #ffffff;
-    background-color:   #ff8800;
-    border:             1px solid #ff8800;
-    text-align:         center;
-
-}
 
 a.backtrack
 {
@@ -130,6 +197,8 @@ a.backtrack
     text-decoration: none;
     color:           #ffffff;
 }
+
+
 
 #servicebar
 {
@@ -182,7 +251,7 @@ img.legend
     position:           absolute;
     top:                2.5em;
     left:               0;
-    right:              75%;
+    right:              72%;
     bottom:             0;
     overflow:           auto;
     padding-left:       8px;
@@ -201,7 +270,7 @@ img.legend
     position:           absolute;
     top:                2.5em;
 
-    left:               25%;
+    left:               28%;
     /*
     changed to have the guide overlay rather than resize the functionality area
     right:              20%;
@@ -298,19 +367,68 @@ tr
     cursor:     pointer;
 }
 
+#servicetoolbar
+{
+    float:              right;
+    background-color:   #ffffff;
+    margin-right:       2px;
+}
+
+#servicetoolbar .tbbutton
+{
+    font-weight: bold;
+    font-size:  smaller;
+
+    background-color:   #ff8800;
+    color:              #ffffff;
+    padding:            2px 4px 2px 4px;
+    margin-left:        2px;
+
+    cursor:         pointer;
+}
+
 #guidebutton
 {
-    position:   absolute;
+    /*position:   absolute;
     top:                0;
     right:              0;
     padding-right:       8px;
     padding-top:            8px;
+    */
+    float:              right;
 
-    background-color:   #ffffff;
+    background-color:   #ff8800;
+    color:              #ffffff;
+    padding:            2px 4px 2px 4px;
 
     font-weight: bold;
     font-size:  smaller;
 
     cursor:         pointer;
 
+}
+
+
+.ui-dialog-titlebar-close
+{
+    display:            none;
+}
+
+
+.datalisted
+{
+    background-image:               url('/static/resource/fwp_dropdown.png');
+    background-position:            99% 50%;
+    background-repeat:              no-repeat;
+}
+
+select:disabled
+{
+    background-color:           #ff8800;
+    color:                      #ffffff;
+}
+
+span.textlabel
+{
+    font-weight: bold;
 }

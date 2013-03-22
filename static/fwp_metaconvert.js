@@ -168,7 +168,7 @@ function renderConvMask()
             }
 
             var sourcefields_selector = $('<select class="sel_sourcefield" id="sel_sourcefield_'+modelid+"_"+fields[i]+'"></select>');
-            sourcefields_selector.append('<option value="">(non usato)</option>');
+            sourcefields_selector.append('<option value="">(vuoto)</option>');
 
 
 
@@ -371,7 +371,11 @@ function closeConvTable()
 
     // hides the conversion table widget and redisplays the map widget if applicable
 
-    //TODO: placeholder, implement
+    $("#conversion").addClass("inhiding");
+    $("#conversion").hide();
+    $("#proxymap").show();
+
+
 
 }
 

@@ -6,6 +6,11 @@ __author__ = 'Antonio Vaccarino'
 __docformat__ = 'restructuredtext en'
 
 def loadConfFile(filepath):
+	"""
+	Loads a config file and skips the commented lines
+	:param filepath:
+	:return:
+	"""
 	print "Loading %s" % filepath
 	confdata = {}
 	fp = open(filepath)
@@ -61,6 +66,7 @@ mainserver_ref_location = config_testing.MAINSERVER_CONF_FILE
 
 path_mirror = 'maps/mirror'
 path_geojson = 'maps/geojson'
+path_contacts = 'conf/contacts.json'
 path_manifest = 'conf/manifest.json'
 path_mappings = 'conf/mappings'
 path_remoteres = 'conf/remote'
@@ -77,10 +83,12 @@ wait_for_unlock = 3
 
 MAINSERVER_LOC = "http://"+conf_core["FIDER_ADDRESS"]+":"+conf_core["FIDER_PORT"]
 HARDPROXY_LOC = "http://"+conf_core["HARDPROXY_ADDRESS"]+":"+conf_core["HARDPROXY_PORT"]
+HARDPROXY_PORT = conf_core["HARDPROXY_PORT"]
 
 URL_DISCOVERY = MAINSERVER_LOC+conf_core["URL_FIDER_WELCOME"]
 URL_WRITEREQUEST = MAINSERVER_LOC+conf_core["URL_FIDER_SUBMIT_WRITE"]
 URL_WRITEMANIFEST = MAINSERVER_LOC+conf_core["URL_FIDER_SUBMIT_MANIFEST"]
 URL_CONVERSIONS = MAINSERVER_LOC+conf_core["URL_FIDER_REQUEST_CONVERSIONS"]
 URL_MODELS = MAINSERVER_LOC+conf_core["URL_FIDER_REQUEST_MODELS"]
-
+URL_PROVIDERS = MAINSERVER_LOC+conf_core["URL_FIDER_REQUEST_OWNERS"]
+URL_CONFIG = MAINSERVER_LOC+conf_core["URL_FIDER_SETTINGS"]

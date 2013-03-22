@@ -2,6 +2,52 @@
 Graphics replacemente CSS for OpenLayers
 */
 
+.olLabsLayerSwitcher
+{
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: 20em;
+    font-family: sans-serif;
+    font-weight: bold;
+    margin-top: 3px;
+    margin-left: 3px;
+    margin-bottom: 3px;
+    font-size: smaller;
+    color: white;
+    background-color: transparent;
+}
+
+
+.olLabsLayerSwitcher .layersDiv {
+    padding-top: 5px;
+    padding-left: 10px;
+    padding-bottom: 5px;
+    padding-right: 10px;
+    background-color: #000000;
+    font-size:      small;
+}
+
+.olLabsLayerSwitcher .layersDiv .baseLbl,
+.olLabsLayerSwitcher .layersDiv .dataLbl {
+    margin-top: 3px;
+    margin-left: 3px;
+    margin-bottom: 3px;
+}
+
+.olLabsLayerSwitcher .layersDiv .baseLayersDiv,
+.olLabsLayerSwitcher .layersDiv .dataLayersDiv {
+    padding-left: 10px;
+}
+
+.olLabsLayerSwitcher .maximizeDiv,
+.olLabsLayerSwitcher .minimizeDiv {
+    width: 18px;
+    height: 18px;
+    top: 5px;
+    right: 0;
+    cursor: pointer;
+}
 
 .olControlEditingToolbar
 {
@@ -29,21 +75,22 @@ Graphics replacemente CSS for OpenLayers
 }
 
 
-.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive
+.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive,
+.olControlEditingToolbar .olLabsControlSelectFeatureItemInactive
 {
     background-image: url("/static/gis-0.1/mActionToggleEditing-inactive.png");
-
-
 }
 
-.olControlEditingToolbar .olLabsControlModifyFeatureItemActive
+.olControlEditingToolbar .olLabsControlModifyFeatureItemActive,
+.olControlEditingToolbar .olLabsControlSelectFeatureItemActive
 {
 
     background-image: url("/static/gis-0.1/mActionToggleEditing.png");
     border-bottom:      1px solid #000000;
 }
 
-.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive:hover
+.olControlEditingToolbar .olLabsControlModifyFeatureItemInactive:hover,
+.olControlEditingToolbar .olLabsControlSelectFeatureItemInactive:hover
 {
     background-image: url("/static/gis-0.1/mActionToggleEditing.png");
 }
@@ -109,16 +156,16 @@ Graphics replacemente CSS for OpenLayers
 
 .olControlEditingToolbar .olLabsControlRebaseItemInactive
 {
-    background-image: url("/static/gis-0.1/mActionZoomToLayer-inactive.png");
+    background-image: url("/static/resource/visng_controls_home_inactive.png");
 }
 
 .olControlEditingToolbar .olLabsControlRebaseItemActive
 {
-    background-image: url("/static/gis-0.1/mActionZoomToLayer.png");
+    background-image: url("/static/resource/visng_controls_home_active.png");
     border-bottom:      1px solid #000000;
 }
 
 .olControlEditingToolbar .olLabsControlRebaseItemInactive:hover
 {
-    background-image: url("/static/gis-0.1/mActionZoomToLayer.png");
+    background-image: url("/static/resource/visng_controls_home_active.png");
 }

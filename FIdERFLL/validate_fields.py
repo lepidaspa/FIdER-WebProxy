@@ -12,6 +12,11 @@ import datetime
 
 from constants import *
 
+"""
+This components validate fields of a specific type against a standard model.
+"""
+
+
 def extractTimestampFromISO8601 (isostring):
 	"""
 	returns strings for all elements of the date as YYYY, MM, DD, HH, MM, SS;
@@ -196,6 +201,11 @@ def validateFieldAsTimeSpan (fielddata):
 
 
 def validateFieldAsBoundingBox (fielddata):
+	"""Validates a field as bounding box data, defined as: list with two datetime + timezone strings
+
+	:param fielddata:
+	:return:
+	"""
 	#Bounding box definition: array of 2*COORD_AXES_MODEL values (see constants) coordinates each as float values, direction S-N / W-E
 
 	#1. Checking if value is a collection of 2*COORD_AXES_MODEL values
@@ -223,8 +233,13 @@ def validateFieldAsBoundingBox (fielddata):
 
 
 def validateFieldAsMetadataListing (fielddata):
-	#This function validates the field as list of metadata
-	#A metadata is a dictionary with one name field string (unique in the list) and two optional fields (timespan and bounding box)
+	"""
+	This function validates the field as list of metadata
+	A metadata is a dictionary with one name field string (unique in the list) and two optional fields (timespan and bounding box)
+	:param fielddata:
+	:return:
+	"""
+
 
 	# checking field type
 	if not (isinstance(fielddata, list)):
