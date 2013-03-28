@@ -157,9 +157,13 @@ def getModels ():
 	:return:
 	"""
 
-	#print os.getcwd()
-	modelfile = os.path.join("FIdERWebST", "models.json")
-	backupfile = os.path.join ("FIdERWebST", "models.json.backup")
+	PACKAGE_ROOT = os.path.abspath(os.path.dirname(__file__))
+	print os.getcwd()
+	modelfile = os.path.join(PACKAGE_ROOT, "models.json")
+	print modelfile
+	backupfile = os.path.join (PACKAGE_ROOT, "models.json.backup")
+	print backupfile
+	
 	fp = open(modelfile)
 	models = json.load(fp)
 	fp.close()
