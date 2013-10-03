@@ -17,6 +17,8 @@ import json
 import ogr
 import gdal
 
+import ftplib
+import ftputil
 
 import Common
 from FIdERProxyFS import proxy_core
@@ -53,7 +55,7 @@ def handleFSChange (eventpath):
 	try:
 		handleFileEvent(eventpath)
 	except Exception as issue:
-		#TODO: add actual mailing code, decide how to log normal events
+		print "ISSUE IN HANDLING fs change"
 		logEvent (issue, True)
 
 
@@ -317,6 +319,8 @@ def sendUpdatesWrite (proxy_id):
 	meta_dict = {}
 	for meta_id, timestamp in updateslist:
 		meta_dict [meta_id] = locker.performLocked(proxy_core.assembleMetaJson, proxy_id, meta_id)
+		metadelstring = conf.MAINSERVER_LOC+"/broker/clear?token="+proxy_id+"&meta="+meta_id
+		urllib2.urlopen(metadelstring)
 
 	template = TemplatesModels.model_request_write
 	customfields = {
@@ -326,9 +330,13 @@ def sendUpdatesWrite (proxy_id):
 		}
 	}
 
+
+
+	# /broker/clear?token=???&meta=???
+
+
 	requestmsg = Common.Components.createMessageFromTemplate(template, token=proxy_id, **customfields)
 
-	#TODO: actual implementation of message transmission handling, right now we only have an empty function call
 	send_success = sendMessageToServer(json.dumps(requestmsg), conf.URL_WRITEREQUEST, 'POST', TemplatesModels.model_response_write, TemplatesModels.model_error_error)
 
 	if send_success:
@@ -338,7 +346,6 @@ def sendUpdatesWrite (proxy_id):
 			# we remove only the entries that have not received additional updates from the time of sending; we check if the tuple filename/updatetime is in the updates list we created at the start of the process
 
 			if (cupdate, os.path.getmtime(os.path.join(updatespath, cupdate))) in updateslist:
-				#TODO: choose final exception handling in case something removed the files before us: currently we are ignoring it, logging and going on
 				try:
 					os.remove(os.path.join(updatespath,cupdate))
 				except:
@@ -395,36 +402,50 @@ def uploadFTP (proxy_id, meta_id, map_id, connect, setforupdate=False):
 
 	filename = re.sub(r'[^\w._]+', "_", connect['path'].split("/")[-1])
 
-	authstring = ""
-	if connect['user'] not in (None, ""):
-		authstring = connect['user']
-		if connect['pass'] not in (None, ""):
-			authstring = authstring+":"+connect['pass']
-		authstring += "@"
+	hostinfo = connect['host'].split(":")
+	hostname = hostinfo[0]
+	hostport = "21"
 
-	connectstring = "ftp://"+authstring+connect['host']+"/"+connect['path']
+	if len(hostinfo)==2:
+		if hostinfo[1] not in (None, ""):
+			hostport = hostinfo[1]
+
+
+	class CustomPorted (ftplib.FTP):
+		def __init__ (self, host, userid, password, port):
+			ftplib.FTP.__init__(self)
+			port = int(port)
+			self.connect(host, port)
+			self.login(userid, password)
+
 
 	try:
-		upload = urllib2.urlopen(connectstring)
+		conn = ftputil.FTPHost(hostname, connect['user'], connect['pass'], port=hostport, session_factory=CustomPorted)
+
 		if map_id is None or map_id == "":
 			map_id = filename[:-4]
 
-		print "FORM: Uploading file to %s/%s/%s" % (proxy_id, meta_id, map_id)
+		# print "FORM: Uploading file to %s/%s/%s" % (proxy_id, meta_id, map_id)
 
 		uploadedpath = os.path.join(conf.baseuploadpath, proxy_id, meta_id, filename)
 
-		fp = open(uploadedpath, 'w+')
-		fp.write(upload.read())
-		fp.close()
-		upload.close()
+		conn.download(connect['path'], uploadedpath, mode="b")
+
+
+		# fp = open(uploadedpath, 'w+')
+		# fp.write(upload.read())
+		# fp.close()
+		# upload.close()
 
 		response_upload['success'] = True
 		#response_upload['report'] = "Invio del file %s su %s per integrazione completato." % (filename, proxy_id)
 
-		print "File uploaded, proceeding with conversion to geojson"
+		# print "File uploaded, proceeding with conversion to geojson"
 
 		handleFSChange(uploadedpath)
 		response_upload['report'] = "Integrazione del file %s su %s completata" % (filename, proxy_id)
+
+		print response_upload['report']
 
 		if setforupdate is True:
 			try:

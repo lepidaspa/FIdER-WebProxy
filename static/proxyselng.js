@@ -876,6 +876,7 @@ function tryCreateReadWrite()
         metadata['name'] = newmetalist[i]['name'];
 
 
+
         var hasbbox = newmetalist[i]['bbox'] != null;
         if (hasbbox)
         {
@@ -933,6 +934,8 @@ function tryCreateReadWrite()
     $("#btn_createprogress_close_fail").hide();
 
     var urlstring = "/fwp/createng/";
+
+    console.warn("FULL MANIFEST CANDIDATE: ",payload);
 
     $.ajax ({
         url: urlstring,
@@ -1391,13 +1394,7 @@ function cleanMetaForm (dialogid)
     checkboxes.change();
     resetMetaChecks();
 
-
     reviewMetaSubmission(dialogid);
-
-
-
-
-
 
 }
 
@@ -1642,7 +1639,7 @@ function addNewMeta ()
     var metadateto = hasdateto ? base.find(".metadateto").datepicker("getDate") : null;
 
     var metabbox = null;
-    var hasbbox = base.find(".metabboxfieldswitch.hasbbox").val();
+    var hasbbox = base.find(".metabboxfieldswitch.hasbbox").is(":checked");
     if (hasbbox)
     {
         var mapwidget = newmetamap;

@@ -716,7 +716,7 @@ def proxy_create_conversion (request):
 
 	try:
 
-		args = json.loads(request.POST['jsonmessage'])
+		args = json.loads(request.REQUEST['jsonmessage'])
 
 		convtable =  args['convtable']
 		proxy_id =  args['proxy_id']
@@ -992,7 +992,7 @@ def proxy_create_adv (request):
 
 	print "Trying to create a new proxy"
 	print "Request: %s" % request.POST
-	payload_dict = json.loads(request.POST['jsonmessage'])
+	payload_dict = json.loads(request.REQUEST.get('jsonmessage', '{}'))
 	print "Payload dict: %s" % payload_dict
 	if payload_dict.has_key("linkedto"):
 		linkedto = payload_dict['linkedto']
@@ -1018,8 +1018,8 @@ def proxy_create_adv (request):
 
 		# creating the pre-manifest
 		if request is not None:
-			jsonmessage = (json.loads(request.POST['jsonmessage']))['manifest']
-			jsoncontacts = (json.loads(request.POST['jsonmessage']))['contacts']
+			jsonmessage = (json.loads(request.REQUEST['jsonmessage']))['manifest']
+			jsoncontacts = (json.loads(request.REQUEST['jsonmessage']))['contacts']
 		elif linkedto is not None:
 			jsonmessage = json.load(open(os.path.join(proxyconf.baseproxypath, proxyconf.basemanifestpath, linkedto+".manifest")))
 			jsonmessage['operations']['read'] = 'full'
